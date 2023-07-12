@@ -1,0 +1,12 @@
+{
+	"compilerOptions": {
+		"noEmit": true,
+		"target": "ES2020",
+		"module": "Node16",
+		"strict": true,
+		"resolveJsonModule": true,
+		"isolatedModules": true,
+		"esModuleInterop": true,
+		"skipLibCheck": true
+	},
+}
