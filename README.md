@@ -40,7 +40,7 @@ Check the installed version with:
 aicommit2 --version
 ```
 
-If it's not the [latest version](https://github.com/Nutlope/aicommit2/releases/latest), run:
+If it's not the [latest version](https://github.com/tak-bro/aicommit2/releases/latest), run:
 
 ```sh
 npm update -g aicommit2
@@ -63,7 +63,7 @@ For example, you can stage all changes in tracked files with as you commit:
 aicommit2 --all # or -a
 ```
 
-> 👉 **Tip:** Use the `aic` alias if `aicommit2` is too long for you.
+> 👉 **Tip:** Use the `aic2` alias if `aicommit2` is too long for you.
 
 #### Generate multiple recommendations
 
