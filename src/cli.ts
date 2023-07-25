@@ -51,9 +51,9 @@ cli(
     argv => {
         if (isCalledFromGitHook) {
             prepareCommitMessageHook();
-        } else {
-            aicommit2(argv.flags.generate, argv.flags.exclude, argv.flags.all, argv.flags.type, rawArgv);
+            return;
         }
+        aicommit2(argv.flags.generate, argv.flags.exclude, argv.flags.all, argv.flags.type, rawArgv);
     },
     rawArgv
 );
