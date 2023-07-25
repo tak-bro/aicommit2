@@ -13,7 +13,6 @@
 
 > The minimum supported version of Node.js is the latest v14. Check your Node.js version with `node --version`.
 
-
 1. Install _aicommit2_:
 
     ```sh
@@ -32,10 +31,10 @@
 
     This will create a `.aicommit2` file in your home directory.
 
-
 ### Upgrading
 
 Check the installed version with:
+
 ```
 aicommit2 --version
 ```
@@ -47,6 +46,7 @@ npm update -g aicommit2
 ```
 
 ## Usage
+
 ### CLI mode
 
 You can call `aicommit2` directly to generate a commit message for your staged changes:
@@ -59,6 +59,7 @@ aicommit2
 `aicommit2` passes down unknown flags to `git commit`, so you can pass in [`commit` flags](https://git-scm.com/docs/git-commit).
 
 For example, you can stage all changes in tracked files with as you commit:
+
 ```sh
 aicommit2 --all # or -a
 ```
@@ -68,6 +69,7 @@ aicommit2 --all # or -a
 #### Generate multiple recommendations
 
 Sometimes the recommended commit message isn't the best so you want it to generate a few to pick from. You can generate multiple commit messages at once by passing in the `--generate <i>` flag, where 'i' is the number of generated messages:
+
 ```sh
 aicommit2 --generate <i> # or -g <i>
 ```
@@ -91,11 +93,13 @@ You can also integrate _aicommit2_ with Git via the [`prepare-commit-msg`](https
 #### Install
 
 In the Git repository you want to install the hook in:
+
 ```sh
 aicommit2 hook install
 ```
 
 #### Uninstall
+
 In the Git repository you want to uninstall the hook from:
 
 ```sh
@@ -105,6 +109,7 @@ aicommit2 hook uninstall
 #### Usage
 
 1. Stage your files and commit:
+
     ```sh
     git add <files...>
     git commit # Only generates a message when it's not passed in
@@ -119,6 +124,7 @@ aicommit2 hook uninstall
 ## Configuration
 
 ### Reading a configuration value
+
 To retrieve a configuration option, use the command:
 
 ```sh
@@ -126,6 +132,7 @@ aicommit2 config get <key>
 ```
 
 For example, to retrieve the API key, you can use:
+
 ```sh
 aicommit2 config get OPENAI_KEY
 ```
@@ -157,6 +164,7 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 ```
 
 ### Options
+
 #### OPENAI_KEY
 
 Required
@@ -164,6 +172,7 @@ Required
 The OpenAI API key. You can retrieve it from [OpenAI API Keys page](https://platform.openai.com/account/api-keys).
 
 #### locale
+
 Default: `en`
 
 The locale to use for the generated commit messages. Consult the list of codes in: https://wikipedia.org/wiki/List_of_ISO_639-1_codes.
@@ -194,8 +203,8 @@ The Chat Completions (`/v1/chat/completions`) model to use. Consult the list of 
 
 > Tip: If you have access, try upgrading to [`gpt-4`](https://platform.openai.com/docs/models/gpt-4) for next-level code analysis. It can handle double the input size, but comes at a higher cost. Check out OpenAI's website to learn more.
 
-
 #### timeout
+
 The timeout for network requests to the OpenAI API in milliseconds.
 
 Default: `10000` (10 seconds)
@@ -205,6 +214,7 @@ aicommit2 config set timeout=20000 # 20s
 ```
 
 #### max-length
+
 The maximum character length of the generated commit message.
 
 Default: `50`
@@ -237,11 +247,9 @@ Video coming soon where I rebuild it from scratch to show you how to easily buil
 
 ## Maintainers
 
-- **Hassan El Mghari**: [@Nutlope](https://github.com/Nutlope) [<img src="https://img.shields.io/twitter/follow/nutlope?style=flat&label=nutlope&logo=twitter&color=0bf&logoColor=fff" align="center">](https://twitter.com/nutlope)
+-   **Hassan El Mghari**: [@Nutlope](https://github.com/Nutlope) [<img src="https://img.shields.io/twitter/follow/nutlope?style=flat&label=nutlope&logo=twitter&color=0bf&logoColor=fff" align="center">](https://twitter.com/nutlope)
 
-
-- **Hiroki Osame**: [@privatenumber](https://github.com/privatenumber) [<img src="https://img.shields.io/twitter/follow/privatenumbr?style=flat&label=privatenumbr&logo=twitter&color=0bf&logoColor=fff" align="center">](https://twitter.com/privatenumbr)
-
+-   **Hiroki Osame**: [@privatenumber](https://github.com/privatenumber) [<img src="https://img.shields.io/twitter/follow/privatenumbr?style=flat&label=privatenumbr&logo=twitter&color=0bf&logoColor=fff" align="center">](https://twitter.com/privatenumbr)
 
 ## Contributing
 

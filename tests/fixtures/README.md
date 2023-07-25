@@ -1,6 +1,7 @@
 # Generating diffs
 
 1. Instruct ChatGPT with the following command:
+
 ```
 I want you to act as a git cli
 I will give you the type of content and you will generate a random git diff based on that
