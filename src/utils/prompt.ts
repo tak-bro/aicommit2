@@ -44,6 +44,7 @@ export const generatePrompt = (locale: string, maxLength: number, type: CommitTy
         'Exclude anything unnecessary such as translation. Your entire response will be passed directly into git commit.',
         commitTypes[type],
         specifyCommitFormat(type),
+        'Remember to use all lowercase',
     ]
         .filter(Boolean)
         .join('\n');

@@ -22,11 +22,18 @@ const parseAssert = (name: string, condition: any, message: string) => {
 const configParsers = {
     OPENAI_KEY(key?: string) {
         if (!key) {
-            throw new KnownError('Please set your OpenAI API key via `aicommit2 config set OPENAI_KEY=<your token>`');
+            return '';
+            // throw new KnownError('Please set your OpenAI API key via `aicommit2 config set OPENAI_KEY=<your token>`');
         }
         parseAssert('OPENAI_KEY', key.startsWith('sk-'), 'Must start with "sk-"');
         // Key can range from 43~51 characters. There's no spec to assert this.
-
+        return key;
+    },
+    BARD_KEY(key?: string) {
+        if (!key) {
+            return '';
+        }
+        parseAssert('BARD_API_KEY', key.startsWith('__Secure'), 'Must start with "__Secure"');
         return key;
     },
     locale(locale?: string) {
@@ -139,7 +146,9 @@ export const getConfig = async (cliConfig?: RawConfig, suppressErrors?: boolean)
         if (suppressErrors) {
             try {
                 parsedConfig[key] = parser(value);
-            } catch {}
+            } catch {
+                /* empty */
+            }
         } else {
             parsedConfig[key] = parser(value);
         }

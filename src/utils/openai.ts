@@ -134,6 +134,8 @@ export const generateCommitMessage = async (
     timeout: number,
     proxy?: string
 ) => {
+    // return ['feat: update configuration', 'refactor: modify chatGPT message generation'];
+
     try {
         const completion = await createChatCompletion(
             apiKey,
@@ -169,9 +171,7 @@ export const generateCommitMessage = async (
     } catch (error) {
         const errorAsAny = error as any;
         if (errorAsAny.code === 'ENOTFOUND') {
-            throw new KnownError(
-                `Error connecting to ${errorAsAny.hostname} (${errorAsAny.syscall}). Are you connected to the internet?`
-            );
+            throw new KnownError(`Error connecting to ${errorAsAny.hostname} (${errorAsAny.syscall})`);
         }
 
         throw errorAsAny;

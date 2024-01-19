@@ -12,6 +12,6 @@ export const handleCliError = (error: any) => {
         }
         console.error(`\n${indent}${dim(`aicommit2 v${version}`)}`);
         console.error(`\n${indent}Please open a Bug report with the information above:`);
-        console.error(`${indent}https://github.com/Nutlope/aicommit2/issues/new/choose`);
+        console.error(`${indent}https://github.com/tak-bro/aicommit2/issues/new/choose`);
     }
 };
