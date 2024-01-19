@@ -1,10 +1,10 @@
 import fs from 'fs/promises';
 import { intro, outro, spinner } from '@clack/prompts';
-import { black, green, red, bgCyan } from 'kolorist';
+import { bgCyan, black, green, red } from 'kolorist';
 import { getStagedDiff } from '../utils/git.js';
 import { getConfig } from '../utils/config.js';
 import { generateCommitMessage } from '../utils/openai.js';
-import { KnownError, handleCliError } from '../utils/error.js';
+import { handleCliError, KnownError } from '../utils/error.js';
 
 const [messageFilePath, commitSource] = process.argv.slice(2);
 
@@ -71,7 +71,7 @@ export default () =>
 
         if (hasMultipleMessages) {
             if (supportsComments) {
-                instructions += '# Select one of the following messages by uncommeting:\n';
+                instructions += '# Select one of the following messages by uncommenting:\n';
             }
             instructions += `\n${messages.map(message => `# ${message}`).join('\n')}`;
         } else {

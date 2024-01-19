@@ -15,6 +15,36 @@ export const createAsyncDelay = (duration: number) => {
     return new Promise<void>(resolve => setTimeout(() => resolve(), duration));
 };
 
+class AICommit2 {
+    private title = 'aicommit2';
+
+    constructor() {}
+
+    displayTitle() {
+        console.log(figlet.textSync(this.title, { font: 'Small' }));
+    }
+
+    async getStagedDiff(excludeFiles: string[]) {
+        const detectingFilesSpinner = ora('Detecting staged files').start();
+        const staged = await getStagedDiff(excludeFiles);
+
+        detectingFilesSpinner.stop();
+        detectingFilesSpinner.clear();
+        if (!staged) {
+            throw new KnownError(
+                'No staged changes found. Stage your changes manually, or automatically stage all changes with the `--all` flag.'
+            );
+        }
+
+        return staged;
+    }
+
+    displayStagedFiles(staged: { files: string[]; diff: string }) {
+        console.log(chalk.bold.green('✔ ') + chalk.bold(`${getDetectedMessage(staged.files)}:`));
+        console.log(`${staged.files.map(file => `     ${file}`).join('\n')}\n`);
+    }
+}
+
 export default async (
     generate: number | undefined,
     excludeFiles: string[],
@@ -23,30 +53,16 @@ export default async (
     rawArgv: string[]
 ) =>
     (async () => {
-        console.log(figlet.textSync('aicommit2'));
+        const aiCommit2 = new AICommit2();
+        aiCommit2.displayTitle();
+
         await assertGitRepo();
-
         if (stageAll) {
-            // This should be equivalent behavior to `git commit --all`
-            await execa('git', ['add', '--update']);
+            await execa('git', ['add', '--update']); // NOTE: should be equivalent behavior to `git commit --all`
         }
 
-        const detectingFilesSpinner = ora('Detecting staged files').start();
-        const staged = await getStagedDiff(excludeFiles);
-
-        if (!staged) {
-            detectingFilesSpinner.stop();
-            detectingFilesSpinner.clear();
-            throw new KnownError(
-                'No staged changes found. Stage your changes manually, or automatically stage all changes with the `--all` flag.'
-            );
-        }
-
-        detectingFilesSpinner.stop();
-        detectingFilesSpinner.clear();
-
-        console.log(chalk.bold.green('✔ ') + chalk.bold(`${getDetectedMessage(staged.files)}:`));
-        console.log(`${staged.files.map(file => `     ${file}`).join('\n')}\n`);
+        const staged = await aiCommit2.getStagedDiff(excludeFiles);
+        aiCommit2.displayStagedFiles(staged);
 
         const { env } = process;
         const config = await getConfig({
@@ -178,7 +194,7 @@ export default async (
                 },
                 () => {},
                 () => {
-                    const isAllError = choices.every(value => value.isError);
+                    const isAllError = choices.every(value => value?.isError || value?.disabled);
                     if (isAllError) {
                         loader$.next({
                             isLoading: false,
