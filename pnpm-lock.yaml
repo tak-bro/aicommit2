@@ -32,8 +32,8 @@ dependencies:
     specifier: ^9.0.3
     version: 9.2.8
   inquirer-reactive-list-prompt:
-    specifier: ^1.0.0
-    version: 1.0.0(inquirer@9.2.8)
+    specifier: ^1.0.3
+    version: 1.0.3(inquirer@9.2.8)
   ora:
     specifier: ^8.0.1
     version: 8.0.1
@@ -1710,10 +1710,6 @@ packages:
   /eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
 
-  /emoji-regex@10.2.1:
-    resolution: {integrity: sha512-97g6QgOk8zlDRdgq1WxwgTMgEWGVAQvB5Fdpgc1MkNy56la5SKP9GsMXKDOdqwn90/41a8yPwIGk1Y6WVbeMQA==}
-    dev: false
-
   /emoji-regex@10.3.0:
     resolution: {integrity: sha512-QpLs9D9v9kArv4lfDEgg1X/gN5XLnf/A6l9cs8SPZLRZR3ZkY9+kwIQTxm+fsSej5UMYGE8fdoaZVIBlqG0XTw==}
     dev: false
@@ -2864,8 +2860,8 @@ packages:
       rxjs: 7.8.1
     dev: false
 
-  /inquirer-reactive-list-prompt@1.0.0(inquirer@9.2.8):
-    resolution: {integrity: sha512-xV8awcUh9m6Ri1Grzrs9wNvRIJFqyKfAT2bAuSb0CrV8GK4H3T3GjOPY9vHF8+IDMZYcM989sxiNncY7GuEZXg==}
+  /inquirer-reactive-list-prompt@1.0.3(inquirer@9.2.8):
+    resolution: {integrity: sha512-j0LcRW14o9BOqCfDdqwMqKQ8iaqVGSToSMYVfl1pjaG2PsASFa0up2bZc5mPX+EPe367rq7n0OWeUGKPZQCHkg==}
     peerDependencies:
       inquirer: ^9.0.3
     dependencies:
@@ -3722,7 +3718,7 @@ packages:
     dependencies:
       chalk: 5.3.0
       cli-cursor: 4.0.0
-      cli-spinners: 2.9.0
+      cli-spinners: 2.9.2
       is-interactive: 2.0.0
       is-unicode-supported: 1.3.0
       log-symbols: 5.1.0
@@ -4311,7 +4307,7 @@ packages:
     engines: {node: '>=16'}
     dependencies:
       eastasianwidth: 0.2.0
-      emoji-regex: 10.2.1
+      emoji-regex: 10.3.0
       strip-ansi: 7.1.0
     dev: false
 

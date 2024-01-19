@@ -134,7 +134,7 @@ export const generateCommitMessage = async (
     timeout: number,
     proxy?: string
 ) => {
-    // return ['feat: update configuration', 'refactor: modify chatGPT message generation'];
+    return ['feat: update configuration', 'refactor: modify chatGPT message generation'];
 
     try {
         const completion = await createChatCompletion(

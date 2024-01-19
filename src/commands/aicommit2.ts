@@ -9,7 +9,7 @@ import ora from 'ora';
 
 import { BehaviorSubject, catchError, concatMap, EMPTY, from, map, mergeMap, of, tap } from 'rxjs';
 import inquirer from 'inquirer';
-import ReactiveListPrompt, { ReactiveListChoice, ReactiveListLoader } from 'inquirer-reactive-list-prompt';
+import ReactiveListPrompt, { ChoiceItem, ReactiveListLoader } from 'inquirer-reactive-list-prompt';
 
 export const createAsyncDelay = (duration: number) => {
     return new Promise<void>(resolve => setTimeout(() => resolve(), duration));
@@ -68,8 +68,8 @@ export default async (
         }
 
         // init inquirer list
-        const choices: ReactiveListChoice[] = [];
-        const choices$: BehaviorSubject<ReactiveListChoice[]> = new BehaviorSubject<ReactiveListChoice[]>([]);
+        const choices: ChoiceItem[] = [];
+        const choices$: BehaviorSubject<ChoiceItem[]> = new BehaviorSubject<ChoiceItem[]>([]);
         const loader$: BehaviorSubject<ReactiveListLoader> = new BehaviorSubject<ReactiveListLoader>({
             isLoading: false,
             startOption: {
@@ -117,8 +117,7 @@ export default async (
                                 };
                             }),
                             catchError(error => {
-                                const chatGPTColors = { primary: '#74AA9C' };
-                                const chatGPT = chalk.bgHex(chatGPTColors.primary).white.bold('[ChatGPT]');
+                                const errorChatGPT = chalk.red.bold('[ChatGPT]');
                                 let simpleMessage = 'An error occurred';
                                 if (error.response && error.response.data && error.response.data.error) {
                                     simpleMessage = error.response.data.error.split('\n')[0];
@@ -126,7 +125,7 @@ export default async (
                                     simpleMessage = error.message.split('\n')[0];
                                 }
                                 return of({
-                                    name: `${chatGPT} ${simpleMessage}`,
+                                    name: `${errorChatGPT} ${simpleMessage}`,
                                     value: simpleMessage,
                                     isError: true,
                                 });
@@ -147,8 +146,9 @@ export default async (
                             isError: false,
                         });
                     default:
+                        const prefixError = chalk.red.bold('[ERROR]');
                         return of({
-                            name: 'An error occurred',
+                            name: prefixError + ' An error occurred',
                             value: 'An error occurred',
                             isError: true,
                         });
@@ -208,7 +208,7 @@ export default async (
         // await execa('git', ['commit', '-m', message, ...rawArgv]);
         commitSpinner.stop();
         commitSpinner.clear();
-        console.log(chalk.bold.green('✔ ') + `Successfully committed!`);
+        console.log(chalk.bold.green('✔ ') + chalk.bold(`Successfully committed!`));
 
         // reactiveListPrompt.then(async answer => {
         //     choices$.complete();
