@@ -195,13 +195,23 @@ To clear the proxy option, you can use the command (note the empty value after t
 aicommit2 config set proxy=
 ```
 
-#### model
+#### confirm
+
+Default: true
+
+Check again when committing after message generation
+
+#### openai-model
 
 Default: `gpt-3.5-turbo`
 
 The Chat Completions (`/v1/chat/completions`) model to use. Consult the list of models available in the [OpenAI Documentation](https://platform.openai.com/docs/models/model-endpoint-compatibility).
 
 > Tip: If you have access, try upgrading to [`gpt-4`](https://platform.openai.com/docs/models/gpt-4) for next-level code analysis. It can handle double the input size, but comes at a higher cost. Check out OpenAI's website to learn more.
+
+```sh
+aicommit2 config set openai-model=gpt-4
+```
 
 #### timeout
 
