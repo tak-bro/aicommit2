@@ -6,8 +6,9 @@ import { KnownError } from '../utils/error.js';
 import figlet from 'figlet';
 import chalk from 'chalk';
 import ora from 'ora';
+import readline from 'readline';
 
-import { BehaviorSubject, catchError, concatMap, EMPTY, from, map, mergeMap, of, tap } from 'rxjs';
+import { BehaviorSubject, catchError, concatMap, from, map, mergeMap, of, tap } from 'rxjs';
 import inquirer from 'inquirer';
 import ReactiveListPrompt, { ChoiceItem, ReactiveListLoader } from 'inquirer-reactive-list-prompt';
 
@@ -43,6 +44,32 @@ class AICommit2 {
         console.log(chalk.bold.green('✔ ') + chalk.bold(`${getDetectedMessage(staged.files)}:`));
         console.log(`${staged.files.map(file => `     ${file}`).join('\n')}\n`);
     }
+
+    displayCommitted() {
+        console.log('\n' + chalk.bold.green('✔ ') + chalk.bold(`Successfully committed!`));
+    }
+
+    displayCancelledCommit() {
+        console.log(`\n${chalk.bold.yellow('⚠')} ${chalk.yellow('Commit cancelled')}`);
+    }
+
+    moveCursorUp() {
+        const rl = readline.createInterface({
+            input: process.stdin,
+            output: process.stdout,
+        });
+        readline.moveCursor(process.stdout, 0, -1);
+        rl.close();
+    }
+
+    moveCursorDown() {
+        const rl = readline.createInterface({
+            input: process.stdin,
+            output: process.stdout,
+        });
+        readline.moveCursor(process.stdout, 0, 1);
+        rl.close();
+    }
 }
 
 export default async (
@@ -50,6 +77,7 @@ export default async (
     excludeFiles: string[],
     stageAll: boolean,
     commitType: string | undefined,
+    confirm: string | undefined,
     rawArgv: string[]
 ) =>
     (async () => {
@@ -71,6 +99,7 @@ export default async (
             proxy: env.https_proxy || env.HTTPS_PROXY || env.http_proxy || env.HTTP_PROXY,
             generate: generate?.toString(),
             type: commitType?.toString(),
+            confirm: confirm?.toString(),
         });
 
         const availableAIs = Object.entries(config)
@@ -183,11 +212,10 @@ export default async (
                         disabled: isError,
                         isError,
                     });
-                }),
-                catchError(err => EMPTY)
+                })
             )
             .subscribe(
-                ({ value, isError }) => {
+                () => {
                     if (choices.length > 0) {
                         choices$.next(choices);
                     }
@@ -215,79 +243,42 @@ export default async (
         const answer = await reactiveListPrompt;
         choices$.complete();
         loader$.complete();
+        // NOTE: reactiveListPrompt has 2 blank lines
+        aiCommit2.moveCursorUp();
 
         const message = answer.aicommit2Prompt?.value;
         if (!message) {
             throw new KnownError('An error occurred! No selected message');
         }
+
+        const shouldConfirmAgain = config.confirm;
+        if (shouldConfirmAgain) {
+            const answer2 = await inquirer.prompt([
+                {
+                    type: 'confirm',
+                    name: 'confirmation',
+                    message: `Use selected message?`,
+                    default: true,
+                },
+            ]);
+            const { confirmation } = answer2;
+            if (confirmation) {
+                const commitSpinner = ora('Committing with the generated message').start();
+                await execa('git', ['commit', '-m', message, ...rawArgv]);
+                commitSpinner.stop();
+                commitSpinner.clear();
+                aiCommit2.displayCommitted();
+                return;
+            }
+            aiCommit2.displayCancelledCommit();
+            return;
+        }
+
         const commitSpinner = ora('Committing with the generated message').start();
-        // await execa('git', ['commit', '-m', message, ...rawArgv]);
+        await execa('git', ['commit', '-m', message, ...rawArgv]);
         commitSpinner.stop();
         commitSpinner.clear();
-        console.log(chalk.bold.green('✔ ') + chalk.bold(`Successfully committed!`));
-
-        // reactiveListPrompt.then(async answer => {
-        //     choices$.complete();
-        //     loader$.complete();
-        //     // answer:  {
-        //     //    aicommit2Prompt: {
-        //     //        isValid: true,
-        //     //            value: 'refactor: modify chatGPT message generation'
-        //     //    }
-        //     //}
-        //     const message = answer.aicommit2Prompt.value;
-        //     await execa('git', ['commit', '-m', message, ...rawArgv]);
-        //     console.log(chalk.bold.green('✔ ') + `Successfully committed!`);
-        // });
-
-        // let messages: string[];
-        // try {
-        //     messages = await generateCommitMessage(
-        //         config.OPENAI_KEY,
-        //         config.model,
-        //         config.locale,
-        //         staged.diff,
-        //         config.generate,
-        //         config['max-length'],
-        //         config.type,
-        //         config.timeout,
-        //         config.proxy
-        //     );
-        // } finally {
-        //     s.stop('Changes analyzed');
-        // }
-        //
-        // if (messages.length === 0) {
-        //     throw new KnownError('No commit messages were generated. Try again.');
-        // }
-        //
-        // let message: string;
-        // if (messages.length === 1) {
-        //     [message] = messages;
-        //     const confirmed = await confirm({
-        //         message: `Use this commit message?\n\n   ${message}\n`,
-        //     });
-        //
-        //     if (!confirmed || isCancel(confirmed)) {
-        //         outro('Commit cancelled');
-        //         return;
-        //     }
-        // } else {
-        //     const selected = await select({
-        //         message: `Pick a commit message to use: ${dim('(Ctrl+c to exit)')}`,
-        //         options: messages.map(value => ({ label: value, value })),
-        //     });
-        //
-        //     if (isCancel(selected)) {
-        //         outro('Commit cancelled');
-        //         return;
-        //     }
-        //
-        //     message = selected;
-        // }
-        // await execa('git', ['commit', '-m', message, ...rawArgv]);
-
-        // outro(`${green('✔')} Successfully committed!`);
+        aiCommit2.displayCommitted();
     })().catch(error => {
         console.log(chalk.red(`\n✖ ${error.message}`));
         // handleCliError(error);

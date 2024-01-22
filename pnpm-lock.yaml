@@ -32,11 +32,14 @@ dependencies:
     specifier: ^9.0.3
     version: 9.2.8
   inquirer-reactive-list-prompt:
-    specifier: ^1.0.3
-    version: 1.0.3(inquirer@9.2.8)
+    specifier: file:inquirer-reactive-list-prompt-1.0.4.tgz
+    version: file:inquirer-reactive-list-prompt-1.0.4.tgz(inquirer@9.2.8)
   ora:
     specifier: ^8.0.1
     version: 8.0.1
+  readline:
+    specifier: ^1.3.0
+    version: 1.3.0
   rxjs:
     specifier: ^7.8.1
     version: 7.8.1
@@ -477,12 +480,12 @@ packages:
       figures: 3.2.0
     dev: false
 
-  /@inquirer/confirm@2.0.6:
-    resolution: {integrity: sha512-1lPtPRq/1so8wmND43QTIn+hg5WIPpy2u3b8G2MveQ6B1Y2pm6/2Q5DEEt2ndi0kfidjPwQEjfGMlUNcXzQQVw==}
+  /@inquirer/confirm@2.0.15:
+    resolution: {integrity: sha512-hj8Q/z7sQXsF0DSpLQZVDhWYGN6KLM/gNjjqGkpKwBzljbQofGjn0ueHADy4HUY+OqDHmXuwk/bY+tZyIuuB0w==}
     engines: {node: '>=14.18.0'}
     dependencies:
-      '@inquirer/core': 3.0.0
-      '@inquirer/type': 1.1.1
+      '@inquirer/core': 5.1.1
+      '@inquirer/type': 1.1.5
       chalk: 4.1.2
     dev: false
 
@@ -502,6 +505,26 @@ packages:
       mute-stream: 1.0.0
       run-async: 3.0.0
       string-width: 4.2.3
+      strip-ansi: 6.0.1
+      wrap-ansi: 6.2.0
+    dev: false
+
+  /@inquirer/core@5.1.1:
+    resolution: {integrity: sha512-IuJyZQUg75+L5AmopgnzxYrgcU6PJKL0hoIs332G1Gv55CnmZrhG6BzNOeZ5sOsTi1YCGOopw4rYICv74ejMFg==}
+    engines: {node: '>=14.18.0'}
+    dependencies:
+      '@inquirer/type': 1.1.5
+      '@types/mute-stream': 0.0.4
+      '@types/node': 20.11.5
+      '@types/wrap-ansi': 3.0.0
+      ansi-escapes: 4.3.2
+      chalk: 4.1.2
+      cli-spinners: 2.9.2
+      cli-width: 4.1.0
+      figures: 3.2.0
+      mute-stream: 1.0.0
+      run-async: 3.0.0
+      signal-exit: 4.1.0
       strip-ansi: 6.0.1
       wrap-ansi: 6.2.0
     dev: false
@@ -549,7 +572,7 @@ packages:
     engines: {node: '>=14.18.0'}
     dependencies:
       '@inquirer/checkbox': 1.3.5
-      '@inquirer/confirm': 2.0.6
+      '@inquirer/confirm': 2.0.15
       '@inquirer/core': 3.0.0
       '@inquirer/editor': 1.2.4
       '@inquirer/expand': 1.1.5
@@ -581,6 +604,11 @@ packages:
 
   /@inquirer/type@1.1.1:
     resolution: {integrity: sha512-ACc2N1AnIYtg+bfnitna0OJ1rptWqa8apdDDRQnRWb0R5MEPGAgvqWaDbZahATXOnglqKDRIeHFEQfqxhM6p/g==}
+    engines: {node: '>=14.18.0'}
+    dev: false
+
+  /@inquirer/type@1.1.5:
+    resolution: {integrity: sha512-wmwHvHozpPo4IZkkNtbYenem/0wnfI6hvOcGKmPEa0DwuaH5XUQzFqy6OpEpjEegZMhYIk8HDYITI16BPLtrRA==}
     engines: {node: '>=14.18.0'}
     dev: false
 
@@ -837,8 +865,20 @@ packages:
       '@types/node': 18.14.2
     dev: false
 
+  /@types/mute-stream@0.0.4:
+    resolution: {integrity: sha512-CPM9nzrCPPJHQNA9keH9CVkVI+WR5kMa+7XEs5jcGQ0VoAGnLv242w8lIVgwAEfmE4oufJRaTc9PNLQl0ioAow==}
+    dependencies:
+      '@types/node': 18.14.2
+    dev: false
+
   /@types/node@18.14.2:
     resolution: {integrity: sha512-1uEQxww3DaghA0RxqHx0O0ppVlo43pJhepY51OxuQIKHpjbnYLA7vcdwioNPzIqmC2u3I/dmylcqjlh0e7AyUA==}
+
+  /@types/node@20.11.5:
+    resolution: {integrity: sha512-g557vgQjUUfN76MZAN/dt1z3dzcUsimuysco0KeluHgrPdJXkP/XdAURgyO2W9fZWHRtRBiVKzKn8vyOAwlG+w==}
+    dependencies:
+      undici-types: 5.26.5
+    dev: false
 
   /@types/node@20.4.4:
     resolution: {integrity: sha512-CukZhumInROvLq3+b5gLev+vgpsIqC2D0deQr/yS1WnxvmYLlJXZpaQrQiseMY+6xusl79E04UjWoqyr+t1/Ew==}
@@ -1534,6 +1574,11 @@ packages:
 
   /cli-width@4.0.0:
     resolution: {integrity: sha512-ZksGS2xpa/bYkNzN3BAw1wEjsLV/ZKOf/CCrJ/QOBsxx6fOARIkwTutxp1XIOIohi6HKmOFjMoK/XaqDVUpEEw==}
+    engines: {node: '>= 12'}
+    dev: false
+
+  /cli-width@4.1.0:
+    resolution: {integrity: sha512-ouuZd4/dm2Sw5Gmqy6bGyNNNe1qt9RpmxveLSO7KcgsTnU7RXfsw+/bukWGo1abgBiMAic068rclZsO4IWmmxQ==}
     engines: {node: '>= 12'}
     dev: false
 
@@ -2860,20 +2905,6 @@ packages:
       rxjs: 7.8.1
     dev: false
 
-  /inquirer-reactive-list-prompt@1.0.3(inquirer@9.2.8):
-    resolution: {integrity: sha512-j0LcRW14o9BOqCfDdqwMqKQ8iaqVGSToSMYVfl1pjaG2PsASFa0up2bZc5mPX+EPe367rq7n0OWeUGKPZQCHkg==}
-    peerDependencies:
-      inquirer: ^9.0.3
-    dependencies:
-      chalk: 5.3.0
-      cli-cursor: 4.0.0
-      figures: 5.0.0
-      inquirer: 9.2.8
-      inquirer-autocomplete-prompt: 3.0.0(inquirer@9.2.8)
-      ora: 7.0.1
-      rxjs: 7.8.1
-    dev: false
-
   /inquirer@9.2.8:
     resolution: {integrity: sha512-SJ0fVfgIzZL1AD6WvFhivlh5/3hN6WeAvpvPrpPXH/8MOcQHeXhinmSm5CDJNRC2Q+sLh9YJ5k8F8/5APMXSfw==}
     engines: {node: '>=14.18.0'}
@@ -3975,6 +4006,10 @@ packages:
       util-deprecate: 1.0.2
     dev: false
 
+  /readline@1.3.0:
+    resolution: {integrity: sha512-k2d6ACCkiNYz222Fs/iNze30rRJ1iIicW7JuX/7/cozvih6YCkFZH+J6mAFDVgv0dRBaAyr4jDqC95R2y4IADg==}
+    dev: false
+
   /refa@0.11.0:
     resolution: {integrity: sha512-486O8/pQXwj9jV0mVvUnTsxq0uknpBnNJ0eCUhkZqJRQ8KutrT1PhzmumdCeM1hSBF2eMlFPmwECRER4IbKXlQ==}
     engines: {node: ^12.0.0 || ^14.0.0 || >=16.0.0}
@@ -4180,6 +4215,11 @@ packages:
 
   /signal-exit@3.0.7:
     resolution: {integrity: sha512-wnD2ZE+l+SPC/uoS0vXeE9L1+0wuaMqKlfz9AMUo38JsyLSBWSFcHR1Rri62LZc12vLr1gb3jl7iwQhgwpAbGQ==}
+
+  /signal-exit@4.1.0:
+    resolution: {integrity: sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw==}
+    engines: {node: '>=14'}
+    dev: false
 
   /simple-git-hooks@2.8.1:
     resolution: {integrity: sha512-DYpcVR1AGtSfFUNzlBdHrQGPsOhuuEJ/FkmPOOlFysP60AHd3nsEpkGq/QEOdtUyT1Qhk7w9oLmFoMG+75BDog==}
@@ -4568,6 +4608,10 @@ packages:
       which-boxed-primitive: 1.0.2
     dev: true
 
+  /undici-types@5.26.5:
+    resolution: {integrity: sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==}
+    dev: false
+
   /unist-util-stringify-position@2.0.3:
     resolution: {integrity: sha512-3faScn5I+hy9VleOq/qNbAd6pAx7iH5jYBMS9I1HgQVijz/4mv5Bvw5iw1sC/90CODiKo81G/ps8AJrISn687g==}
     dependencies:
@@ -4688,3 +4732,20 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
     dev: true
+
+  file:inquirer-reactive-list-prompt-1.0.4.tgz(inquirer@9.2.8):
+    resolution: {integrity: sha512-p1VL/7TZNRawRoTPOPEBfTQmBd+Du6zyRxl0THzA6gJe6njrnxZHCMAWHss2KDsCG3qMD4dqfiSvzNzWStT90Q==, tarball: file:inquirer-reactive-list-prompt-1.0.4.tgz}
+    id: file:inquirer-reactive-list-prompt-1.0.4.tgz
+    name: inquirer-reactive-list-prompt
+    version: 1.0.4
+    peerDependencies:
+      inquirer: ^9.0.3
+    dependencies:
+      chalk: 5.3.0
+      cli-cursor: 4.0.0
+      figures: 5.0.0
+      inquirer: 9.2.8
+      inquirer-autocomplete-prompt: 3.0.0(inquirer@9.2.8)
+      ora: 7.0.1
+      rxjs: 7.8.1
+    dev: false

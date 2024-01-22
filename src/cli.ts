@@ -39,6 +39,12 @@ cli(
                 alias: 't',
                 default: 'conventional',
             },
+            confirm: {
+                type: Boolean,
+                description: 'Check again when committing after message generation (default: true)',
+                alias: 'c',
+                default: true,
+            },
         },
 
         commands: [configCommand, hookCommand],

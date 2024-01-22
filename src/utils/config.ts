@@ -29,12 +29,33 @@ const configParsers = {
         // Key can range from 43~51 characters. There's no spec to assert this.
         return key;
     },
+    OPENAI_MODEL(model?: string) {
+        if (!model || model.length === 0) {
+            return 'gpt-3.5-turbo';
+        }
+
+        return model as TiktokenModel;
+    },
+    'openai-model'(model?: string) {
+        if (!model || model.length === 0) {
+            return 'gpt-3.5-turbo';
+        }
+
+        return model as TiktokenModel;
+    },
     BARD_KEY(key?: string) {
         if (!key) {
             return '';
         }
         parseAssert('BARD_API_KEY', key.startsWith('__Secure'), 'Must start with "__Secure"');
         return key;
+    },
+    confirm(confirm?: 'true' | 'false') {
+        if (!confirm) {
+            return true;
+        }
+
+        return confirm === 'true';
     },
     locale(locale?: string) {
         if (!locale) {
@@ -79,13 +100,6 @@ const configParsers = {
         parseAssert('proxy', /^https?:\/\//.test(url), 'Must be a valid URL');
 
         return url;
-    },
-    model(model?: string) {
-        if (!model || model.length === 0) {
-            return 'gpt-3.5-turbo';
-        }
-
-        return model as TiktokenModel;
     },
     timeout(timeout?: string) {
         if (!timeout) {
