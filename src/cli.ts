@@ -40,10 +40,10 @@ cli(
                 default: 'conventional',
             },
             confirm: {
-                type: Boolean,
+                type: String,
                 description: 'Check again when committing after message generation (default: true)',
                 alias: 'c',
-                default: true,
+                default: 'true',
             },
         },
 
@@ -60,7 +60,14 @@ cli(
             prepareCommitMessageHook();
             return;
         }
-        aicommit2(argv.flags.generate, argv.flags.exclude, argv.flags.all, argv.flags.type, rawArgv);
+        aicommit2(
+            argv.flags.generate,
+            argv.flags.exclude,
+            argv.flags.all,
+            argv.flags.type,
+            argv.flags.confirm,
+            rawArgv
+        );
     },
     rawArgv
 );
