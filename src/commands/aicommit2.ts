@@ -2,7 +2,7 @@ import { execa } from 'execa';
 import { assertGitRepo, getDetectedMessage, getStagedDiff } from '../utils/git.js';
 import { getConfig } from '../utils/config.js';
 import { generateCommitMessage } from '../utils/openai.js';
-import { KnownError } from '../utils/error.js';
+import { handleCliError, KnownError } from '../utils/error.js';
 import figlet from 'figlet';
 import chalk from 'chalk';
 import ora from 'ora';
@@ -141,7 +141,7 @@ export default async (
                         return from(
                             generateCommitMessage(
                                 config.OPENAI_KEY,
-                                config.model,
+                                config['openai-model'],
                                 config.locale,
                                 staged.diff,
                                 config.generate,
@@ -246,8 +246,8 @@ export default async (
         // NOTE: reactiveListPrompt has 2 blank lines
         aiCommit2.moveCursorUp();
 
-        const message = answer.aicommit2Prompt?.value;
-        if (!message) {
+        const chosenMessage = answer.aicommit2Prompt?.value;
+        if (!chosenMessage) {
             throw new KnownError('An error occurred! No selected message');
         }
 
@@ -264,7 +264,7 @@ export default async (
             const { confirmation } = answer2;
             if (confirmation) {
                 const commitSpinner = ora('Committing with the generated message').start();
-                await execa('git', ['commit', '-m', message, ...rawArgv]);
+                // await execa('git', ['commit', '-m', chosenMessage, ...rawArgv]);
                 commitSpinner.stop();
                 commitSpinner.clear();
                 aiCommit2.displayCommitted();
@@ -275,12 +275,12 @@ export default async (
         }
 
         const commitSpinner = ora('Committing with the generated message').start();
-        await execa('git', ['commit', '-m', message, ...rawArgv]);
+        // await execa('git', ['commit', '-m', chosenMessage, ...rawArgv]);
         commitSpinner.stop();
         commitSpinner.clear();
         aiCommit2.displayCommitted();
     })().catch(error => {
         console.log(chalk.red(`\n✖ ${error.message}`));
-        // handleCliError(error);
+        handleCliError(error);
         process.exit(1);
     });
