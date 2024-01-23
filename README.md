@@ -3,7 +3,7 @@
     <img src=".github/screenshot.png" alt="AI Commits"/>
     <h1 align="center">AI Commit2</h1>
   </div>
-	<p>The project was inspired by the <a href="https://https://github.com/Nutlope/aicommit2">AI Commits</a></p>
+	<p>The project was inspired by the <a href="https://https://github.com/Nutlope/aicommits">AI Commits</a></p>
 	<a href="https://www.npmjs.com/package/aicommit2"><img src="https://img.shields.io/npm/v/aicommit2" alt="Current version"></a>
 </div>
 
@@ -257,10 +257,8 @@ Video coming soon where I rebuild it from scratch to show you how to easily buil
 
 ## Maintainers
 
--   **Hassan El Mghari**: [@Nutlope](https://github.com/Nutlope) [<img src="https://img.shields.io/twitter/follow/nutlope?style=flat&label=nutlope&logo=twitter&color=0bf&logoColor=fff" align="center">](https://twitter.com/nutlope)
-
--   **Hiroki Osame**: [@privatenumber](https://github.com/privatenumber) [<img src="https://img.shields.io/twitter/follow/privatenumbr?style=flat&label=privatenumbr&logo=twitter&color=0bf&logoColor=fff" align="center">](https://twitter.com/privatenumbr)
+-   **Hyungtak Jin**: [@tak-bro](https://github.com/tak-bro)
 
 ## Contributing
 
-If you want to help fix a bug or implement a feature in [Issues](https://github.com/Nutlope/aicommit2/issues), checkout the [Contribution Guide](CONTRIBUTING.md) to learn how to setup and test the project.
+If you want to help fix a bug or implement a feature in [Issues](https://github.com/tak-bro/aicommit2/issues), checkout the [Contribution Guide](CONTRIBUTING.md) to learn how to setup and test the project.
