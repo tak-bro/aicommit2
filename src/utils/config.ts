@@ -43,11 +43,10 @@ const configParsers = {
 
         return model as TiktokenModel;
     },
-    BARD_KEY(key?: string) {
+    GOOGLE_KEY(key?: string) {
         if (!key) {
             return '';
         }
-        parseAssert('BARD_API_KEY', key.startsWith('__Secure'), 'Must start with "__Secure"');
         return key;
     },
     confirm(confirm?: 'true' | 'false') {

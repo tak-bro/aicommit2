@@ -11,6 +11,7 @@ import readline from 'readline';
 import { BehaviorSubject, catchError, concatMap, from, map, mergeMap, of, tap } from 'rxjs';
 import inquirer from 'inquirer';
 import ReactiveListPrompt, { ChoiceItem, ReactiveListLoader } from 'inquirer-reactive-list-prompt';
+import { generateBardCommitMessage } from '../utils/googleai.js';
 
 export const createAsyncDelay = (duration: number) => {
     return new Promise<void>(resolve => setTimeout(() => resolve(), duration));
@@ -95,7 +96,7 @@ export default async (
         const { env } = process;
         const config = await getConfig({
             OPENAI_KEY: env.OPENAI_KEY || env.OPENAI_API_KEY,
-            BARD_KEY: env.BARD_KEY || env.BARD_API_KEY,
+            GOOGLE_KEY: env.GOOGLE_KEY || env.GOOGLE_API_KEY,
             proxy: env.https_proxy || env.HTTPS_PROXY || env.http_proxy || env.HTTP_PROXY,
             generate: generate?.toString(),
             type: commitType?.toString(),
@@ -103,7 +104,7 @@ export default async (
         });
 
         const availableAIs = Object.entries(config)
-            .filter(([key]) => ['OPENAI_KEY', 'BARD_KEY'].includes(key))
+            .filter(([key]) => ['OPENAI_KEY', 'GOOGLE_KEY'].includes(key))
             .filter(([_, value]) => !!value)
             .map(([key, _]) => key.split('_')[0]);
 
@@ -133,6 +134,8 @@ export default async (
         });
 
         loader$.next({ isLoading: true });
+
+        const abortController = new AbortController();
 
         const allRequests$ = from([...availableAIs, 'TEST']).pipe(
             mergeMap(ai => {
@@ -176,7 +179,7 @@ export default async (
                                 });
                             })
                         );
-                    case 'BARD':
+                    case 'GOOGLE':
                         const googleColors = {
                             red: '#DB4437',
                             yellow: '#F4B400',
@@ -185,11 +188,42 @@ export default async (
                         };
                         const message = `ci: update git actions config`;
                         const bard = chalk.bgHex(googleColors.blue).white.bold('[Bard AI]');
-                        return of({
-                            name: bard + ` ${message}`,
-                            value: message,
-                            isError: false,
-                        });
+                        return from(
+                            generateBardCommitMessage(
+                                abortController.signal,
+                                config.GOOGLE_KEY,
+                                config.locale,
+                                staged.diff,
+                                config.generate,
+                                config['max-length'],
+                                config.type,
+                                config.timeout,
+                                config.proxy
+                            )
+                        ).pipe(
+                            map(res => {
+                                console.log(res);
+                                return {
+                                    name: bard + ` ${message}`,
+                                    value: message,
+                                    isError: false,
+                                };
+                            }),
+                            catchError(error => {
+                                const errorChatGPT = chalk.red.bold('[Bard AI]');
+                                let simpleMessage = 'An error occurred';
+                                if (error.response && error.response.data && error.response.data.error) {
+                                    simpleMessage = error.response.data.error.split('\n')[0];
+                                } else if (error.message) {
+                                    simpleMessage = error.message.split('\n')[0];
+                                }
+                                return of({
+                                    name: `${errorChatGPT} ${simpleMessage}`,
+                                    value: simpleMessage,
+                                    isError: true,
+                                });
+                            })
+                        );
                     default:
                         const prefixError = chalk.red.bold('[ERROR]');
                         return of({
@@ -241,6 +275,9 @@ export default async (
             );
 
         const answer = await reactiveListPrompt;
+
+        abortController.abort();
+
         choices$.complete();
         loader$.complete();
         // NOTE: reactiveListPrompt has 2 blank lines
