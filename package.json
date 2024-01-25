@@ -43,7 +43,6 @@
         "@dqbd/tiktoken": "^1.0.2",
         "@google-ai/generativelanguage": "^2.0.0",
         "@inquirer/prompts": "^3.0.0",
-        "@types/inquirer": "^9.0.3",
         "axios": "^1.4.0",
         "chalk": "^5.3.0",
         "figlet": "^1.7.0",
@@ -55,9 +54,10 @@
         "rxjs": "^7.8.1"
     },
     "devDependencies": {
-        "@clack/prompts": "^0.6.1",
         "@pvtnbr/eslint-config": "^0.33.0",
+        "@types/figlet": "^1.5.8",
         "@types/ini": "^1.3.31",
+        "@types/inquirer": "^9.0.3",
         "@types/node": "^18.14.2",
         "@typescript-eslint/eslint-plugin": "^6.13.2",
         "@typescript-eslint/parser": "^6.2.0",
@@ -75,7 +75,6 @@
         "fs-fixture": "^1.2.0",
         "https-proxy-agent": "^5.0.1",
         "ini": "^3.0.1",
-        "kolorist": "^1.7.0",
         "lint-staged": "^13.1.2",
         "manten": "^0.7.0",
         "openai": "^3.2.1",
@@ -106,10 +105,5 @@
         "branches": [
             "main"
         ]
-    },
-    "pnpm": {
-        "patchedDependencies": {
-            "@clack/prompts@0.6.1": "patches/@clack__prompts@0.6.1.patch"
-        }
     }
 }

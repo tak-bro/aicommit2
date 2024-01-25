@@ -6,8 +6,7 @@ import type { TiktokenModel } from '@dqbd/tiktoken';
 import { fileExists } from './fs.js';
 import { KnownError } from './error.js';
 
-const commitTypes = ['', 'conventional'] as const;
-
+const commitTypes = ['', 'conventional', 'gitmoji'] as const;
 export type CommitType = (typeof commitTypes)[number];
 
 const { hasOwnProperty } = Object.prototype;
@@ -23,20 +22,11 @@ const configParsers = {
     OPENAI_KEY(key?: string) {
         if (!key) {
             return '';
-            // throw new KnownError('Please set your OpenAI API key via `aicommit2 config set OPENAI_KEY=<your token>`');
         }
         parseAssert('OPENAI_KEY', key.startsWith('sk-'), 'Must start with "sk-"');
-        // Key can range from 43~51 characters. There's no spec to assert this.
         return key;
     },
     OPENAI_MODEL(model?: string) {
-        if (!model || model.length === 0) {
-            return 'gpt-3.5-turbo';
-        }
-
-        return model as TiktokenModel;
-    },
-    'openai-model'(model?: string) {
         if (!model || model.length === 0) {
             return 'gpt-3.5-turbo';
         }
@@ -82,7 +72,7 @@ const configParsers = {
 
         return parsed;
     },
-    type(type?: string) {
+    type(type?: CommitType) {
         if (!type) {
             return '';
         }
@@ -154,7 +144,7 @@ export const getConfig = async (cliConfig?: RawConfig, suppressErrors?: boolean)
 
     for (const key of Object.keys(configParsers) as ConfigKeys[]) {
         const parser = configParsers[key];
-        const value = cliConfig?.[key] ?? config[key];
+        const value: any = cliConfig?.[key] ?? config[key];
 
         if (suppressErrors) {
             try {
@@ -170,7 +160,7 @@ export const getConfig = async (cliConfig?: RawConfig, suppressErrors?: boolean)
     return parsedConfig as ValidConfig;
 };
 
-export const setConfigs = async (keyValues: [key: string, value: string][]) => {
+export const setConfigs = async (keyValues: [key: string, value: any][]) => {
     const config = await readConfigFile();
 
     for (const [key, value] of keyValues) {

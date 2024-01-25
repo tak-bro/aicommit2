@@ -134,11 +134,11 @@ export const generateCommitMessage = async (
     timeout: number,
     proxy?: string
 ) => {
-    return [
-        'fix: fix cli argument type',
-        'feat: add confirm configuration',
-        'refactor: modify chatGPT message generation',
-    ];
+    // return [
+    //     'fix(temp): fix cli argument type',
+    //     'feat(temp): add confirm configuration',
+    //     'refactor(temp): modify chatGPT message generation',
+    // ];
 
     try {
         const completion = await createChatCompletion(
@@ -177,7 +177,6 @@ export const generateCommitMessage = async (
         if (errorAsAny.code === 'ENOTFOUND') {
             throw new KnownError(`Error connecting to ${errorAsAny.hostname} (${errorAsAny.syscall})`);
         }
-
         throw errorAsAny;
     }
 };

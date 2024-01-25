@@ -2,13 +2,15 @@ import type { CommitType } from './config.js';
 
 const commitTypeFormats: Record<CommitType, string> = {
     '': '<commit message>',
-    conventional: '<type>(<optional scope>): <commit message>',
+    conventional: '<type>(<optional scope>): <description>',
+    gitmoji: ':<emoji>: <description>',
 };
-const specifyCommitFormat = (type: CommitType) => `The output response must be in format:\n${commitTypeFormats[type]}`;
+const specifyCommitFormat = (type: CommitType) =>
+    `The response must be in git ${type} convention format:\n${commitTypeFormats[type]}`;
 
 const commitTypes: Record<CommitType, string> = {
     '': '',
-
+    gitmoji: '',
     /**
      * References:
      * Commitlint:
@@ -33,7 +35,7 @@ const commitTypes: Record<CommitType, string> = {
         },
         null,
         2
-    )}`,
+    )}\nThe first letter of the type and the description should be lowercase.`,
 };
 
 export const generatePrompt = (locale: string, maxLength: number, type: CommitType) =>
@@ -44,7 +46,6 @@ export const generatePrompt = (locale: string, maxLength: number, type: CommitTy
         'Exclude anything unnecessary such as translation. Your entire response will be passed directly into git commit.',
         commitTypes[type],
         specifyCommitFormat(type),
-        'Remember to use all lowercase',
     ]
         .filter(Boolean)
         .join('\n');

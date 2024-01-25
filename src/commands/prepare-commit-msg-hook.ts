@@ -1,10 +1,9 @@
 import fs from 'fs/promises';
-import { intro, outro, spinner } from '@clack/prompts';
-import { bgCyan, black, green, red } from 'kolorist';
 import { getStagedDiff } from '../utils/git.js';
 import { getConfig } from '../utils/config.js';
 import { generateCommitMessage } from '../utils/openai.js';
 import { handleCliError, KnownError } from '../utils/error.js';
+import { LogManager } from '../services/log.manager.js';
 
 const [messageFilePath, commitSource] = process.argv.slice(2);
 
@@ -27,20 +26,20 @@ export default () =>
             return;
         }
 
-        intro(bgCyan(black(' aicommit2 ')));
+        const commandLineManager = new LogManager();
+        commandLineManager.printTitle();
 
         const { env } = process;
         const config = await getConfig({
             proxy: env.https_proxy || env.HTTPS_PROXY || env.http_proxy || env.HTTP_PROXY,
         });
 
-        const s = spinner();
-        s.start('The AI is analyzing your changes');
+        const spinner = commandLineManager.displaySpinner('The AI is analyzing your changes');
         let messages: string[];
         try {
             messages = await generateCommitMessage(
                 config.OPENAI_KEY,
-                config.model,
+                config.OPENAI_MODEL,
                 config.locale,
                 staged!.diff,
                 config.generate,
@@ -50,7 +49,9 @@ export default () =>
                 config.proxy
             );
         } finally {
-            s.stop('Changes analyzed');
+            spinner.stop();
+            spinner.clear();
+            commandLineManager.printAnalyzed();
         }
 
         /**
@@ -82,9 +83,10 @@ export default () =>
         }
 
         await fs.appendFile(messageFilePath, instructions);
-        outro(`${green('✔')} Saved commit message!`);
+        commandLineManager.printSavedCommitMessage();
     })().catch(error => {
-        outro(`${red('✖')} ${error.message}`);
+        const commandLineManager = new LogManager();
+        commandLineManager.printErrorMessage(error.message);
         handleCliError(error);
         process.exit(1);
     });

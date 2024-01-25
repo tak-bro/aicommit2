@@ -1,11 +1,11 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
-import { green, red } from 'kolorist';
+import chalk from 'chalk';
 import { command } from 'cleye';
 import { assertGitRepo } from '../utils/git.js';
 import { fileExists } from '../utils/fs.js';
-import { KnownError, handleCliError } from '../utils/error.js';
+import { handleCliError, KnownError } from '../utils/error.js';
 
 const hookName = 'prepare-commit-msg';
 const symlinkPath = `.git/hooks/${hookName}`;
@@ -56,7 +56,7 @@ export default command(
                     await fs.symlink(hookPath, absoltueSymlinkPath, 'file');
                     await fs.chmod(absoltueSymlinkPath, 0o755);
                 }
-                console.log(`${green('✔')} Hook installed`);
+                console.log(`${chalk.green('✔')} Hook installed`);
                 return;
             }
 
@@ -81,13 +81,13 @@ export default command(
                 }
 
                 await fs.rm(absoltueSymlinkPath);
-                console.log(`${green('✔')} Hook uninstalled`);
+                console.log(`${chalk.green('✔')} Hook uninstalled`);
                 return;
             }
 
             throw new KnownError(`Invalid mode: ${mode}`);
         })().catch(error => {
-            console.error(`${red('✖')} ${error.message}`);
+            console.error(`${chalk.red('✖')} ${error.message}`);
             handleCliError(error);
             process.exit(1);
         });

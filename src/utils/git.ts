@@ -1,6 +1,11 @@
 import { execa } from 'execa';
 import { KnownError } from './error.js';
 
+export interface StagedDiff {
+    files: string[];
+    diff: string;
+}
+
 export const assertGitRepo = async () => {
     const { stdout, failed } = await execa('git', ['rev-parse', '--show-toplevel'], { reject: false });
 
@@ -21,7 +26,7 @@ const filesToExclude = [
     '*.lock',
 ].map(excludeFromDiff);
 
-export const getStagedDiff = async (excludeFiles?: string[]) => {
+export const getStagedDiff = async (excludeFiles?: string[]): Promise<StagedDiff | null> => {
     const diffCached = ['diff', '--cached', '--diff-algorithm=minimal'];
     const { stdout: files } = await execa('git', [
         ...diffCached,
@@ -31,7 +36,7 @@ export const getStagedDiff = async (excludeFiles?: string[]) => {
     ]);
 
     if (!files) {
-        return;
+        return null;
     }
 
     const { stdout: diff } = await execa('git', [
