@@ -39,6 +39,18 @@ const configParsers = {
         }
         return key;
     },
+    CLAUDE_MODEL(model?: string) {
+        if (!model || model.length === 0) {
+            return 'claude-2.1';
+        }
+        return model;
+    },
+    CLAUDE_KEY(key?: string) {
+        if (!key) {
+            return '';
+        }
+        return key;
+    },
     confirm(confirm?: 'true' | 'false') {
         if (!confirm) {
             return true;
@@ -92,7 +104,7 @@ const configParsers = {
     },
     timeout(timeout?: string) {
         if (!timeout) {
-            return 10_000;
+            return 30_000;
         }
 
         parseAssert('timeout', /^\d+$/.test(timeout), 'Must be an integer');

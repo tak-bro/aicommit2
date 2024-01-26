@@ -10,11 +10,10 @@ import { KnownError } from './error.js';
 import type { CommitType } from './config.js';
 import { generatePrompt } from './prompt.js';
 
-const httpsPost = async (
+export const httpsGet = async (
     hostname: string,
     path: string,
     headers: Record<string, string>,
-    json: unknown,
     timeout: number,
     proxy?: string
 ) =>
@@ -23,17 +22,14 @@ const httpsPost = async (
         response: IncomingMessage;
         data: string;
     }>((resolve, reject) => {
-        const postContent = JSON.stringify(json);
         const request = https.request(
             {
-                port: 443,
                 hostname,
                 path,
-                method: 'POST',
+                method: 'GET',
                 headers: {
-                    ...headers,
                     'Content-Type': 'application/json',
-                    'Content-Length': Buffer.byteLength(postContent),
+                    ...headers,
                 },
                 timeout,
                 agent: proxy ? createHttpsProxyAgent(proxy) : undefined,
@@ -54,9 +50,58 @@ const httpsPost = async (
         request.on('timeout', () => {
             request.destroy();
             reject(
-                new KnownError(
-                    `Time out error: request took over ${timeout}ms. Try increasing the \`timeout\` config, or checking the OpenAI API status https://status.openai.com`
-                )
+                new KnownError(`Time out error: request took over ${timeout}ms. Try increasing the \`timeout\` config`)
+            );
+        });
+        request.end();
+    });
+
+export const httpsPost = async (
+    hostname: string,
+    path: string,
+    headers: Record<string, string>,
+    json: unknown,
+    timeout: number,
+    proxy?: string,
+    port?: number
+) =>
+    new Promise<{
+        request: ClientRequest;
+        response: IncomingMessage;
+        data: string;
+    }>((resolve, reject) => {
+        const postContent = JSON.stringify(json);
+        const request = https.request(
+            {
+                port: port ? port : undefined,
+                hostname,
+                path,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Content-Length': Buffer.byteLength(postContent),
+                    ...headers,
+                },
+                timeout,
+                agent: proxy ? createHttpsProxyAgent(proxy) : undefined,
+            },
+            response => {
+                const body: Buffer[] = [];
+                response.on('data', chunk => body.push(chunk));
+                response.on('end', () => {
+                    resolve({
+                        request,
+                        response,
+                        data: Buffer.concat(body).toString(),
+                    });
+                });
+            }
+        );
+        request.on('error', reject);
+        request.on('timeout', () => {
+            request.destroy();
+            reject(
+                new KnownError(`Time out error: request took over ${timeout}ms. Try increasing the \`timeout\` config`)
             );
         });
 

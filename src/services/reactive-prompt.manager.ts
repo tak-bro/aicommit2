@@ -7,6 +7,7 @@ import { StagedDiff } from '../utils/git.js';
 import { AIFactoryParams, AIServiceFactory, AIType, ApiKeyName } from './ai/ai-service.factory.js';
 import { OpenAIService } from './ai/openai.service.js';
 import { GoogleService } from './ai/google.service.js';
+import { ClaudeAIService } from './ai/claudeai.service.js';
 
 const defaultLoader = {
     isLoading: false,
@@ -85,12 +86,13 @@ export class ReactivePromptManager {
                     config: this.config,
                     stagedDiff: this.stagedDiff,
                 };
-
                 switch (ai) {
                     case AIType.OPEN_AI:
                         return AIServiceFactory.create(OpenAIService, params).generateCommitMessage$();
                     case AIType.GOOGLE:
                         return AIServiceFactory.create(GoogleService, params).generateCommitMessage$();
+                    case AIType.CLAUDE:
+                        return AIServiceFactory.create(ClaudeAIService, params).generateCommitMessage$();
                     case 'TEST':
                         return of({
                             name: `[TEST] feat: this is test message`,

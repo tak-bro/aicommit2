@@ -9,10 +9,6 @@ import { LogManager } from '../services/log.manager.js';
 import { ReactivePromptManager } from '../services/reactive-prompt.manager.js';
 import { ApiKeyName } from '../services/ai/ai-service.factory.js';
 
-export const createAsyncDelay = (duration: number) => {
-    return new Promise<void>(resolve => setTimeout(() => resolve(), duration));
-};
-
 const logManager = new LogManager();
 
 export default async (
@@ -45,6 +41,8 @@ export default async (
         const config = await getConfig({
             OPENAI_KEY: env.OPENAI_KEY || env.OPENAI_API_KEY,
             OPENAI_MODEL: env.OPENAI_MODEL || env['openai-model'] || env['openai_model'],
+            CLAUDE_KEY: env.CLAUDE_KEY || env.CLAUDE_API_KEY,
+            CLAUDE_MODEL: env.CLAUDE_MODEL || env['claude-model'],
             GOOGLE_KEY: env.GOOGLE_KEY || env.GOOGLE_API_KEY,
             proxy: env.https_proxy || env.HTTPS_PROXY || env.http_proxy || env.HTTP_PROXY,
             generate: generate?.toString(),
@@ -53,7 +51,7 @@ export default async (
         });
 
         const availableAPIKeyNames: ApiKeyName[] = Object.entries(config)
-            .filter(([key]) => ['OPENAI_KEY', 'GOOGLE_KEY'].includes(key))
+            .filter(([key]) => ['OPENAI_KEY', 'GOOGLE_KEY', 'CLAUDE_KEY'].includes(key))
             .filter(([_, value]) => !!value)
             .map(([key]) => key as ApiKeyName);
 
