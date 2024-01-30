@@ -180,7 +180,7 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 | `proxy`             | N/A                                    | Set a HTTP/HTTPS proxy to use for requests(only **OpenAI**).                 |
 | `timeout`           | `10000` ms                             | Network request timeout                                                      |
 | `max-length`        | `50`                                   | Maximum character length of the generated commit message.                    |
-| `max-tokens`        | `50`                                   | The maximum number of tokens that the AI models can generate.                |
+| `max-tokens`        | `200`                                  | The maximum number of tokens that the AI models can generate.                |
 | `temperature`       | `0.7`                                  | The temperature (0.0-2.0) is used to control the randomness of the output    |
 
 
