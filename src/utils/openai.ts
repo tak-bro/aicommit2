@@ -8,7 +8,7 @@ import {
 import createHttpsProxyAgent from 'https-proxy-agent';
 import { KnownError } from './error.js';
 import type { CommitType } from './config.js';
-import { generatePrompt } from './prompt.js';
+import { generatePrompt, isValidConventionalMessage, isValidGitmojiMessage } from './prompt.js';
 
 export const httpsGet = async (
     hostname: string,
@@ -149,7 +149,7 @@ const sanitizeMessage = (message: string) =>
         .replace(/[\n\r]/g, '')
         .replace(/(\w)\.$/, '$1');
 
-const deduplicateMessages = (array: string[]) => Array.from(new Set(array));
+export const deduplicateMessages = (array: string[]) => Array.from(new Set(array));
 
 // const generateStringFromLength = (length: number) => {
 // 	let result = '';
@@ -216,6 +216,27 @@ export const generateCommitMessage = async (
             completion.choices
                 .filter(choice => choice.message?.content)
                 .map(choice => sanitizeMessage(choice.message!.content))
+                .map(message => {
+                    if (type === 'conventional') {
+                        const regex = /: (\w)/;
+                        return message.replace(
+                            regex,
+                            (_: any, firstLetter: string) => `: ${firstLetter.toLowerCase()}`
+                        );
+                    }
+                    return message;
+                })
+                .filter((message: string) => {
+                    switch (type) {
+                        case 'gitmoji':
+                            return isValidGitmojiMessage(message);
+                        case 'conventional':
+                            return isValidConventionalMessage(message);
+                        case '':
+                        default:
+                            return true;
+                    }
+                })
         );
     } catch (error) {
         const errorAsAny = error as any;

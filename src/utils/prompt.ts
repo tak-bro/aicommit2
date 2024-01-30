@@ -34,7 +34,7 @@ const commitTypes: Record<CommitType, string> = {
         },
         null,
         2
-    )}\nThe first letter of the type and the description should be lowercase.`,
+    )}`,
 };
 
 export const generatePrompt = (locale: string, maxLength: number, type: CommitType) =>
@@ -48,3 +48,13 @@ export const generatePrompt = (locale: string, maxLength: number, type: CommitTy
     ]
         .filter(Boolean)
         .join('\n');
+
+export const isValidConventionalMessage = (message: string): boolean => {
+    const commitMessageRegex = /^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\([^)]*\))?: .{1,}$/;
+    return commitMessageRegex.test(message);
+};
+
+export const isValidGitmojiMessage = (message: string): boolean => {
+    const gitmojiCommitMessageRegex = /^(:(\w+): )?.{1,}$/;
+    return gitmojiCommitMessageRegex.test(message);
+};

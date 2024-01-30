@@ -8,6 +8,7 @@ import { AIFactoryParams, AIServiceFactory, AIType, ApiKeyName } from './ai/ai-s
 import { OpenAIService } from './ai/openai.service.js';
 import { GoogleService } from './ai/google.service.js';
 import { ClaudeAIService } from './ai/claudeai.service.js';
+import { HuggingService } from './ai/hugging.service.js';
 
 const defaultLoader = {
     isLoading: false,
@@ -80,7 +81,7 @@ export class ReactivePromptManager {
     }
 
     createAvailableAIRequests$(availableKeyNames: ApiKeyName[]) {
-        return from([...availableKeyNames, 'TEST', 'ERROR']).pipe(
+        return from(availableKeyNames).pipe(
             mergeMap(ai => {
                 const params: AIFactoryParams = {
                     config: this.config,
@@ -93,11 +94,8 @@ export class ReactivePromptManager {
                         return AIServiceFactory.create(GoogleService, params).generateCommitMessage$();
                     case AIType.CLAUDE:
                         return AIServiceFactory.create(ClaudeAIService, params).generateCommitMessage$();
-                    case 'TEST':
-                        return of({
-                            name: `[TEST] feat: this is test message`,
-                            value: 'test message',
-                        });
+                    case AIType.HUGGING:
+                        return AIServiceFactory.create(HuggingService, params).generateCommitMessage$();
                     default:
                         const prefixError = chalk.red.bold(`[${ai}]`);
                         return of({

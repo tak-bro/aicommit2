@@ -51,6 +51,28 @@ const configParsers = {
         }
         return key;
     },
+    HUGGING_KEY(key?: string) {
+        if (!key) {
+            return '';
+        }
+        return key;
+    },
+    HUGGING_MODEL(model?: string) {
+        if (!model || model.length === 0) {
+            return `mistralai/Mixtral-8x7B-Instruct-v0.1`;
+        }
+        const supportModels = [
+            'mistralai/Mixtral-8x7B-Instruct-v0.1',
+            'meta-llama/Llama-2-70b-chat-hf',
+            'NousResearch/Nous-Hermes-2-Mixtral-8x7B-DPO',
+            'codellama/CodeLlama-34b-Instruct-hf',
+            'mistralai/Mistral-7B-Instruct-v0.2',
+            'openchat/openchat-3.5-0106',
+        ];
+
+        parseAssert('HUGGING_MODEL', supportModels.includes(model), 'Invalid model type of hugging');
+        return model;
+    },
     confirm(confirm?: 'true' | 'false') {
         if (!confirm) {
             return true;

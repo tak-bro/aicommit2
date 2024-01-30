@@ -1,10 +1,10 @@
 import chalk from 'chalk';
-import { catchError, concatMap, from, map, Observable, of } from 'rxjs';
+import { catchError, concatMap, from, map, Observable } from 'rxjs';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 import { CommitType } from '../../utils/config.js';
 import { KnownError } from '../../utils/error.js';
-import { AIFactoryParams, AIService, AIServiceError } from './ai-service.factory.js';
+import { AIFactoryParams, AIService } from './ai-service.factory.js';
 import { httpsGet, httpsPost } from '../../utils/openai.js';
 import { v4 as uuidv4 } from 'uuid';
 import { generatePrompt } from '../../utils/prompt.js';
@@ -27,10 +27,12 @@ export class ClaudeAIService extends AIService {
 
     constructor(private readonly params: AIFactoryParams) {
         super(params);
-        const claudeColors = {
+        this.colors = {
             primary: '#CC9B7A',
+            secondary: '#000',
         };
-        this.serviceName = chalk.bgHex(claudeColors.primary).hex('#000').bold('[ClaudeAI]');
+        this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold('[ClaudeAI]');
+        this.errorPrefix = chalk.red.bold(`[ClaudeAI]`);
         this.requestHeaders = { ...this.requestHeaders, Cookie: `${this.params.config.CLAUDE_KEY}` };
     }
 
@@ -54,19 +56,6 @@ export class ClaudeAIService extends AIService {
             catchError(this.handleError$)
         );
     }
-
-    handleError$ = (error: AIServiceError) => {
-        const errorAI = chalk.red.bold(`[ClaudeAI]`);
-        let simpleMessage = 'An error occurred';
-        if (error.message) {
-            simpleMessage = error.message;
-        }
-        return of({
-            name: `${errorAI} ${simpleMessage}`,
-            value: simpleMessage,
-            isError: true,
-        });
-    };
 
     private generateClaudePrompt(
         locale: string,
@@ -125,12 +114,13 @@ export class ClaudeAIService extends AIService {
         proxy?: string
     ) {
         try {
-            return ['refactor(claudeai): extract prompt generation', 'refactor(claudeai): simplify message parsing'];
+            return ['TODO: implement claudeai service'];
+            // return ['refactor(claudeai): extract prompt generation', 'refactor(claudeai): simplify message parsing'];
             const organizationId = await this.getOrganizationId();
             const conversationId = await this.getConversationId(organizationId);
             const prompt = this.generateClaudePrompt(locale, diff, completions, maxLength, type);
             const response = await this.sendPrompt(prompt, organizationId, conversationId);
-            const sanitizeMessage = await this.sanitizeMessage(`${response}`);
+            const sanitizeMessage = await this.sanitizeMessage(response);
             return sanitizeMessage;
         } catch (error) {
             const errorAsAny = error as any;
@@ -199,7 +189,7 @@ export class ClaudeAIService extends AIService {
             'Sec-Fetch-Dest': 'empty',
             TE: 'trailers',
         };
-        const payload = JSON.stringify({ uuid: this.generateUUID(), name: '' });
+        const payload = { uuid: this.generateUUID(), name: '' };
         const result = await httpsPost(
             'claude.ai',
             `/api/organizations/${organizationId}/chat_conversations`,

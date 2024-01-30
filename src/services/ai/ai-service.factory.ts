@@ -1,14 +1,16 @@
 import { ValidConfig } from '../../utils/config.js';
 import { StagedDiff } from '../../utils/git.js';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 
 export const AIType = {
     OPEN_AI: 'OPENAI_KEY',
     GOOGLE: 'GOOGLE_KEY',
     CLAUDE: 'CLAUDE_KEY',
+    HUGGING: 'HUGGING_KEY',
 } as const;
 export type ApiKeyName = (typeof AIType)[keyof typeof AIType];
+export const ApiKeyNames: ApiKeyName[] = Object.values(AIType).map(value => value);
 
 export interface AIFactoryParams {
     config: ValidConfig;
@@ -25,13 +27,31 @@ export class AIServiceFactory {
     }
 }
 
+export type Theme = any;
+
 export abstract class AIService {
     protected serviceName: string;
+    protected errorPrefix: string;
+    protected colors: Theme;
 
     protected constructor(params: AIFactoryParams) {
         this.serviceName = 'AI';
+        this.errorPrefix = 'ERROR';
+        this.colors = {
+            primary: '',
+        };
     }
 
     abstract generateCommitMessage$(): Observable<ReactiveListChoice>;
-    abstract handleError$(error: AIServiceError): Observable<ReactiveListChoice>;
+    protected handleError$ = (error: AIServiceError): Observable<ReactiveListChoice> => {
+        let simpleMessage = 'An error occurred';
+        if (error.message) {
+            simpleMessage = error.message;
+        }
+        return of({
+            name: `${this.errorPrefix} ${simpleMessage}`,
+            value: simpleMessage,
+            isError: true,
+        });
+    };
 }

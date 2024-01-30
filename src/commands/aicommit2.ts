@@ -7,7 +7,7 @@ import ora from 'ora';
 import inquirer from 'inquirer';
 import { LogManager } from '../services/log.manager.js';
 import { ReactivePromptManager } from '../services/reactive-prompt.manager.js';
-import { ApiKeyName } from '../services/ai/ai-service.factory.js';
+import { ApiKeyName, ApiKeyNames } from '../services/ai/ai-service.factory.js';
 
 const logManager = new LogManager();
 
@@ -43,6 +43,8 @@ export default async (
             OPENAI_MODEL: env.OPENAI_MODEL || env['openai-model'] || env['openai_model'],
             CLAUDE_KEY: env.CLAUDE_KEY || env.CLAUDE_API_KEY,
             CLAUDE_MODEL: env.CLAUDE_MODEL || env['claude-model'],
+            HUGGING_KEY: env.HUGGING_KEY || env.HUGGING_API_KEY || env.HF_TOKEN,
+            HUGGING_MODEL: env.HUGGING_MODEL || env['hugging-model'],
             GOOGLE_KEY: env.GOOGLE_KEY || env.GOOGLE_API_KEY,
             proxy: env.https_proxy || env.HTTPS_PROXY || env.http_proxy || env.HTTP_PROXY,
             generate: generate?.toString(),
@@ -51,7 +53,7 @@ export default async (
         });
 
         const availableAPIKeyNames: ApiKeyName[] = Object.entries(config)
-            .filter(([key]) => ['OPENAI_KEY', 'GOOGLE_KEY', 'CLAUDE_KEY'].includes(key))
+            .filter(([key]) => ApiKeyNames.includes(key as ApiKeyName))
             .filter(([_, value]) => !!value)
             .map(([key]) => key as ApiKeyName);
 

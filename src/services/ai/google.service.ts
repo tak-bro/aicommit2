@@ -91,7 +91,7 @@ export class GoogleService extends AIService {
                     maxResults: completions,
                 }
             );
-            return ['chore: temp message'];
+            return ['TODO: implement google service'];
         } catch (error) {
             const errorAsAny = error as any;
             if (errorAsAny.code === 'ENOTFOUND') {
