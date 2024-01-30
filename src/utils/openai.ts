@@ -181,11 +181,11 @@ export const generateCommitMessage = async (
     temperature: number,
     proxy?: string
 ) => {
-    // return [
-    //     'fix(temp): fix cli argument type',
-    //     'feat(temp): add confirm configuration',
-    //     'refactor(temp): modify chatGPT message generation',
-    // ];
+    return [
+        'fix(temp): fix cli argument type',
+        'feat(temp): add confirm configuration',
+        'refactor(temp): modify chatGPT message generation',
+    ];
 
     try {
         const completion = await createChatCompletion(

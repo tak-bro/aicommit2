@@ -38,6 +38,8 @@ export class HuggingService extends AIService {
 
     private async generateMessage(): Promise<string[]> {
         try {
+            return ['test: test'];
+
             const { locale, generate, type } = this.params.config;
             const maxLength = this.params.config['max-length'];
             const diff = this.params.stagedDiff.diff;

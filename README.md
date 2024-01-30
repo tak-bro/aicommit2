@@ -167,21 +167,22 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 
 > This is an ongoing project currently in preparation.
 
-| Option              | Default                                | Description                                                                  |
-|---------------------|----------------------------------------|------------------------------------------------------------------------------|
-| `OPENAI_KEY`        | N/A                                    | The OpenAI API key.                                                          |
-| `OPENAI_MODEL`      | `gpt-3.5-turbo`                        | The OpenAI Model to use.                                                     |
-| `HUGGING_KEY`       | N/A                                    | The HuggingFace Cookie string                                                |
-| `HUGGING_MODEL`     | `mistralai/Mixtral-8x7B-Instruct-v0.1` | The HuggingFace Model to use.                                                |
-| `confirm`           | `true`                                 | Check again when committing after message generation                         |
-| `locale`            | `en`                                   | Locale for the generated commit messages.                                    |
-| `generate`          | `1`                                    | Number of commit messages to generate.                                       |
-| `type`              | `conventional`                         | Type of commit message to generate.                                          |
-| `proxy`             | N/A                                    | Set a HTTP/HTTPS proxy to use for requests(only **OpenAI**).                 |
-| `timeout`           | `10000` ms                             | Network request timeout                                                      |
-| `max-length`        | `50`                                   | Maximum character length of the generated commit message.                    |
-| `max-tokens`        | `200`                                  | The maximum number of tokens that the AI models can generate.                |
-| `temperature`       | `0.7`                                  | The temperature (0.0-2.0) is used to control the randomness of the output    |
+| Option          | Default                                | Description                                                                 |
+|-----------------|----------------------------------------|-----------------------------------------------------------------------------|
+| `OPENAI_KEY`    | N/A                                    | The OpenAI API key.                                                         |
+| `OPENAI_MODEL`  | `gpt-3.5-turbo`                        | The OpenAI Model to use.                                                    |
+| `HUGGING_KEY`   | N/A                                    | The HuggingFace Cookie string                                               |
+| `HUGGING_MODEL` | `mistralai/Mixtral-8x7B-Instruct-v0.1` | The HuggingFace Model to use.                                               |
+| `confirm`       | `false`                                | Skip confirmation when committing after message generation (default: false) |
+| `clipboard`     | `false`                                | Copy the selected message to the clipboard                                  |
+| `locale`        | `en`                                   | Locale for the generated commit messages.                                   |
+| `generate`      | `1`                                    | Number of commit messages to generate.                                      |
+| `type`          | `conventional`                         | Type of commit message to generate.                                         |
+| `proxy`         | N/A                                    | Set a HTTP/HTTPS proxy to use for requests(only **OpenAI**).                |
+| `timeout`       | `10000` ms                             | Network request timeout                                                     |
+| `max-length`    | `50`                                   | Maximum character length of the generated commit message.                   |
+| `max-tokens`    | `200`                                  | The maximum number of tokens that the AI models can generate.               |
+| `temperature`   | `0.7`                                  | The temperature (0.0-2.0) is used to control the randomness of the output   |
 
 
 ### Options

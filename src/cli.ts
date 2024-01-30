@@ -45,10 +45,16 @@ cli(
                 default: 'conventional',
             },
             confirm: {
-                type: String,
-                description: 'Check again when committing after message generation (default: true)',
+                type: Boolean,
+                description: 'Skip confirmation when committing after message generation (default: false)',
+                alias: 'y',
+                default: false,
+            },
+            clipboard: {
+                type: Boolean,
+                description: 'Copy the selected message to the clipboard',
                 alias: 'c',
-                default: 'true',
+                default: false,
             },
         },
 
@@ -72,6 +78,7 @@ cli(
             argv.flags.all,
             argv.flags.type,
             argv.flags.confirm,
+            argv.flags.clipboard,
             rawArgv
         );
     },

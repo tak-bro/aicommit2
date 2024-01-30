@@ -73,11 +73,16 @@ const configParsers = {
         }
         return key;
     },
-    confirm(confirm?: 'true' | 'false') {
+    confirm(confirm?: string | boolean) {
         if (!confirm) {
-            return true;
+            return false;
         }
 
+        if (typeof confirm === 'boolean') {
+            return confirm;
+        }
+
+        parseAssert('confirm', /^(?:true|false)$/.test(confirm), 'Must be a boolean');
         return confirm === 'true';
     },
     locale(locale?: string) {
