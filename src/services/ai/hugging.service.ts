@@ -164,7 +164,7 @@ export class HuggingService extends AIService {
                 parameters: {
                     temperature: 0.7,
                     truncate: 1000,
-                    max_new_tokens: 1024,
+                    max_new_tokens: this.params.config['max-tokens'],
                     stop: ['</s>'],
                     top_p: 0.95,
                     repetition_penalty: 1.2,

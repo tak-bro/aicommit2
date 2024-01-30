@@ -191,6 +191,8 @@ Set a HTTP/HTTPS proxy to use for requests.
 
 To clear the proxy option, you can use the command (note the empty value after the equals sign):
 
+> Only supported within the OpenAI
+
 ```sh
 aicommit2 config set proxy=
 ```
@@ -247,6 +249,15 @@ You can clear this option by setting it to an empty string:
 
 ```sh
 aicommit2 config set type=
+```
+
+#### max-tokens
+The maximum number of tokens that the AI models can generate.
+
+Default: `200`
+
+```sh
+aicommit2 config set max-tokens=1000
 ```
 
 ## How it works
