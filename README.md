@@ -163,6 +163,27 @@ You can also set multiple configuration options at once by separating them with 
 aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 ```
 
+### All Options
+
+> This is an ongoing project currently in preparation.
+
+| Option              | Default                                | Description                                                                  |
+|---------------------|----------------------------------------|------------------------------------------------------------------------------|
+| `OPENAI_KEY`        | N/A                                    | The OpenAI API key.                                                          |
+| `OPENAI_MODEL`      | `gpt-3.5-turbo`                        | The OpenAI Model to use.                                                     |
+| `HUGGING_KEY`       | N/A                                    | The HuggingFace Cookie string                                                |
+| `HUGGING_MODEL`     | `mistralai/Mixtral-8x7B-Instruct-v0.1` | The HuggingFace Model to use.                                                |
+| `confirm`           | `true`                                 | Check again when committing after message generation                         |
+| `locale`            | `en`                                   | Locale for the generated commit messages.                                    |
+| `generate`          | `1`                                    | Number of commit messages to generate.                                       |
+| `type`              | `conventional`                         | Type of commit message to generate.                                          |
+| `proxy`             | N/A                                    | Set a HTTP/HTTPS proxy to use for requests(only **OpenAI**).                 |
+| `timeout`           | `10000` ms                             | Network request timeout                                                      |
+| `max-length`        | `50`                                   | Maximum character length of the generated commit message.                    |
+| `max-tokens`        | `50`                                   | The maximum number of tokens that the AI models can generate.                |
+| `temperature`       | `0.7`                                  | The temperature (0.0-2.0) is used to control the randomness of the output    |
+
+
 ### Options
 
 #### OPENAI_KEY
@@ -203,7 +224,7 @@ Default: true
 
 Check again when committing after message generation
 
-#### openai-model
+#### OPENAI_MODEL
 
 Default: `gpt-3.5-turbo`
 
@@ -212,7 +233,7 @@ The Chat Completions (`/v1/chat/completions`) model to use. Consult the list of 
 > Tip: If you have access, try upgrading to [`gpt-4`](https://platform.openai.com/docs/models/gpt-4) for next-level code analysis. It can handle double the input size, but comes at a higher cost. Check out OpenAI's website to learn more.
 
 ```sh
-aicommit2 config set openai-model=gpt-4
+aicommit2 config set OPENAI_MODEL=gpt-4
 ```
 
 #### timeout

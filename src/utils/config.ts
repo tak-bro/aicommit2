@@ -33,24 +33,6 @@ const configParsers = {
 
         return model as TiktokenModel;
     },
-    GOOGLE_KEY(key?: string) {
-        if (!key) {
-            return '';
-        }
-        return key;
-    },
-    CLAUDE_MODEL(model?: string) {
-        if (!model || model.length === 0) {
-            return 'claude-2.1';
-        }
-        return model;
-    },
-    CLAUDE_KEY(key?: string) {
-        if (!key) {
-            return '';
-        }
-        return key;
-    },
     HUGGING_KEY(key?: string) {
         if (!key) {
             return '';
@@ -72,6 +54,24 @@ const configParsers = {
 
         parseAssert('HUGGING_MODEL', supportModels.includes(model), 'Invalid model type of hugging');
         return model;
+    },
+    GOOGLE_KEY(key?: string) {
+        if (!key) {
+            return '';
+        }
+        return key;
+    },
+    CLAUDE_MODEL(model?: string) {
+        if (!model || model.length === 0) {
+            return 'claude-2.1';
+        }
+        return model;
+    },
+    CLAUDE_KEY(key?: string) {
+        if (!key) {
+            return '';
+        }
+        return key;
     },
     confirm(confirm?: 'true' | 'false') {
         if (!confirm) {
@@ -108,7 +108,7 @@ const configParsers = {
     },
     type(type?: CommitType) {
         if (!type) {
-            return '';
+            return 'conventional';
         }
 
         parseAssert('type', commitTypes.includes(type as CommitType), 'Invalid commit type');
@@ -126,13 +126,26 @@ const configParsers = {
     },
     timeout(timeout?: string) {
         if (!timeout) {
-            return 30_000;
+            return 10_000;
         }
 
         parseAssert('timeout', /^\d+$/.test(timeout), 'Must be an integer');
 
         const parsed = Number(timeout);
         parseAssert('timeout', parsed >= 500, 'Must be greater than 500ms');
+
+        return parsed;
+    },
+    temperature(temperature?: string) {
+        if (!temperature) {
+            return 0.7;
+        }
+
+        parseAssert('temperature', /^(2|\d)(\.\d{1,2})?$/.test(temperature), 'Must be decimal between 0 and 2');
+
+        const parsed = Number(temperature);
+        parseAssert('temperature', parsed > 0.0, 'Must be greater than 0');
+        parseAssert('temperature', parsed <= 2.0, 'Must be less than or equal to 2');
 
         return parsed;
     },

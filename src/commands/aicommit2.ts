@@ -48,6 +48,7 @@ export default async (
             HUGGING_MODEL: env.HUGGING_MODEL || env['hugging-model'],
             GOOGLE_KEY: env.GOOGLE_KEY || env.GOOGLE_API_KEY,
             proxy: env.https_proxy || env.HTTPS_PROXY || env.http_proxy || env.HTTP_PROXY,
+            temperature: env.temperature,
             generate: generate?.toString(),
             type: commitType?.toString(),
             confirm: confirm?.toString(),

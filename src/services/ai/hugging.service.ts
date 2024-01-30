@@ -162,7 +162,7 @@ export class HuggingService extends AIService {
             body: JSON.stringify({
                 inputs: message,
                 parameters: {
-                    temperature: 0.7,
+                    temperature: this.params.config.temperature,
                     truncate: 1000,
                     max_new_tokens: this.params.config['max-tokens'],
                     stop: ['</s>'],

@@ -178,6 +178,7 @@ export const generateCommitMessage = async (
     type: CommitType,
     timeout: number,
     maxTokens: number,
+    temperature: number,
     proxy?: string
 ) => {
     // return [
@@ -201,7 +202,7 @@ export const generateCommitMessage = async (
                         content: diff,
                     },
                 ],
-                temperature: 0.7,
+                temperature,
                 top_p: 1,
                 frequency_penalty: 0,
                 presence_penalty: 0,
