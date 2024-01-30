@@ -17,6 +17,11 @@ cli(
          * https://git-scm.com/docs/git-commit
          */
         flags: {
+            locale: {
+                type: String,
+                description: 'Locale to use for the generated commit messages (default: en)',
+                alias: 'l',
+            },
             generate: {
                 type: Number,
                 description: 'Number of messages to generate (Warning: generating multiple costs more) (default: 1)',
@@ -61,6 +66,7 @@ cli(
             return;
         }
         aicommit2(
+            argv.flags.locale,
             argv.flags.generate,
             argv.flags.exclude,
             argv.flags.all,

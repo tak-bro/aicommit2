@@ -12,6 +12,7 @@ import { ApiKeyName, ApiKeyNames } from '../services/ai/ai-service.factory.js';
 const logManager = new LogManager();
 
 export default async (
+    locale: string | undefined,
     generate: number | undefined,
     excludeFiles: string[],
     stageAll: boolean,
@@ -50,6 +51,7 @@ export default async (
             generate: generate?.toString(),
             type: commitType?.toString(),
             confirm: confirm?.toString(),
+            locale: locale?.toString() || env.locale,
         });
 
         const availableAPIKeyNames: ApiKeyName[] = Object.entries(config)

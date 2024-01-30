@@ -175,7 +175,7 @@ The OpenAI API key. You can retrieve it from [OpenAI API Keys page](https://plat
 
 Default: `en`
 
-The locale to use for the generated commit messages. Consult the list of codes in: https://wikipedia.org/wiki/List_of_ISO_639-1_codes.
+The locale to use for the generated commit messages. Consult the list of codes in: https://wikipedia.org/wiki/List_of_ISO_639_language_codes.
 
 #### generate
 
