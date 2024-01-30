@@ -46,6 +46,8 @@ export default () =>
                 config['max-length'],
                 config.type,
                 config.timeout,
+                config['max-tokens'],
+                config.temperature,
                 config.proxy
             );
         } finally {

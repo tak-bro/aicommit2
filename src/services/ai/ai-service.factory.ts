@@ -5,8 +5,6 @@ import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 
 export const AIType = {
     OPEN_AI: 'OPENAI_KEY',
-    GOOGLE: 'GOOGLE_KEY',
-    CLAUDE: 'CLAUDE_KEY',
     HUGGING: 'HUGGING_KEY',
 } as const;
 export type ApiKeyName = (typeof AIType)[keyof typeof AIType];
