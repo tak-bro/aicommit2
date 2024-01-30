@@ -5,7 +5,7 @@ import { createFixture as createFixtureBase, type FileTree, type FsFixture } fro
 
 const aicommit2Path = path.resolve('./dist/cli.mjs');
 
-const createaicommit2 = (fixture: FsFixture) => {
+const createAicommit2 = (fixture: FsFixture) => {
     const homeEnv = {
         HOME: fixture.path, // Linux
         USERPROFILE: fixture.path, // Windows
@@ -46,7 +46,7 @@ export const createGit = async (cwd: string) => {
 
 export const createFixture = async (source?: string | FileTree) => {
     const fixture = await createFixtureBase(source);
-    const aicommit2 = createaicommit2(fixture);
+    const aicommit2 = createAicommit2(fixture);
 
     return {
         fixture,

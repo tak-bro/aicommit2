@@ -163,6 +163,28 @@ You can also set multiple configuration options at once by separating them with 
 aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 ```
 
+### All Options
+
+> This is an ongoing project currently in preparation.
+
+| Option          | Default                                | Description                                                                 |
+|-----------------|----------------------------------------|-----------------------------------------------------------------------------|
+| `OPENAI_KEY`    | N/A                                    | The OpenAI API key.                                                         |
+| `OPENAI_MODEL`  | `gpt-3.5-turbo`                        | The OpenAI Model to use.                                                    |
+| `HUGGING_KEY`   | N/A                                    | The HuggingFace Cookie string                                               |
+| `HUGGING_MODEL` | `mistralai/Mixtral-8x7B-Instruct-v0.1` | The HuggingFace Model to use.                                               |
+| `confirm`       | `false`                                | Skip confirmation when committing after message generation (default: false) |
+| `clipboard`     | `false`                                | Copy the selected message to the clipboard                                  |
+| `locale`        | `en`                                   | Locale for the generated commit messages.                                   |
+| `generate`      | `1`                                    | Number of commit messages to generate.                                      |
+| `type`          | `conventional`                         | Type of commit message to generate.                                         |
+| `proxy`         | N/A                                    | Set a HTTP/HTTPS proxy to use for requests(only **OpenAI**).                |
+| `timeout`       | `10000` ms                             | Network request timeout                                                     |
+| `max-length`    | `50`                                   | Maximum character length of the generated commit message.                   |
+| `max-tokens`    | `200`                                  | The maximum number of tokens that the AI models can generate.               |
+| `temperature`   | `0.7`                                  | The temperature (0.0-2.0) is used to control the randomness of the output   |
+
+
 ### Options
 
 #### OPENAI_KEY
@@ -175,7 +197,7 @@ The OpenAI API key. You can retrieve it from [OpenAI API Keys page](https://plat
 
 Default: `en`
 
-The locale to use for the generated commit messages. Consult the list of codes in: https://wikipedia.org/wiki/List_of_ISO_639-1_codes.
+The locale to use for the generated commit messages. Consult the list of codes in: https://wikipedia.org/wiki/List_of_ISO_639_language_codes.
 
 #### generate
 
@@ -191,6 +213,8 @@ Set a HTTP/HTTPS proxy to use for requests.
 
 To clear the proxy option, you can use the command (note the empty value after the equals sign):
 
+> Only supported within the OpenAI
+
 ```sh
 aicommit2 config set proxy=
 ```
@@ -201,7 +225,7 @@ Default: true
 
 Check again when committing after message generation
 
-#### openai-model
+#### OPENAI_MODEL
 
 Default: `gpt-3.5-turbo`
 
@@ -210,7 +234,7 @@ The Chat Completions (`/v1/chat/completions`) model to use. Consult the list of 
 > Tip: If you have access, try upgrading to [`gpt-4`](https://platform.openai.com/docs/models/gpt-4) for next-level code analysis. It can handle double the input size, but comes at a higher cost. Check out OpenAI's website to learn more.
 
 ```sh
-aicommit2 config set openai-model=gpt-4
+aicommit2 config set OPENAI_MODEL=gpt-4
 ```
 
 #### timeout
@@ -247,6 +271,15 @@ You can clear this option by setting it to an empty string:
 
 ```sh
 aicommit2 config set type=
+```
+
+#### max-tokens
+The maximum number of tokens that the AI models can generate.
+
+Default: `200`
+
+```sh
+aicommit2 config set max-tokens=1000
 ```
 
 ## How it works

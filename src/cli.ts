@@ -17,6 +17,11 @@ cli(
          * https://git-scm.com/docs/git-commit
          */
         flags: {
+            locale: {
+                type: String,
+                description: 'Locale to use for the generated commit messages (default: en)',
+                alias: 'l',
+            },
             generate: {
                 type: Number,
                 description: 'Number of messages to generate (Warning: generating multiple costs more) (default: 1)',
@@ -40,10 +45,16 @@ cli(
                 default: 'conventional',
             },
             confirm: {
-                type: String,
-                description: 'Check again when committing after message generation (default: true)',
+                type: Boolean,
+                description: 'Skip confirmation when committing after message generation (default: false)',
+                alias: 'y',
+                default: false,
+            },
+            clipboard: {
+                type: Boolean,
+                description: 'Copy the selected message to the clipboard',
                 alias: 'c',
-                default: 'true',
+                default: false,
             },
         },
 
@@ -61,11 +72,13 @@ cli(
             return;
         }
         aicommit2(
+            argv.flags.locale,
             argv.flags.generate,
             argv.flags.exclude,
             argv.flags.all,
             argv.flags.type,
             argv.flags.confirm,
+            argv.flags.clipboard,
             rawArgv
         );
     },

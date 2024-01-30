@@ -8,8 +8,11 @@ import { AIFactoryParams, AIService, AIServiceError } from './ai-service.factory
 export class OpenAIService extends AIService {
     constructor(private readonly params: AIFactoryParams) {
         super(params);
-        const chatGPTColors = { primary: '#74AA9C' };
-        this.serviceName = chalk.bgHex(chatGPTColors.primary).white.bold('[ChatGPT]');
+        this.colors = {
+            primary: '#74AA9C',
+            secondary: '#FFF',
+        };
+        this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold('[ChatGPT]');
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
@@ -23,6 +26,8 @@ export class OpenAIService extends AIService {
                 this.params.config['max-length'],
                 this.params.config.type,
                 this.params.config.timeout,
+                this.params.config['max-tokens'],
+                this.params.config.temperature,
                 this.params.config.proxy
             )
         ).pipe(

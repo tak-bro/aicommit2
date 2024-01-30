@@ -38,6 +38,8 @@ export class HuggingService extends AIService {
 
     private async generateMessage(): Promise<string[]> {
         try {
+            return ['test: test'];
+
             const { locale, generate, type } = this.params.config;
             const maxLength = this.params.config['max-length'];
             const diff = this.params.stagedDiff.diff;
@@ -162,9 +164,9 @@ export class HuggingService extends AIService {
             body: JSON.stringify({
                 inputs: message,
                 parameters: {
-                    temperature: 0.7,
+                    temperature: this.params.config.temperature,
                     truncate: 1000,
-                    max_new_tokens: 1024,
+                    max_new_tokens: this.params.config['max-tokens'],
                     stop: ['</s>'],
                     top_p: 0.95,
                     repetition_penalty: 1.2,

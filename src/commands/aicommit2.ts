@@ -12,11 +12,13 @@ import { ApiKeyName, ApiKeyNames } from '../services/ai/ai-service.factory.js';
 const logManager = new LogManager();
 
 export default async (
+    locale: string | undefined,
     generate: number | undefined,
     excludeFiles: string[],
     stageAll: boolean,
     commitType: string | undefined,
-    confirm: string | undefined,
+    confirm: boolean,
+    useClipboard: boolean,
     rawArgv: string[]
 ) =>
     (async () => {
@@ -47,9 +49,11 @@ export default async (
             HUGGING_MODEL: env.HUGGING_MODEL || env['hugging-model'],
             GOOGLE_KEY: env.GOOGLE_KEY || env.GOOGLE_API_KEY,
             proxy: env.https_proxy || env.HTTPS_PROXY || env.http_proxy || env.HTTP_PROXY,
-            generate: generate?.toString(),
-            type: commitType?.toString(),
-            confirm: confirm?.toString(),
+            temperature: env.temperature,
+            generate: generate?.toString() || env.generate,
+            type: commitType?.toString() || env.type,
+            locale: locale?.toString() || env.locale,
+            confirm: confirm || (env.confirm as any),
         });
 
         const availableAPIKeyNames: ApiKeyName[] = Object.entries(config)
@@ -78,7 +82,13 @@ export default async (
             throw new KnownError('An error occurred! No selected message');
         }
 
-        const withoutConfirm = !config.confirm;
+        if (useClipboard) {
+            // eslint-disable-next-line @typescript-eslint/no-var-requires
+            const ncp = require('copy-paste');
+            ncp.copy(chosenMessage);
+        }
+
+        const withoutConfirm = config.confirm;
         if (withoutConfirm) {
             const commitSpinner = ora('Committing with the generated message').start();
             // await execa('git', ['commit', '-m', chosenMessage, ...rawArgv]);

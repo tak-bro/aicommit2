@@ -177,13 +177,15 @@ export const generateCommitMessage = async (
     maxLength: number,
     type: CommitType,
     timeout: number,
+    maxTokens: number,
+    temperature: number,
     proxy?: string
 ) => {
-    // return [
-    //     'fix(temp): fix cli argument type',
-    //     'feat(temp): add confirm configuration',
-    //     'refactor(temp): modify chatGPT message generation',
-    // ];
+    return [
+        'fix(temp): fix cli argument type',
+        'feat(temp): add confirm configuration',
+        'refactor(temp): modify chatGPT message generation',
+    ];
 
     try {
         const completion = await createChatCompletion(
@@ -200,11 +202,11 @@ export const generateCommitMessage = async (
                         content: diff,
                     },
                 ],
-                temperature: 0.7,
+                temperature,
                 top_p: 1,
                 frequency_penalty: 0,
                 presence_penalty: 0,
-                max_tokens: 200,
+                max_tokens: maxTokens,
                 stream: false,
                 n: completions,
             },

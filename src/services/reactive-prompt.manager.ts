@@ -6,8 +6,6 @@ import chalk from 'chalk';
 import { StagedDiff } from '../utils/git.js';
 import { AIFactoryParams, AIServiceFactory, AIType, ApiKeyName } from './ai/ai-service.factory.js';
 import { OpenAIService } from './ai/openai.service.js';
-import { GoogleService } from './ai/google.service.js';
-import { ClaudeAIService } from './ai/claudeai.service.js';
 import { HuggingService } from './ai/hugging.service.js';
 
 const defaultLoader = {
@@ -90,10 +88,6 @@ export class ReactivePromptManager {
                 switch (ai) {
                     case AIType.OPEN_AI:
                         return AIServiceFactory.create(OpenAIService, params).generateCommitMessage$();
-                    case AIType.GOOGLE:
-                        return AIServiceFactory.create(GoogleService, params).generateCommitMessage$();
-                    case AIType.CLAUDE:
-                        return AIServiceFactory.create(ClaudeAIService, params).generateCommitMessage$();
                     case AIType.HUGGING:
                         return AIServiceFactory.create(HuggingService, params).generateCommitMessage$();
                     default:
