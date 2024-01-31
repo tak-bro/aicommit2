@@ -22,7 +22,7 @@ export class HuggingService extends AIService {
         };
         this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold('[HuggingFace]');
         this.errorPrefix = chalk.red.bold(`[HuggingFace]`);
-        this.cookie = this.params.config.HUGGING_KEY;
+        this.cookie = this.params.config.HUGGING_COOKIE;
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {

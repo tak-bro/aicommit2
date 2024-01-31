@@ -6,7 +6,7 @@ import { StagedDiff } from '../../utils/git.js';
 
 export const AIType = {
     OPEN_AI: 'OPENAI_KEY',
-    HUGGING: 'HUGGING_KEY',
+    HUGGING: 'HUGGING_COOKIE',
 } as const;
 export type ApiKeyName = (typeof AIType)[keyof typeof AIType];
 export const ApiKeyNames: ApiKeyName[] = Object.values(AIType).map(value => value);

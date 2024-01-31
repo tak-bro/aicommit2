@@ -43,11 +43,8 @@ export default async (
         const config = await getConfig({
             OPENAI_KEY: env.OPENAI_KEY || env.OPENAI_API_KEY,
             OPENAI_MODEL: env.OPENAI_MODEL || env['openai-model'] || env['openai_model'],
-            CLAUDE_KEY: env.CLAUDE_KEY || env.CLAUDE_API_KEY,
-            CLAUDE_MODEL: env.CLAUDE_MODEL || env['claude-model'],
-            HUGGING_KEY: env.HUGGING_KEY || env.HUGGING_API_KEY || env.HF_TOKEN,
+            HUGGING_COOKIE: env.HUGGING_COOKIE || env.HUGGING_API_KEY || env.HF_TOKEN,
             HUGGING_MODEL: env.HUGGING_MODEL || env['hugging-model'],
-            GOOGLE_KEY: env.GOOGLE_KEY || env.GOOGLE_API_KEY,
             proxy: env.https_proxy || env.HTTPS_PROXY || env.http_proxy || env.HTTP_PROXY,
             temperature: env.temperature,
             generate: generate?.toString() || env.generate,
@@ -91,7 +88,7 @@ export default async (
         const withoutConfirm = config.confirm;
         if (withoutConfirm) {
             const commitSpinner = ora('Committing with the generated message').start();
-            // await execa('git', ['commit', '-m', chosenMessage, ...rawArgv]);
+            await execa('git', ['commit', '-m', chosenMessage, ...rawArgv]);
             commitSpinner.stop();
             commitSpinner.clear();
             logManager.printCommitted();
@@ -109,7 +106,7 @@ export default async (
         const { confirmationPrompt } = confirmPrompt;
         if (confirmationPrompt) {
             const commitSpinner = ora('Committing with the generated message').start();
-            // await execa('git', ['commit', '-m', chosenMessage, ...rawArgv]);
+            await execa('git', ['commit', '-m', chosenMessage, ...rawArgv]);
             commitSpinner.stop();
             commitSpinner.clear();
             logManager.printCommitted();

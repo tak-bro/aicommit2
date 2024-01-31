@@ -36,11 +36,11 @@ const configParsers = {
 
         return model as TiktokenModel;
     },
-    HUGGING_KEY(key?: string) {
-        if (!key) {
+    HUGGING_COOKIE(cookie?: string) {
+        if (!cookie) {
             return '';
         }
-        return key;
+        return cookie;
     },
     HUGGING_MODEL(model?: string) {
         if (!model || model.length === 0) {

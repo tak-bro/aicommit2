@@ -1,7 +1,7 @@
 <div align="center">
   <div>
-    <img src=".github/screenshot.png" alt="AI Commits"/>
-    <h1 align="center">AI Commit2</h1>
+    <img src=".github/screenshot.png" alt="AICommit2"/>
+    <h1 align="center">AICommit2</h1>
   </div>
 	<p>The project was inspired by the <a href="https://https://github.com/Nutlope/aicommits">AI Commits</a></p>
 	<a href="https://www.npmjs.com/package/aicommit2"><img src="https://img.shields.io/npm/v/aicommit2" alt="Current version"></a>
@@ -9,27 +9,37 @@
 
 ---
 
+# AICommit2
+
+A Reactive CLI that generates git commit messages with diverse AI
+
 ## Setup
 
 > The minimum supported version of Node.js is the latest v14. Check your Node.js version with `node --version`.
 
 1. Install _aicommit2_:
 
-    ```sh
-    npm install -g aicommit2
-    ```
+```sh
+npm install -g aicommit2
+```
 
-2. Retrieve your API key from [OpenAI](https://platform.openai.com/account/api-keys)
+2. Retrieve your API key or Cookie
 
-    > Note: If you haven't already, you'll have to create an account and set up billing.
+- [OpenAI](https://platform.openai.com/account/api-keys)
+- [HuggingChat](https://github.com/tak-bro/aicommit2/blob/master/README.md#how-to-get-cookie)
+ 
+> If you haven't already, you'll have to create an account and set up billing. 
 
 3. Set the key so aicommit2 can use it:
 
-    ```sh
-    aicommit2 config set OPENAI_KEY=<your token>
-    ```
+```sh
+aicommit2 config set OPENAI_KEY=<your token> # openai
+aicommit2 config set HUGGING_COOKIE="<your browser cookie>" # huggingface
+```
 
-    This will create a `.aicommit2` file in your home directory.
+This will create a `.aicommit2` file in your home directory.
+
+> At least one API key must be set up.
 
 ### Upgrading
 
@@ -66,9 +76,18 @@ aicommit2 --all # or -a
 
 > 👉 **Tip:** Use the `aic2` alias if `aicommit2` is too long for you.
 
-#### Generate multiple recommendations
+#### CLI Options
 
-Sometimes the recommended commit message isn't the best so you want it to generate a few to pick from. You can generate multiple commit messages at once by passing in the `--generate <i>` flag, where 'i' is the number of generated messages:
+##### `--locale`
+- Locale to use for the generated commit messages (default: **en**)
+
+```sh
+aicommit2 --locale <s> # or -l <s>
+```
+
+##### `--generate`
+- Number of messages to generate (Warning: generating multiple costs more) (default: **1**)
+- Sometimes the recommended commit message isn't the best so you want it to generate a few to pick from. You can generate multiple commit messages at once by passing in the `--generate <i>` flag, where 'i' is the number of generated messages:
 
 ```sh
 aicommit2 --generate <i> # or -g <i>
@@ -76,15 +95,36 @@ aicommit2 --generate <i> # or -g <i>
 
 > Warning: this uses more tokens, meaning it costs more.
 
-#### Generating Conventional Commits
+##### `--all`
+- Automatically stage changes in tracked files for the commit (default **false**)
 
-If you'd like to generate [Conventional Commits](https://conventionalcommits.org/), you can use the `--type` flag followed by `conventional`. This will prompt `aicommit2` to format the commit message according to the Conventional Commits specification:
+```sh
+aicommit2 --all # or -a
+```
+
+##### `--type`
+- Automatically stage changes in tracked files for the commit (default **conventional**)
+- it supports [`conventional`](https://conventionalcommits.org/) and [`gitmoji`](https://gitmoji.dev/)
 
 ```sh
 aicommit2 --type conventional # or -t conventional
+aicommit2 --type gitmoji # or -t gitmoji
 ```
 
-This feature can be useful if your project follows the Conventional Commits standard or if you're using tools that rely on this commit format.
+##### `--confirm`
+- Skip confirmation when committing after message generation (default: **false**)
+
+```sh
+aicommit2 --confirm # or -y
+```
+
+##### `--clipboard`
+- Copy the selected message to the clipboard (default: **false**)
+- This is a useful option when you don't want to commit through aicommit2.
+
+```sh
+aicommit2 --clipboard # or -c
+```
 
 ### Git hook
 
@@ -110,12 +150,12 @@ aicommit2 hook uninstall
 
 1. Stage your files and commit:
 
-    ```sh
-    git add <files...>
-    git commit # Only generates a message when it's not passed in
-    ```
+```sh
+git add <files...>
+git commit # Only generates a message when it's not passed in
+```
 
-    > If you ever want to write your own message instead of generating one, you can simply pass one in: `git commit -m "My message"`
+> If you ever want to write your own message instead of generating one, you can simply pass one in: `git commit -m "My message"`
 
 2. aicommit2 will generate the commit message for you and pass it back to Git. Git will open it with the [configured editor](https://docs.github.com/en/get-started/getting-started-with-git/associating-text-editors-with-git) for you to review/edit it.
 
@@ -167,22 +207,22 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 
 > This is an ongoing project currently in preparation.
 
-| Option          | Default                                | Description                                                                 |
-|-----------------|----------------------------------------|-----------------------------------------------------------------------------|
-| `OPENAI_KEY`    | N/A                                    | The OpenAI API key.                                                         |
-| `OPENAI_MODEL`  | `gpt-3.5-turbo`                        | The OpenAI Model to use.                                                    |
-| `HUGGING_KEY`   | N/A                                    | The HuggingFace Cookie string                                               |
-| `HUGGING_MODEL` | `mistralai/Mixtral-8x7B-Instruct-v0.1` | The HuggingFace Model to use.                                               |
-| `confirm`       | `false`                                | Skip confirmation when committing after message generation (default: false) |
-| `clipboard`     | `false`                                | Copy the selected message to the clipboard                                  |
-| `locale`        | `en`                                   | Locale for the generated commit messages.                                   |
-| `generate`      | `1`                                    | Number of commit messages to generate.                                      |
-| `type`          | `conventional`                         | Type of commit message to generate.                                         |
-| `proxy`         | N/A                                    | Set a HTTP/HTTPS proxy to use for requests(only **OpenAI**).                |
-| `timeout`       | `10000` ms                             | Network request timeout                                                     |
-| `max-length`    | `50`                                   | Maximum character length of the generated commit message.                   |
-| `max-tokens`    | `200`                                  | The maximum number of tokens that the AI models can generate.               |
-| `temperature`   | `0.7`                                  | The temperature (0.0-2.0) is used to control the randomness of the output   |
+| Option           | Default                                | Description                                                                 |
+|------------------|----------------------------------------|-----------------------------------------------------------------------------|
+| `OPENAI_KEY`     | N/A                                    | The OpenAI API key.                                                         |
+| `OPENAI_MODEL`   | `gpt-3.5-turbo`                        | The OpenAI Model to use.                                                    |
+| `HUGGING_COOKIE` | N/A                                    | The HuggingFace Cookie string                                               |
+| `HUGGING_MODEL`  | `mistralai/Mixtral-8x7B-Instruct-v0.1` | The HuggingFace Model to use.                                               |
+| `confirm`        | `false`                                | Skip confirmation when committing after message generation (default: false) |
+| `clipboard`      | `false`                                | Copy the selected message to the clipboard                                  |
+| `locale`         | `en`                                   | Locale for the generated commit messages.                                   |
+| `generate`       | `1`                                    | Number of commit messages to generate.                                      |
+| `type`           | `conventional`                         | Type of commit message to generate.                                         |
+| `proxy`          | N/A                                    | Set a HTTP/HTTPS proxy to use for requests(only **OpenAI**).                |
+| `timeout`        | `10000` ms                             | Network request timeout                                                     |
+| `max-length`     | `50`                                   | Maximum character length of the generated commit message.                   |
+| `max-tokens`     | `200`                                  | The maximum number of tokens that the AI models can generate.               |
+| `temperature`    | `0.7`                                  | The temperature (0.0-2.0) is used to control the randomness of the output   |
 
 
 ### Options
@@ -287,6 +327,17 @@ aicommit2 config set max-tokens=1000
 This CLI tool runs `git diff` to grab all your latest code changes, sends them to OpenAI's GPT-3, then returns the AI generated commit message.
 
 Video coming soon where I rebuild it from scratch to show you how to easily build your own CLI tools powered by AI.
+
+## HuggingFace
+
+### How to get Cookie
+* Login to the [HuggingFace Chat](https://huggingface.co/chat).
+* You can get cookie from the browser's developer tools network tab
+* See for any requests check out the Cookie, **Copy whole value**
+* check below image for the format of cookie
+
+![how-to-get-cookie](https://github-production-user-asset-6210df.s3.amazonaws.com/7614353/301202605-0ab8fcb5-d1fe-40ab-928b-cf53fe00a18f.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20240131%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20240131T145334Z&X-Amz-Expires=300&X-Amz-Signature=c470928801cffafcbb39e1292fc6bd54117386d4c109e57687e8ea01523f15d9&X-Amz-SignedHeaders=host&actor_id=7614353&key_id=0&repo_id=750368232)
+ 
 
 ## Maintainers
 
