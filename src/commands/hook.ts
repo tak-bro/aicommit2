@@ -1,11 +1,13 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
+
 import chalk from 'chalk';
 import { command } from 'cleye';
-import { assertGitRepo } from '../utils/git.js';
+
+import { KnownError, handleCliError } from '../utils/error.js';
 import { fileExists } from '../utils/fs.js';
-import { handleCliError, KnownError } from '../utils/error.js';
+import { assertGitRepo } from '../utils/git.js';
 
 const hookName = 'prepare-commit-msg';
 const symlinkPath = `.git/hooks/${hookName}`;

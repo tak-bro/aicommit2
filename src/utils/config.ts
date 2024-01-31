@@ -1,10 +1,13 @@
 import fs from 'fs/promises';
-import path from 'path';
 import os from 'os';
+import path from 'path';
+
 import ini from 'ini';
-import type { TiktokenModel } from '@dqbd/tiktoken';
-import { fileExists } from './fs.js';
+
 import { KnownError } from './error.js';
+import { fileExists } from './fs.js';
+
+import type { TiktokenModel } from '@dqbd/tiktoken';
 
 const commitTypes = ['', 'conventional', 'gitmoji'] as const;
 export type CommitType = (typeof commitTypes)[number];

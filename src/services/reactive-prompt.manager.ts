@@ -1,12 +1,14 @@
-import ReactiveListPrompt, { ChoiceItem, ReactiveListChoice, ReactiveListLoader } from 'inquirer-reactive-list-prompt';
-import { BehaviorSubject, from, mergeMap, of, ReplaySubject, Subscription, takeUntil } from 'rxjs';
-import inquirer from 'inquirer';
-import { ValidConfig } from '../utils/config.js';
 import chalk from 'chalk';
-import { StagedDiff } from '../utils/git.js';
-import { AIFactoryParams, AIServiceFactory, AIType, ApiKeyName } from './ai/ai-service.factory.js';
-import { OpenAIService } from './ai/openai.service.js';
+import inquirer from 'inquirer';
+import ReactiveListPrompt, { ChoiceItem, ReactiveListChoice, ReactiveListLoader } from 'inquirer-reactive-list-prompt';
+import { BehaviorSubject, ReplaySubject, Subscription, from, mergeMap, of, takeUntil } from 'rxjs';
+
+import { AIServiceFactory } from './ai/ai-service.factory.js';
+import { AIServiceParams, AIType, ApiKeyName } from './ai/ai.service.js';
 import { HuggingService } from './ai/hugging.service.js';
+import { OpenAIService } from './ai/openai.service.js';
+import { ValidConfig } from '../utils/config.js';
+import { StagedDiff } from '../utils/git.js';
 
 const defaultLoader = {
     isLoading: false,
@@ -81,7 +83,7 @@ export class ReactivePromptManager {
     createAvailableAIRequests$(availableKeyNames: ApiKeyName[]) {
         return from(availableKeyNames).pipe(
             mergeMap(ai => {
-                const params: AIFactoryParams = {
+                const params: AIServiceParams = {
                     config: this.config,
                     stagedDiff: this.stagedDiff,
                 };

@@ -1,7 +1,8 @@
-import path from 'path';
 import fs from 'fs/promises';
-import { execa, execaNode, type Options } from 'execa';
-import { createFixture as createFixtureBase, type FileTree, type FsFixture } from 'fs-fixture';
+import path from 'path';
+
+import { type Options, execa, execaNode } from 'execa';
+import { type FileTree, type FsFixture, createFixture as createFixtureBase } from 'fs-fixture';
 
 const aicommit2Path = path.resolve('./dist/cli.mjs');
 

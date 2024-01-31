@@ -1,6 +1,8 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { testSuite, expect } from 'manten';
+
+import { expect, testSuite } from 'manten';
+
 import { createFixture } from '../utils.js';
 
 export default testSuite(({ describe }) => {

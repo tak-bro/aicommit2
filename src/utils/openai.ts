@@ -1,14 +1,17 @@
 import https from 'https';
-import type { ClientRequest, IncomingMessage } from 'http';
-import type { CreateChatCompletionRequest, CreateChatCompletionResponse } from 'openai';
+
 import {
     type TiktokenModel,
     // encoding_for_model,
 } from '@dqbd/tiktoken';
 import createHttpsProxyAgent from 'https-proxy-agent';
+
 import { KnownError } from './error.js';
-import type { CommitType } from './config.js';
 import { generatePrompt, isValidConventionalMessage, isValidGitmojiMessage } from './prompt.js';
+
+import type { CommitType } from './config.js';
+import type { ClientRequest, IncomingMessage } from 'http';
+import type { CreateChatCompletionRequest, CreateChatCompletionResponse } from 'openai';
 
 export const httpsGet = async (
     hostname: string,

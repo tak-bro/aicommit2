@@ -1,7 +1,9 @@
 import { expect, testSuite } from 'manten';
+
 import { generateCommitMessage } from '../../../src/utils/openai.js';
-import type { ValidConfig } from '../../../src/utils/config.js';
 import { getDiff } from '../../utils.js';
+
+import type { ValidConfig } from '../../../src/utils/config.js';
 
 const { OPENAI_KEY } = process.env;
 

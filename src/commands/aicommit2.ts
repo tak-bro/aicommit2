@@ -1,13 +1,13 @@
 import { execa } from 'execa';
-import { assertGitRepo, getStagedDiff } from '../utils/git.js';
-import { getConfig } from '../utils/config.js';
-import { handleCliError, KnownError } from '../utils/error.js';
+import inquirer from 'inquirer';
 import ora from 'ora';
 
-import inquirer from 'inquirer';
+import { ApiKeyName, ApiKeyNames } from '../services/ai/ai.service.js';
 import { LogManager } from '../services/log.manager.js';
 import { ReactivePromptManager } from '../services/reactive-prompt.manager.js';
-import { ApiKeyName, ApiKeyNames } from '../services/ai/ai-service.factory.js';
+import { getConfig } from '../utils/config.js';
+import { KnownError, handleCliError } from '../utils/error.js';
+import { assertGitRepo, getStagedDiff } from '../utils/git.js';
 
 const logManager = new LogManager();
 

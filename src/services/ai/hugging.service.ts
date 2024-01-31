@@ -1,19 +1,20 @@
 import chalk from 'chalk';
-import { catchError, concatMap, from, map, Observable } from 'rxjs';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
+import { Observable, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
-import { CommitType, hasOwn } from '../../utils/config.js';
-import { generatePrompt, isValidConventionalMessage, isValidGitmojiMessage } from '../../utils/prompt.js';
-import { KnownError } from '../../utils/error.js';
-import { AIFactoryParams, AIService } from './ai-service.factory.js';
 import { v4 as uuidv4 } from 'uuid';
+
+import { AIService, AIServiceParams } from './ai.service.js';
+import { CommitType, hasOwn } from '../../utils/config.js';
+import { KnownError } from '../../utils/error.js';
 import { deduplicateMessages, httpsGet } from '../../utils/openai.js';
+import { generatePrompt, isValidConventionalMessage, isValidGitmojiMessage } from '../../utils/prompt.js';
 
 export class HuggingService extends AIService {
     private hostname = `huggingface.co`;
     private cookie = ``;
 
-    constructor(private readonly params: AIFactoryParams) {
+    constructor(private readonly params: AIServiceParams) {
         super(params);
         this.colors = {
             primary: '#FED21F',
@@ -38,8 +39,6 @@ export class HuggingService extends AIService {
 
     private async generateMessage(): Promise<string[]> {
         try {
-            return ['test: test'];
-
             const { locale, generate, type } = this.params.config;
             const maxLength = this.params.config['max-length'];
             const diff = this.params.stagedDiff.diff;

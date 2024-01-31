@@ -1,9 +1,10 @@
 import { cli } from 'cleye';
-import { description, version } from '../package.json';
+
 import aicommit2 from './commands/aicommit2.js';
-import prepareCommitMessageHook from './commands/prepare-commit-msg-hook.js';
 import configCommand from './commands/config.js';
 import hookCommand, { isCalledFromGitHook } from './commands/hook.js';
+import prepareCommitMessageHook from './commands/prepare-commit-msg-hook.js';
+import { description, version } from '../package.json';
 
 const rawArgv = process.argv.slice(2);
 

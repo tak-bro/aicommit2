@@ -1,4 +1,5 @@
-import { testSuite, expect } from 'manten';
+import { expect, testSuite } from 'manten';
+
 import { assertOpenAiToken, createFixture, createGit, files } from '../../utils.js';
 
 export default testSuite(({ describe }) => {

@@ -1,4 +1,5 @@
 import { execa } from 'execa';
+
 import { KnownError } from './error.js';
 
 export interface StagedDiff {
