@@ -27,8 +27,8 @@ dependencies:
     specifier: ^9.0.3
     version: 9.2.8
   inquirer-reactive-list-prompt:
-    specifier: ^1.0.4
-    version: 1.0.4(inquirer@9.2.8)
+    specifier: ^1.0.5
+    version: 1.0.5(inquirer@9.2.8)
   ora:
     specifier: ^8.0.1
     version: 8.0.1
@@ -3125,8 +3125,8 @@ packages:
       rxjs: 7.8.1
     dev: false
 
-  /inquirer-reactive-list-prompt@1.0.4(inquirer@9.2.8):
-    resolution: {integrity: sha512-fxVZ/ChEiYZBH4nX1UVA6QkEcyvx5jJKsTvdVDCzjAXFa3+CedUZ4GhUzsQrlZNicJWux/rprn7dPoHVkzcrcA==}
+  /inquirer-reactive-list-prompt@1.0.5(inquirer@9.2.8):
+    resolution: {integrity: sha512-bgqRUwGj0r5XOF90GeZRsLxlpmLbh0hvGUfhZJ5J9O4WnhgjOM5zmNQNZC9o26HkwSdQb8w7yYmqItAmPfxQLA==}
     peerDependencies:
       inquirer: ^9.0.3
     dependencies:

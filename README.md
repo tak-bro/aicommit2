@@ -3,15 +3,25 @@
     <img src=".github/screenshot.png" alt="AICommit2"/>
     <h1 align="center">AICommit2</h1>
   </div>
-	<p>The project was inspired by the <a href="https://https://github.com/Nutlope/aicommits">AI Commits</a></p>
-	<a href="https://www.npmjs.com/package/aicommit2"><img src="https://img.shields.io/npm/v/aicommit2" alt="Current version"></a>
+	<p>A Reactive CLI that generates git commit messages with diverse AI</p>
+	<a href="https://www.npmjs.com/package/aicommit2">
+        <img src="https://img.shields.io/npm/v/aicommit2" alt="Current version">
+    </a>
+    <a aria-label="license" href="https://github.com/tak-bro/aicommit2/blob/main/LICENSE">
+        <img src="https://img.shields.io/github/license/tak-bro/aicommit2.svg" alt="">
+    </a>
 </div>
 
 ---
 
-# AICommit2
+## Project Base & Inspiration
 
-A Reactive CLI that generates git commit messages with diverse AI
+The core functionalities and architecture of this project are inspired by [AI Commits](https://https://github.com/Nutlope/aicommit).
+
+## Supported AI
+
+- [OpenAI](https://openai.com/)
+- [HuggingChat](https://huggingface.co/chat/)
 
 ## Setup
 
@@ -26,7 +36,7 @@ npm install -g aicommit2
 2. Retrieve your API key or Cookie
 
 - [OpenAI](https://platform.openai.com/account/api-keys)
-- [HuggingChat](https://github.com/tak-bro/aicommit2/blob/master/README.md#how-to-get-cookie)
+- [Huggingface Chat](https://github.com/tak-bro/aicommit2/blob/main/README.md#how-to-get-cookie)
  
 > If you haven't already, you'll have to create an account and set up billing. 
 
@@ -39,7 +49,7 @@ aicommit2 config set HUGGING_COOKIE="<your browser cookie>" # huggingface
 
 This will create a `.aicommit2` file in your home directory.
 
-> At least one API key must be set up.
+> **At least one API key must be set up.**
 
 ### Upgrading
 
@@ -78,14 +88,14 @@ aicommit2 --all # or -a
 
 #### CLI Options
 
-##### `--locale`
+##### `--locale` or `-l`
 - Locale to use for the generated commit messages (default: **en**)
 
 ```sh
 aicommit2 --locale <s> # or -l <s>
 ```
 
-##### `--generate`
+##### `--generate` or `-g`
 - Number of messages to generate (Warning: generating multiple costs more) (default: **1**)
 - Sometimes the recommended commit message isn't the best so you want it to generate a few to pick from. You can generate multiple commit messages at once by passing in the `--generate <i>` flag, where 'i' is the number of generated messages:
 
@@ -95,14 +105,14 @@ aicommit2 --generate <i> # or -g <i>
 
 > Warning: this uses more tokens, meaning it costs more.
 
-##### `--all`
+##### `--all` or `-a`
 - Automatically stage changes in tracked files for the commit (default **false**)
 
 ```sh
 aicommit2 --all # or -a
 ```
 
-##### `--type`
+##### `--type` or `-t`
 - Automatically stage changes in tracked files for the commit (default **conventional**)
 - it supports [`conventional`](https://conventionalcommits.org/) and [`gitmoji`](https://gitmoji.dev/)
 
@@ -111,14 +121,14 @@ aicommit2 --type conventional # or -t conventional
 aicommit2 --type gitmoji # or -t gitmoji
 ```
 
-##### `--confirm`
+##### `--confirm` or `-y`
 - Skip confirmation when committing after message generation (default: **false**)
 
 ```sh
 aicommit2 --confirm # or -y
 ```
 
-##### `--clipboard`
+##### `--clipboard` or `-c`
 - Copy the selected message to the clipboard (default: **false**)
 - This is a useful option when you don't want to commit through aicommit2.
 
@@ -203,9 +213,7 @@ You can also set multiple configuration options at once by separating them with 
 aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 ```
 
-### All Options
-
-> This is an ongoing project currently in preparation.
+### Options
 
 | Option           | Default                                | Description                                                                 |
 |------------------|----------------------------------------|-----------------------------------------------------------------------------|
@@ -225,13 +233,37 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 | `temperature`    | `0.7`                                  | The temperature (0.0-2.0) is used to control the randomness of the output   |
 
 
-### Options
-
 #### OPENAI_KEY
 
-Required
-
 The OpenAI API key. You can retrieve it from [OpenAI API Keys page](https://platform.openai.com/account/api-keys).
+
+#### OPENAI_MODEL
+
+Default: `gpt-3.5-turbo`
+
+The Chat Completions (`/v1/chat/completions`) model to use. Consult the list of models available in the [OpenAI Documentation](https://platform.openai.com/docs/models/model-endpoint-compatibility).
+
+> Tip: If you have access, try upgrading to [`gpt-4`](https://platform.openai.com/docs/models/gpt-4) for next-level code analysis. It can handle double the input size, but comes at a higher cost. Check out OpenAI's website to learn more.
+
+```sh
+aicommit2 config set OPENAI_MODEL=gpt-4
+```
+
+#### HUGGING_COOKIE
+
+The Huggingface Chat Cookie. Please check [how to get cookie](https://github.com/tak-bro/aicommit2/blob/main/README.md#how-to-get-cookie)
+
+#### HUGGING_MODEL
+
+Default: `mistralai/Mixtral-8x7B-Instruct-v0.1`
+
+Supported: 
+- `mistralai/Mixtral-8x7B-Instruct-v0.1`
+- `meta-llama/Llama-2-70b-chat-hf`
+- `NousResearch/Nous-Hermes-2-Mixtral-8x7B-DPO`
+- `codellama/CodeLlama-34b-Instruct-hf`
+- `mistralai/Mistral-7B-Instruct-v0.2`
+- `openchat/openchat-3.5-0106`
 
 #### locale
 
@@ -265,18 +297,6 @@ Default: true
 
 Check again when committing after message generation
 
-#### OPENAI_MODEL
-
-Default: `gpt-3.5-turbo`
-
-The Chat Completions (`/v1/chat/completions`) model to use. Consult the list of models available in the [OpenAI Documentation](https://platform.openai.com/docs/models/model-endpoint-compatibility).
-
-> Tip: If you have access, try upgrading to [`gpt-4`](https://platform.openai.com/docs/models/gpt-4) for next-level code analysis. It can handle double the input size, but comes at a higher cost. Check out OpenAI's website to learn more.
-
-```sh
-aicommit2 config set OPENAI_MODEL=gpt-4
-```
-
 #### timeout
 
 The timeout for network requests to the OpenAI API in milliseconds.
@@ -299,7 +319,9 @@ aicommit2 config set max-length=100
 
 #### type
 
-Default: `""` (Empty string)
+Default: `conventional`
+
+Supported: `conventional`, `gitmoji`
 
 The type of commit message to generate. Set this to "conventional" to generate commit messages that follow the Conventional Commits specification:
 
@@ -324,9 +346,7 @@ aicommit2 config set max-tokens=1000
 
 ## How it works
 
-This CLI tool runs `git diff` to grab all your latest code changes, sends them to OpenAI's GPT-3, then returns the AI generated commit message.
-
-Video coming soon where I rebuild it from scratch to show you how to easily build your own CLI tools powered by AI.
+This CLI tool runs `git diff` to grab all your latest code changes, sends them to configured AI, then returns the AI generated commit message.
 
 ## HuggingFace
 
@@ -336,12 +356,25 @@ Video coming soon where I rebuild it from scratch to show you how to easily buil
 * See for any requests check out the Cookie, **Copy whole value**
 * check below image for the format of cookie
 
-![how-to-get-cookie](https://github-production-user-asset-6210df.s3.amazonaws.com/7614353/301202605-0ab8fcb5-d1fe-40ab-928b-cf53fe00a18f.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20240131%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20240131T145334Z&X-Amz-Expires=300&X-Amz-Signature=c470928801cffafcbb39e1292fc6bd54117386d4c109e57687e8ea01523f15d9&X-Amz-SignedHeaders=host&actor_id=7614353&key_id=0&repo_id=750368232)
+![how-to-get-cookie](https://github.com/tak-bro/aicommit2/assets/7614353/66f2994d-23d9-4c88-a113-f2d3dc5c0669)
  
+## Disclaimer
+
+This project utilizes certain functionalities or data from external APIs, but it is important to note that it is not officially affiliated with or endorsed by the providers of those APIs. The use of external APIs is at the sole discretion and risk of the user.
+
+## Risk Acknowledgment
+
+Users are responsible for understanding and abiding by the terms of use, rate limits, and policies set forth by the respective API providers. The project maintainers cannot be held responsible for any misuse, downtime, or issues arising from the use of the external APIs.
+
+It is recommended that users thoroughly review the API documentation and adhere to best practices to ensure a positive and compliant experience.
+
+## Project Base and Inspiration
+
+The core functionalities and architecture of this project are inspired by [AI Commits](https://https://github.com/Nutlope/aicommit). In addition to AI Commits, inspiration has been drawn from various open-source communities, expanding upon existing ideas and introducing new features.
 
 ## Maintainers
 
--   **Hyungtak Jin**: [@tak-bro](https://github.com/tak-bro)
+- [@tak-bro](https://env-tak.github.io/)
 
 ## Contributing
 
