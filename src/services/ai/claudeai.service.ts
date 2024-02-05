@@ -1,18 +1,20 @@
 import chalk from 'chalk';
-import { catchError, concatMap, from, map, Observable } from 'rxjs';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
+import { Observable, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
+import { v4 as uuidv4 } from 'uuid';
+
+import { AIService, AIServiceParams } from './ai.service.js';
 import { CommitType } from '../../utils/config.js';
 import { KnownError } from '../../utils/error.js';
-import { AIFactoryParams, AIService } from './ai-service.factory.js';
 import { httpsGet, httpsPost } from '../../utils/openai.js';
-import { v4 as uuidv4 } from 'uuid';
 import { generatePrompt } from '../../utils/prompt.js';
 
-export const createAsyncDelay = (duration: number) => {
-    return new Promise<void>(resolve => setTimeout(() => resolve(), duration));
-};
-
+/**
+ * TODO: implement CladeAI Service
+ * @class ClaudeAIService
+ * @description use claude ai
+ */
 export class ClaudeAIService extends AIService {
     private requestHeaders = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0',
@@ -25,7 +27,7 @@ export class ClaudeAIService extends AIService {
         Cookie: '', // NOTE: should be set
     };
 
-    constructor(private readonly params: AIFactoryParams) {
+    constructor(private readonly params: AIServiceParams) {
         super(params);
         this.colors = {
             primary: '#CC9B7A',
@@ -79,7 +81,6 @@ export class ClaudeAIService extends AIService {
             .map(match => match.split('"completion":')[1].replace(/"/g, ''))
             .join('');
         // claudeMessage
-        // Here are 2 commit message options for the provided diff:\n\n1. test(claudeai): add hardcoded values for testing\n2. chore(claudeai): temporarily use demo values\n\nI chose:\n\n- \test\ because hardcoded values can help facilitate testing\n- \chore\ because using demo values can be considered a code maintenance task\n\nThe scope \claudeai\ indicates the changes are isolated to that service.\n\nThe messages follow the provided <type>(<scope>): <description> format.
 
         // original message
         const regex = /\d+\.\s(.*?)(?=\n\d+\.|\n\n|$)/g;

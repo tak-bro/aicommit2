@@ -1,14 +1,17 @@
 import https from 'https';
-import type { ClientRequest, IncomingMessage } from 'http';
-import type { CreateChatCompletionRequest, CreateChatCompletionResponse } from 'openai';
+
 import {
     type TiktokenModel,
     // encoding_for_model,
 } from '@dqbd/tiktoken';
 import createHttpsProxyAgent from 'https-proxy-agent';
+
 import { KnownError } from './error.js';
-import type { CommitType } from './config.js';
 import { generatePrompt, isValidConventionalMessage, isValidGitmojiMessage } from './prompt.js';
+
+import type { CommitType } from './config.js';
+import type { ClientRequest, IncomingMessage } from 'http';
+import type { CreateChatCompletionRequest, CreateChatCompletionResponse } from 'openai';
 
 export const httpsGet = async (
     hostname: string,
@@ -181,11 +184,11 @@ export const generateCommitMessage = async (
     temperature: number,
     proxy?: string
 ) => {
-    return [
-        'fix(temp): fix cli argument type',
-        'feat(temp): add confirm configuration',
-        'refactor(temp): modify chatGPT message generation',
-    ];
+    // return [
+    //     'fix(temp): fix cli argument type',
+    //     'feat(temp): add confirm configuration',
+    //     'refactor(temp): modify chatGPT message generation',
+    // ];
 
     try {
         const completion = await createChatCompletion(

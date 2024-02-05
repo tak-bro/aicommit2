@@ -1,8 +1,10 @@
-import ora, { Ora } from 'ora';
-import chalk from 'chalk';
-import { getDetectedMessage } from '../utils/git.js';
 import readline from 'readline';
+
+import chalk from 'chalk';
 import figlet from 'figlet';
+import ora, { Ora } from 'ora';
+
+import { getDetectedMessage } from '../utils/git.js';
 
 export class LogManager {
     private title = 'aicommit2';
@@ -31,6 +33,12 @@ export class LogManager {
 
     printCommitted() {
         console.log(`\n${chalk.bold.green('✔')} ${chalk.bold(`Successfully committed!`)}`);
+    }
+
+    printCopied() {
+        console.log(
+            `\n${chalk.bold.green('✔')} ${chalk.bold(`Message successfully copied! Press 'Ctrl + V' to paste`)}`
+        );
     }
 
     printSavedCommitMessage() {

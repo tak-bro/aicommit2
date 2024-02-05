@@ -5,7 +5,8 @@ const commitTypeFormats: Record<CommitType, string> = {
     conventional: '<type>(<optional scope>): <description>',
     gitmoji: ':<emoji>: <description>',
 };
-const specifyCommitFormat = (type: CommitType) => `The output response must be in format:\n${commitTypeFormats[type]}`;
+const specifyCommitFormat = (type: CommitType) =>
+    `The output response must be in ${type} commit type:\n${commitTypeFormats[type]}`;
 
 const commitTypes: Record<CommitType, string> = {
     '': '',
@@ -55,6 +56,7 @@ export const isValidConventionalMessage = (message: string): boolean => {
 };
 
 export const isValidGitmojiMessage = (message: string): boolean => {
-    const gitmojiCommitMessageRegex = /^(:(\w+): )?.{1,}$/;
+    // eslint-disable-next-line no-useless-escape
+    const gitmojiCommitMessageRegex = /^\:\w+\: (.*)$/;
     return gitmojiCommitMessageRegex.test(message);
 };

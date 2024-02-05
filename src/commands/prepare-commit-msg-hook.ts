@@ -1,9 +1,10 @@
 import fs from 'fs/promises';
-import { getStagedDiff } from '../utils/git.js';
-import { getConfig } from '../utils/config.js';
-import { generateCommitMessage } from '../utils/openai.js';
-import { handleCliError, KnownError } from '../utils/error.js';
+
 import { LogManager } from '../services/log.manager.js';
+import { getConfig } from '../utils/config.js';
+import { KnownError, handleCliError } from '../utils/error.js';
+import { getStagedDiff } from '../utils/git.js';
+import { generateCommitMessage } from '../utils/openai.js';
 
 const [messageFilePath, commitSource] = process.argv.slice(2);
 

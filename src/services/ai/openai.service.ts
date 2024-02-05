@@ -1,12 +1,13 @@
 import chalk from 'chalk';
-import { catchError, concatMap, from, map, Observable, of } from 'rxjs';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
+import { Observable, catchError, concatMap, from, map, of } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
+
+import { AIService, AIServiceError, AIServiceParams } from './ai.service.js';
 import { generateCommitMessage } from '../../utils/openai.js';
-import { AIFactoryParams, AIService, AIServiceError } from './ai-service.factory.js';
 
 export class OpenAIService extends AIService {
-    constructor(private readonly params: AIFactoryParams) {
+    constructor(private readonly params: AIServiceParams) {
         super(params);
         this.colors = {
             primary: '#74AA9C',
