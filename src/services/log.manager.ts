@@ -36,7 +36,9 @@ export class LogManager {
     }
 
     printCopied() {
-        console.log(`\n${chalk.bold.green('✔')} ${chalk.bold(`The message you choose has been copied.`)}`);
+        console.log(
+            `\n${chalk.bold.green('✔')} ${chalk.bold(`Message successfully copied! Press 'Ctrl + V' to paste`)}`
+        );
     }
 
     printSavedCommitMessage() {
