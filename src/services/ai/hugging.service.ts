@@ -38,7 +38,7 @@ export class HuggingService extends AIService {
     }
 
     private async generateMessage(): Promise<string[]> {
-        return ['teest: test'];
+        // return ['teest: test'];
         try {
             const { locale, generate, type } = this.params.config;
             const maxLength = this.params.config['max-length'];
