@@ -1,12 +1,14 @@
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Observable, of } from 'rxjs';
 
-import { ValidConfig } from '../../utils/config.js';
+import { CommitType, ValidConfig } from '../../utils/config.js';
 import { StagedDiff } from '../../utils/git.js';
+import { generatePrompt } from '../../utils/prompt.js';
 
 export const AIType = {
     OPEN_AI: 'OPENAI_KEY',
     HUGGING: 'HUGGING_COOKIE',
+    CLOVA_X: 'CLOVAX_COOKIE',
 } as const;
 export type ApiKeyName = (typeof AIType)[keyof typeof AIType];
 export const ApiKeyNames: ApiKeyName[] = Object.values(AIType).map(value => value);
@@ -39,6 +41,12 @@ export abstract class AIService {
     }
 
     abstract generateCommitMessage$(): Observable<ReactiveListChoice>;
+
+    protected buildPrompt(locale: string, diff: string, completions: number, maxLength: number, type: CommitType) {
+        const defaultPrompt = generatePrompt(locale, maxLength, type);
+        return `${defaultPrompt}\nPlease just generate ${completions} messages. Here are git diff: \n${diff}`;
+    }
+
     protected handleError$ = (error: AIServiceError): Observable<ReactiveListChoice> => {
         let simpleMessage = 'An error occurred';
         if (error.message) {

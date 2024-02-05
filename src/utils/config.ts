@@ -58,6 +58,12 @@ const configParsers = {
         parseAssert('HUGGING_MODEL', supportModels.includes(model), 'Invalid model type of hugging');
         return model;
     },
+    CLOVAX_COOKIE(cookie?: string) {
+        if (!cookie) {
+            return '';
+        }
+        return cookie;
+    },
     GOOGLE_KEY(key?: string) {
         if (!key) {
             return '';

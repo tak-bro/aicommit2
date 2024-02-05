@@ -5,10 +5,10 @@ import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 import { v4 as uuidv4 } from 'uuid';
 
 import { AIService, AIServiceParams } from './ai.service.js';
-import { CommitType, hasOwn } from '../../utils/config.js';
+import { hasOwn } from '../../utils/config.js';
 import { KnownError } from '../../utils/error.js';
 import { deduplicateMessages, httpsGet } from '../../utils/openai.js';
-import { generatePrompt, isValidConventionalMessage, isValidGitmojiMessage } from '../../utils/prompt.js';
+import { isValidConventionalMessage, isValidGitmojiMessage } from '../../utils/prompt.js';
 
 export class HuggingService extends AIService {
     private hostname = `huggingface.co`;
@@ -38,12 +38,12 @@ export class HuggingService extends AIService {
     }
 
     private async generateMessage(): Promise<string[]> {
-        // return ['teest: test'];
+        return ['test: test'];
         try {
             const { locale, generate, type } = this.params.config;
             const maxLength = this.params.config['max-length'];
             const diff = this.params.stagedDiff.diff;
-            const prompt = this.generatePrompt(locale, diff, generate, maxLength, type);
+            const prompt = this.buildPrompt(locale, diff, generate, maxLength, type);
             const { conversationId } = await this.getNewConversationId();
             await this.prepareConversation(conversationId);
             const generatedText = await this.sendMessage(conversationId, prompt);
@@ -56,11 +56,6 @@ export class HuggingService extends AIService {
             }
             throw errorAsAny;
         }
-    }
-
-    private generatePrompt(locale: string, diff: string, completions: number, maxLength: number, type: CommitType) {
-        const defaultPrompt = generatePrompt(locale, maxLength, type);
-        return `${defaultPrompt}\nPlease just generate ${completions} messages. Here are git diff: \n${diff}`;
     }
 
     private sanitizeMessage(generatedText: string) {

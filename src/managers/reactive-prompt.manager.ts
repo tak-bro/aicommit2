@@ -3,10 +3,11 @@ import inquirer from 'inquirer';
 import ReactiveListPrompt, { ChoiceItem, ReactiveListChoice, ReactiveListLoader } from 'inquirer-reactive-list-prompt';
 import { BehaviorSubject, ReplaySubject, Subscription, from, mergeMap, of, takeUntil } from 'rxjs';
 
-import { AIServiceFactory } from './ai/ai-service.factory.js';
-import { AIServiceParams, AIType, ApiKeyName } from './ai/ai.service.js';
-import { HuggingService } from './ai/hugging.service.js';
-import { OpenAIService } from './ai/openai.service.js';
+import { AIServiceFactory } from '../services/ai/ai-service.factory.js';
+import { AIServiceParams, AIType, ApiKeyName } from '../services/ai/ai.service.js';
+import { ClovaXService } from '../services/ai/clova-x.service.js';
+import { HuggingService } from '../services/ai/hugging.service.js';
+import { OpenAIService } from '../services/ai/openai.service.js';
 import { ValidConfig } from '../utils/config.js';
 import { StagedDiff } from '../utils/git.js';
 
@@ -52,20 +53,20 @@ export class ReactivePromptManager {
     }
 
     refreshChoices(choice: ReactiveListChoice) {
-        const { name, value, isError } = choice;
-        if (!choice || !value) {
-            return;
-        }
-        const currentChoices = this.choices$.getValue();
-        this.choices$.next([
-            ...currentChoices,
-            {
-                name,
-                value,
-                disabled: isError,
-                isError,
-            },
-        ]);
+        // const { name, value, isError } = choice;
+        // if (!choice || !value) {
+        //     return;
+        // }
+        // const currentChoices = this.choices$.getValue();
+        // this.choices$.next([
+        //     ...currentChoices,
+        //     {
+        //         name,
+        //         value,
+        //         disabled: isError,
+        //         isError,
+        //     },
+        // ]);
     }
 
     checkErrorOnChoices() {
@@ -92,6 +93,8 @@ export class ReactivePromptManager {
                         return AIServiceFactory.create(OpenAIService, params).generateCommitMessage$();
                     case AIType.HUGGING:
                         return AIServiceFactory.create(HuggingService, params).generateCommitMessage$();
+                    case AIType.CLOVA_X:
+                        return AIServiceFactory.create(ClovaXService, params).generateCommitMessage$();
                     default:
                         const prefixError = chalk.red.bold(`[${ai}]`);
                         return of({

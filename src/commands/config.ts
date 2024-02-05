@@ -1,6 +1,6 @@
 import { command } from 'cleye';
 
-import { LogManager } from '../services/log.manager.js';
+import { LogManager } from '../managers/log.manager.js';
 import { getConfig, hasOwn, setConfigs } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
 

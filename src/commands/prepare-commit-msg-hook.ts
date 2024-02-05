@@ -1,6 +1,6 @@
 import fs from 'fs/promises';
 
-import { LogManager } from '../services/log.manager.js';
+import { LogManager } from '../managers/log.manager.js';
 import { getConfig } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
 import { getStagedDiff } from '../utils/git.js';
