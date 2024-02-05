@@ -47,6 +47,22 @@ export abstract class AIService {
         return `${defaultPrompt}\nPlease just generate ${completions} messages. Here are git diff: \n${diff}`;
     }
 
+    protected buildShortenPrompt(
+        locale: string,
+        diff: string,
+        completions: number,
+        maxLength: number,
+        type: CommitType
+    ) {
+        return [
+            `Please write a total of ${completions} Git commit messages in ${locale}`,
+            `with a maximum length of ${maxLength} characters, using the git ${type} format. The provided diff is as follows:`,
+            `${diff}`,
+        ]
+            .filter(Boolean)
+            .join('\n');
+    }
+
     protected handleError$ = (error: AIServiceError): Observable<ReactiveListChoice> => {
         let simpleMessage = 'An error occurred';
         if (error.message) {

@@ -5,8 +5,11 @@ import { Observable, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIService, AIServiceParams } from './ai.service.js';
+import { hasOwn } from '../../utils/config.js';
+import { deduplicateMessages } from '../../utils/openai.js';
 import { isValidConventionalMessage, isValidGitmojiMessage } from '../../utils/prompt.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
+
 
 export interface ClovaXConversationContent {
     conversationId: string;
@@ -23,6 +26,8 @@ export interface ClovaXConversationResponse {
     page: number;
     size: number;
 }
+
+export const MAX_PROMPT_LENGTH = 1000;
 
 export class ClovaXService extends AIService {
     private host = `https://clova-x.naver.com`;
@@ -55,20 +60,24 @@ export class ClovaXService extends AIService {
         const { locale, generate, type } = this.params.config;
         const maxLength = this.params.config['max-length'];
         const diff = this.params.stagedDiff.diff;
-        const prompt = this.buildPrompt(locale, diff, generate, maxLength, type);
-        // 1. get all conversationIds
-        // const originConversationIds = await this.getAllConversationIds();
-        // console.log(originConversationIds);
-        const test = await this.sendMessage('test');
-
-        // 2. generate message(send prompt)
-        // 3. get all conversations
-        // 4. check new conversation ID from first
-        // 5. sanitize Message on conversation => [message]
-        // 6. delete new conversation Id
-        // 7. return meesage
-
-        return ['test: test'];
+        let prompt = this.buildPrompt(locale, diff, generate, maxLength, type);
+        if (prompt.length > MAX_PROMPT_LENGTH) {
+            prompt = this.buildShortenPrompt(locale, diff, generate, maxLength, type);
+        }
+        if (prompt.length > MAX_PROMPT_LENGTH) {
+            throw new Error('Prompt message too long. Simplify the commit size (code volume).');
+        }
+        await this.getAllConversationIds();
+        const result = await this.sendMessage(prompt);
+        const { conversationId, allText } = this.parseSendMessageResult(result);
+        if (!conversationId) {
+            throw new Error(`No conversationId!`);
+        }
+        if (!allText) {
+            throw new Error(`No allText!`);
+        }
+        await this.deleteConversation(conversationId);
+        return deduplicateMessages(this.sanitizeMessage(allText));
     }
 
     private async getAllConversationIds(): Promise<string[]> {
@@ -91,131 +100,81 @@ export class ClovaXService extends AIService {
         return result.content.map(data => data.conversationId || '').filter(id => !!id);
     }
 
-    private async getNewConversationId(): Promise<{ conversationId: string }> {
-        const headers = {
-            'content-type': 'application/json',
-            Cookie: this.cookie,
-        };
-        const payload = JSON.stringify({ model: this.params.config.HUGGING_MODEL });
-        const fetched = await fetch(`https://${this.host}/chat/conversation`, {
-            headers: headers,
-            body: payload,
-            method: 'POST',
-        });
-        const jsonData = await fetched.json();
-        if (!jsonData.conversationId) {
-            throw new Error(`No conversationId on Hugging service`);
-        }
-        return jsonData;
-    }
-
     private async deleteConversation(conversationId: string): Promise<any> {
-        const headers = {
-            Cookie: this.cookie,
-        };
-        const deleted = await fetch(`https://${this.host}/chat/conversation/${conversationId}`, {
+        const response = await new HttpRequestBuilder({
             method: 'DELETE',
-            headers: {
-                ...headers,
-            },
-            body: null,
-        });
-        return await deleted.text();
+            baseURL: `${this.host}/api/v1/conversation/${conversationId}`,
+            timeout: this.params.config.timeout,
+        })
+            .setHeaders({ Cookie: this.cookie })
+            .execute();
+
+        return response.data;
     }
 
-    private async sendMessage(message: string) {
+    private async sendMessage(message: string): Promise<string> {
         const data = { text: message, action: 'new' };
         const form = new FormData();
         form.append('form', new Blob([JSON.stringify(data)], { type: 'application/json' }));
 
-        const response = await new HttpRequestBuilder({
-            method: 'POST',
-            baseURL: `${this.host}/api/v1/generate`,
-            timeout: this.params.config.timeout,
-        })
-            .setHeaders({
-                'Content-Type': 'multipart/form-data',
-                Cookie: this.cookie,
+        try {
+            const response = await new HttpRequestBuilder({
+                method: 'POST',
+                baseURL: `${this.host}/api/v1/generate`,
+                timeout: this.params.config.timeout,
             })
-            .setBody(form)
-            .execute();
-        const result = response.data;
-        console.log('result', result);
-        return 'test';
-
-        // axios({
-        //     method: "post",
-        //     url: `${this.host}/api/v1/generate`,
-        //     data: form2,
-        //     responseType: 'stream',
-        //     headers: { "Content-Type": "multipart/form-data", Cookie: this.cookie },
-        // })
-        //     .then(function (response) {
-        //         //handle success
-        //         console.log(response);
-        //     })
-        //     .catch(function (response) {
-        //         //handle error
-        //         console.log(response);
-        //     });
-
-        // const result = response.data;
-        // console.log(response.data)
-        // console.log(result)
-        // if (!result) {
-        //     throw new Error(`No content on sendMessage ClovaX`);
-        // }
-
-        // ------WebKitFormBoundaryeBGJ30Wqm3bZAAnO
-        // Content-Disposition: form-data; name="form"; filename="blob"
-        // Content-Type: application/json
-        //
-        // {"text":"bard color  로고 알아?","action":"generate","parentTurnId":"cPFAL2kxnkQ7wIE6SJt2Z","conversationId":"CsJ7vpVkMZgnNUL__Za4X"}
-        // ------WebKitFormBoundaryeBGJ30Wqm3bZAAnO--
-
-        // const fetched = await fetch(`https://${this.host}/api/v1/generate`, {
-        //     method: 'POST',
-        //     headers: {
-        //         'content-type': 'application/json',
-        //         cookie: this.cookie,
-        //     },
-        //     body: JSON.stringify({
-        //         inputs: message,
-        //         parameters: {
-        //             temperature: this.params.config.temperature,
-        //             truncate: 1000,
-        //             max_new_tokens: this.params.config['max-tokens'],
-        //             stop: ['</s>'],
-        //             top_p: 0.95,
-        //             repetition_penalty: 1.2,
-        //             top_k: 50,
-        //             return_full_text: false,
-        //         },
-        //         stream: true,
-        //         options: {
-        //             id: uuidv4(),
-        //             response_id: uuidv4(),
-        //             is_retry: false,
-        //             use_cache: false,
-        //             web_search_id: '',
-        //         },
-        //     }),
-        // });
-        // return await fetched.text();
+                .setHeaders({
+                    'Content-Type': 'multipart/form-data',
+                    Cookie: this.cookie,
+                })
+                .setBody(form)
+                .execute();
+            return response.data as string;
+        } catch (e) {
+            console.log(e);
+            throw e;
+        }
     }
 
-    private generateRandomString(length: number): string {
-        const characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
-        let result = '';
-        for (let i = 0; i < length; i++) {
-            result += characters.charAt(Math.floor(Math.random() * characters.length));
+    private parseSendMessageResult(generatedText: string): { conversationId: string; allText: string } {
+        const regex = /data:{(.*)}/g; // data 이후 {} 형태의 텍스트만 추출
+        const extracted = generatedText.match(regex);
+        if (!extracted) {
+            throw new Error('Failed to extract object from generated text');
         }
-        return result;
+        const jsonStringData = extracted.map(data => data.trim().replace(/data:/g, '')); // remove 'data:'
+        if (!jsonStringData || jsonStringData.length === 0) {
+            throw new Error(`Cannot extract message`);
+        }
+        let conversationId = '';
+        let allText = '';
+        jsonStringData
+            .map(data => {
+                try {
+                    return JSON.parse(data);
+                } catch (e) {
+                    /* empty */
+                    return null;
+                }
+            })
+            .filter(data => !!data)
+            .forEach(data => {
+                if (hasOwn(data, 'conversationId')) {
+                    conversationId = data.conversationId;
+                    return;
+                }
+                if (hasOwn(data, 'text')) {
+                    allText += data.text;
+                    return;
+                }
+            });
+        return { conversationId, allText };
     }
 
     private sanitizeMessage(generatedText: string) {
         return generatedText
             .split('\n')
+            .map((message: string) => message.trim().replace(/^\d+\.\s/, ''))
             .map((message: string) => {
                 // lowercase
                 if (this.params.config.type === 'conventional') {

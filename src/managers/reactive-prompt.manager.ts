@@ -53,20 +53,20 @@ export class ReactivePromptManager {
     }
 
     refreshChoices(choice: ReactiveListChoice) {
-        // const { name, value, isError } = choice;
-        // if (!choice || !value) {
-        //     return;
-        // }
-        // const currentChoices = this.choices$.getValue();
-        // this.choices$.next([
-        //     ...currentChoices,
-        //     {
-        //         name,
-        //         value,
-        //         disabled: isError,
-        //         isError,
-        //     },
-        // ]);
+        const { name, value, isError } = choice;
+        if (!choice || !value) {
+            return;
+        }
+        const currentChoices = this.choices$.getValue();
+        this.choices$.next([
+            ...currentChoices,
+            {
+                name,
+                value,
+                disabled: isError,
+                isError,
+            },
+        ]);
     }
 
     checkErrorOnChoices() {
