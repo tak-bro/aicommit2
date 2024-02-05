@@ -83,6 +83,8 @@ export default async (
             // eslint-disable-next-line @typescript-eslint/no-var-requires
             const ncp = require('copy-paste');
             ncp.copy(chosenMessage);
+            logManager.printCopied();
+            process.exit();
         }
 
         const withoutConfirm = config.confirm;

@@ -131,7 +131,8 @@ aicommit2 --confirm # or -y
 ##### `--clipboard` or `-c`
 - Copy the selected message to the clipboard (default: **false**)
 - This is a useful option when you don't want to commit through aicommit2.
-
+- If you give this option, aicommit2 will not commit.
+- 
 ```sh
 aicommit2 --clipboard # or -c
 ```

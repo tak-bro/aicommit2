@@ -35,6 +35,10 @@ export class LogManager {
         console.log(`\n${chalk.bold.green('✔')} ${chalk.bold(`Successfully committed!`)}`);
     }
 
+    printCopied() {
+        console.log(`\n${chalk.bold.green('✔')} ${chalk.bold(`The message you choose has been copied.`)}`);
+    }
+
     printSavedCommitMessage() {
         console.log(`\n${chalk.bold.green('✔')} ${chalk.bold(`Saved commit message`)}`);
     }

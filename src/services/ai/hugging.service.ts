@@ -44,6 +44,9 @@ export class HuggingService extends AIService {
             const diff = this.params.stagedDiff.diff;
             const prompt = this.generatePrompt(locale, diff, generate, maxLength, type);
 
+            console.log(prompt);
+            return ['teest: test'];
+
             const { conversationId } = await this.getNewConversationId();
             await this.prepareConversation(conversationId);
             const generatedText = await this.sendMessage(conversationId, prompt);
