@@ -50,7 +50,7 @@ const configParsers = {
             'mistralai/Mixtral-8x7B-Instruct-v0.1',
             'meta-llama/Llama-2-70b-chat-hf',
             'NousResearch/Nous-Hermes-2-Mixtral-8x7B-DPO',
-            'codellama/CodeLlama-34b-Instruct-hf',
+            'codellama/CodeLlama-70b-Instruct-hf',
             'mistralai/Mistral-7B-Instruct-v0.2',
             'openchat/openchat-3.5-0106',
         ];

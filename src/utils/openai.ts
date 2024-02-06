@@ -185,8 +185,6 @@ export const generateCommitMessage = async (
     temperature: number,
     proxy?: string
 ) => {
-    // return ['fix(temp): fix cli argument type', 'refactor(temp): modify chatGPT message generation'];
-
     try {
         const completion = await createChatCompletion(
             apiKey,
