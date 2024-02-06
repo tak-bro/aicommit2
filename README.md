@@ -16,13 +16,13 @@
 
 ## Project Base & Inspiration
 
-The core functionalities and architecture of this project are inspired by [AI Commits](https://github.com/Nutlope/aicommit).
+The core functionalities and architecture of this project are inspired by [AI Commits](https://github.com/Nutlope/aicommits).
 
 ## Supported AI
 
 - [OpenAI](https://openai.com/)
-- [Huggingface(**Unofficial**)](https://huggingface.co/chat/)
-- [Clova X(**Unofficial**)](https://clova-x.naver.com/)
+- [Huggingface **(Unofficial)**](https://huggingface.co/chat/)
+- [Clova X **(Unofficial)**](https://clova-x.naver.com/)
 
 ## Setup
 
@@ -37,8 +37,8 @@ npm install -g aicommit2
 2. Retrieve your API key or Cookie
 
 - [OpenAI](https://platform.openai.com/account/api-keys)
-- [Huggingface(**Unofficial**)](https://github.com/tak-bro/aicommit2/blob/main/README.md#how-to-get-cookie)
-- [Clova X(**Unofficial**)](https://github.com/tak-bro/aicommit2/blob/main/README.md#how-to-get-cookie)
+- [Huggingface **(Unofficial)**](https://github.com/tak-bro/aicommit2/blob/main/README.md#how-to-get-cookie)
+- [Clova X **(Unofficial)**](https://github.com/tak-bro/aicommit2/blob/main/README.md#how-to-get-cookie)
  
 > If you haven't already, you'll have to create an account and set up billing. 
 
@@ -47,11 +47,12 @@ npm install -g aicommit2
 ```sh
 aicommit2 config set OPENAI_KEY=<your token> # openai
 aicommit2 config set HUGGING_COOKIE="<your browser cookie>" # huggingface
+aicommit2 config set CLOVAX_COOKIE="<your browser cookie>" # clova x
 ```
 
 This will create a `.aicommit2` file in your home directory.
 
-> **At least one API key must be set up.**
+> It is not necessary to set all keys. **But at least one key must be set up.**
 
 ### Upgrading
 
@@ -108,14 +109,14 @@ aicommit2 --generate <i> # or -g <i>
 > Warning: this uses more tokens, meaning it costs more.
 
 ##### `--all` or `-a`
-- Automatically stage changes in tracked files for the commit (default **false**)
+- Automatically stage changes in tracked files for the commit (default: **false**)
 
 ```sh
 aicommit2 --all # or -a
 ```
 
 ##### `--type` or `-t`
-- Automatically stage changes in tracked files for the commit (default **conventional**)
+- Automatically stage changes in tracked files for the commit (default: **conventional**)
 - it supports [`conventional`](https://conventionalcommits.org/) and [`gitmoji`](https://gitmoji.dev/)
 
 ```sh
@@ -193,7 +194,7 @@ aicommit2 config get OPENAI_KEY
 You can also retrieve multiple configuration options at once by separating them with spaces:
 
 ```sh
-aicommit2 config get OPENAI_KEY generate
+aicommit2 config get OPENAI_KEY OPENAI_MODEL CLOVAX_COOKIE 
 ```
 
 ### Setting a configuration value

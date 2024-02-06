@@ -8,7 +8,6 @@ import { AIService, AIServiceParams } from './ai.service.js';
 import { hasOwn } from '../../utils/config.js';
 import { KnownError } from '../../utils/error.js';
 import { deduplicateMessages } from '../../utils/openai.js';
-import { isValidConventionalMessage, isValidGitmojiMessage } from '../../utils/prompt.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
 
 export interface ClovaXConversationContent {
@@ -128,6 +127,7 @@ export class ClovaXService extends AIService {
         }
         let conversationId = '';
         let allText = '';
+        let errorMessage = '';
         jsonStringData
             .map(data => {
                 try {
@@ -147,7 +147,14 @@ export class ClovaXService extends AIService {
                     allText += data.text;
                     return;
                 }
+                if (hasOwn(data, 'error')) {
+                    errorMessage = `${data.error}: ${data.type || data.message || ''}`;
+                    return;
+                }
             });
+        if (errorMessage) {
+            throw new Error(errorMessage);
+        }
         if (!conversationId) {
             throw new Error(`No conversationId!`);
         }
@@ -161,24 +168,8 @@ export class ClovaXService extends AIService {
         return generatedText
             .split('\n')
             .map((message: string) => message.trim().replace(/^\d+\.\s/, ''))
-            .map((message: string) => {
-                if (this.params.config.type === 'conventional') {
-                    const regex = /: (\w)/;
-                    return message.replace(regex, (_: any, firstLetter: string) => `: ${firstLetter.toLowerCase()}`);
-                }
-                return message;
-            })
-            .filter((message: string) => {
-                switch (this.params.config.type) {
-                    case 'gitmoji':
-                        return isValidGitmojiMessage(message);
-                    case 'conventional':
-                        return isValidConventionalMessage(message);
-                    case '':
-                    default:
-                        return true;
-                }
-            });
+            .map((message: string) => this.extractCommitMessageFromRawText(this.params.config.type, message))
+            .filter((message: string) => !!message);
     }
 
     private async deleteConversation(conversationId: string): Promise<any> {

@@ -9,7 +9,6 @@ import { AIService, AIServiceParams } from './ai.service.js';
 import { hasOwn } from '../../utils/config.js';
 import { KnownError } from '../../utils/error.js';
 import { deduplicateMessages } from '../../utils/openai.js';
-import { isValidConventionalMessage, isValidGitmojiMessage } from '../../utils/prompt.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
 
 export class HuggingService extends AIService {
@@ -83,25 +82,8 @@ export class HuggingService extends AIService {
         return finalAnswerObj.text
             .split('\n')
             .map((message: string) => message.trim().replace(/^\d+\.\s/, ''))
-            .map((message: string) => {
-                // lowercase
-                if (this.params.config.type === 'conventional') {
-                    const regex = /: (\w)/;
-                    return message.replace(regex, (_: any, firstLetter: string) => `: ${firstLetter.toLowerCase()}`);
-                }
-                return message;
-            })
-            .filter((message: string) => {
-                switch (this.params.config.type) {
-                    case 'gitmoji':
-                        return isValidGitmojiMessage(message);
-                    case 'conventional':
-                        return isValidConventionalMessage(message);
-                    case '':
-                    default:
-                        return true;
-                }
-            });
+            .map((message: string) => this.extractCommitMessageFromRawText(this.params.config.type, message))
+            .filter((message: string) => !!message);
     }
 
     // for the 1st chat, the conversation needs to be summarized.
