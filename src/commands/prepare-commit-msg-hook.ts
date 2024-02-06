@@ -2,8 +2,8 @@ import fs from 'fs/promises';
 
 import { filter, lastValueFrom, map, toArray } from 'rxjs';
 
-import { LogManager } from '../managers/log.manager.js';
-import { ReactivePromptManager } from '../managers/reactive-prompt.manager.js';
+import { AIRequestManager } from '../managers/ai-request.manager.js';
+import { ConsoleManager } from '../managers/console.manager.js';
 import { ApiKeyName, ApiKeyNames } from '../services/ai/ai.service.js';
 import { getConfig } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
@@ -30,8 +30,8 @@ export default () =>
             return;
         }
 
-        const logManager = new LogManager();
-        logManager.printTitle();
+        const consoleManager = new ConsoleManager();
+        consoleManager.printTitle();
 
         const { env } = process;
         const config = await getConfig({
@@ -48,12 +48,12 @@ export default () =>
             throw new KnownError('Please set at least one API key via `aicommit2 config set OPENAI_KEY=<your token>`');
         }
 
-        const reactivePromptManager = new ReactivePromptManager(config, staged);
-        const spinner = logManager.displaySpinner('The AI is analyzing your changes');
+        const aiRequestManager = new AIRequestManager(config, staged);
+        const spinner = consoleManager.displaySpinner('The AI is analyzing your changes');
         let messages: string[];
         try {
             messages = await lastValueFrom(
-                reactivePromptManager.createAvailableAIRequests$(availableAPIKeyNames).pipe(
+                aiRequestManager.createAIRequests$(availableAPIKeyNames).pipe(
                     filter(data => !data.isError),
                     map(data => data.value),
                     toArray()
@@ -62,7 +62,7 @@ export default () =>
         } finally {
             spinner.stop();
             spinner.clear();
-            logManager.printAnalyzed();
+            consoleManager.printAnalyzed();
         }
 
         /**
@@ -94,9 +94,9 @@ export default () =>
         }
 
         await fs.appendFile(messageFilePath, instructions);
-        logManager.printSavedCommitMessage();
+        consoleManager.printSavedCommitMessage();
     })().catch(error => {
-        const commandLineManager = new LogManager();
+        const commandLineManager = new ConsoleManager();
         commandLineManager.printErrorMessage(error.message);
         handleCliError(error);
         process.exit(1);

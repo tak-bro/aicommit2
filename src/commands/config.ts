@@ -1,6 +1,6 @@
 import { command } from 'cleye';
 
-import { LogManager } from '../managers/log.manager.js';
+import { ConsoleManager } from '../managers/console.manager.js';
 import { getConfig, hasOwn, setConfigs } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
 
@@ -30,7 +30,7 @@ export default command(
 
             throw new KnownError(`Invalid mode: ${mode}`);
         })().catch(error => {
-            const commandLineManager = new LogManager();
+            const commandLineManager = new ConsoleManager();
             commandLineManager.printErrorMessage(error.message);
             handleCliError(error);
             process.exit(1);
