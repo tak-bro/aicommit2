@@ -1,10 +1,13 @@
 import fs from 'fs/promises';
 
+import { filter, lastValueFrom, map, toArray } from 'rxjs';
+
 import { LogManager } from '../managers/log.manager.js';
+import { ReactivePromptManager } from '../managers/reactive-prompt.manager.js';
+import { ApiKeyName, ApiKeyNames } from '../services/ai/ai.service.js';
 import { getConfig } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
 import { getStagedDiff } from '../utils/git.js';
-import { generateCommitMessage } from '../utils/openai.js';
 
 const [messageFilePath, commitSource] = process.argv.slice(2);
 
@@ -27,34 +30,39 @@ export default () =>
             return;
         }
 
-        const commandLineManager = new LogManager();
-        commandLineManager.printTitle();
+        const logManager = new LogManager();
+        logManager.printTitle();
 
         const { env } = process;
         const config = await getConfig({
             proxy: env.https_proxy || env.HTTPS_PROXY || env.http_proxy || env.HTTP_PROXY,
         });
 
-        const spinner = commandLineManager.displaySpinner('The AI is analyzing your changes');
+        const availableAPIKeyNames: ApiKeyName[] = Object.entries(config)
+            .filter(([key]) => ApiKeyNames.includes(key as ApiKeyName))
+            .filter(([_, value]) => !!value)
+            .map(([key]) => key as ApiKeyName);
+
+        const hasNoAvailableAIs = availableAPIKeyNames.length === 0;
+        if (hasNoAvailableAIs) {
+            throw new KnownError('Please set at least one API key via `aicommit2 config set OPENAI_KEY=<your token>`');
+        }
+
+        const reactivePromptManager = new ReactivePromptManager(config, staged);
+        const spinner = logManager.displaySpinner('The AI is analyzing your changes');
         let messages: string[];
         try {
-            messages = await generateCommitMessage(
-                config.OPENAI_KEY,
-                config.OPENAI_MODEL,
-                config.locale,
-                staged!.diff,
-                config.generate,
-                config['max-length'],
-                config.type,
-                config.timeout,
-                config['max-tokens'],
-                config.temperature,
-                config.proxy
+            messages = await lastValueFrom(
+                reactivePromptManager.createAvailableAIRequests$(availableAPIKeyNames).pipe(
+                    filter(data => !data.isError),
+                    map(data => data.value),
+                    toArray()
+                )
             );
         } finally {
             spinner.stop();
             spinner.clear();
-            commandLineManager.printAnalyzed();
+            logManager.printAnalyzed();
         }
 
         /**
@@ -86,7 +94,7 @@ export default () =>
         }
 
         await fs.appendFile(messageFilePath, instructions);
-        commandLineManager.printSavedCommitMessage();
+        logManager.printSavedCommitMessage();
     })().catch(error => {
         const commandLineManager = new LogManager();
         commandLineManager.printErrorMessage(error.message);

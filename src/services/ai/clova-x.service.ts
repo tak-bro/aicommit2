@@ -11,7 +11,6 @@ import { deduplicateMessages } from '../../utils/openai.js';
 import { isValidConventionalMessage, isValidGitmojiMessage } from '../../utils/prompt.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
 
-
 export interface ClovaXConversationContent {
     conversationId: string;
     title: string;
@@ -56,6 +55,8 @@ export class ClovaXService extends AIService {
     }
 
     private async generateMessage(): Promise<string[]> {
+        return ['test: test'];
+
         try {
             const { locale, generate, type } = this.params.config;
             const maxLength = this.params.config['max-length'];
@@ -93,18 +94,6 @@ export class ClovaXService extends AIService {
             return [];
         }
         return result.content.map(data => data.conversationId || '').filter(id => !!id);
-    }
-
-    private async deleteConversation(conversationId: string): Promise<any> {
-        const response = await new HttpRequestBuilder({
-            method: 'DELETE',
-            baseURL: `${this.host}/api/v1/conversation/${conversationId}`,
-            timeout: this.params.config.timeout,
-        })
-            .setHeaders({ Cookie: this.cookie })
-            .execute();
-
-        return response.data;
     }
 
     private async sendMessage(message: string): Promise<string> {
@@ -173,7 +162,6 @@ export class ClovaXService extends AIService {
             .split('\n')
             .map((message: string) => message.trim().replace(/^\d+\.\s/, ''))
             .map((message: string) => {
-                // lowercase
                 if (this.params.config.type === 'conventional') {
                     const regex = /: (\w)/;
                     return message.replace(regex, (_: any, firstLetter: string) => `: ${firstLetter.toLowerCase()}`);
@@ -191,6 +179,18 @@ export class ClovaXService extends AIService {
                         return true;
                 }
             });
+    }
+
+    private async deleteConversation(conversationId: string): Promise<any> {
+        const response = await new HttpRequestBuilder({
+            method: 'DELETE',
+            baseURL: `${this.host}/api/v1/conversation/${conversationId}`,
+            timeout: this.params.config.timeout,
+        })
+            .setHeaders({ Cookie: this.cookie })
+            .execute();
+
+        return response.data;
     }
 
     private getContentLength(formData: FormData) {

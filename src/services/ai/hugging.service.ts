@@ -5,7 +5,6 @@ import { Observable, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 import { v4 as uuidv4 } from 'uuid';
 
-
 import { AIService, AIServiceParams } from './ai.service.js';
 import { hasOwn } from '../../utils/config.js';
 import { KnownError } from '../../utils/error.js';
@@ -41,6 +40,7 @@ export class HuggingService extends AIService {
     }
 
     private async generateMessage(): Promise<string[]> {
+        return ['test: test2'];
         try {
             const { locale, generate, type } = this.params.config;
             const maxLength = this.params.config['max-length'];
