@@ -54,8 +54,6 @@ export class ClovaXService extends AIService {
     }
 
     private async generateMessage(): Promise<string[]> {
-        return ['test: test'];
-
         try {
             const { locale, generate, type } = this.params.config;
             const maxLength = this.params.config['max-length'];

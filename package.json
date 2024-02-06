@@ -11,7 +11,9 @@
         "aicommit2",
         "openai",
         "huggingface",
-        "hugging face"
+        "hugging face",
+        "clovax",
+        "clova x"
     ],
     "license": "MIT",
     "repository": "tak-bro/aicommit2",
