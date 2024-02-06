@@ -6,6 +6,7 @@ import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIService, AIServiceParams } from './ai.service.js';
 import { hasOwn } from '../../utils/config.js';
+import { KnownError } from '../../utils/error.js';
 import { deduplicateMessages } from '../../utils/openai.js';
 import { isValidConventionalMessage, isValidGitmojiMessage } from '../../utils/prompt.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
@@ -26,8 +27,6 @@ export interface ClovaXConversationResponse {
     page: number;
     size: number;
 }
-
-export const MAX_PROMPT_LENGTH = 1000;
 
 export class ClovaXService extends AIService {
     private host = `https://clova-x.naver.com`;
@@ -57,27 +56,23 @@ export class ClovaXService extends AIService {
     }
 
     private async generateMessage(): Promise<string[]> {
-        const { locale, generate, type } = this.params.config;
-        const maxLength = this.params.config['max-length'];
-        const diff = this.params.stagedDiff.diff;
-        let prompt = this.buildPrompt(locale, diff, generate, maxLength, type);
-        if (prompt.length > MAX_PROMPT_LENGTH) {
-            prompt = this.buildShortenPrompt(locale, diff, generate, maxLength, type);
+        try {
+            const { locale, generate, type } = this.params.config;
+            const maxLength = this.params.config['max-length'];
+            const diff = this.params.stagedDiff.diff;
+            const prompt = this.buildPrompt(locale, diff, generate, maxLength, type);
+            await this.getAllConversationIds();
+            const result = await this.sendMessage(prompt);
+            const { conversationId, allText } = this.parseSendMessageResult(result);
+            await this.deleteConversation(conversationId);
+            return deduplicateMessages(this.sanitizeMessage(allText));
+        } catch (error) {
+            const errorAsAny = error as any;
+            if (errorAsAny.code === 'ENOTFOUND') {
+                throw new KnownError(`Error connecting to ${errorAsAny.hostname} (${errorAsAny.syscall})`);
+            }
+            throw errorAsAny;
         }
-        if (prompt.length > MAX_PROMPT_LENGTH) {
-            throw new Error('Prompt message too long. Simplify the commit size (code volume).');
-        }
-        await this.getAllConversationIds();
-        const result = await this.sendMessage(prompt);
-        const { conversationId, allText } = this.parseSendMessageResult(result);
-        if (!conversationId) {
-            throw new Error(`No conversationId!`);
-        }
-        if (!allText) {
-            throw new Error(`No allText!`);
-        }
-        await this.deleteConversation(conversationId);
-        return deduplicateMessages(this.sanitizeMessage(allText));
     }
 
     private async getAllConversationIds(): Promise<string[]> {
@@ -117,23 +112,19 @@ export class ClovaXService extends AIService {
         const form = new FormData();
         form.append('form', new Blob([JSON.stringify(data)], { type: 'application/json' }));
 
-        try {
-            const response = await new HttpRequestBuilder({
-                method: 'POST',
-                baseURL: `${this.host}/api/v1/generate`,
-                timeout: this.params.config.timeout,
+        const response = await new HttpRequestBuilder({
+            method: 'POST',
+            baseURL: `${this.host}/api/v1/generate`,
+            timeout: this.params.config.timeout,
+        })
+            .setHeaders({
+                'Content-Type': 'multipart/form-data',
+                'Content-Length': this.getContentLength(form),
+                Cookie: this.cookie,
             })
-                .setHeaders({
-                    'Content-Type': 'multipart/form-data',
-                    Cookie: this.cookie,
-                })
-                .setBody(form)
-                .execute();
-            return response.data as string;
-        } catch (e) {
-            console.log(e);
-            throw e;
-        }
+            .setBody(form)
+            .execute();
+        return response.data as string;
     }
 
     private parseSendMessageResult(generatedText: string): { conversationId: string; allText: string } {
@@ -168,6 +159,12 @@ export class ClovaXService extends AIService {
                     return;
                 }
             });
+        if (!conversationId) {
+            throw new Error(`No conversationId!`);
+        }
+        if (!allText) {
+            throw new Error(`No allText!`);
+        }
         return { conversationId, allText };
     }
 
@@ -194,5 +191,11 @@ export class ClovaXService extends AIService {
                         return true;
                 }
             });
+    }
+
+    private getContentLength(formData: FormData) {
+        return Array.from(formData.entries(), ([key, prop]) => ({
+            [key]: { ContentLength: typeof prop === 'string' ? prop.length : prop.size },
+        }));
     }
 }

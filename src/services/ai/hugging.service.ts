@@ -1,17 +1,20 @@
+import { AxiosResponse } from 'axios';
 import chalk from 'chalk';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Observable, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 import { v4 as uuidv4 } from 'uuid';
 
+
 import { AIService, AIServiceParams } from './ai.service.js';
 import { hasOwn } from '../../utils/config.js';
 import { KnownError } from '../../utils/error.js';
-import { deduplicateMessages, httpsGet } from '../../utils/openai.js';
+import { deduplicateMessages } from '../../utils/openai.js';
 import { isValidConventionalMessage, isValidGitmojiMessage } from '../../utils/prompt.js';
+import { HttpRequestBuilder } from '../http/http-request.builder.js';
 
 export class HuggingService extends AIService {
-    private hostname = `huggingface.co`;
+    private host = `https://huggingface.co`;
     private cookie = ``;
 
     constructor(private readonly params: AIServiceParams) {
@@ -38,7 +41,6 @@ export class HuggingService extends AIService {
     }
 
     private async generateMessage(): Promise<string[]> {
-        return ['test: test'];
         try {
             const { locale, generate, type } = this.params.config;
             const maxLength = this.params.config['max-length'];
@@ -104,58 +106,63 @@ export class HuggingService extends AIService {
 
     // for the 1st chat, the conversation needs to be summarized.
     private async prepareConversation(conversationId: string, end: string = '11') {
-        const headers = {
-            Cookie: this.cookie,
-        };
-        return httpsGet(
-            this.hostname,
-            `/chat/conversation/${conversationId}/__data.json?x-sveltekit-invalidated=${end}`,
-            headers,
-            this.params.config.timeout,
-            this.params.config.proxy
-        );
+        const response: AxiosResponse<{ conversationId: string }> = await new HttpRequestBuilder({
+            method: 'GET',
+            baseURL: `${this.host}/chat/conversation/${conversationId}/__data.json`,
+            timeout: this.params.config.timeout,
+        })
+            .setHeaders({
+                'Content-Type': 'application/json',
+                Cookie: this.cookie,
+            })
+            .setParams({ 'x-sveltekit-invalidated': `${end}` })
+            .execute();
+
+        return response.data;
     }
 
     private async getNewConversationId(): Promise<{ conversationId: string }> {
-        const headers = {
-            'content-type': 'application/json',
-            Cookie: this.cookie,
-        };
-        const payload = JSON.stringify({ model: this.params.config.HUGGING_MODEL });
-        const fetched = await fetch(`https://${this.hostname}/chat/conversation`, {
-            headers: headers,
-            body: payload,
+        const response: AxiosResponse<{ conversationId: string }> = await new HttpRequestBuilder({
             method: 'POST',
-        });
-        const jsonData = await fetched.json();
-        if (!jsonData.conversationId) {
+            baseURL: `${this.host}/chat/conversation`,
+            timeout: this.params.config.timeout,
+        })
+            .setHeaders({
+                'content-type': 'application/json',
+                Cookie: this.cookie,
+            })
+            .setBody({ model: this.params.config.HUGGING_MODEL })
+            .execute();
+
+        if (!response.data || !response.data.conversationId) {
             throw new Error(`No conversationId on Hugging service`);
         }
-        return jsonData;
+        return response.data;
     }
 
     private async deleteConversation(conversationId: string): Promise<any> {
-        const headers = {
-            Cookie: this.cookie,
-        };
-        const deleted = await fetch(`https://${this.hostname}/chat/conversation/${conversationId}`, {
+        const response = await new HttpRequestBuilder({
             method: 'DELETE',
-            headers: {
-                ...headers,
-            },
-            body: null,
-        });
-        return await deleted.text();
+            baseURL: `${this.host}/chat/conversation/${conversationId}`,
+            timeout: this.params.config.timeout,
+        })
+            .setHeaders({ Cookie: this.cookie })
+            .execute();
+
+        return response.data;
     }
 
     private async sendMessage(conversationId: string, message: string) {
-        const fetched = await fetch(`https://${this.hostname}/chat/conversation/${conversationId}`, {
+        const response: AxiosResponse<string> = await new HttpRequestBuilder({
             method: 'POST',
-            headers: {
+            baseURL: `${this.host}/chat/conversation/${conversationId}`,
+            timeout: this.params.config.timeout,
+        })
+            .setHeaders({
                 'content-type': 'application/json',
-                cookie: this.cookie,
-            },
-            body: JSON.stringify({
+                Cookie: this.cookie,
+            })
+            .setBody({
                 inputs: message,
                 parameters: {
                     temperature: this.params.config.temperature,
@@ -175,8 +182,9 @@ export class HuggingService extends AIService {
                     use_cache: false,
                     web_search_id: '',
                 },
-            }),
-        });
-        return await fetched.text();
+            })
+            .execute();
+
+        return response.data;
     }
 }

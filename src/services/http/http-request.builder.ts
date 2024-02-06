@@ -17,6 +17,9 @@ export class HttpRequestBuilder {
     private config: AxiosRequestConfig;
 
     constructor(config: AxiosRequestConfig = {}) {
+        if (!config.method) {
+            throw new Error('method should be defined!');
+        }
         if (!config.baseURL) {
             throw new Error('baseURL should be defined!');
         }
