@@ -62,7 +62,6 @@ export abstract class AIService {
     protected extractCommitMessageFromRawText(type: CommitType, text: string): string {
         switch (type) {
             case 'conventional':
-                // eslint-disable-next-line no-useless-escape
                 const regex = new RegExp(
                     /(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test){1}(\([\s\w\.\-\p{Extended_Pictographic}]+\))?(!)?: ([\s\w \p{Extended_Pictographic}])+([\s\S]*)/
                 );
@@ -72,7 +71,6 @@ export abstract class AIService {
                     ? match[0].replace(/: (\w)/, (_: any, firstLetter: string) => `: ${firstLetter.toLowerCase()}`)
                     : '';
             case 'gitmoji':
-                // eslint-disable-next-line no-useless-escape
                 const gitmojiRegexp = new RegExp(/\:\w+\: (.*)$/);
                 const gitmojoMatched = text.match(gitmojiRegexp);
                 return gitmojoMatched ? gitmojoMatched[0] : '';

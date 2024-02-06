@@ -51,14 +51,12 @@ export const generatePrompt = (locale: string, maxLength: number, type: CommitTy
         .join('\n');
 
 export const isValidConventionalMessage = (message: string): boolean => {
-    // eslint-disable-next-line no-useless-escape
     const conventionalReg =
         /^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test){1}(\([\s\w\.\-\p{Extended_Pictographic}]+\))?(!)?: ([\s\w \p{Extended_Pictographic}])+([\s\S]*)/;
     return conventionalReg.test(message);
 };
 
 export const isValidGitmojiMessage = (message: string): boolean => {
-    // eslint-disable-next-line no-useless-escape
     const gitmojiCommitMessageRegex = /^\:\w+\: (.*)$/;
     return gitmojiCommitMessageRegex.test(message);
 };
