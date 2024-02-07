@@ -1,14 +1,14 @@
 <div align="center">
   <div>
-    <img src=".github/screenshot.png" alt="AICommit2"/>
+    <img src="https://github.com/tak-bro/aicommit2/assets/7614353/fae40f3e-329d-4acf-bd91-f7297cb88209" alt="AICommit2"/>
     <h1 align="center">AICommit2</h1>
   </div>
 	<p>A Reactive CLI that generates git commit messages with diverse AI</p>
-	<a href="https://www.npmjs.com/package/aicommit2">
+	<a aria-label="npm" href="https://www.npmjs.com/package/aicommit2">
         <img src="https://img.shields.io/npm/v/aicommit2" alt="Current version">
     </a>
     <a aria-label="license" href="https://github.com/tak-bro/aicommit2/blob/main/LICENSE">
-        <img src="https://img.shields.io/github/license/tak-bro/aicommit2.svg" alt="">
+        <img src="https://img.shields.io/github/license/tak-bro/aicommit2.svg" alt="license">
     </a>
 </div>
 
