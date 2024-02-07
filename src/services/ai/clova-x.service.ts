@@ -1,5 +1,7 @@
 import { AxiosResponse } from 'axios';
 import chalk from 'chalk';
+import 'web-streams-polyfill/es6';
+import { Blob, FormData } from 'formdata-node';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Observable, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
@@ -96,7 +98,7 @@ export class ClovaXService extends AIService {
     private async sendMessage(message: string): Promise<string> {
         const data = { text: message, action: 'new' };
         const form = new FormData();
-        form.append('form', new Blob([JSON.stringify(data)], { type: 'application/json' }));
+        form.set('form', new Blob([JSON.stringify(data)], { type: 'application/json' }));
 
         const response = await new HttpRequestBuilder({
             method: 'POST',
