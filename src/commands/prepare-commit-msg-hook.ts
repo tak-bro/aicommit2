@@ -1,9 +1,13 @@
 import fs from 'fs/promises';
-import { getStagedDiff } from '../utils/git.js';
+
+import { filter, lastValueFrom, map, toArray } from 'rxjs';
+
+import { AIRequestManager } from '../managers/ai-request.manager.js';
+import { ConsoleManager } from '../managers/console.manager.js';
+import { ApiKeyName, ApiKeyNames } from '../services/ai/ai.service.js';
 import { getConfig } from '../utils/config.js';
-import { generateCommitMessage } from '../utils/openai.js';
-import { handleCliError, KnownError } from '../utils/error.js';
-import { LogManager } from '../services/log.manager.js';
+import { KnownError, handleCliError } from '../utils/error.js';
+import { getStagedDiff } from '../utils/git.js';
 
 const [messageFilePath, commitSource] = process.argv.slice(2);
 
@@ -26,32 +30,39 @@ export default () =>
             return;
         }
 
-        const commandLineManager = new LogManager();
-        commandLineManager.printTitle();
+        const consoleManager = new ConsoleManager();
+        consoleManager.printTitle();
 
         const { env } = process;
         const config = await getConfig({
             proxy: env.https_proxy || env.HTTPS_PROXY || env.http_proxy || env.HTTP_PROXY,
         });
 
-        const spinner = commandLineManager.displaySpinner('The AI is analyzing your changes');
+        const availableAPIKeyNames: ApiKeyName[] = Object.entries(config)
+            .filter(([key]) => ApiKeyNames.includes(key as ApiKeyName))
+            .filter(([_, value]) => !!value)
+            .map(([key]) => key as ApiKeyName);
+
+        const hasNoAvailableAIs = availableAPIKeyNames.length === 0;
+        if (hasNoAvailableAIs) {
+            throw new KnownError('Please set at least one API key via `aicommit2 config set OPENAI_KEY=<your token>`');
+        }
+
+        const aiRequestManager = new AIRequestManager(config, staged);
+        const spinner = consoleManager.displaySpinner('The AI is analyzing your changes');
         let messages: string[];
         try {
-            messages = await generateCommitMessage(
-                config.OPENAI_KEY,
-                config.OPENAI_MODEL,
-                config.locale,
-                staged!.diff,
-                config.generate,
-                config['max-length'],
-                config.type,
-                config.timeout,
-                config.proxy
+            messages = await lastValueFrom(
+                aiRequestManager.createAIRequests$(availableAPIKeyNames).pipe(
+                    filter(data => !data.isError),
+                    map(data => data.value),
+                    toArray()
+                )
             );
         } finally {
             spinner.stop();
             spinner.clear();
-            commandLineManager.printAnalyzed();
+            consoleManager.printAnalyzed();
         }
 
         /**
@@ -83,9 +94,9 @@ export default () =>
         }
 
         await fs.appendFile(messageFilePath, instructions);
-        commandLineManager.printSavedCommitMessage();
+        consoleManager.printSavedCommitMessage();
     })().catch(error => {
-        const commandLineManager = new LogManager();
+        const commandLineManager = new ConsoleManager();
         commandLineManager.printErrorMessage(error.message);
         handleCliError(error);
         process.exit(1);

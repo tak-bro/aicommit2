@@ -1,14 +1,18 @@
 import https from 'https';
-import type { ClientRequest, IncomingMessage } from 'http';
-import type { CreateChatCompletionRequest, CreateChatCompletionResponse } from 'openai';
+
 import {
     type TiktokenModel,
+    encoding_for_model,
     // encoding_for_model,
 } from '@dqbd/tiktoken';
 import createHttpsProxyAgent from 'https-proxy-agent';
+
 import { KnownError } from './error.js';
-import type { CommitType } from './config.js';
 import { generatePrompt, isValidConventionalMessage, isValidGitmojiMessage } from './prompt.js';
+
+import type { CommitType } from './config.js';
+import type { ClientRequest, IncomingMessage } from 'http';
+import type { CreateChatCompletionRequest, CreateChatCompletionResponse } from 'openai';
 
 export const httpsGet = async (
     hostname: string,
@@ -151,22 +155,22 @@ const sanitizeMessage = (message: string) =>
 
 export const deduplicateMessages = (array: string[]) => Array.from(new Set(array));
 
-// const generateStringFromLength = (length: number) => {
-// 	let result = '';
-// 	const highestTokenChar = 'z';
-// 	for (let i = 0; i < length; i += 1) {
-// 		result += highestTokenChar;
-// 	}
-// 	return result;
-// };
+const generateStringFromLength = (length: number) => {
+    let result = '';
+    const highestTokenChar = 'z';
+    for (let i = 0; i < length; i += 1) {
+        result += highestTokenChar;
+    }
+    return result;
+};
 
-// const getTokens = (prompt: string, model: TiktokenModel) => {
-// 	const encoder = encoding_for_model(model);
-// 	const tokens = encoder.encode(prompt).length;
-// 	// Free the encoder to avoid possible memory leaks.
-// 	encoder.free();
-// 	return tokens;
-// };
+const getTokens = (prompt: string, model: TiktokenModel) => {
+    const encoder = encoding_for_model(model);
+    const tokens = encoder.encode(prompt).length;
+    // Free the encoder to avoid possible memory leaks.
+    encoder.free();
+    return tokens;
+};
 
 export const generateCommitMessage = async (
     apiKey: string,
@@ -177,14 +181,10 @@ export const generateCommitMessage = async (
     maxLength: number,
     type: CommitType,
     timeout: number,
+    maxTokens: number,
+    temperature: number,
     proxy?: string
 ) => {
-    // return [
-    //     'fix(temp): fix cli argument type',
-    //     'feat(temp): add confirm configuration',
-    //     'refactor(temp): modify chatGPT message generation',
-    // ];
-
     try {
         const completion = await createChatCompletion(
             apiKey,
@@ -200,11 +200,11 @@ export const generateCommitMessage = async (
                         content: diff,
                     },
                 ],
-                temperature: 0.7,
+                temperature,
                 top_p: 1,
                 frequency_penalty: 0,
                 presence_penalty: 0,
-                max_tokens: 200,
+                max_tokens: maxTokens,
                 stream: false,
                 n: completions,
             },

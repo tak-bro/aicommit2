@@ -1,19 +1,21 @@
+import { AxiosResponse } from 'axios';
 import chalk from 'chalk';
-import { catchError, concatMap, from, map, Observable } from 'rxjs';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
+import { Observable, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
-import { CommitType, hasOwn } from '../../utils/config.js';
-import { generatePrompt, isValidConventionalMessage, isValidGitmojiMessage } from '../../utils/prompt.js';
-import { KnownError } from '../../utils/error.js';
-import { AIFactoryParams, AIService } from './ai-service.factory.js';
 import { v4 as uuidv4 } from 'uuid';
-import { deduplicateMessages, httpsGet } from '../../utils/openai.js';
+
+import { AIService, AIServiceParams } from './ai.service.js';
+import { hasOwn } from '../../utils/config.js';
+import { KnownError } from '../../utils/error.js';
+import { deduplicateMessages } from '../../utils/openai.js';
+import { HttpRequestBuilder } from '../http/http-request.builder.js';
 
 export class HuggingService extends AIService {
-    private hostname = `huggingface.co`;
+    private host = `https://huggingface.co`;
     private cookie = ``;
 
-    constructor(private readonly params: AIFactoryParams) {
+    constructor(private readonly params: AIServiceParams) {
         super(params);
         this.colors = {
             primary: '#FED21F',
@@ -21,7 +23,7 @@ export class HuggingService extends AIService {
         };
         this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold('[HuggingFace]');
         this.errorPrefix = chalk.red.bold(`[HuggingFace]`);
-        this.cookie = this.params.config.HUGGING_KEY;
+        this.cookie = this.params.config.HUGGING_COOKIE;
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
@@ -41,8 +43,7 @@ export class HuggingService extends AIService {
             const { locale, generate, type } = this.params.config;
             const maxLength = this.params.config['max-length'];
             const diff = this.params.stagedDiff.diff;
-            const prompt = this.generatePrompt(locale, diff, generate, maxLength, type);
-
+            const prompt = this.buildPrompt(locale, diff, generate, maxLength, type);
             const { conversationId } = await this.getNewConversationId();
             await this.prepareConversation(conversationId);
             const generatedText = await this.sendMessage(conversationId, prompt);
@@ -55,11 +56,6 @@ export class HuggingService extends AIService {
             }
             throw errorAsAny;
         }
-    }
-
-    private generatePrompt(locale: string, diff: string, completions: number, maxLength: number, type: CommitType) {
-        const defaultPrompt = generatePrompt(locale, maxLength, type);
-        return `${defaultPrompt}\nPlease just generate ${completions} messages. Here are git diff: \n${diff}`;
     }
 
     private sanitizeMessage(generatedText: string) {
@@ -85,86 +81,74 @@ export class HuggingService extends AIService {
         return finalAnswerObj.text
             .split('\n')
             .map((message: string) => message.trim().replace(/^\d+\.\s/, ''))
-            .map((message: string) => {
-                // lowercase
-                if (this.params.config.type === 'conventional') {
-                    const regex = /: (\w)/;
-                    return message.replace(regex, (_: any, firstLetter: string) => `: ${firstLetter.toLowerCase()}`);
-                }
-                return message;
-            })
-            .filter((message: string) => {
-                switch (this.params.config.type) {
-                    case 'gitmoji':
-                        return isValidGitmojiMessage(message);
-                    case 'conventional':
-                        return isValidConventionalMessage(message);
-                    case '':
-                    default:
-                        return true;
-                }
-            });
+            .map((message: string) => this.extractCommitMessageFromRawText(this.params.config.type, message))
+            .filter((message: string) => !!message);
     }
 
     // for the 1st chat, the conversation needs to be summarized.
     private async prepareConversation(conversationId: string, end: string = '11') {
-        const headers = {
-            Cookie: this.cookie,
-        };
-        return httpsGet(
-            this.hostname,
-            `/chat/conversation/${conversationId}/__data.json?x-sveltekit-invalidated=${end}`,
-            headers,
-            this.params.config.timeout,
-            this.params.config.proxy
-        );
+        const response: AxiosResponse<{ conversationId: string }> = await new HttpRequestBuilder({
+            method: 'GET',
+            baseURL: `${this.host}/chat/conversation/${conversationId}/__data.json`,
+            timeout: this.params.config.timeout,
+        })
+            .setHeaders({
+                'Content-Type': 'application/json',
+                Cookie: this.cookie,
+            })
+            .setParams({ 'x-sveltekit-invalidated': `${end}` })
+            .execute();
+
+        return response.data;
     }
 
     private async getNewConversationId(): Promise<{ conversationId: string }> {
-        const headers = {
-            'content-type': 'application/json',
-            Cookie: this.cookie,
-        };
-        const payload = JSON.stringify({ model: this.params.config.HUGGING_MODEL });
-        const fetched = await fetch(`https://${this.hostname}/chat/conversation`, {
-            headers: headers,
-            body: payload,
+        const response: AxiosResponse<{ conversationId: string }> = await new HttpRequestBuilder({
             method: 'POST',
-        });
-        const jsonData = await fetched.json();
-        if (!jsonData.conversationId) {
+            baseURL: `${this.host}/chat/conversation`,
+            timeout: this.params.config.timeout,
+        })
+            .setHeaders({
+                'content-type': 'application/json',
+                Cookie: this.cookie,
+            })
+            .setBody({ model: this.params.config.HUGGING_MODEL })
+            .execute();
+
+        if (!response.data || !response.data.conversationId) {
             throw new Error(`No conversationId on Hugging service`);
         }
-        return jsonData;
+        return response.data;
     }
 
     private async deleteConversation(conversationId: string): Promise<any> {
-        const headers = {
-            Cookie: this.cookie,
-        };
-        const deleted = await fetch(`https://${this.hostname}/chat/conversation/${conversationId}`, {
+        const response = await new HttpRequestBuilder({
             method: 'DELETE',
-            headers: {
-                ...headers,
-            },
-            body: null,
-        });
-        return await deleted.text();
+            baseURL: `${this.host}/chat/conversation/${conversationId}`,
+            timeout: this.params.config.timeout,
+        })
+            .setHeaders({ Cookie: this.cookie })
+            .execute();
+
+        return response.data;
     }
 
     private async sendMessage(conversationId: string, message: string) {
-        const fetched = await fetch(`https://${this.hostname}/chat/conversation/${conversationId}`, {
+        const response: AxiosResponse<string> = await new HttpRequestBuilder({
             method: 'POST',
-            headers: {
+            baseURL: `${this.host}/chat/conversation/${conversationId}`,
+            timeout: this.params.config.timeout,
+        })
+            .setHeaders({
                 'content-type': 'application/json',
-                cookie: this.cookie,
-            },
-            body: JSON.stringify({
+                Cookie: this.cookie,
+            })
+            .setBody({
                 inputs: message,
                 parameters: {
-                    temperature: 0.7,
+                    temperature: this.params.config.temperature,
                     truncate: 1000,
-                    max_new_tokens: 1024,
+                    max_new_tokens: this.params.config['max-tokens'],
                     stop: ['</s>'],
                     top_p: 0.95,
                     repetition_penalty: 1.2,
@@ -179,8 +163,9 @@ export class HuggingService extends AIService {
                     use_cache: false,
                     web_search_id: '',
                 },
-            }),
-        });
-        return await fetched.text();
+            })
+            .execute();
+
+        return response.data;
     }
 }

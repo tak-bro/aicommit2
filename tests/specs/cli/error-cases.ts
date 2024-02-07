@@ -1,4 +1,5 @@
-import { testSuite, expect } from 'manten';
+import { expect, testSuite } from 'manten';
+
 import { createFixture, createGit } from '../../utils.js';
 
 export default testSuite(({ describe }) => {

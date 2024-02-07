@@ -1,4 +1,5 @@
 import chalk from 'chalk';
+
 import { version } from '../../package.json';
 
 export class KnownError extends Error {}
