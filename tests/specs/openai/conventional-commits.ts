@@ -146,7 +146,9 @@ export default testSuite(({ describe }) => {
                 config.generate,
                 config['max-length'],
                 config.type,
-                7000
+                7000,
+                config['max-tokens'],
+                config.temperature
             );
 
             return commitMessages[0];

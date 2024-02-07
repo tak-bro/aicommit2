@@ -1,7 +1,7 @@
 {
     "name": "aicommit2",
     "version": "0.0.0-semantic-release",
-    "description": "Writes your git commit messages for you with AI",
+    "description": "A Reactive CLI that generates git commit messages with diverse AI",
     "keywords": [
         "ai",
         "git",
@@ -11,7 +11,9 @@
         "aicommit2",
         "openai",
         "huggingface",
-        "hugging face"
+        "hugging face",
+        "clovax",
+        "clova x"
     ],
     "license": "MIT",
     "repository": "tak-bro/aicommit2",

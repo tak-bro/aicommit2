@@ -23,6 +23,7 @@
             }
         ],
         "no-unused-vars": "off",
+        "no-useless-escape": "off",
         "@typescript-eslint/no-explicit-any": "off",
         "curly": "error",
         "unused-imports/no-unused-imports": "error",

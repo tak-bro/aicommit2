@@ -1,14 +1,14 @@
 <div align="center">
   <div>
-    <img src=".github/screenshot.png" alt="AICommit2"/>
+    <img src="https://github.com/tak-bro/aicommit2/assets/7614353/fae40f3e-329d-4acf-bd91-f7297cb88209" alt="AICommit2"/>
     <h1 align="center">AICommit2</h1>
   </div>
 	<p>A Reactive CLI that generates git commit messages with diverse AI</p>
-	<a href="https://www.npmjs.com/package/aicommit2">
+	<a aria-label="npm" href="https://www.npmjs.com/package/aicommit2">
         <img src="https://img.shields.io/npm/v/aicommit2" alt="Current version">
     </a>
     <a aria-label="license" href="https://github.com/tak-bro/aicommit2/blob/main/LICENSE">
-        <img src="https://img.shields.io/github/license/tak-bro/aicommit2.svg" alt="">
+        <img src="https://img.shields.io/github/license/tak-bro/aicommit2.svg" alt="license">
     </a>
 </div>
 
@@ -16,12 +16,13 @@
 
 ## Project Base & Inspiration
 
-The core functionalities and architecture of this project are inspired by [AI Commits](https://https://github.com/Nutlope/aicommit).
+The core functionalities and architecture of this project are inspired by [AI Commits](https://github.com/Nutlope/aicommits).
 
 ## Supported AI
 
 - [OpenAI](https://openai.com/)
-- [HuggingChat](https://huggingface.co/chat/)
+- [Huggingface **(Unofficial)**](https://huggingface.co/chat/)
+- [Clova X **(Unofficial)**](https://clova-x.naver.com/)
 
 ## Setup
 
@@ -36,7 +37,8 @@ npm install -g aicommit2
 2. Retrieve your API key or Cookie
 
 - [OpenAI](https://platform.openai.com/account/api-keys)
-- [Huggingface Chat](https://github.com/tak-bro/aicommit2/blob/main/README.md#how-to-get-cookie)
+- [Huggingface **(Unofficial)**](https://github.com/tak-bro/aicommit2/blob/main/README.md#how-to-get-cookie)
+- [Clova X **(Unofficial)**](https://github.com/tak-bro/aicommit2/blob/main/README.md#how-to-get-cookie)
  
 > If you haven't already, you'll have to create an account and set up billing. 
 
@@ -45,11 +47,12 @@ npm install -g aicommit2
 ```sh
 aicommit2 config set OPENAI_KEY=<your token> # openai
 aicommit2 config set HUGGING_COOKIE="<your browser cookie>" # huggingface
+aicommit2 config set CLOVAX_COOKIE="<your browser cookie>" # clova x
 ```
 
 This will create a `.aicommit2` file in your home directory.
 
-> **At least one API key must be set up.**
+> It is not necessary to set all keys. **But at least one key must be set up.**
 
 ### Upgrading
 
@@ -106,14 +109,14 @@ aicommit2 --generate <i> # or -g <i>
 > Warning: this uses more tokens, meaning it costs more.
 
 ##### `--all` or `-a`
-- Automatically stage changes in tracked files for the commit (default **false**)
+- Automatically stage changes in tracked files for the commit (default: **false**)
 
 ```sh
 aicommit2 --all # or -a
 ```
 
 ##### `--type` or `-t`
-- Automatically stage changes in tracked files for the commit (default **conventional**)
+- Automatically stage changes in tracked files for the commit (default: **conventional**)
 - it supports [`conventional`](https://conventionalcommits.org/) and [`gitmoji`](https://gitmoji.dev/)
 
 ```sh
@@ -132,7 +135,7 @@ aicommit2 --confirm # or -y
 - Copy the selected message to the clipboard (default: **false**)
 - This is a useful option when you don't want to commit through aicommit2.
 - If you give this option, aicommit2 will not commit.
-- 
+ 
 ```sh
 aicommit2 --clipboard # or -c
 ```
@@ -168,7 +171,7 @@ git commit # Only generates a message when it's not passed in
 
 > If you ever want to write your own message instead of generating one, you can simply pass one in: `git commit -m "My message"`
 
-2. aicommit2 will generate the commit message for you and pass it back to Git. Git will open it with the [configured editor](https://docs.github.com/en/get-started/getting-started-with-git/associating-text-editors-with-git) for you to review/edit it.
+2. AICommit2 will generate the commit message for you and pass it back to Git. Git will open it with the [configured editor](https://docs.github.com/en/get-started/getting-started-with-git/associating-text-editors-with-git) for you to review/edit it.
 
 3. Save and close the editor to commit!
 
@@ -191,7 +194,7 @@ aicommit2 config get OPENAI_KEY
 You can also retrieve multiple configuration options at once by separating them with spaces:
 
 ```sh
-aicommit2 config get OPENAI_KEY generate
+aicommit2 config get OPENAI_KEY OPENAI_MODEL CLOVAX_COOKIE 
 ```
 
 ### Setting a configuration value
@@ -222,8 +225,7 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 | `OPENAI_MODEL`   | `gpt-3.5-turbo`                        | The OpenAI Model to use.                                                    |
 | `HUGGING_COOKIE` | N/A                                    | The HuggingFace Cookie string                                               |
 | `HUGGING_MODEL`  | `mistralai/Mixtral-8x7B-Instruct-v0.1` | The HuggingFace Model to use.                                               |
-| `confirm`        | `false`                                | Skip confirmation when committing after message generation (default: false) |
-| `clipboard`      | `false`                                | Copy the selected message to the clipboard                                  |
+| `CLOVAX_COOKIE`  | N/A                                    | The Clova X Cookie string                                                   |
 | `locale`         | `en`                                   | Locale for the generated commit messages.                                   |
 | `generate`       | `1`                                    | Number of commit messages to generate.                                      |
 | `type`           | `conventional`                         | Type of commit message to generate.                                         |
@@ -252,7 +254,7 @@ aicommit2 config set OPENAI_MODEL=gpt-4
 
 #### HUGGING_COOKIE
 
-The Huggingface Chat Cookie. Please check [how to get cookie](https://github.com/tak-bro/aicommit2/blob/main/README.md#how-to-get-cookie)
+The [Huggingface Chat](https://huggingface.co/chat/) Cookie. Please check [how to get cookie](https://github.com/tak-bro/aicommit2/blob/main/README.md#how-to-get-cookie)
 
 #### HUGGING_MODEL
 
@@ -262,9 +264,13 @@ Supported:
 - `mistralai/Mixtral-8x7B-Instruct-v0.1`
 - `meta-llama/Llama-2-70b-chat-hf`
 - `NousResearch/Nous-Hermes-2-Mixtral-8x7B-DPO`
-- `codellama/CodeLlama-34b-Instruct-hf`
+- `codellama/CodeLlama-70b-Instruct-hf`
 - `mistralai/Mistral-7B-Instruct-v0.2`
 - `openchat/openchat-3.5-0106`
+
+#### CLOVAX_COOKIE
+
+The [Clova X](https://clova-x.naver.com/) Cookie. Please check [how to get cookie](https://github.com/tak-bro/aicommit2/blob/main/README.md#how-to-get-cookie)
 
 #### locale
 
@@ -286,17 +292,11 @@ Set a HTTP/HTTPS proxy to use for requests.
 
 To clear the proxy option, you can use the command (note the empty value after the equals sign):
 
-> Only supported within the OpenAI
+> **Only supported within the OpenAI**
 
 ```sh
 aicommit2 config set proxy=
 ```
-
-#### confirm
-
-Default: true
-
-Check again when committing after message generation
 
 #### timeout
 
@@ -349,15 +349,16 @@ aicommit2 config set max-tokens=1000
 
 This CLI tool runs `git diff` to grab all your latest code changes, sends them to configured AI, then returns the AI generated commit message.
 
-## HuggingFace
+## How to get Cookie(**Unofficial API**)
 
-### How to get Cookie
-* Login to the [HuggingFace Chat](https://huggingface.co/chat).
+* Login to the site you want
 * You can get cookie from the browser's developer tools network tab
 * See for any requests check out the Cookie, **Copy whole value**
-* check below image for the format of cookie
+* Check below image for the format of cookie
 
 ![how-to-get-cookie](https://github.com/tak-bro/aicommit2/assets/7614353/66f2994d-23d9-4c88-a113-f2d3dc5c0669)
+
+> This picture is an example of the Huggingface Chat.
  
 ## Disclaimer
 

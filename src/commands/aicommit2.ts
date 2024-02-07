@@ -1,15 +1,17 @@
 import { execa } from 'execa';
 import inquirer from 'inquirer';
+import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import ora from 'ora';
 
+import { AIRequestManager } from '../managers/ai-request.manager.js';
+import { ConsoleManager } from '../managers/console.manager.js';
+import { ReactivePromptManager } from '../managers/reactive-prompt.manager.js';
 import { ApiKeyName, ApiKeyNames } from '../services/ai/ai.service.js';
-import { LogManager } from '../services/log.manager.js';
-import { ReactivePromptManager } from '../services/reactive-prompt.manager.js';
 import { getConfig } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
 import { assertGitRepo, getStagedDiff } from '../utils/git.js';
 
-const logManager = new LogManager();
+const consoleManager = new ConsoleManager();
 
 export default async (
     locale: string | undefined,
@@ -22,14 +24,14 @@ export default async (
     rawArgv: string[]
 ) =>
     (async () => {
-        logManager.printTitle();
+        consoleManager.printTitle();
 
         await assertGitRepo();
         if (stageAll) {
             await execa('git', ['add', '--update']); // NOTE: should be equivalent behavior to `git commit --all`
         }
 
-        const detectingFilesSpinner = logManager.displaySpinner('Detecting staged files');
+        const detectingFilesSpinner = consoleManager.displaySpinner('Detecting staged files');
         const staged = await getStagedDiff(excludeFiles);
         detectingFilesSpinner.stop();
         if (!staged) {
@@ -37,7 +39,7 @@ export default async (
                 'No staged changes found. Stage your changes manually, or automatically stage all changes with the `--all` flag.'
             );
         }
-        logManager.printStagedFiles(staged);
+        consoleManager.printStagedFiles(staged);
 
         const { env } = process;
         const config = await getConfig({
@@ -45,12 +47,12 @@ export default async (
             OPENAI_MODEL: env.OPENAI_MODEL || env['openai-model'] || env['openai_model'],
             HUGGING_COOKIE: env.HUGGING_COOKIE || env.HUGGING_API_KEY || env.HF_TOKEN,
             HUGGING_MODEL: env.HUGGING_MODEL || env['hugging-model'],
+            CLOVAX_COOKIE: env.CLOVAX_COOKIE || env.CLOVA_X_COOKIE,
             proxy: env.https_proxy || env.HTTPS_PROXY || env.http_proxy || env.HTTP_PROXY,
             temperature: env.temperature,
             generate: generate?.toString() || env.generate,
             type: commitType?.toString() || env.type,
             locale: locale?.toString() || env.locale,
-            confirm: confirm || (env.confirm as any),
         });
 
         const availableAPIKeyNames: ApiKeyName[] = Object.entries(config)
@@ -63,16 +65,24 @@ export default async (
             throw new KnownError('Please set at least one API key via `aicommit2 config set OPENAI_KEY=<your token>`');
         }
 
-        const reactivePromptManager = new ReactivePromptManager(config, staged);
+        const aiRequestManager = new AIRequestManager(config, staged);
+        const reactivePromptManager = new ReactivePromptManager();
         const selectPrompt = reactivePromptManager.initPrompt();
 
         reactivePromptManager.startLoader();
-        const subscription = reactivePromptManager.generateAIMessages$(availableAPIKeyNames);
+        const subscription = aiRequestManager.createAIRequests$(availableAPIKeyNames).subscribe(
+            (choice: ReactiveListChoice) => reactivePromptManager.refreshChoices(choice),
+            () => {
+                /* empty */
+            },
+            () => reactivePromptManager.checkErrorOnChoices()
+        );
         const answer = await selectPrompt;
         subscription.unsubscribe();
         reactivePromptManager.completeSubject();
+
         // NOTE: reactiveListPrompt has 2 blank lines
-        logManager.moveCursorUp();
+        consoleManager.moveCursorUp();
 
         const chosenMessage = answer.aicommit2Prompt?.value;
         if (!chosenMessage) {
@@ -83,17 +93,16 @@ export default async (
             // eslint-disable-next-line @typescript-eslint/no-var-requires
             const ncp = require('copy-paste');
             ncp.copy(chosenMessage);
-            logManager.printCopied();
+            consoleManager.printCopied();
             process.exit();
         }
 
-        const withoutConfirm = config.confirm;
-        if (withoutConfirm) {
+        if (confirm) {
             const commitSpinner = ora('Committing with the generated message').start();
             await execa('git', ['commit', '-m', chosenMessage, ...rawArgv]);
             commitSpinner.stop();
             commitSpinner.clear();
-            logManager.printCommitted();
+            consoleManager.printCommitted();
             process.exit();
         }
 
@@ -111,13 +120,13 @@ export default async (
             await execa('git', ['commit', '-m', chosenMessage, ...rawArgv]);
             commitSpinner.stop();
             commitSpinner.clear();
-            logManager.printCommitted();
+            consoleManager.printCommitted();
             process.exit();
         }
-        logManager.printCancelledCommit();
+        consoleManager.printCancelledCommit();
         process.exit();
     })().catch(error => {
-        logManager.printErrorMessage(error.message);
+        consoleManager.printErrorMessage(error.message);
         handleCliError(error);
         process.exit(1);
     });

@@ -6,7 +6,7 @@ import ora, { Ora } from 'ora';
 
 import { getDetectedMessage } from '../utils/git.js';
 
-export class LogManager {
+export class ConsoleManager {
     private title = 'aicommit2';
 
     printTitle() {
