@@ -254,7 +254,7 @@ aicommit2 config set OPENAI_MODEL=gpt-4
 
 #### HUGGING_COOKIE
 
-The [Huggingface Chat](https://huggingface.co/chat/) Cookie. Please check [how to get cookie](https://github.com/tak-bro/aicommit2/blob/main/README.md#how-to-get-cookie)
+The [Huggingface Chat](https://huggingface.co/chat/) Cookie. Please check [how to get cookie](https://github.com/tak-bro/aicommit2?tab=readme-ov-file#how-to-get-cookieunofficial-api)
 
 #### HUGGING_MODEL
 
@@ -270,7 +270,7 @@ Supported:
 
 #### CLOVAX_COOKIE
 
-The [Clova X](https://clova-x.naver.com/) Cookie. Please check [how to get cookie](https://github.com/tak-bro/aicommit2/blob/main/README.md#how-to-get-cookie)
+The [Clova X](https://clova-x.naver.com/) Cookie. Please check [how to get cookie](https://github.com/tak-bro/aicommit2?tab=readme-ov-file#how-to-get-cookieunofficial-api)
 
 #### locale
 
@@ -372,7 +372,7 @@ It is recommended that users thoroughly review the API documentation and adhere 
 
 ## Project Base and Inspiration
 
-The core functionalities and architecture of this project are inspired by [AI Commits](https://https://github.com/Nutlope/aicommit). In addition to AI Commits, inspiration has been drawn from various open-source communities, expanding upon existing ideas and introducing new features.
+The core functionalities and architecture of this project are inspired by [AI Commits](https://github.com/Nutlope/aicommits). In addition to AI Commits, inspiration has been drawn from various open-source communities, expanding upon existing ideas and introducing new features.
 
 ## Maintainers
 
