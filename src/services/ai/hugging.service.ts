@@ -81,6 +81,7 @@ export class HuggingService extends AIService {
         return finalAnswerObj.text
             .split('\n')
             .map((message: string) => message.trim().replace(/^\d+\.\s/, ''))
+            .map((message: string) => message.replace(/`/g, ''))
             .map((message: string) => this.extractCommitMessageFromRawText(this.params.config.type, message))
             .filter((message: string) => !!message);
     }

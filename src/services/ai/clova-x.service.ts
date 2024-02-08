@@ -1,6 +1,6 @@
 import { AxiosResponse } from 'axios';
 import chalk from 'chalk';
-import 'web-streams-polyfill/es6';
+import 'web-streams-polyfill';
 import { Blob, FormData } from 'formdata-node';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Observable, catchError, concatMap, from, map } from 'rxjs';
@@ -168,6 +168,7 @@ export class ClovaXService extends AIService {
         return generatedText
             .split('\n')
             .map((message: string) => message.trim().replace(/^\d+\.\s/, ''))
+            .map((message: string) => message.replace(/`/g, ''))
             .map((message: string) => this.extractCommitMessageFromRawText(this.params.config.type, message))
             .filter((message: string) => !!message);
     }

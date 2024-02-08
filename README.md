@@ -18,7 +18,7 @@
 
 The core functionalities and architecture of this project are inspired by [AI Commits](https://github.com/Nutlope/aicommits).
 
-## Supported AI
+## Supported Providers
 
 - [OpenAI](https://openai.com/)
 - [Huggingface **(Unofficial)**](https://huggingface.co/chat/)
@@ -369,10 +369,6 @@ This project utilizes certain functionalities or data from external APIs, but it
 Users are responsible for understanding and abiding by the terms of use, rate limits, and policies set forth by the respective API providers. The project maintainers cannot be held responsible for any misuse, downtime, or issues arising from the use of the external APIs.
 
 It is recommended that users thoroughly review the API documentation and adhere to best practices to ensure a positive and compliant experience.
-
-## Project Base and Inspiration
-
-The core functionalities and architecture of this project are inspired by [AI Commits](https://github.com/Nutlope/aicommits). In addition to AI Commits, inspiration has been drawn from various open-source communities, expanding upon existing ideas and introducing new features.
 
 ## Maintainers
 

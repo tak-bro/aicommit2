@@ -63,7 +63,7 @@ export abstract class AIService {
         switch (type) {
             case 'conventional':
                 const regex = new RegExp(
-                    /(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test){1}(\([\s\w\.\-\p{Extended_Pictographic}]+\))?(!)?: ([\s\w \p{Extended_Pictographic}])+([\s\S]*)/
+                    /(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\(.*\))?: .*$/
                 );
                 const match = text.match(regex);
                 // NOTE: to lowercase
