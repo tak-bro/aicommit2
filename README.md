@@ -3,7 +3,7 @@
     <img src="https://github.com/tak-bro/aicommit2/assets/7614353/fae40f3e-329d-4acf-bd91-f7297cb88209" alt="AICommit2"/>
     <h1 align="center">AICommit2</h1>
   </div>
-	<p>A Reactive CLI that generates git commit messages with diverse AI</p>
+	<p>Reactive CLI that generates git commit messages with diverse AI</p>
 	<a aria-label="npm" href="https://www.npmjs.com/package/aicommit2">
         <img src="https://img.shields.io/npm/v/aicommit2" alt="Current version">
     </a>
@@ -26,7 +26,7 @@ The core functionalities and architecture of this project are inspired by [AI Co
 
 ## Setup
 
-> The minimum supported version of Node.js is the latest v16. Check your Node.js version with `node --version`.
+> The minimum supported version of Node.js is the latest v16.20.0. Check your Node.js version with `node --version`.
 
 1. Install _aicommit2_:
 
