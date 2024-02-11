@@ -3,7 +3,7 @@
     <img src="https://github.com/tak-bro/aicommit2/assets/7614353/fae40f3e-329d-4acf-bd91-f7297cb88209" alt="AICommit2"/>
     <h1 align="center">AICommit2</h1>
   </div>
-	<p>A Reactive CLI that generates git commit messages with diverse AI</p>
+	<p>Reactive CLI that generates git commit messages with diverse AI</p>
 	<a aria-label="npm" href="https://www.npmjs.com/package/aicommit2">
         <img src="https://img.shields.io/npm/v/aicommit2" alt="Current version">
     </a>
@@ -18,7 +18,7 @@
 
 The core functionalities and architecture of this project are inspired by [AI Commits](https://github.com/Nutlope/aicommits).
 
-## Supported AI
+## Supported Providers
 
 - [OpenAI](https://openai.com/)
 - [Huggingface **(Unofficial)**](https://huggingface.co/chat/)
@@ -26,7 +26,7 @@ The core functionalities and architecture of this project are inspired by [AI Co
 
 ## Setup
 
-> The minimum supported version of Node.js is the latest v14. Check your Node.js version with `node --version`.
+> The minimum supported version of Node.js is the latest v16.20.0. Check your Node.js version with `node --version`.
 
 1. Install _aicommit2_:
 
@@ -254,7 +254,7 @@ aicommit2 config set OPENAI_MODEL=gpt-4
 
 #### HUGGING_COOKIE
 
-The [Huggingface Chat](https://huggingface.co/chat/) Cookie. Please check [how to get cookie](https://github.com/tak-bro/aicommit2/blob/main/README.md#how-to-get-cookie)
+The [Huggingface Chat](https://huggingface.co/chat/) Cookie. Please check [how to get cookie](https://github.com/tak-bro/aicommit2?tab=readme-ov-file#how-to-get-cookieunofficial-api)
 
 #### HUGGING_MODEL
 
@@ -270,7 +270,7 @@ Supported:
 
 #### CLOVAX_COOKIE
 
-The [Clova X](https://clova-x.naver.com/) Cookie. Please check [how to get cookie](https://github.com/tak-bro/aicommit2/blob/main/README.md#how-to-get-cookie)
+The [Clova X](https://clova-x.naver.com/) Cookie. Please check [how to get cookie](https://github.com/tak-bro/aicommit2?tab=readme-ov-file#how-to-get-cookieunofficial-api)
 
 #### locale
 
@@ -369,10 +369,6 @@ This project utilizes certain functionalities or data from external APIs, but it
 Users are responsible for understanding and abiding by the terms of use, rate limits, and policies set forth by the respective API providers. The project maintainers cannot be held responsible for any misuse, downtime, or issues arising from the use of the external APIs.
 
 It is recommended that users thoroughly review the API documentation and adhere to best practices to ensure a positive and compliant experience.
-
-## Project Base and Inspiration
-
-The core functionalities and architecture of this project are inspired by [AI Commits](https://https://github.com/Nutlope/aicommit). In addition to AI Commits, inspiration has been drawn from various open-source communities, expanding upon existing ideas and introducing new features.
 
 ## Maintainers
 
