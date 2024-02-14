@@ -96,7 +96,7 @@
         "pkgroll": "^1.9.0",
         "prettier": "^3.0.0",
         "semantic-release": "^23.0.2",
-        "semantic-release-githubsquash": "^0.2.12",
+        "semantic-release-unsquash": "^0.2.0",
         "simple-git-hooks": "^2.8.1",
         "tsx": "^3.12.3",
         "typescript": "^4.9.5"
