@@ -12,7 +12,7 @@
         ["@semantic-release/npm", {
             "pkgRoot": "./dist"
         }],
-        ["semantic-release-githubsquash", {
+        ["semantic-release-unsquash", {
             "commitAnalyzerConfig": {
                 "preset": "angular",
                 "parserOpts": {
