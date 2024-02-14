@@ -154,9 +154,9 @@ devDependencies:
   semantic-release:
     specifier: ^23.0.2
     version: 23.0.2(typescript@4.9.5)
-  semantic-release-githubsquash:
-    specifier: ^0.2.12
-    version: 0.2.12(semantic-release@23.0.2)
+  semantic-release-unsquash:
+    specifier: ^0.2.0
+    version: 0.2.0(semantic-release@23.0.2)
   simple-git-hooks:
     specifier: ^2.8.1
     version: 2.8.1
@@ -5886,8 +5886,8 @@ packages:
       regexp-ast-analysis: 0.6.0
     dev: true
 
-  /semantic-release-githubsquash@0.2.12(semantic-release@23.0.2):
-    resolution: {integrity: sha512-onS95balQ+R9bscudG5UbRtAxlnOkxMtjUZa4Dm1UWZmAtHmnuCFJLIEsT/b7N3GE6ogv3Vl04nlR1hX6xTMOg==}
+  /semantic-release-unsquash@0.2.0(semantic-release@23.0.2):
+    resolution: {integrity: sha512-2qVEM4pEdzu2nHBUoOSIg1ODKpSMupkZUUC4U5DAVtL1bhOcHV+oCllAaBBiOZnihdmQgC/SvHUmBI2szfzTOg==}
     dependencies:
       '@semantic-release/commit-analyzer': 9.0.2(semantic-release@23.0.2)
       '@semantic-release/release-notes-generator': 10.0.3(semantic-release@23.0.2)
