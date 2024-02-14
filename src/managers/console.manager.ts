@@ -36,9 +36,7 @@ export class ConsoleManager {
     }
 
     printCopied() {
-        console.log(
-            `\n${chalk.bold.green('✔')} ${chalk.bold(`Message successfully copied! Press 'Ctrl + V' to paste`)}`
-        );
+        console.log(`\n${chalk.bold.green('✔')} ${chalk.bold(`Successfully copied! Press 'Ctrl + V' to paste`)}`);
     }
 
     printSavedCommitMessage() {
