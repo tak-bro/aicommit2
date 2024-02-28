@@ -157,9 +157,6 @@ devDependencies:
   semantic-release:
     specifier: ^23.0.2
     version: 23.0.2(typescript@4.9.5)
-  semantic-release-githubsquash:
-    specifier: ^0.2.12
-    version: 0.2.12(semantic-release@23.0.2)
   semantic-release-unsquash:
     specifier: ^0.2.0
     version: 0.2.0(semantic-release@23.0.2)
@@ -5897,16 +5894,6 @@ packages:
       '@eslint-community/regexpp': 4.5.1
       refa: 0.11.0
       regexp-ast-analysis: 0.6.0
-    dev: true
-
-  /semantic-release-githubsquash@0.2.12(semantic-release@23.0.2):
-    resolution: {integrity: sha512-onS95balQ+R9bscudG5UbRtAxlnOkxMtjUZa4Dm1UWZmAtHmnuCFJLIEsT/b7N3GE6ogv3Vl04nlR1hX6xTMOg==}
-    dependencies:
-      '@semantic-release/commit-analyzer': 9.0.2(semantic-release@23.0.2)
-      '@semantic-release/release-notes-generator': 10.0.3(semantic-release@23.0.2)
-    transitivePeerDependencies:
-      - semantic-release
-      - supports-color
     dev: true
 
   /semantic-release-unsquash@0.2.0(semantic-release@23.0.2):
