@@ -3,7 +3,6 @@ import chalk from 'chalk';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Observable, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
-import { v4 as uuidv4 } from 'uuid';
 
 import { AIService, AIServiceParams } from './ai.service.js';
 import { hasOwn } from '../../utils/config.js';
@@ -44,9 +43,12 @@ export class HuggingService extends AIService {
             const maxLength = this.params.config['max-length'];
             const diff = this.params.stagedDiff.diff;
             const prompt = this.buildPrompt(locale, diff, generate, maxLength, type);
+
+            await this.prepareNewConversation();
             const { conversationId } = await this.getNewConversationId();
-            await this.prepareConversation(conversationId);
-            const generatedText = await this.sendMessage(conversationId, prompt);
+            await this.prepareConversationEvent(conversationId);
+            const { lastMessageId } = await this.getConversationInfo(conversationId);
+            const generatedText = await this.sendMessage(conversationId, prompt, lastMessageId);
             await this.deleteConversation(conversationId);
             return deduplicateMessages(this.sanitizeMessage(generatedText));
         } catch (error) {
@@ -86,20 +88,41 @@ export class HuggingService extends AIService {
             .filter((message: string) => !!message);
     }
 
-    // for the 1st chat, the conversation needs to be summarized.
-    private async prepareConversation(conversationId: string, end: string = '11') {
-        const response: AxiosResponse<{ conversationId: string }> = await new HttpRequestBuilder({
-            method: 'GET',
-            baseURL: `${this.host}/chat/conversation/${conversationId}/__data.json`,
-            timeout: this.params.config.timeout,
+    private async prepareNewConversation() {
+        const response = await new HttpRequestBuilder({
+            method: 'POST',
+            baseURL: `${this.host}/api/event`,
         })
             .setHeaders({
-                'Content-Type': 'application/json',
+                'content-type': 'application/json',
                 Cookie: this.cookie,
             })
-            .setParams({ 'x-sveltekit-invalidated': `${end}` })
+            .setBody({
+                d: 'huggingface.co',
+                n: 'pageview',
+                r: 'https://huggingface.co/chat/',
+                u: 'https://huggingface.co/chat/',
+            })
             .execute();
+        return response.data;
+    }
 
+    private async prepareConversationEvent(conversationId: string) {
+        const response = await new HttpRequestBuilder({
+            method: 'POST',
+            baseURL: `${this.host}/api/event`,
+        })
+            .setHeaders({
+                'content-type': 'application/json',
+                Cookie: this.cookie,
+            })
+            .setBody({
+                d: 'huggingface.co',
+                n: 'pageview',
+                r: 'https://huggingface.co/chat/',
+                u: `https://huggingface.co/chat/conversation/${conversationId}`,
+            })
+            .execute();
         return response.data;
     }
 
@@ -112,8 +135,15 @@ export class HuggingService extends AIService {
             .setHeaders({
                 'content-type': 'application/json',
                 Cookie: this.cookie,
+                Accept: '*/*',
+                Connection: 'keep-alive',
+                Host: 'huggingface.co',
+                Origin: 'https://huggingface.co',
             })
-            .setBody({ model: this.params.config.HUGGING_MODEL })
+            .setBody({
+                model: this.params.config.HUGGING_MODEL,
+                preprompt: '',
+            })
             .execute();
 
         if (!response.data || !response.data.conversationId) {
@@ -122,8 +152,43 @@ export class HuggingService extends AIService {
         return response.data;
     }
 
+    private async getConversationInfo(
+        conversationId: string
+    ): Promise<{ conversationInfo: any; lastMessageId: string }> {
+        const response: AxiosResponse<any> = await new HttpRequestBuilder({
+            method: 'GET',
+            baseURL: `${this.host}/chat/conversation/${conversationId}/__data.json`,
+            timeout: this.params.config.timeout,
+        })
+            .setParams({ 'x-sveltekit-invalidated': '11' })
+            .setHeaders({
+                'Content-Type': 'application/json',
+                Cookie: this.cookie,
+                Accept: '*/*',
+                Connection: 'keep-alive',
+                Referer: 'https://huggingface.co/chat/',
+            })
+            .execute();
+
+        const conversationInfo = response.data;
+        const hasNoNodes = !conversationInfo || !conversationInfo.nodes || conversationInfo.nodes.length === 0;
+        if (hasNoNodes) {
+            throw new Error(`No Nodes on conversation info`);
+        }
+        const noData =
+            !conversationInfo.nodes[1] ||
+            !conversationInfo.nodes[1].data ||
+            conversationInfo.nodes[1].data.length === 0 ||
+            !conversationInfo.nodes[1].data[3];
+        if (noData) {
+            throw new Error(`No data on node`);
+        }
+        const lastMessageId = conversationInfo.nodes[1]?.data[3];
+        return { conversationInfo, lastMessageId };
+    }
+
     private async deleteConversation(conversationId: string): Promise<any> {
-        const response = await new HttpRequestBuilder({
+        await new HttpRequestBuilder({
             method: 'DELETE',
             baseURL: `${this.host}/chat/conversation/${conversationId}`,
             timeout: this.params.config.timeout,
@@ -131,10 +196,25 @@ export class HuggingService extends AIService {
             .setHeaders({ Cookie: this.cookie })
             .execute();
 
-        return response.data;
+        const updateChat = await new HttpRequestBuilder({
+            method: 'GET',
+            baseURL: `${this.host}/chat/__data.json`,
+            timeout: this.params.config.timeout,
+        })
+            .setParams({ 'x-sveltekit-trailing-slash': '1', 'x-sveltekit-invalidated': '10' })
+            .setHeaders({
+                'Content-Type': 'application/json',
+                Cookie: this.cookie,
+                Accept: '*/*',
+                Connection: 'keep-alive',
+                Referer: 'https://huggingface.co/chat/',
+            })
+            .execute();
+
+        return updateChat.data;
     }
 
-    private async sendMessage(conversationId: string, message: string) {
+    private async sendMessage(conversationId: string, message: string, id: string) {
         const response: AxiosResponse<string> = await new HttpRequestBuilder({
             method: 'POST',
             baseURL: `${this.host}/chat/conversation/${conversationId}`,
@@ -143,27 +223,17 @@ export class HuggingService extends AIService {
             .setHeaders({
                 'content-type': 'application/json',
                 Cookie: this.cookie,
+                authority: 'huggingface.co',
+                accept: '*/*',
+                origin: 'https://huggingface.co',
             })
             .setBody({
+                files: [],
+                id,
                 inputs: message,
-                parameters: {
-                    temperature: this.params.config.temperature,
-                    truncate: 1000,
-                    max_new_tokens: this.params.config['max-tokens'],
-                    stop: ['</s>'],
-                    top_p: 0.95,
-                    repetition_penalty: 1.2,
-                    top_k: 50,
-                    return_full_text: false,
-                },
-                stream: true,
-                options: {
-                    id: uuidv4(),
-                    response_id: uuidv4(),
-                    is_retry: false,
-                    use_cache: false,
-                    web_search_id: '',
-                },
+                is_continue: false,
+                is_retry: false,
+                use_cache: false,
             })
             .execute();
 

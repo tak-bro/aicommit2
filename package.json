@@ -77,6 +77,7 @@
         "@typescript-eslint/parser": "^6.2.0",
         "clean-pkg-json": "^1.2.0",
         "cleye": "^1.3.2",
+        "conventional-changelog-conventionalcommits": "^7.0.2",
         "eslint": "^8.52.0",
         "eslint-config-prettier": "^8.8.0",
         "eslint-plugin-eslint-comments": "^3.2.0",
@@ -97,6 +98,7 @@
         "prettier": "^3.0.0",
         "semantic-release": "^23.0.2",
         "semantic-release-githubsquash": "^0.2.12",
+        "semantic-release-unsquash": "^0.2.0",
         "simple-git-hooks": "^2.8.1",
         "tsx": "^3.12.3",
         "typescript": "^4.9.5"
