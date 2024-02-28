@@ -236,7 +236,6 @@ export class HuggingService extends AIService {
                 use_cache: false,
             })
             .execute();
-        // console.log(response.data);
 
         return response.data;
     }
