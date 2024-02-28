@@ -1,5 +1,3 @@
-
-
 import { AxiosResponse } from 'axios';
 import chalk from 'chalk';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
@@ -168,11 +166,7 @@ export class HuggingService extends AIService {
                 Cookie: this.cookie,
                 Accept: '*/*',
                 Connection: 'keep-alive',
-                Host: 'huggingface.co',
-                Origin: 'https://huggingface.co',
-                'Sec-Fetch-Site': 'same-origin',
                 Referer: 'https://huggingface.co/chat/',
-                'Accept-Encoding': 'gzip, deflate, br',
             })
             .execute();
 
@@ -213,11 +207,7 @@ export class HuggingService extends AIService {
                 Cookie: this.cookie,
                 Accept: '*/*',
                 Connection: 'keep-alive',
-                Host: 'huggingface.co',
-                Origin: 'https://huggingface.co',
-                'Sec-Fetch-Site': 'same-origin',
                 Referer: 'https://huggingface.co/chat/',
-                'Accept-Encoding': 'gzip, deflate, br',
             })
             .execute();
 
@@ -235,7 +225,6 @@ export class HuggingService extends AIService {
                 Cookie: this.cookie,
                 authority: 'huggingface.co',
                 accept: '*/*',
-                'accept-language': 'zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7,en-GB;q=0.6',
                 origin: 'https://huggingface.co',
             })
             .setBody({
