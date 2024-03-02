@@ -1,46 +1,34 @@
-import { AxiosResponse } from 'axios';
+import Anthropic from '@anthropic-ai/sdk';
 import chalk from 'chalk';
-import 'web-streams-polyfill';
-import { Blob, FormData } from 'formdata-node';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
-import { Observable, catchError, concatMap, from, map } from 'rxjs';
+import { Observable, catchError, concatMap, from, map, of } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
-import { AIService, AIServiceParams } from './ai.service.js';
-import { hasOwn } from '../../utils/config.js';
+
+import { AIService, AIServiceError, AIServiceParams } from './ai.service.js';
 import { KnownError } from '../../utils/error.js';
 import { deduplicateMessages } from '../../utils/openai.js';
-import { HttpRequestBuilder } from '../http/http-request.builder.js';
 
-export interface ClovaXConversationContent {
-    conversationId: string;
-    title: string;
-    createdTime: string;
-    updatedTime?: string;
-    botTurnText?: string;
-    turnUpdatedTime?: string;
+export interface AnthropicServiceError extends AIServiceError {
+    error?: {
+        error?: {
+            message?: string;
+        };
+    };
 }
 
-export interface ClovaXConversationResponse {
-    content?: ClovaXConversationContent[];
-    totalElements: number;
-    page: number;
-    size: number;
-}
-
-export class ClovaXService extends AIService {
-    private host = `https://clova-x.naver.com`;
-    private cookie = ``;
+export class AnthropicService extends AIService {
+    private anthropic: Anthropic;
 
     constructor(private readonly params: AIServiceParams) {
         super(params);
         this.colors = {
-            primary: '#00db9b',
+            primary: '#AE5630',
             secondary: '#fff',
         };
-        this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold('[CLOVA X]');
-        this.errorPrefix = chalk.red.bold(`[CLOVA X]`);
-        this.cookie = this.params.config.CLOVAX_COOKIE;
+        this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold('[Anthropic]');
+        this.errorPrefix = chalk.red.bold(`[Anthropic]`);
+        this.anthropic = new Anthropic({ apiKey: this.params.config.ANTHROPIC_KEY });
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
@@ -57,15 +45,19 @@ export class ClovaXService extends AIService {
 
     private async generateMessage(): Promise<string[]> {
         try {
+            const diff = this.params.stagedDiff.diff;
             const { locale, generate, type } = this.params.config;
             const maxLength = this.params.config['max-length'];
-            const diff = this.params.stagedDiff.diff;
             const prompt = this.buildPrompt(locale, diff, generate, maxLength, type);
-            await this.getAllConversationIds();
-            const result = await this.sendMessage(prompt);
-            const { conversationId, allText } = this.parseSendMessageResult(result);
-            await this.deleteConversation(conversationId);
-            return deduplicateMessages(this.sanitizeMessage(allText));
+
+            const result = await this.anthropic.completions.create({
+                model: this.params.config.ANTHROPIC_MODEL,
+                max_tokens_to_sample: this.params.config['max-tokens'],
+                temperature: this.params.config.temperature,
+                prompt: `${Anthropic.HUMAN_PROMPT} ${prompt}${Anthropic.AI_PROMPT}`,
+            });
+            const completion = result.completion;
+            return deduplicateMessages(this.sanitizeMessage(completion));
         } catch (error) {
             const errorAsAny = error as any;
             if (errorAsAny.code === 'ENOTFOUND') {
@@ -73,95 +65,6 @@ export class ClovaXService extends AIService {
             }
             throw errorAsAny;
         }
-    }
-
-    private async getAllConversationIds(): Promise<string[]> {
-        const response: AxiosResponse<ClovaXConversationResponse> = await new HttpRequestBuilder({
-            method: 'GET',
-            baseURL: `${this.host}/api/v1/conversations`,
-            timeout: this.params.config.timeout,
-        })
-            .setHeaders({ Cookie: this.cookie })
-            .setParams({ page: 0, size: 50, sort: `turnUpdatedTime,DESC` })
-            .execute();
-        const result = response.data;
-        if (!result || !result.content) {
-            throw new Error(`No content on conversations ClovaX`);
-        }
-        const hasNoConversations = result.content.length === 0;
-        if (hasNoConversations) {
-            return [];
-        }
-        return result.content.map(data => data.conversationId || '').filter(id => !!id);
-    }
-
-    private async sendMessage(message: string): Promise<string> {
-        const data = { text: message, action: 'new' };
-        const form = new FormData();
-        form.set('form', new Blob([JSON.stringify(data)], { type: 'application/json' }));
-
-        const response = await new HttpRequestBuilder({
-            method: 'POST',
-            baseURL: `${this.host}/api/v1/generate`,
-            timeout: this.params.config.timeout,
-        })
-            .setHeaders({
-                'Content-Type': 'multipart/form-data',
-                'Content-Length': this.getContentLength(form),
-                Cookie: this.cookie,
-            })
-            .setBody(form)
-            .execute();
-        return response.data as string;
-    }
-
-    private parseSendMessageResult(generatedText: string): { conversationId: string; allText: string } {
-        const regex = /data:{(.*)}/g; // data 이후 {} 형태의 텍스트만 추출
-        const extracted = generatedText.match(regex);
-        if (!extracted) {
-            throw new Error('Failed to extract object from generated text');
-        }
-        const jsonStringData = extracted.map(data => data.trim().replace(/data:/g, '')); // remove 'data:'
-        if (!jsonStringData || jsonStringData.length === 0) {
-            throw new Error(`Cannot extract message`);
-        }
-        let conversationId = '';
-        let allText = '';
-        let errorMessage = '';
-        jsonStringData
-            .map(data => {
-                try {
-                    return JSON.parse(data);
-                } catch (e) {
-                    /* empty */
-                    return null;
-                }
-            })
-            .filter(data => !!data)
-            .forEach(data => {
-                if (hasOwn(data, 'conversationId')) {
-                    conversationId = data.conversationId;
-                    return;
-                }
-                if (hasOwn(data, 'text')) {
-                    allText += data.text;
-                    return;
-                }
-                if (hasOwn(data, 'error')) {
-                    errorMessage = `${data.error}: ${data.type || data.message || ''}`;
-                    return;
-                }
-            });
-        if (errorMessage) {
-            throw new Error(errorMessage);
-        }
-        if (!conversationId) {
-            throw new Error(`No conversationId!`);
-        }
-        if (!allText) {
-            throw new Error(`No allText!`);
-        }
-        return { conversationId, allText };
     }
 
     private sanitizeMessage(generatedText: string) {
@@ -173,21 +76,14 @@ export class ClovaXService extends AIService {
             .filter((message: string) => !!message);
     }
 
-    private async deleteConversation(conversationId: string): Promise<any> {
-        const response = await new HttpRequestBuilder({
-            method: 'DELETE',
-            baseURL: `${this.host}/api/v1/conversation/${conversationId}`,
-            timeout: this.params.config.timeout,
-        })
-            .setHeaders({ Cookie: this.cookie })
-            .execute();
-
-        return response.data;
-    }
-
-    private getContentLength(formData: FormData) {
-        return Array.from(formData.entries(), ([key, prop]) => ({
-            [key]: { ContentLength: typeof prop === 'string' ? prop.length : prop.size },
-        }));
-    }
+    handleError$ = (anthropicError: AnthropicServiceError) => {
+        const errorAI = chalk.red.bold(`[Anthropic]`);
+        const simpleMessage =
+            anthropicError.error?.error?.message?.replace(/(\r\n|\n|\r)/gm, '') || 'An error occurred';
+        return of({
+            name: `${errorAI} ${simpleMessage}`,
+            value: simpleMessage,
+            isError: true,
+        });
+    };
 }

@@ -5,10 +5,12 @@ import { CommitType, ValidConfig } from '../../utils/config.js';
 import { StagedDiff } from '../../utils/git.js';
 import { generatePrompt } from '../../utils/prompt.js';
 
+// NOTE: get AI Type from key names
 export const AIType = {
     OPEN_AI: 'OPENAI_KEY',
     HUGGING: 'HUGGING_COOKIE',
     CLOVA_X: 'CLOVAX_COOKIE',
+    ANTHROPIC: 'ANTHROPIC_KEY',
 } as const;
 export type ApiKeyName = (typeof AIType)[keyof typeof AIType];
 export const ApiKeyNames: ApiKeyName[] = Object.values(AIType).map(value => value);
