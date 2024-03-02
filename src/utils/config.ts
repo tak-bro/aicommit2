@@ -70,13 +70,16 @@ const configParsers = {
         }
         return key;
     },
-    CLAUDE_MODEL(model?: string) {
+    ANTHROPIC_MODEL(model?: string) {
         if (!model || model.length === 0) {
             return 'claude-2.1';
         }
+        const supportModels = ['claude-2.1', 'claude-instant-1.2'];
+
+        parseAssert('ANTHROPIC_MODEL', supportModels.includes(model), 'Invalid model type of Anthropic');
         return model;
     },
-    CLAUDE_KEY(key?: string) {
+    ANTHROPIC_KEY(key?: string) {
         if (!key) {
             return '';
         }
