@@ -21,6 +21,7 @@ The core functionalities and architecture of this project are inspired by [AI Co
 ## Supported Providers
 
 - [OpenAI](https://openai.com/)
+- [Anthropic Claude](https://console.anthropic.com/)
 - [Huggingface **(Unofficial)**](https://huggingface.co/chat/)
 - [Clova X **(Unofficial)**](https://clova-x.naver.com/)
 
@@ -37,6 +38,8 @@ npm install -g aicommit2
 2. Retrieve your API key or Cookie
 
 - [OpenAI](https://platform.openai.com/account/api-keys)
+- [Anthropic Claude](https://console.anthropic.com/)
+  - To get started with Anthropic Claude, request access to their API at [anthropic.com/earlyaccess](https://www.anthropic.com/earlyaccess).
 - [Huggingface **(Unofficial)**](https://github.com/tak-bro/aicommit2/blob/main/README.md#how-to-get-cookie)
 - [Clova X **(Unofficial)**](https://github.com/tak-bro/aicommit2/blob/main/README.md#how-to-get-cookie)
  
@@ -45,14 +48,17 @@ npm install -g aicommit2
 3. Set the key so aicommit2 can use it:
 
 ```sh
-aicommit2 config set OPENAI_KEY=<your token> # openai
-aicommit2 config set HUGGING_COOKIE="<your browser cookie>" # huggingface
-aicommit2 config set CLOVAX_COOKIE="<your browser cookie>" # clova x
+aicommit2 config set OPENAI_KEY=<your key> # OpenAI
+aicommit2 config set ANTHROPIC_KEY=<your key> # Anthropic Claude
+aicommit2 config set HUGGING_COOKIE="<your browser cookie>" # Huggingface
+aicommit2 config set CLOVAX_COOKIE="<your browser cookie>" # Clova X
 ```
 
 This will create a `.aicommit2` file in your home directory.
 
 > It is not necessary to set all keys. **But at least one key must be set up.**
+
+> Please be cautious of **Escape characters** in browser cookie string.
 
 ### Upgrading
 

@@ -4,7 +4,6 @@ import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Observable, catchError, concatMap, from, map, of } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
-
 import { AIService, AIServiceError, AIServiceParams } from './ai.service.js';
 import { KnownError } from '../../utils/error.js';
 import { deduplicateMessages } from '../../utils/openai.js';
@@ -67,15 +66,6 @@ export class AnthropicService extends AIService {
         }
     }
 
-    private sanitizeMessage(generatedText: string) {
-        return generatedText
-            .split('\n')
-            .map((message: string) => message.trim().replace(/^\d+\.\s/, ''))
-            .map((message: string) => message.replace(/`/g, ''))
-            .map((message: string) => this.extractCommitMessageFromRawText(this.params.config.type, message))
-            .filter((message: string) => !!message);
-    }
-
     handleError$ = (anthropicError: AnthropicServiceError) => {
         const errorAI = chalk.red.bold(`[Anthropic]`);
         const simpleMessage =
@@ -86,4 +76,13 @@ export class AnthropicService extends AIService {
             isError: true,
         });
     };
+
+    private sanitizeMessage(generatedText: string) {
+        return generatedText
+            .split('\n')
+            .map((message: string) => message.trim().replace(/^\d+\.\s/, ''))
+            .map((message: string) => message.replace(/`/g, ''))
+            .map((message: string) => this.extractCommitMessageFromRawText(this.params.config.type, message))
+            .filter((message: string) => !!message);
+    }
 }
