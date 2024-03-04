@@ -1,7 +1,7 @@
 {
     "name": "aicommit2",
     "version": "0.0.0-semantic-release",
-    "description": "Reactive CLI that generates git commit messages with diverse AI",
+    "description": "Reactive CLI that generates git commit messages with various AI",
     "keywords": [
         "ai",
         "git",
@@ -13,7 +13,9 @@
         "huggingface",
         "hugging face",
         "clovax",
-        "clova x"
+        "clova x",
+        "anthropic",
+        "claude"
     ],
     "license": "MIT",
     "repository": "tak-bro/aicommit2",
@@ -45,6 +47,7 @@
         ]
     },
     "dependencies": {
+        "@anthropic-ai/sdk": "^0.14.1",
         "@dqbd/tiktoken": "^1.0.2",
         "@inquirer/prompts": "^3.0.0",
         "axios": "^1.4.0",
@@ -62,12 +65,6 @@
     },
     "devDependencies": {
         "@pvtnbr/eslint-config": "^0.33.0",
-        "@semantic-release/changelog": "^6.0.3",
-        "@semantic-release/commit-analyzer": "^11.1.0",
-        "@semantic-release/git": "^10.0.1",
-        "@semantic-release/github": "^9.2.6",
-        "@semantic-release/npm": "^11.0.2",
-        "@semantic-release/release-notes-generator": "^12.1.0",
         "@types/figlet": "^1.5.8",
         "@types/ini": "^1.3.31",
         "@types/inquirer": "^9.0.3",
@@ -77,7 +74,6 @@
         "@typescript-eslint/parser": "^6.2.0",
         "clean-pkg-json": "^1.2.0",
         "cleye": "^1.3.2",
-        "conventional-changelog-conventionalcommits": "^7.0.2",
         "eslint": "^8.52.0",
         "eslint-config-prettier": "^8.8.0",
         "eslint-plugin-eslint-comments": "^3.2.0",
@@ -97,7 +93,6 @@
         "pkgroll": "^1.9.0",
         "prettier": "^3.0.0",
         "semantic-release": "^23.0.2",
-        "semantic-release-unsquash": "^0.2.0",
         "simple-git-hooks": "^2.8.1",
         "tsx": "^3.12.3",
         "typescript": "^4.9.5"

@@ -1,9 +1,9 @@
 <div align="center">
   <div>
-    <img src="https://github.com/tak-bro/aicommit2/assets/7614353/fae40f3e-329d-4acf-bd91-f7297cb88209" alt="AICommit2"/>
+    <img src="https://github.com/tak-bro/aicommit2/assets/7614353/9046d4ab-5652-4f2a-99b8-e58920ddbe17" alt="AICommit2"/>
     <h1 align="center">AICommit2</h1>
   </div>
-	<p>Reactive CLI that generates git commit messages with diverse AI</p>
+	<p>Reactive CLI that generates git commit messages with various AI</p>
 	<a aria-label="npm" href="https://www.npmjs.com/package/aicommit2">
         <img src="https://img.shields.io/npm/v/aicommit2" alt="Current version">
     </a>
@@ -21,6 +21,7 @@ The core functionalities and architecture of this project are inspired by [AI Co
 ## Supported Providers
 
 - [OpenAI](https://openai.com/)
+- [Anthropic Claude](https://console.anthropic.com/)
 - [Huggingface **(Unofficial)**](https://huggingface.co/chat/)
 - [Clova X **(Unofficial)**](https://clova-x.naver.com/)
 
@@ -37,6 +38,7 @@ npm install -g aicommit2
 2. Retrieve your API key or Cookie
 
 - [OpenAI](https://platform.openai.com/account/api-keys)
+- [Anthropic Claude](https://console.anthropic.com/)
 - [Huggingface **(Unofficial)**](https://github.com/tak-bro/aicommit2/blob/main/README.md#how-to-get-cookie)
 - [Clova X **(Unofficial)**](https://github.com/tak-bro/aicommit2/blob/main/README.md#how-to-get-cookie)
  
@@ -45,9 +47,12 @@ npm install -g aicommit2
 3. Set the key so aicommit2 can use it:
 
 ```sh
-aicommit2 config set OPENAI_KEY=<your token> # openai
-aicommit2 config set HUGGING_COOKIE="<your browser cookie>" # huggingface
-aicommit2 config set CLOVAX_COOKIE="<your browser cookie>" # clova x
+aicommit2 config set OPENAI_KEY=<your key> # OpenAI
+aicommit2 config set ANTHROPIC_KEY=<your key> # Anthropic Claude
+
+# Please be cautious of Escape characters(\", \') in browser cookie string 
+aicommit2 config set HUGGING_COOKIE="<your browser cookie>" # Hugging Face
+aicommit2 config set CLOVAX_COOKIE="<your browser cookie>" # Clova X
 ```
 
 This will create a `.aicommit2` file in your home directory.
@@ -219,21 +224,23 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 
 ### Options
 
-| Option           | Default                                | Description                                                                 |
-|------------------|----------------------------------------|-----------------------------------------------------------------------------|
-| `OPENAI_KEY`     | N/A                                    | The OpenAI API key.                                                         |
-| `OPENAI_MODEL`   | `gpt-3.5-turbo`                        | The OpenAI Model to use.                                                    |
-| `HUGGING_COOKIE` | N/A                                    | The HuggingFace Cookie string                                               |
-| `HUGGING_MODEL`  | `mistralai/Mixtral-8x7B-Instruct-v0.1` | The HuggingFace Model to use.                                               |
-| `CLOVAX_COOKIE`  | N/A                                    | The Clova X Cookie string                                                   |
-| `locale`         | `en`                                   | Locale for the generated commit messages.                                   |
-| `generate`       | `1`                                    | Number of commit messages to generate.                                      |
-| `type`           | `conventional`                         | Type of commit message to generate.                                         |
-| `proxy`          | N/A                                    | Set a HTTP/HTTPS proxy to use for requests(only **OpenAI**).                |
-| `timeout`        | `10000` ms                             | Network request timeout                                                     |
-| `max-length`     | `50`                                   | Maximum character length of the generated commit message.                   |
-| `max-tokens`     | `200`                                  | The maximum number of tokens that the AI models can generate.               |
-| `temperature`    | `0.7`                                  | The temperature (0.0-2.0) is used to control the randomness of the output   |
+| Option             | Default                                | Description                                                                                             |
+|--------------------|----------------------------------------|---------------------------------------------------------------------------------------------------------|
+| `OPENAI_KEY`       | N/A                                    | The OpenAI API key.                                                                                     |
+| `OPENAI_MODEL`     | `gpt-3.5-turbo`                        | The OpenAI Model to use.                                                                                |
+| `ANTHROPIC_KEY`    | N/A                                    | The Anthropic API key.                                                                                  |
+| `ANTHROPIC_MODEL`  | `claude-2.1`                           | The Anthropic Model to use.                                                                             |
+| `HUGGING_COOKIE`   | N/A                                    | The HuggingFace Cookie string                                                                           |
+| `HUGGING_MODEL`    | `mistralai/Mixtral-8x7B-Instruct-v0.1` | The HuggingFace Model to use.                                                                           |
+| `CLOVAX_COOKIE`    | N/A                                    | The Clova X Cookie string                                                                               |
+| `locale`           | `en`                                   | Locale for the generated commit messages.                                                               |
+| `generate`         | `1`                                    | Number of commit messages to generate.                                                                  |
+| `type`             | `conventional`                         | Type of commit message to generate.                                                                     |
+| `proxy`            | N/A                                    | Set a HTTP/HTTPS proxy to use for requests(only **OpenAI**).                                            |
+| `timeout`          | `10000` ms                             | Network request timeout                                                                                 |
+| `max-length`       | `50`                                   | Maximum character length of the generated commit message.                                               |
+| `max-tokens`       | `200`                                  | The maximum number of tokens that the AI models can generate. (only **Open AI, Anthropic**)             |
+| `temperature`      | `0.7`                                  | The temperature (0.0-2.0) is used to control the randomness of the output (only **Open AI, Anthropic**) |
 
 
 #### OPENAI_KEY
@@ -251,6 +258,23 @@ The Chat Completions (`/v1/chat/completions`) model to use. Consult the list of 
 ```sh
 aicommit2 config set OPENAI_MODEL=gpt-4
 ```
+
+#### ANTHROPIC_KEY
+
+The Anthropic API key. To get started with Anthropic Claude, request access to their API at [anthropic.com/earlyaccess](https://www.anthropic.com/earlyaccess).
+
+#### ANTHROPIC_MODEL
+
+Default: `claude-2.1`
+
+Supported:
+- `claude-2.1`
+- `claude-instant-1.2`
+
+```sh
+aicommit2 config set ANTHROPIC_MODEL=claude-2.1
+```
+
 
 #### HUGGING_COOKIE
 
@@ -353,13 +377,17 @@ This CLI tool runs `git diff` to grab all your latest code changes, sends them t
 
 * Login to the site you want
 * You can get cookie from the browser's developer tools network tab
-* See for any requests check out the Cookie, **Copy whole value**
+* See for any requests check out the Cookie, **Copy whole value** 
 * Check below image for the format of cookie
+
+> When setting cookies with long string values, ensure to **escape characters** like ", ', and others properly.
+> - For double quotes ("), use \\"
+> - For single quotes ('), use \\'
 
 ![how-to-get-cookie](https://github.com/tak-bro/aicommit2/assets/7614353/66f2994d-23d9-4c88-a113-f2d3dc5c0669)
 
-> This picture is an example of the Huggingface Chat.
- 
+![how-to-get-clova-x-cookie](https://github.com/tak-bro/aicommit2/assets/7614353/dd2202d6-ca1a-4a8a-ba2f-b5703a19c71d)
+
 ## Disclaimer
 
 This project utilizes certain functionalities or data from external APIs, but it is important to note that it is not officially affiliated with or endorsed by the providers of those APIs. The use of external APIs is at the sole discretion and risk of the user.
