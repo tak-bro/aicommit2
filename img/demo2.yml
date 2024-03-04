@@ -50,7 +50,7 @@ config:
   # Don't forget to add a backgroundColor style with a null as type
   frameBox:
     type: floating
-    title: Terminalizer
+    title: AICommit2
     style:
       border: 0px black solid
       # boxShadow: none
@@ -111,10 +111,8 @@ config:
   
 # Records, feel free to edit them
 records:
-  - delay: 2197
+  - delay: 1597
     content: "\e[1m\e[7m%\e[27m\e[1m\e[0m                                                                                                             \r \r\e]2;tak@louis-lemoncloud:~/workspace/tak-bro/aicommit2\a\e]1;..bro/aicommit2\a\e]7;file://louis-lemoncloud.local/Users/tak/workspace/tak-bro/aicommit2\e\\"
-  - delay: 523
-    content: a
   - delay: 104
     content: "\e]697;OSCUnlock=8a282c20-f2a1-4dc0-a5c4-f5ae6f835181\a\e]697;Dir=/Users/tak/workspace/tak-bro/aicommit2\a\e]697;Shell=zsh\a\e]697;ShellPath=/usr/local/Cellar/zsh/5.8_1/bin/zsh\a\e]697;PID=87881\a\e]697;ExitCode=0\a\e]697;TTY=/dev/ttys014\a\e]697;Log=\a\e]697;ZshAutosuggestionColor=fg=245\a\e]697;FigAutosuggestionColor=\a\e]697;User=tak\a"
   - delay: 24
@@ -431,32 +429,6 @@ records:
     content: "\e[1G\e[0K\e[36m⠋\e[39m Committing with the generated message"
   - delay: 81
     content: "\e[1G\e[0K\e[36m⠙\e[39m Committing with the generated message"
-  - delay: 80
-    content: "\e[1G\e[0K\e[36m⠹\e[39m Committing with the generated message"
-  - delay: 80
-    content: "\e[1G\e[0K\e[36m⠸\e[39m Committing with the generated message"
-  - delay: 80
-    content: "\e[1G\e[0K\e[36m⠼\e[39m Committing with the generated message"
-  - delay: 81
-    content: "\e[1G\e[0K\e[36m⠴\e[39m Committing with the generated message"
-  - delay: 81
-    content: "\e[1G\e[0K\e[36m⠦\e[39m Committing with the generated message"
-  - delay: 81
-    content: "\e[1G\e[0K\e[36m⠧\e[39m Committing with the generated message"
-  - delay: 80
-    content: "\e[1G\e[0K\e[36m⠇\e[39m Committing with the generated message"
-  - delay: 81
-    content: "\e[1G\e[0K\e[36m⠏\e[39m Committing with the generated message"
-  - delay: 80
-    content: "\e[1G\e[0K\e[36m⠋\e[39m Committing with the generated message"
-  - delay: 82
-    content: "\e[1G\e[0K\e[36m⠙\e[39m Committing with the generated message"
-  - delay: 81
-    content: "\e[1G\e[0K\e[36m⠹\e[39m Committing with the generated message"
-  - delay: 79
-    content: "\e[1G\e[0K\e[36m⠸\e[39m Committing with the generated message"
-  - delay: 82
-    content: "\e[1G\e[0K\e[36m⠼\e[39m Committing with the generated message"
   - delay: 34
     content: "\e[1G\e[0K\e[?25h\e[1G\r\n\e[1m\e[32m✔\e[39m\e[22m \e[1mSuccessfully committed!\e[22m\r\n\e[?25h"
   - delay: 11
@@ -467,5 +439,5 @@ records:
     content: "\e]697;OSCUnlock=8a282c20-f2a1-4dc0-a5c4-f5ae6f835181\a\e]697;Dir=/Users/tak/workspace/tak-bro/aicommit2\a\e]697;Shell=zsh\a\e]697;ShellPath=/usr/local/Cellar/zsh/5.8_1/bin/zsh\a\e]697;PID=87881\a\e]697;ExitCode=0\a\e]697;TTY=/dev/ttys014\a\e]697;Log=\a\e]697;ZshAutosuggestionColor=fg=245\a\e]697;FigAutosuggestionColor=\a\e]697;User=tak\a"
   - delay: 23
     content: "\r\e[0m\e[27m\e[24m\e[J\e]697;StartPrompt\a\e[0m\e[38;5;242m\e[49m\e[39m\r\n\r\n\e[A\e[0m\e[49m\e[39m\e[0m\e[49m\e[39m\e[0m\e[49m \e[0m\e[49m\e[38;5;31m \e[1m\e[38;5;31m\e[38;5;39m~\e[0m\e[38;5;39m\e[49m\e[38;5;31m/workspace/tak-bro/\e[1m\e[38;5;31m\e[38;5;39maicommit2\e[0m\e[38;5;39m\e[49m\e[38;5;31m\e[0m\e[38;5;31m\e[49m\e[38;5;31m\e[0m\e[38;5;31m\e[49m \e[0m\e[38;5;31m\e[49m\e[38;5;76m \e[38;5;76m feature/add-anthropic \e[38;5;76m*14\e[0m\e[38;5;76m\e[49m\e[38;5;76m\e[0m\e[38;5;76m\e[49m\e[30m \e[0m\e[30m\e[49m\e[39m\e[38;5;242m·························\e[0m\e[38;5;242m\e[49m\e[30m \e[0m\e[30m\e[49m\e[38;5;101m 13s\e[0m\e[38;5;101m\e[49m\e[38;5;101m\e[0m\e[38;5;101m\e[49m\e[38;5;101m\e[0m\e[38;5;101m\e[49m\e[38;5;66m  21:47:36\e[0m\e[38;5;66m\e[49m\e[38;5;66m\e[0m\e[38;5;66m\e[49m\e[38;5;66m\e[49m\e[30m \e[0m\e[30m\e[49m\e[38;5;66m\e[0m\e[38;5;66m\e[49m\e[39m\e[38;5;242m─╮\r\n\e[0m\e[38;5;242m\e[49m\e[39m\e[0m\e[49m\e[38;5;76m❯\e[0m\e[38;5;76m\e[49m\e[38;5;76m\e[0m\e[38;5;76m\e[49m\e[30m\e[0m\e[30m\e[49m\e[39m \e[0m\e[49m\e[39m\e]697;EndPrompt\a\e]697;NewCmd=8a282c20-f2a1-4dc0-a5c4-f5ae6f835181\a\e[K\e[105C\e]697;StartPrompt\a\e[0m\e[49m\e[39m\e[38;5;242m─╯\e]697;EndPrompt\a\e[39m\e[107D\e[?1h\e=\e[?2004h"
-  - delay: 395
+  - delay: 195
     content: "\e[?2004l\r\r\n"
