@@ -377,13 +377,17 @@ This CLI tool runs `git diff` to grab all your latest code changes, sends them t
 
 * Login to the site you want
 * You can get cookie from the browser's developer tools network tab
-* See for any requests check out the Cookie, **Copy whole value**
+* See for any requests check out the Cookie, **Copy whole value** 
 * Check below image for the format of cookie
+
+> When setting cookies with long string values, ensure to **escape characters** like ", ', and others properly.
+> - For double quotes ("), use \\"
+> - For single quotes ('), use \\'
 
 ![how-to-get-cookie](https://github.com/tak-bro/aicommit2/assets/7614353/66f2994d-23d9-4c88-a113-f2d3dc5c0669)
 
-> This picture is an example of the Huggingface Chat.
- 
+![how-to-get-clova-x-cookie](https://github.com/tak-bro/aicommit2/assets/7614353/dd2202d6-ca1a-4a8a-ba2f-b5703a19c71d)
+
 ## Disclaimer
 
 This project utilizes certain functionalities or data from external APIs, but it is important to note that it is not officially affiliated with or endorsed by the providers of those APIs. The use of external APIs is at the sole discretion and risk of the user.

@@ -13,7 +13,9 @@
         "huggingface",
         "hugging face",
         "clovax",
-        "clova x"
+        "clova x",
+        "anthropic",
+        "claude"
     ],
     "license": "MIT",
     "repository": "tak-bro/aicommit2",
