@@ -1,6 +1,6 @@
 import { AxiosResponse } from 'axios';
 import chalk from 'chalk';
-import 'web-streams-polyfill';
+// import 'web-streams-polyfill';
 import { Blob, FormData } from 'formdata-node';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Observable, catchError, concatMap, from, map } from 'rxjs';

@@ -49,6 +49,7 @@
     "dependencies": {
         "@anthropic-ai/sdk": "^0.14.1",
         "@dqbd/tiktoken": "^1.0.2",
+        "@google/generative-ai": "^0.2.1",
         "@inquirer/prompts": "^3.0.0",
         "axios": "^1.4.0",
         "chalk": "^5.3.0",
