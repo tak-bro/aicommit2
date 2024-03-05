@@ -74,7 +74,7 @@ const configParsers = {
         if (!model || model.length === 0) {
             return 'gemini-pro';
         }
-        const supportModels = ['gemini-pro'];
+        const supportModels = ['gemini-pro', 'gemini-pro-vision'];
         parseAssert('GEMINI_MODEL', supportModels.includes(model), 'Invalid model type of Gemini');
         return model;
     },

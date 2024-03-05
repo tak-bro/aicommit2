@@ -50,9 +50,6 @@ dependencies:
   uuid:
     specifier: ^9.0.1
     version: 9.0.1
-  web-streams-polyfill:
-    specifier: ^3.3.2
-    version: 3.3.2
 
 devDependencies:
   '@pvtnbr/eslint-config':

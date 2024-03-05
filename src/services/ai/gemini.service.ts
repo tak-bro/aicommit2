@@ -78,11 +78,15 @@ export class GeminiService extends AIService {
         }
     }
 
-    handleError$ = (geminiError: GeminiError) => {
-        const simpleMessage = `${geminiError.error?.code} - ${geminiError.error?.message}`;
+    handleError$ = (geminiError: AIServiceError) => {
+        const geminiErrorMessage = geminiError.message || geminiError.toString();
+        const regex = /(\[.*?\]\s*[^[]*)/g;
+        const matches = [...geminiErrorMessage.matchAll(regex)];
+        const result: any[] = [];
+        matches.forEach(match => result.push(match[1]));
         return of({
-            name: `${this.errorPrefix} ${simpleMessage}`,
-            value: simpleMessage,
+            name: `${this.errorPrefix} ${result[1]}`,
+            value: result[1],
             isError: true,
         });
     };

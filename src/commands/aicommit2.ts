@@ -45,6 +45,10 @@ export default async (
         const config = await getConfig({
             OPENAI_KEY: env.OPENAI_KEY || env.OPENAI_API_KEY,
             OPENAI_MODEL: env.OPENAI_MODEL || env['openai-model'] || env['openai_model'],
+            GEMINI_KEY: env.GEMINI_KEY || env.GEMINI_API_KEY,
+            GEMINI_MODEL: env.GEMINI_MODEL || env['gemini-model'] || env['gemini_model'],
+            ANTHROPIC_KEY: env.ANTHROPIC_KEY || env.ANTHROPIC_API_KEY,
+            ANTHROPIC_MODEL: env.ANTHROPIC_MODEL || env['anthropic-model'] || env['anthropic_model'],
             HUGGING_COOKIE: env.HUGGING_COOKIE || env.HUGGING_API_KEY || env.HF_TOKEN,
             HUGGING_MODEL: env.HUGGING_MODEL || env['hugging-model'],
             CLOVAX_COOKIE: env.CLOVAX_COOKIE || env.CLOVA_X_COOKIE,

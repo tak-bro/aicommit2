@@ -27,7 +27,7 @@ The core functionalities and architecture of this project are inspired by [AI Co
 
 ## Setup
 
-> The minimum supported version of Node.js is the latest v16.20.0. Check your Node.js version with `node --version`.
+> The minimum supported version of Node.js is the v18. Check your Node.js version with `node --version`.
 
 1. Install _aicommit2_:
 
