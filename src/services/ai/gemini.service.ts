@@ -8,22 +8,6 @@ import { AIService, AIServiceError, AIServiceParams } from './ai.service.js';
 import { KnownError } from '../../utils/error.js';
 import { deduplicateMessages } from '../../utils/openai.js';
 
-export interface GeminiErrorDetail {
-    '@type'?: string;
-    reason?: string;
-    domain?: string;
-    metadata?: unknown;
-}
-
-export interface GeminiError extends AIServiceError {
-    error?: {
-        code: number;
-        message: string;
-        status: string;
-        details?: GeminiErrorDetail[];
-    };
-}
-
 export class GeminiService extends AIService {
     private genAI: GoogleGenerativeAI;
 
@@ -82,11 +66,13 @@ export class GeminiService extends AIService {
         const geminiErrorMessage = geminiError.message || geminiError.toString();
         const regex = /(\[.*?\]\s*[^[]*)/g;
         const matches = [...geminiErrorMessage.matchAll(regex)];
-        const result: any[] = [];
+        const result: string[] = [];
         matches.forEach(match => result.push(match[1]));
+
+        const message = result[1] || 'An error occurred';
         return of({
-            name: `${this.errorPrefix} ${result[1]}`,
-            value: result[1],
+            name: `${this.errorPrefix} ${message}`,
+            value: message,
             isError: true,
         });
     };
