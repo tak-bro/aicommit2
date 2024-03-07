@@ -64,11 +64,19 @@ const configParsers = {
         }
         return cookie;
     },
-    GOOGLE_KEY(key?: string) {
+    GEMINI_KEY(key?: string) {
         if (!key) {
             return '';
         }
         return key;
+    },
+    GEMINI_MODEL(model?: string) {
+        if (!model || model.length === 0) {
+            return 'gemini-pro';
+        }
+        const supportModels = ['gemini-pro'];
+        parseAssert('GEMINI_MODEL', supportModels.includes(model), 'Invalid model type of Gemini');
+        return model;
     },
     ANTHROPIC_MODEL(model?: string) {
         if (!model || model.length === 0) {

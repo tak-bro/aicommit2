@@ -1,4 +1,4 @@
-import Anthropic from '@anthropic-ai/sdk';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import chalk from 'chalk';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Observable, catchError, concatMap, from, map, of } from 'rxjs';
@@ -8,26 +8,18 @@ import { AIService, AIServiceError, AIServiceParams } from './ai.service.js';
 import { KnownError } from '../../utils/error.js';
 import { deduplicateMessages } from '../../utils/openai.js';
 
-export interface AnthropicServiceError extends AIServiceError {
-    error?: {
-        error?: {
-            message?: string;
-        };
-    };
-}
-
-export class AnthropicService extends AIService {
-    private anthropic: Anthropic;
+export class GeminiService extends AIService {
+    private genAI: GoogleGenerativeAI;
 
     constructor(private readonly params: AIServiceParams) {
         super(params);
         this.colors = {
-            primary: '#AE5630',
+            primary: '#0077FF',
             secondary: '#fff',
         };
-        this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold('[Anthropic]');
-        this.errorPrefix = chalk.red.bold(`[Anthropic]`);
-        this.anthropic = new Anthropic({ apiKey: this.params.config.ANTHROPIC_KEY });
+        this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold('[Gemini]');
+        this.errorPrefix = chalk.red.bold(`[Gemini]`);
+        this.genAI = new GoogleGenerativeAI(this.params.config.GEMINI_KEY);
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
@@ -49,13 +41,17 @@ export class AnthropicService extends AIService {
             const maxLength = this.params.config['max-length'];
             const prompt = this.buildPrompt(locale, diff, generate, maxLength, type);
 
-            const result = await this.anthropic.completions.create({
-                model: this.params.config.ANTHROPIC_MODEL,
-                max_tokens_to_sample: this.params.config['max-tokens'],
-                temperature: this.params.config.temperature,
-                prompt: `${Anthropic.HUMAN_PROMPT} ${prompt}${Anthropic.AI_PROMPT}`,
+            const maxTokens = this.params.config['max-tokens'];
+            const model = this.genAI.getGenerativeModel({
+                model: this.params.config.GEMINI_MODEL,
+                generationConfig: {
+                    maxOutputTokens: maxTokens,
+                    temperature: this.params.config.temperature,
+                },
             });
-            const completion = result.completion;
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            const completion = response.text();
             return deduplicateMessages(this.sanitizeMessage(completion));
         } catch (error) {
             const errorAsAny = error as any;
@@ -66,12 +62,17 @@ export class AnthropicService extends AIService {
         }
     }
 
-    handleError$ = (anthropicError: AnthropicServiceError) => {
-        const simpleMessage =
-            anthropicError.error?.error?.message?.replace(/(\r\n|\n|\r)/gm, '') || 'An error occurred';
+    handleError$ = (geminiError: AIServiceError) => {
+        const geminiErrorMessage = geminiError.message || geminiError.toString();
+        const regex = /(\[.*?\]\s*[^[]*)/g;
+        const matches = [...geminiErrorMessage.matchAll(regex)];
+        const result: string[] = [];
+        matches.forEach(match => result.push(match[1]));
+
+        const message = result[1] || 'An error occurred';
         return of({
-            name: `${this.errorPrefix} ${simpleMessage}`,
-            value: simpleMessage,
+            name: `${this.errorPrefix} ${message}`,
+            value: message,
             isError: true,
         });
     };

@@ -14,6 +14,7 @@ export class OpenAIService extends AIService {
             secondary: '#FFF',
         };
         this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold('[ChatGPT]');
+        this.errorPrefix = chalk.red.bold(`[ChatGPT]`);
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
@@ -43,7 +44,6 @@ export class OpenAIService extends AIService {
     }
 
     handleError$ = (error: AIServiceError) => {
-        const errorAI = chalk.red.bold(`[ChatGPT]`);
         let simpleMessage = 'An error occurred';
         if (error.message) {
             simpleMessage = error.message.split('\n')[0];
@@ -51,7 +51,7 @@ export class OpenAIService extends AIService {
             simpleMessage += `: ${errorJson.error.message}`;
         }
         return of({
-            name: `${errorAI} ${simpleMessage}`,
+            name: `${this.errorPrefix} ${simpleMessage}`,
             value: simpleMessage,
             isError: true,
         });

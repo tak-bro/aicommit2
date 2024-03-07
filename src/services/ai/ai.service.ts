@@ -8,9 +8,10 @@ import { generatePrompt } from '../../utils/prompt.js';
 // NOTE: get AI Type from key names
 export const AIType = {
     OPEN_AI: 'OPENAI_KEY',
+    GEMINI: 'GEMINI_KEY',
+    ANTHROPIC: 'ANTHROPIC_KEY',
     HUGGING: 'HUGGING_COOKIE',
     CLOVA_X: 'CLOVAX_COOKIE',
-    ANTHROPIC: 'ANTHROPIC_KEY',
 } as const;
 export type ApiKeyName = (typeof AIType)[keyof typeof AIType];
 export const ApiKeyNames: ApiKeyName[] = Object.values(AIType).map(value => value);

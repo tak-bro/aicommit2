@@ -6,6 +6,7 @@ import { AIServiceFactory } from '../services/ai/ai-service.factory.js';
 import { AIServiceParams, AIType, ApiKeyName } from '../services/ai/ai.service.js';
 import { AnthropicService } from '../services/ai/anthropic.service.js';
 import { ClovaXService } from '../services/ai/clova-x.service.js';
+import { GeminiService } from '../services/ai/gemini.service.js';
 import { HuggingService } from '../services/ai/hugging.service.js';
 import { OpenAIService } from '../services/ai/openai.service.js';
 import { ValidConfig } from '../utils/config.js';
@@ -27,12 +28,14 @@ export class AIRequestManager {
                 switch (ai) {
                     case AIType.OPEN_AI:
                         return AIServiceFactory.create(OpenAIService, params).generateCommitMessage$();
+                    case AIType.GEMINI:
+                        return AIServiceFactory.create(GeminiService, params).generateCommitMessage$();
+                    case AIType.ANTHROPIC:
+                        return AIServiceFactory.create(AnthropicService, params).generateCommitMessage$();
                     case AIType.HUGGING:
                         return AIServiceFactory.create(HuggingService, params).generateCommitMessage$();
                     case AIType.CLOVA_X:
                         return AIServiceFactory.create(ClovaXService, params).generateCommitMessage$();
-                    case AIType.ANTHROPIC:
-                        return AIServiceFactory.create(AnthropicService, params).generateCommitMessage$();
                     default:
                         const prefixError = chalk.red.bold(`[${ai}]`);
                         return of({

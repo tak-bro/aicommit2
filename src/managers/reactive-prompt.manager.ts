@@ -2,7 +2,6 @@ import inquirer from 'inquirer';
 import ReactiveListPrompt, { ChoiceItem, ReactiveListChoice, ReactiveListLoader } from 'inquirer-reactive-list-prompt';
 import { BehaviorSubject, ReplaySubject } from 'rxjs';
 
-
 const defaultLoader = {
     isLoading: false,
     startOption: {
