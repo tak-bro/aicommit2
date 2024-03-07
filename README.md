@@ -3,7 +3,7 @@
     <img src="https://github.com/tak-bro/aicommit2/assets/7614353/9046d4ab-5652-4f2a-99b8-e58920ddbe17" alt="AICommit2"/>
     <h1 align="center">AICommit2</h1>
   </div>
-	<p>Reactive CLI that generates git commit messages with various AI</p>
+	<p>A Reactive CLI that generates git commit messages with various AI</p>
 	<a aria-label="npm" href="https://www.npmjs.com/package/aicommit2">
         <img src="https://img.shields.io/npm/v/aicommit2" alt="Current version">
     </a>
@@ -22,6 +22,7 @@ The core functionalities and architecture of this project are inspired by [AI Co
 
 - [OpenAI](https://openai.com/)
 - [Anthropic Claude](https://console.anthropic.com/)
+- [Gemini](https://gemini.google.com/)
 - [Huggingface **(Unofficial)**](https://huggingface.co/chat/)
 - [Clova X **(Unofficial)**](https://clova-x.naver.com/)
 
@@ -39,6 +40,7 @@ npm install -g aicommit2
 
 - [OpenAI](https://platform.openai.com/account/api-keys)
 - [Anthropic Claude](https://console.anthropic.com/)
+- [Gemini](https://aistudio.google.com/app/apikey)
 - [Huggingface **(Unofficial)**](https://github.com/tak-bro/aicommit2/blob/main/README.md#how-to-get-cookie)
 - [Clova X **(Unofficial)**](https://github.com/tak-bro/aicommit2/blob/main/README.md#how-to-get-cookie)
  
@@ -49,6 +51,7 @@ npm install -g aicommit2
 ```sh
 aicommit2 config set OPENAI_KEY=<your key> # OpenAI
 aicommit2 config set ANTHROPIC_KEY=<your key> # Anthropic Claude
+aicommit2 config set GEMINI_KEY=<your key> # Gemini
 
 # Please be cautious of Escape characters(\", \') in browser cookie string 
 aicommit2 config set HUGGING_COOKIE="<your browser cookie>" # Hugging Face
@@ -199,7 +202,7 @@ aicommit2 config get OPENAI_KEY
 You can also retrieve multiple configuration options at once by separating them with spaces:
 
 ```sh
-aicommit2 config get OPENAI_KEY OPENAI_MODEL CLOVAX_COOKIE 
+aicommit2 config get OPENAI_KEY OPENAI_MODEL GEMINI_KEY 
 ```
 
 ### Setting a configuration value
@@ -224,23 +227,25 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 
 ### Options
 
-| Option             | Default                                | Description                                                                                             |
-|--------------------|----------------------------------------|---------------------------------------------------------------------------------------------------------|
-| `OPENAI_KEY`       | N/A                                    | The OpenAI API key.                                                                                     |
-| `OPENAI_MODEL`     | `gpt-3.5-turbo`                        | The OpenAI Model to use.                                                                                |
-| `ANTHROPIC_KEY`    | N/A                                    | The Anthropic API key.                                                                                  |
-| `ANTHROPIC_MODEL`  | `claude-2.1`                           | The Anthropic Model to use.                                                                             |
-| `HUGGING_COOKIE`   | N/A                                    | The HuggingFace Cookie string                                                                           |
-| `HUGGING_MODEL`    | `mistralai/Mixtral-8x7B-Instruct-v0.1` | The HuggingFace Model to use.                                                                           |
-| `CLOVAX_COOKIE`    | N/A                                    | The Clova X Cookie string                                                                               |
-| `locale`           | `en`                                   | Locale for the generated commit messages.                                                               |
-| `generate`         | `1`                                    | Number of commit messages to generate.                                                                  |
-| `type`             | `conventional`                         | Type of commit message to generate.                                                                     |
-| `proxy`            | N/A                                    | Set a HTTP/HTTPS proxy to use for requests(only **OpenAI**).                                            |
-| `timeout`          | `10000` ms                             | Network request timeout                                                                                 |
-| `max-length`       | `50`                                   | Maximum character length of the generated commit message.                                               |
-| `max-tokens`       | `200`                                  | The maximum number of tokens that the AI models can generate. (only **Open AI, Anthropic**)             |
-| `temperature`      | `0.7`                                  | The temperature (0.0-2.0) is used to control the randomness of the output (only **Open AI, Anthropic**) |
+| Option            | Default                                | Description                                                                                                    |
+|-------------------|----------------------------------------|----------------------------------------------------------------------------------------------------------------|
+| `OPENAI_KEY`      | N/A                                    | The OpenAI API key.                                                                                            |
+| `OPENAI_MODEL`    | `gpt-3.5-turbo`                        | The OpenAI Model to use.                                                                                       |
+| `ANTHROPIC_KEY`   | N/A                                    | The Anthropic API key.                                                                                         |
+| `ANTHROPIC_MODEL` | `claude-2.1`                           | The Anthropic Model to use.                                                                                    |
+| `GEMINI_KEY`      | N/A                                    | The Gemini API key.                                                                                            |
+| `GEMINI_MODEL`    | `gemini-pro`                           | The Gemini Model                                                                                               |
+| `HUGGING_COOKIE`  | N/A                                    | The HuggingFace Cookie string                                                                                  |
+| `HUGGING_MODEL`   | `mistralai/Mixtral-8x7B-Instruct-v0.1` | The HuggingFace Model to use.                                                                                  |
+| `CLOVAX_COOKIE`   | N/A                                    | The Clova X Cookie string                                                                                      |
+| `locale`          | `en`                                   | Locale for the generated commit messages.                                                                      |
+| `generate`        | `1`                                    | Number of commit messages to generate.                                                                         |
+| `type`            | `conventional`                         | Type of commit message to generate.                                                                            |
+| `proxy`           | N/A                                    | Set a HTTP/HTTPS proxy to use for requests(only **OpenAI**).                                                   |
+| `timeout`         | `10000` ms                             | Network request timeout                                                                                        |
+| `max-length`      | `50`                                   | Maximum character length of the generated commit message.                                                      |
+| `max-tokens`      | `200`                                  | The maximum number of tokens that the AI models can generate. (for **Open AI, Anthropic, Gemini**)             |
+| `temperature`     | `0.7`                                  | The temperature (0.0-2.0) is used to control the randomness of the output (for **Open AI, Anthropic, Gemini**) |
 
 
 #### OPENAI_KEY
@@ -275,6 +280,18 @@ Supported:
 aicommit2 config set ANTHROPIC_MODEL=claude-2.1
 ```
 
+#### GEMINI_KEY
+
+The Gemini API key. If you don't already have one, create a key in [Google AI Studio](https://aistudio.google.com/app/apikey).
+
+#### GEMINI_MODEL
+
+Default: `gemini-pro`
+
+Supported:
+- `gemini-pro`
+
+> Currently supporting only one model, but as Gemini starts supporting other models, it will be updated.
 
 #### HUGGING_COOKIE
 
@@ -361,12 +378,21 @@ aicommit2 config set type=
 ```
 
 #### max-tokens
-The maximum number of tokens that the AI models can generate.
+The maximum number of tokens that the AI models can generate. (for **Open AI, Anthropic, Gemini**)
 
 Default: `200`
 
 ```sh
 aicommit2 config set max-tokens=1000
+```
+
+#### temperature
+The temperature (0.0-2.0) is used to control the randomness of the output (for **Open AI, Anthropic, Gemini**)
+
+Default: `0.7`
+
+```sh
+aicommit2 config set temperature=0
 ```
 
 ## How it works

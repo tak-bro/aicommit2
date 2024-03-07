@@ -1,7 +1,7 @@
 {
     "name": "aicommit2",
     "version": "0.0.0-semantic-release",
-    "description": "Reactive CLI that generates git commit messages with various AI",
+    "description": "A Reactive CLI that generates git commit messages with various AI",
     "keywords": [
         "ai",
         "git",
@@ -15,7 +15,9 @@
         "clovax",
         "clova x",
         "anthropic",
-        "claude"
+        "claude",
+        "gemini",
+        "generative-ai"
     ],
     "license": "MIT",
     "repository": "tak-bro/aicommit2",
