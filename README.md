@@ -274,10 +274,11 @@ Default: `claude-2.1`
 
 Supported:
 - `claude-2.1`
+- `claude-2.0`
 - `claude-instant-1.2`
 
 ```sh
-aicommit2 config set ANTHROPIC_MODEL=claude-2.1
+aicommit2 config set ANTHROPIC_MODEL=claude-instant-1.2
 ```
 
 #### GEMINI_KEY
