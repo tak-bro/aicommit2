@@ -82,7 +82,7 @@ const configParsers = {
         if (!model || model.length === 0) {
             return 'claude-2.1';
         }
-        const supportModels = ['claude-2.1', 'claude-instant-1.2'];
+        const supportModels = ['claude-2.1', 'claude-2.0', 'claude-instant-1.2'];
 
         parseAssert('ANTHROPIC_MODEL', supportModels.includes(model), 'Invalid model type of Anthropic');
         return model;
