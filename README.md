@@ -36,7 +36,7 @@ The core functionalities and architecture of this project are inspired by [AI Co
 npm install -g aicommit2
 ```
 
-2. Retrieve your API key or Cookie
+2. Retrieve the API key or Cookie you intend to use
 
 - [OpenAI](https://platform.openai.com/account/api-keys)
 - [Anthropic Claude](https://console.anthropic.com/)
