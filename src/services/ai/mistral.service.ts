@@ -4,7 +4,6 @@ import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Observable, catchError, concatMap, from, map, of } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
-
 import { AIService, AIServiceError, AIServiceParams } from './ai.service.js';
 import { KnownError } from '../../utils/error.js';
 import { deduplicateMessages } from '../../utils/openai.js';
@@ -142,7 +141,7 @@ export class MistralService extends AIService {
                 max_tokens: this.params.config['max-tokens'],
                 stream: false,
                 safe_prompt: false,
-                random_seed: getRandomNumber(0, 1000),
+                random_seed: getRandomNumber(10, 1000),
             })
             .execute();
         const result: CreateChatCompletionsResponse = response.data;

@@ -101,7 +101,7 @@ const configParsers = {
     },
     MISTRAL_MODEL(model?: string) {
         if (!model || model.length === 0) {
-            return 'open-mistral-7b';
+            return 'mistral-tiny';
         }
         const supportModels = [
             'open-mistral-7b',
