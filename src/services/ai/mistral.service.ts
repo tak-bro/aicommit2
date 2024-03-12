@@ -109,6 +109,7 @@ export class MistralService extends AIService {
         const response: AxiosResponse<ListAvailableModelsResponse> = await new HttpRequestBuilder({
             method: 'GET',
             baseURL: `${this.host}/v1/models`,
+            timeout: this.params.config.timeout,
         })
             .setHeaders({
                 Authorization: `Bearer ${this.apiKey}`,
@@ -123,6 +124,7 @@ export class MistralService extends AIService {
         const response: AxiosResponse<CreateChatCompletionsResponse> = await new HttpRequestBuilder({
             method: 'POST',
             baseURL: `${this.host}/v1/chat/completions`,
+            timeout: this.params.config.timeout,
         })
             .setHeaders({
                 Authorization: `Bearer ${this.apiKey}`,
