@@ -3,6 +3,7 @@
     "version": "0.0.0-semantic-release",
     "description": "A Reactive CLI that generates git commit messages with various AI",
     "keywords": [
+        "cli",
         "ai",
         "git",
         "commit",
@@ -17,7 +18,8 @@
         "anthropic",
         "claude",
         "gemini",
-        "generative-ai"
+        "generative-ai",
+        "mistral"
     ],
     "license": "MIT",
     "repository": "tak-bro/aicommit2",

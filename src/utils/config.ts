@@ -93,6 +93,36 @@ const configParsers = {
         }
         return key;
     },
+    MISTRAL_KEY(key?: string) {
+        if (!key) {
+            return '';
+        }
+        return key;
+    },
+    MISTRAL_MODEL(model?: string) {
+        if (!model || model.length === 0) {
+            return 'mistral-tiny';
+        }
+        const supportModels = [
+            'open-mistral-7b',
+            'mistral-tiny-2312',
+            'mistral-tiny',
+            'open-mixtral-8x7b',
+            'mistral-small-2312',
+            'mistral-small',
+            'mistral-small-2402',
+            'mistral-small-latest',
+            'mistral-medium-latest',
+            'mistral-medium-2312',
+            'mistral-medium',
+            'mistral-large-latest',
+            'mistral-large-2402',
+            'mistral-embed',
+        ];
+
+        parseAssert('MISTRAL_MODEL', supportModels.includes(model), 'Invalid model type of Mistral AI');
+        return model;
+    },
     confirm(confirm?: string | boolean) {
         if (!confirm) {
             return false;

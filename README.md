@@ -23,6 +23,7 @@ The core functionalities and architecture of this project are inspired by [AI Co
 - [OpenAI](https://openai.com/)
 - [Anthropic Claude](https://console.anthropic.com/)
 - [Gemini](https://gemini.google.com/)
+- [Mistral AI](https://mistral.ai/)
 - [Huggingface **(Unofficial)**](https://huggingface.co/chat/)
 - [Clova X **(Unofficial)**](https://clova-x.naver.com/)
 
@@ -41,18 +42,19 @@ npm install -g aicommit2
 - [OpenAI](https://platform.openai.com/account/api-keys)
 - [Anthropic Claude](https://console.anthropic.com/)
 - [Gemini](https://aistudio.google.com/app/apikey)
+- [Mistral AI](https://console.mistral.ai/)
 - [Huggingface **(Unofficial)**](https://github.com/tak-bro/aicommit2/blob/main/README.md#how-to-get-cookie)
 - [Clova X **(Unofficial)**](https://github.com/tak-bro/aicommit2/blob/main/README.md#how-to-get-cookie)
  
 > If you haven't already, you'll have to create an account and set up billing. 
 
-3. Set the key so aicommit2 can use it:
+3. Set the key you intend to use:
 
 ```sh
 aicommit2 config set OPENAI_KEY=<your key> # OpenAI
 aicommit2 config set ANTHROPIC_KEY=<your key> # Anthropic Claude
 aicommit2 config set GEMINI_KEY=<your key> # Gemini
-
+aicommit2 config set MISTRAL_KEY=<your key> # Mistral AI
 # Please be cautious of Escape characters(\", \') in browser cookie string 
 aicommit2 config set HUGGING_COOKIE="<your browser cookie>" # Hugging Face
 aicommit2 config set CLOVAX_COOKIE="<your browser cookie>" # Clova X
@@ -227,26 +229,39 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 
 ### Options
 
-| Option            | Default                                | Description                                                                                                    |
-|-------------------|----------------------------------------|----------------------------------------------------------------------------------------------------------------|
-| `OPENAI_KEY`      | N/A                                    | The OpenAI API key.                                                                                            |
-| `OPENAI_MODEL`    | `gpt-3.5-turbo`                        | The OpenAI Model to use.                                                                                       |
-| `ANTHROPIC_KEY`   | N/A                                    | The Anthropic API key.                                                                                         |
-| `ANTHROPIC_MODEL` | `claude-2.1`                           | The Anthropic Model to use.                                                                                    |
-| `GEMINI_KEY`      | N/A                                    | The Gemini API key.                                                                                            |
-| `GEMINI_MODEL`    | `gemini-pro`                           | The Gemini Model                                                                                               |
-| `HUGGING_COOKIE`  | N/A                                    | The HuggingFace Cookie string                                                                                  |
-| `HUGGING_MODEL`   | `mistralai/Mixtral-8x7B-Instruct-v0.1` | The HuggingFace Model to use.                                                                                  |
-| `CLOVAX_COOKIE`   | N/A                                    | The Clova X Cookie string                                                                                      |
-| `locale`          | `en`                                   | Locale for the generated commit messages.                                                                      |
-| `generate`        | `1`                                    | Number of commit messages to generate.                                                                         |
-| `type`            | `conventional`                         | Type of commit message to generate.                                                                            |
-| `proxy`           | N/A                                    | Set a HTTP/HTTPS proxy to use for requests(only **OpenAI**).                                                   |
-| `timeout`         | `10000` ms                             | Network request timeout                                                                                        |
-| `max-length`      | `50`                                   | Maximum character length of the generated commit message.                                                      |
-| `max-tokens`      | `200`                                  | The maximum number of tokens that the AI models can generate. (for **Open AI, Anthropic, Gemini**)             |
-| `temperature`     | `0.7`                                  | The temperature (0.0-2.0) is used to control the randomness of the output (for **Open AI, Anthropic, Gemini**) |
+| Option              | Default                                   | Description                                                                                                             |
+|---------------------|-------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
+| `OPENAI_KEY`        | N/A                                       | The OpenAI API key.                                                                                                     |
+| `OPENAI_MODEL`      | `gpt-3.5-turbo`                           | The OpenAI Model to use.                                                                                                |
+| `ANTHROPIC_KEY`     | N/A                                       | The Anthropic API key.                                                                                                  |
+| `ANTHROPIC_MODEL`   | `claude-2.1`                              | The Anthropic Model to use.                                                                                             |
+| `GEMINI_KEY`        | N/A                                       | The Gemini API key.                                                                                                     |
+| `GEMINI_MODEL`      | `gemini-pro`                              | The Gemini Model                                                                                                        |
+| `MISTRAL_KEY`       | N/A                                       | The Mistral API key.                                                                                                    |
+| `MISTRAL_MODEL`     | `mistral-tiny`                            | The Mistral Model to use                                                                                                |
+| `HUGGING_COOKIE`    | N/A                                       | The HuggingFace Cookie string                                                                                           |
+| `HUGGING_MODEL`     | `mistralai/Mixtral-8x7B-Instruct-v0.1`    | The HuggingFace Model to use.                                                                                           |
+| `CLOVAX_COOKIE`     | N/A                                       | The Clova X Cookie string                                                                                               |
+| `locale`            | `en`                                      | Locale for the generated commit messages.                                                                               |
+| `generate`          | `1`                                       | Number of commit messages to generate.                                                                                  |
+| `type`              | `conventional`                            | Type of commit message to generate.                                                                                     |
+| `proxy`             | N/A                                       | Set a HTTP/HTTPS proxy to use for requests(only **OpenAI**).                                                            |
+| `timeout`           | `10000` ms                                | Network request timeout                                                                                                 |
+| `max-length`        | `50`                                      | Maximum character length of the generated commit message.                                                               |
+| `max-tokens`        | `200`                                     | The maximum number of tokens that the AI models can generate. (for **Open AI, Anthropic, Gemini, Mistral**)             |
+| `temperature`       | `0.7`                                     | The temperature (0.0-2.0) is used to control the randomness of the output (for **Open AI, Anthropic, Gemini, Mistral**) |
 
+> **Currently, options are set universally. However, there are plans to develop the ability to set individual options in the future.**
+
+#### Available Options by Model
+|                      | locale | generate | type  | proxy | timeout  | max-length  | max-tokens | max-tokens |
+|:--------------------:|:------:|:--------:|:-----:|:-----:|:--------:|:-----------:|:----------:|:----------:|
+|      **OpenAI**      |   ✓    |    ✓     |   ✓   |   ✓   |    ✓     |      ✓      |     ✓      |     ✓      |
+| **Anthropic Claude** |   ✓    |    ✓     |   ✓   |       |          |      ✓      |     ✓      |     ✓      |
+|      **Gemini**      |   ✓    |    ✓     |   ✓   |       |          |      ✓      |     ✓      |     ✓      |
+|    **Mistral AI**    |   ✓    |    ✓     |   ✓   |       |    ✓     |      ✓      |     ✓      |     ✓      |
+|   **Huggingface**    |   ✓    |    ✓     |   ✓   |       |    ✓     |      ✓      |            |            |
+|     **Clova X**      |   ✓    |    ✓     |   ✓   |       |    ✓     |      ✓      |            |            |
 
 #### OPENAI_KEY
 
@@ -283,7 +298,7 @@ aicommit2 config set ANTHROPIC_MODEL=claude-instant-1.2
 
 #### GEMINI_KEY
 
-The Gemini API key. If you don't already have one, create a key in [Google AI Studio](https://aistudio.google.com/app/apikey).
+The Gemini API key. If you don't have one, create a key in [Google AI Studio](https://aistudio.google.com/app/apikey).
 
 #### GEMINI_MODEL
 
@@ -293,6 +308,32 @@ Supported:
 - `gemini-pro`
 
 > Currently supporting only one model, but as Gemini starts supporting other models, it will be updated.
+
+#### MISTRAL_KEY
+
+The Mistral API key. If you don't have one, please sign up and subscribe in [Mistral Console](https://console.mistral.ai/).
+
+#### MISTRAL_MODEL
+
+Default: `mistral-tiny`
+
+Supported:
+- `open-mistral-7b`
+- `mistral-tiny-2312`
+- `mistral-tiny`
+- `open-mixtral-8x7b`
+- `mistral-small-2312`
+- `mistral-small`
+- `mistral-small-2402`
+- `mistral-small-latest`
+- `mistral-medium-latest`
+- `mistral-medium-2312`
+- `mistral-medium`
+- `mistral-large-latest`
+- `mistral-large-2402`
+- `mistral-embed`
+
+> The models mentioned above are subject to change.
 
 #### HUGGING_COOKIE
 
@@ -309,6 +350,8 @@ Supported:
 - `codellama/CodeLlama-70b-Instruct-hf`
 - `mistralai/Mistral-7B-Instruct-v0.2`
 - `openchat/openchat-3.5-0106`
+
+>  The models mentioned above are subject to change.
 
 #### CLOVAX_COOKIE
 
