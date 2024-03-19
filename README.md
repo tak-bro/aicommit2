@@ -91,7 +91,7 @@ ollama run llama2 # model you want use
 ```sh
 aicommit2 config set OLLAMA_MODEL=<your model> 
 aicommit2 config set OLLAMA_HOST=<host> # The default host for ollama is http://localhost:11434.
-aicommit2 config set OLLAMA_TIMEOUT=<timout> # default is 30000ms (30s)
+aicommit2 config set OLLAMA_TIMEOUT=<timout> # default is 100000ms (100s)
 ```
 
 This will create a `.aicommit2` file in your home directory.
@@ -278,7 +278,7 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 | `CLOVAX_COOKIE`   | N/A                                    | The Clova X Cookie string                                                                                               |
 | `OLLAMA_MODEL`    | N/A                                    | The Ollama Model. It should be downloaded your local                                                                    |
 | `OLLAMA_HOST`     | `http://localhost:11434`               | The Ollama Host.                                                                                                        |
-| `OLLAMA_TIMEOUT`  | `30000` ms                             | Request timeout for the Ollama                                                                                          |
+| `OLLAMA_TIMEOUT`  | `100000` ms                            | Request timeout for the Ollama                                                                                          |
 | `locale`          | `en`                                   | Locale for the generated commit messages.                                                                               |
 | `generate`        | `1`                                    | Number of commit messages to generate.                                                                                  |
 | `type`            | `conventional`                         | Type of commit message to generate.                                                                                     |
@@ -407,9 +407,9 @@ The Ollama host
 
 #### OLLAMA_TIMEOUT
 
-Default: `30000` (30 seconds)
+Default: `100000` (100 seconds)
 
-Request timeout for the Ollama. Default OLLAMA_TIMEOUT is **15 seconds** because it can take a long time to run locally.
+Request timeout for the Ollama. Default OLLAMA_TIMEOUT is **100 seconds** because it can take a long time to run locally.
 
 #### locale
 
