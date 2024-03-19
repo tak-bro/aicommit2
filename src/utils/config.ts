@@ -123,6 +123,18 @@ const configParsers = {
         parseAssert('MISTRAL_MODEL', supportModels.includes(model), 'Invalid model type of Mistral AI');
         return model;
     },
+    OLLAMA_MODEL(model?: string) {
+        if (!model) {
+            return '';
+        }
+        return model;
+    },
+    OLLAMA_HOST(host?: string) {
+        if (!host) {
+            return 'http://localhost:11434';
+        }
+        return host;
+    },
     confirm(confirm?: string | boolean) {
         if (!confirm) {
             return false;
