@@ -91,12 +91,12 @@ ollama run llama2 # model you want use
 ```sh
 aicommit2 config set OLLAMA_MODEL=<your model> 
 aicommit2 config set OLLAMA_HOST=<host> # The default host for ollama is http://localhost:11434.
+aicommit2 config set OLLAMA_TIMEOUT=<timout> # default is 30000ms (30s)
 ```
 
 This will create a `.aicommit2` file in your home directory.
 
 > If you want to use ollama, you must set **OLLAMA_MODEL**.
- 
 
 ### Upgrading
 
@@ -278,6 +278,7 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 | `CLOVAX_COOKIE`   | N/A                                    | The Clova X Cookie string                                                                                               |
 | `OLLAMA_MODEL`    | N/A                                    | The Ollama Model. It should be downloaded your local                                                                    |
 | `OLLAMA_HOST`     | `http://localhost:11434`               | The Ollama Host.                                                                                                        |
+| `OLLAMA_TIMEOUT`  | `30000` ms                             | Request timeout for the Ollama                                                                                          |
 | `locale`          | `en`                                   | Locale for the generated commit messages.                                                                               |
 | `generate`        | `1`                                    | Number of commit messages to generate.                                                                                  |
 | `type`            | `conventional`                         | Type of commit message to generate.                                                                                     |
@@ -290,15 +291,15 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 > **Currently, options are set universally. However, there are plans to develop the ability to set individual options in the future.**
 
 #### Available Options by Model
-|                      | locale | generate | type  | proxy | timeout  | max-length  | max-tokens | temperature |
-|:--------------------:|:------:|:--------:|:-----:|:-----:|:--------:|:-----------:|:----------:|:-----------:|
-|      **OpenAI**      |   ✓    |    ✓     |   ✓   |   ✓   |    ✓     |      ✓      |     ✓      |      ✓      |
-| **Anthropic Claude** |   ✓    |    ✓     |   ✓   |       |          |      ✓      |     ✓      |      ✓      |
-|      **Gemini**      |   ✓    |    ✓     |   ✓   |       |          |      ✓      |     ✓      |      ✓      |
-|    **Mistral AI**    |   ✓    |    ✓     |   ✓   |       |    ✓     |      ✓      |     ✓      |      ✓      |
-|   **Huggingface**    |   ✓    |    ✓     |   ✓   |       |    ✓     |      ✓      |            |             |
-|     **Clova X**      |   ✓    |    ✓     |   ✓   |       |    ✓     |      ✓      |            |             |
-|      **Ollama**      |   ✓    |    ✓     |   ✓   |       |    ✓     |      ✓      |     ✓      |      ✓      |
+|                      | locale | generate | type  | proxy |        timeout         | max-length  | max-tokens | temperature |
+|:--------------------:|:------:|:--------:|:-----:|:-----:|:----------------------:|:-----------:|:----------:|:-----------:|
+|      **OpenAI**      |   ✓    |    ✓     |   ✓   |   ✓   |           ✓            |      ✓      |     ✓      |      ✓      |
+| **Anthropic Claude** |   ✓    |    ✓     |   ✓   |       |                        |      ✓      |     ✓      |      ✓      |
+|      **Gemini**      |   ✓    |    ✓     |   ✓   |       |                        |      ✓      |     ✓      |      ✓      |
+|    **Mistral AI**    |   ✓    |    ✓     |   ✓   |       |           ✓            |      ✓      |     ✓      |      ✓      |
+|   **Huggingface**    |   ✓    |    ✓     |   ✓   |       |           ✓            |      ✓      |            |             |
+|     **Clova X**      |   ✓    |    ✓     |   ✓   |       |           ✓            |      ✓      |            |             |
+|      **Ollama**      |   ✓    |    ✓     |   ✓   |       | ✓<br/>(OLLAMA_TIMEOUT) |      ✓      |            |      ✓      |
 
 #### OPENAI_KEY
 
@@ -400,7 +401,15 @@ The Ollama Model. Please see [a list of models available](https://ollama.com/lib
 
 #### OLLAMA_HOST
 
-The Ollama host. The default host for Ollama is http://localhost:11434.
+Default: `http://localhost:11434`
+
+The Ollama host
+
+#### OLLAMA_TIMEOUT
+
+Default: `30000` (30 seconds)
+
+Request timeout for the Ollama. Default OLLAMA_TIMEOUT is **15 seconds** because it can take a long time to run locally.
 
 #### locale
 

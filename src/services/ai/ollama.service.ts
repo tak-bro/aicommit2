@@ -84,7 +84,7 @@ export class OllamaService extends AIService {
             const response = await new HttpRequestBuilder({
                 method: 'GET',
                 baseURL: `${this.host}`,
-                timeout: this.params.config.timeout,
+                timeout: this.params.config.OLLAMA_TIMEOUT,
             }).execute();
 
             return response.data;
@@ -100,7 +100,7 @@ export class OllamaService extends AIService {
         const response: AxiosResponse<OllamaChatCompletionsResponse> = await new HttpRequestBuilder({
             method: 'POST',
             baseURL: `${this.host}/api/generate`,
-            timeout: 100_000,
+            timeout: this.params.config.OLLAMA_TIMEOUT,
         })
             .setBody({
                 model: this.params.config.OLLAMA_MODEL,
@@ -109,11 +109,9 @@ export class OllamaService extends AIService {
                 options: {
                     temperature: this.params.config.temperature,
                     top_p: 1,
-                    // num_ctx: this.params.config['max-tokens'],
                 },
             })
             .execute();
-
         return response.data.response;
     }
 

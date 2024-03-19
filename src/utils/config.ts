@@ -135,6 +135,18 @@ const configParsers = {
         }
         return host;
     },
+    OLLAMA_TIMEOUT(timeout?: string) {
+        if (!timeout) {
+            return 100_000;
+        }
+
+        parseAssert('OLLAMA_TIMEOUT', /^\d+$/.test(timeout), 'Must be an integer');
+
+        const parsed = Number(timeout);
+        parseAssert('OLLAMA_TIMEOUT', parsed >= 500, 'Must be greater than 500ms');
+
+        return parsed;
+    },
     confirm(confirm?: string | boolean) {
         if (!confirm) {
             return false;
