@@ -58,7 +58,7 @@ export class OllamaService extends AIService {
             const { locale, generate, type } = this.params.config;
             const maxLength = this.params.config['max-length'];
             const prompt = this.buildPrompt(locale, diff, generate, maxLength, type);
-            await this.checkIsAvailableOllama();
+            const a = await this.checkIsAvailableOllama();
             const chatResponse = await this.createChatCompletions(prompt);
             return deduplicateMessages(this.sanitizeMessage(chatResponse));
         } catch (error) {
@@ -71,6 +71,13 @@ export class OllamaService extends AIService {
     }
 
     handleError$ = (error: OllamaServiceError) => {
+        if (error.response.data?.error) {
+            return of({
+                name: `${this.errorPrefix} ${error.response.data?.error}`,
+                value: error.response.data?.error,
+                isError: true,
+            });
+        }
         const simpleMessage = error.message?.replace(/(\r\n|\n|\r)/gm, '') || 'An error occurred';
         return of({
             name: `${this.errorPrefix} ${simpleMessage}`,
