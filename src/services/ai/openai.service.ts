@@ -20,6 +20,7 @@ export class OpenAIService extends AIService {
     generateCommitMessage$(): Observable<ReactiveListChoice> {
         return fromPromise(
             generateCommitMessage(
+                this.params.config.OPENAI_HOST,
                 this.params.config.OPENAI_KEY,
                 this.params.config.OPENAI_MODEL,
                 this.params.config.locale,

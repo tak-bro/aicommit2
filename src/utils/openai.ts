@@ -1,3 +1,4 @@
+import http from 'http';
 import https from 'https';
 
 import {
@@ -15,7 +16,7 @@ import type { ClientRequest, IncomingMessage } from 'http';
 import type { CreateChatCompletionRequest, CreateChatCompletionResponse } from 'openai';
 
 export const httpsGet = async (
-    hostname: string,
+    url: URL,
     path: string,
     headers: Record<string, string>,
     timeout: number,
@@ -26,9 +27,10 @@ export const httpsGet = async (
         response: IncomingMessage;
         data: string;
     }>((resolve, reject) => {
+        const httpModule = url.protocol.includes('https') ? https : http;
         const request = https.request(
             {
-                hostname,
+                hostname: url.hostname,
                 path,
                 method: 'GET',
                 headers: {
@@ -61,7 +63,7 @@ export const httpsGet = async (
     });
 
 export const httpsPost = async (
-    hostname: string,
+    url: URL,
     path: string,
     headers: Record<string, string>,
     json: unknown,
@@ -75,10 +77,11 @@ export const httpsPost = async (
         data: string;
     }>((resolve, reject) => {
         const postContent = JSON.stringify(json);
-        const request = https.request(
+        const httpModule = url.protocol.includes('https') ? https : http;
+        const request = httpModule.request(
             {
                 port: port ? port : undefined,
-                hostname,
+                hostname: url.hostname,
                 path,
                 method: 'POST',
                 headers: {
@@ -114,13 +117,15 @@ export const httpsPost = async (
     });
 
 const createChatCompletion = async (
+    url: string,
     apiKey: string,
     json: CreateChatCompletionRequest,
     timeout: number,
     proxy?: string
 ) => {
+    const openAIUrl = new URL(url);
     const { response, data } = await httpsPost(
-        'api.openai.com',
+        openAIUrl,
         '/v1/chat/completions',
         {
             Authorization: `Bearer ${apiKey}`,
@@ -173,6 +178,7 @@ const getTokens = (prompt: string, model: TiktokenModel) => {
 };
 
 export const generateCommitMessage = async (
+    url: string,
     apiKey: string,
     model: TiktokenModel,
     locale: string,
@@ -188,6 +194,7 @@ export const generateCommitMessage = async (
 ) => {
     try {
         const completion = await createChatCompletion(
+            url,
             apiKey,
             {
                 model,

@@ -271,6 +271,7 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 |-------------------|----------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
 | `OPENAI_KEY`      | N/A                                    | The OpenAI API key                                                                                                      |
 | `OPENAI_MODEL`    | `gpt-3.5-turbo`                        | The OpenAI Model to use                                                                                                 |
+| `OPENAI_HOST`     | `https://api.openai.com `              | The OpenAI URL for custom                                                                                               |
 | `ANTHROPIC_KEY`   | N/A                                    | The Anthropic API key                                                                                                   |
 | `ANTHROPIC_MODEL` | `claude-2.1`                           | The Anthropic Model to use                                                                                              |
 | `GEMINI_KEY`      | N/A                                    | The Gemini API key                                                                                                      |
@@ -321,6 +322,12 @@ The Chat Completions (`/v1/chat/completions`) model to use. Consult the list of 
 ```sh
 aicommit2 config set OPENAI_MODEL=gpt-4
 ```
+
+#### OPENAI_HOST
+
+Default: `https://api.openai.com`
+
+The OpenAI URL for custom. Both https and http protocols supported. It allows to run local OpenAI-compatible server.
 
 #### ANTHROPIC_KEY
 
