@@ -16,7 +16,7 @@
 
 ## Introduction
 
-AICommit2 streamlines interactions with various AI, enabling users to send requests to multiple AI simultaneously and choose the most suitable response for their needs.
+AICommit2 streamlines interactions with various AI, enabling users to send requests to multiple AI simultaneously and choose the most suitable message, without the necessity of waiting for all AI responses.
 
 ## Project Base & Inspiration
 
@@ -95,7 +95,7 @@ aicommit2 config set OLLAMA_TIMEOUT=<timout> # default is 100000ms (100s)
 
 > If you want to use ollama, you must set **OLLAMA_MODEL**.
 
-### Upgrading
+## Upgrading
 
 Check the installed version with:
 

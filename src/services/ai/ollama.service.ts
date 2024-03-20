@@ -58,7 +58,7 @@ export class OllamaService extends AIService {
             const { locale, generate, type } = this.params.config;
             const maxLength = this.params.config['max-length'];
             const prompt = this.buildPrompt(locale, diff, generate, maxLength, type);
-            const a = await this.checkIsAvailableOllama();
+            await this.checkIsAvailableOllama();
             const chatResponse = await this.createChatCompletions(prompt);
             return deduplicateMessages(this.sanitizeMessage(chatResponse));
         } catch (error) {
