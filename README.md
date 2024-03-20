@@ -51,8 +51,8 @@ npm install -g aicommit2
 - [Anthropic Claude](https://console.anthropic.com/)
 - [Gemini](https://aistudio.google.com/app/apikey)
 - [Mistral AI](https://console.mistral.ai/)
-- [Huggingface **(Unofficial)**](https://github.com/tak-bro/aicommit2/blob/main/README.md#how-to-get-cookie)
-- [Clova X **(Unofficial)**](https://github.com/tak-bro/aicommit2/blob/main/README.md#how-to-get-cookie)
+- [Huggingface **(Unofficial)**](https://github.com/tak-bro/aicommit2?tab=readme-ov-file#how-to-get-cookieunofficial-api)
+- [Clova X **(Unofficial)**](https://github.com/tak-bro/aicommit2?tab=readme-ov-file#how-to-get-cookieunofficial-api)
  
 > If you haven't already, you'll have to create an account and set up billing. 
 
@@ -89,8 +89,8 @@ ollama run llama2 # model you want use
 
 ```sh
 aicommit2 config set OLLAMA_MODEL=<your model> 
-aicommit2 config set OLLAMA_HOST=<host> # The default host for ollama is http://localhost:11434.
-aicommit2 config set OLLAMA_TIMEOUT=<timout> # default is 100000ms (100s)
+aicommit2 config set OLLAMA_HOST=<host> # Optional. The default host for ollama is http://localhost:11434.
+aicommit2 config set OLLAMA_TIMEOUT=<timout> # Optional. default is 100000ms (100s)
 ```
 
 > If you want to use ollama, you must set **OLLAMA_MODEL**.
@@ -174,16 +174,23 @@ aicommit2 --confirm # or -y
 
 ##### `--clipboard` or `-c`
 - Copy the selected message to the clipboard (default: **false**)
-- This is a useful option when you don't want to commit through aicommit2.
-- If you give this option, aicommit2 will not commit.
+- This is a useful option when you don't want to commit through AICommit2.
+- If you give this option, AICommit2 will not commit.
  
 ```sh
 aicommit2 --clipboard # or -c
 ```
 
+##### `--prompt` or `-p`
+- Additional prompt to let users fine-tune provided prompt
+
+```sh
+aicommit2 --prompt # or -p
+```
+
 ### Git hook
 
-You can also integrate _aicommit2_ with Git via the [`prepare-commit-msg`](https://git-scm.com/docs/githooks#_prepare_commit_msg) hook. This lets you use Git like you normally would, and edit the commit message before committing.
+You can also integrate _AICommit2_ with Git via the [`prepare-commit-msg`](https://git-scm.com/docs/githooks#_prepare_commit_msg) hook. This lets you use Git like you normally would, and edit the commit message before committing.
 
 #### Install
 
@@ -284,19 +291,20 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 | `max-length`      | `50`                                   | Maximum character length of the generated commit message                                                                |
 | `max-tokens`      | `200`                                  | The maximum number of tokens that the AI models can generate (for **Open AI, Anthropic, Gemini, Mistral**)              |
 | `temperature`     | `0.7`                                  | The temperature (0.0-2.0) is used to control the randomness of the output (for **Open AI, Anthropic, Gemini, Mistral**) |
+| `prompt`          | N/A                                    | Additional prompt to let users fine-tune provided prompt                                                                |
 
 > **Currently, options are set universally. However, there are plans to develop the ability to set individual options in the future.**
 
 #### Available Options by Model
-|                      | locale | generate | type  | proxy |        timeout         | max-length  | max-tokens | temperature |
-|:--------------------:|:------:|:--------:|:-----:|:-----:|:----------------------:|:-----------:|:----------:|:-----------:|
-|      **OpenAI**      |   ✓    |    ✓     |   ✓   |   ✓   |           ✓            |      ✓      |     ✓      |      ✓      |
-| **Anthropic Claude** |   ✓    |    ✓     |   ✓   |       |                        |      ✓      |     ✓      |      ✓      |
-|      **Gemini**      |   ✓    |    ✓     |   ✓   |       |                        |      ✓      |     ✓      |      ✓      |
-|    **Mistral AI**    |   ✓    |    ✓     |   ✓   |       |           ✓            |      ✓      |     ✓      |      ✓      |
-|   **Huggingface**    |   ✓    |    ✓     |   ✓   |       |           ✓            |      ✓      |            |             |
-|     **Clova X**      |   ✓    |    ✓     |   ✓   |       |           ✓            |      ✓      |            |             |
-|      **Ollama**      |   ✓    |    ✓     |   ✓   |       | ✓<br/>(OLLAMA_TIMEOUT) |      ✓      |            |      ✓      |
+|                      | locale | generate | type  | proxy |        timeout         | max-length  | max-tokens | temperature | prompt |
+|:--------------------:|:------:|:--------:|:-----:|:-----:|:----------------------:|:-----------:|:----------:|:-----------:|:------:|
+|      **OpenAI**      |   ✓    |    ✓     |   ✓   |   ✓   |           ✓            |      ✓      |     ✓      |      ✓      |   ✓    |
+| **Anthropic Claude** |   ✓    |    ✓     |   ✓   |       |                        |      ✓      |     ✓      |      ✓      |   ✓    |
+|      **Gemini**      |   ✓    |    ✓     |   ✓   |       |                        |      ✓      |     ✓      |      ✓      |   ✓    |
+|    **Mistral AI**    |   ✓    |    ✓     |   ✓   |       |           ✓            |      ✓      |     ✓      |      ✓      |   ✓    |
+|   **Huggingface**    |   ✓    |    ✓     |   ✓   |       |           ✓            |      ✓      |            |             |   ✓    |
+|     **Clova X**      |   ✓    |    ✓     |   ✓   |       |           ✓            |      ✓      |            |             |   ✓    |
+|      **Ollama**      |   ✓    |    ✓     |   ✓   |       | ✓<br/>(OLLAMA_TIMEOUT) |      ✓      |            |      ✓      |   ✓    |
 
 #### OPENAI_KEY
 
@@ -490,6 +498,13 @@ Default: `0.7`
 aicommit2 config set temperature=0
 ```
 
+#### prompt
+Additional prompt to let users fine-tune provided prompt. Users provide extra instructions to AI and can guide how commit messages should look like.
+
+```sh
+aicommit2 config set prompt="Do not mention config changes"
+```
+
 ## How it works
 
 This CLI tool runs `git diff` to grab all your latest code changes, sends them to configured AI, then returns the AI generated commit message.
@@ -526,3 +541,6 @@ It is recommended that users thoroughly review the API documentation and adhere 
 ## Contributing
 
 If you want to help fix a bug or implement a feature in [Issues](https://github.com/tak-bro/aicommit2/issues), checkout the [Contribution Guide](CONTRIBUTING.md) to learn how to setup and test the project.
+
+## Please Star⭐️ this Project!
+If this project has been helpful to you, I would greatly appreciate it if you could click the Star⭐️ button on this repository!
