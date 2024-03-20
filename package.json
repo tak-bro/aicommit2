@@ -19,7 +19,8 @@
         "claude",
         "gemini",
         "generative-ai",
-        "mistral"
+        "mistral",
+        "ollama"
     ],
     "license": "MIT",
     "repository": "tak-bro/aicommit2",

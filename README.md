@@ -14,6 +14,10 @@
 
 ---
 
+## Introduction
+
+AICommit2 streamlines interactions with various AI, enabling users to send requests to multiple AI simultaneously and choose the most suitable message, without the necessity of waiting for all AI responses.
+
 ## Project Base & Inspiration
 
 The core functionalities and architecture of this project are inspired by [AI Commits](https://github.com/Nutlope/aicommits).
@@ -26,6 +30,10 @@ The core functionalities and architecture of this project are inspired by [AI Co
 - [Mistral AI](https://mistral.ai/)
 - [Huggingface **(Unofficial)**](https://huggingface.co/chat/)
 - [Clova X **(Unofficial)**](https://clova-x.naver.com/)
+
+## Local Model
+ 
+- [Ollama](https://ollama.com/)
 
 ## Setup
 
@@ -55,6 +63,7 @@ aicommit2 config set OPENAI_KEY=<your key> # OpenAI
 aicommit2 config set ANTHROPIC_KEY=<your key> # Anthropic Claude
 aicommit2 config set GEMINI_KEY=<your key> # Gemini
 aicommit2 config set MISTRAL_KEY=<your key> # Mistral AI
+
 # Please be cautious of Escape characters(\", \') in browser cookie string 
 aicommit2 config set HUGGING_COOKIE="<your browser cookie>" # Hugging Face
 aicommit2 config set CLOVAX_COOKIE="<your browser cookie>" # Clova X
@@ -64,7 +73,29 @@ This will create a `.aicommit2` file in your home directory.
 
 > It is not necessary to set all keys. **But at least one key must be set up.**
 
-### Upgrading
+## Using Locally
+
+You can also use your model for free with [Ollama](https://ollama.com/).
+
+1. Install Ollama from [https://ollama.com](https://ollama.com/) 
+
+2. Start it with your model
+
+```shell
+ollama run llama2 # model you want use 
+```
+
+3. Set the model and host
+
+```sh
+aicommit2 config set OLLAMA_MODEL=<your model> 
+aicommit2 config set OLLAMA_HOST=<host> # The default host for ollama is http://localhost:11434.
+aicommit2 config set OLLAMA_TIMEOUT=<timout> # default is 100000ms (100s)
+```
+
+> If you want to use ollama, you must set **OLLAMA_MODEL**.
+
+## Upgrading
 
 Check the installed version with:
 
@@ -229,39 +260,43 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 
 ### Options
 
-| Option              | Default                                   | Description                                                                                                             |
-|---------------------|-------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
-| `OPENAI_KEY`        | N/A                                       | The OpenAI API key.                                                                                                     |
-| `OPENAI_MODEL`      | `gpt-3.5-turbo`                           | The OpenAI Model to use.                                                                                                |
-| `ANTHROPIC_KEY`     | N/A                                       | The Anthropic API key.                                                                                                  |
-| `ANTHROPIC_MODEL`   | `claude-2.1`                              | The Anthropic Model to use.                                                                                             |
-| `GEMINI_KEY`        | N/A                                       | The Gemini API key.                                                                                                     |
-| `GEMINI_MODEL`      | `gemini-pro`                              | The Gemini Model                                                                                                        |
-| `MISTRAL_KEY`       | N/A                                       | The Mistral API key.                                                                                                    |
-| `MISTRAL_MODEL`     | `mistral-tiny`                            | The Mistral Model to use                                                                                                |
-| `HUGGING_COOKIE`    | N/A                                       | The HuggingFace Cookie string                                                                                           |
-| `HUGGING_MODEL`     | `mistralai/Mixtral-8x7B-Instruct-v0.1`    | The HuggingFace Model to use.                                                                                           |
-| `CLOVAX_COOKIE`     | N/A                                       | The Clova X Cookie string                                                                                               |
-| `locale`            | `en`                                      | Locale for the generated commit messages.                                                                               |
-| `generate`          | `1`                                       | Number of commit messages to generate.                                                                                  |
-| `type`              | `conventional`                            | Type of commit message to generate.                                                                                     |
-| `proxy`             | N/A                                       | Set a HTTP/HTTPS proxy to use for requests(only **OpenAI**).                                                            |
-| `timeout`           | `10000` ms                                | Network request timeout                                                                                                 |
-| `max-length`        | `50`                                      | Maximum character length of the generated commit message.                                                               |
-| `max-tokens`        | `200`                                     | The maximum number of tokens that the AI models can generate. (for **Open AI, Anthropic, Gemini, Mistral**)             |
-| `temperature`       | `0.7`                                     | The temperature (0.0-2.0) is used to control the randomness of the output (for **Open AI, Anthropic, Gemini, Mistral**) |
+| Option            | Default                                | Description                                                                                                             |
+|-------------------|----------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
+| `OPENAI_KEY`      | N/A                                    | The OpenAI API key                                                                                                      |
+| `OPENAI_MODEL`    | `gpt-3.5-turbo`                        | The OpenAI Model to use                                                                                                 |
+| `ANTHROPIC_KEY`   | N/A                                    | The Anthropic API key                                                                                                   |
+| `ANTHROPIC_MODEL` | `claude-2.1`                           | The Anthropic Model to use                                                                                              |
+| `GEMINI_KEY`      | N/A                                    | The Gemini API key                                                                                                      |
+| `GEMINI_MODEL`    | `gemini-pro`                           | The Gemini Model                                                                                                        |
+| `MISTRAL_KEY`     | N/A                                    | The Mistral API key                                                                                                     |
+| `MISTRAL_MODEL`   | `mistral-tiny`                         | The Mistral Model to use                                                                                                |
+| `HUGGING_COOKIE`  | N/A                                    | The HuggingFace Cookie string                                                                                           |
+| `HUGGING_MODEL`   | `mistralai/Mixtral-8x7B-Instruct-v0.1` | The HuggingFace Model to use                                                                                            |
+| `CLOVAX_COOKIE`   | N/A                                    | The Clova X Cookie string                                                                                               |
+| `OLLAMA_MODEL`    | N/A                                    | The Ollama Model. It should be downloaded your local                                                                    |
+| `OLLAMA_HOST`     | `http://localhost:11434`               | The Ollama Host                                                                                                         |
+| `OLLAMA_TIMEOUT`  | `100000` ms                            | Request timeout for the Ollama                                                                                          |
+| `locale`          | `en`                                   | Locale for the generated commit messages                                                                                |
+| `generate`        | `1`                                    | Number of commit messages to generate                                                                                   |
+| `type`            | `conventional`                         | Type of commit message to generate                                                                                      |
+| `proxy`           | N/A                                    | Set a HTTP/HTTPS proxy to use for requests(only **OpenAI**)                                                             |
+| `timeout`         | `10000` ms                             | Network request timeout                                                                                                 |
+| `max-length`      | `50`                                   | Maximum character length of the generated commit message                                                                |
+| `max-tokens`      | `200`                                  | The maximum number of tokens that the AI models can generate (for **Open AI, Anthropic, Gemini, Mistral**)              |
+| `temperature`     | `0.7`                                  | The temperature (0.0-2.0) is used to control the randomness of the output (for **Open AI, Anthropic, Gemini, Mistral**) |
 
 > **Currently, options are set universally. However, there are plans to develop the ability to set individual options in the future.**
 
 #### Available Options by Model
-|                      | locale | generate | type  | proxy | timeout  | max-length  | max-tokens | max-tokens |
-|:--------------------:|:------:|:--------:|:-----:|:-----:|:--------:|:-----------:|:----------:|:----------:|
-|      **OpenAI**      |   ✓    |    ✓     |   ✓   |   ✓   |    ✓     |      ✓      |     ✓      |     ✓      |
-| **Anthropic Claude** |   ✓    |    ✓     |   ✓   |       |          |      ✓      |     ✓      |     ✓      |
-|      **Gemini**      |   ✓    |    ✓     |   ✓   |       |          |      ✓      |     ✓      |     ✓      |
-|    **Mistral AI**    |   ✓    |    ✓     |   ✓   |       |    ✓     |      ✓      |     ✓      |     ✓      |
-|   **Huggingface**    |   ✓    |    ✓     |   ✓   |       |    ✓     |      ✓      |            |            |
-|     **Clova X**      |   ✓    |    ✓     |   ✓   |       |    ✓     |      ✓      |            |            |
+|                      | locale | generate | type  | proxy |        timeout         | max-length  | max-tokens | temperature |
+|:--------------------:|:------:|:--------:|:-----:|:-----:|:----------------------:|:-----------:|:----------:|:-----------:|
+|      **OpenAI**      |   ✓    |    ✓     |   ✓   |   ✓   |           ✓            |      ✓      |     ✓      |      ✓      |
+| **Anthropic Claude** |   ✓    |    ✓     |   ✓   |       |                        |      ✓      |     ✓      |      ✓      |
+|      **Gemini**      |   ✓    |    ✓     |   ✓   |       |                        |      ✓      |     ✓      |      ✓      |
+|    **Mistral AI**    |   ✓    |    ✓     |   ✓   |       |           ✓            |      ✓      |     ✓      |      ✓      |
+|   **Huggingface**    |   ✓    |    ✓     |   ✓   |       |           ✓            |      ✓      |            |             |
+|     **Clova X**      |   ✓    |    ✓     |   ✓   |       |           ✓            |      ✓      |            |             |
+|      **Ollama**      |   ✓    |    ✓     |   ✓   |       | ✓<br/>(OLLAMA_TIMEOUT) |      ✓      |            |      ✓      |
 
 #### OPENAI_KEY
 
@@ -357,6 +392,22 @@ Supported:
 
 The [Clova X](https://clova-x.naver.com/) Cookie. Please check [how to get cookie](https://github.com/tak-bro/aicommit2?tab=readme-ov-file#how-to-get-cookieunofficial-api)
 
+#### OLLAMA_MODEL
+
+The Ollama Model. Please see [a list of models available](https://ollama.com/library)
+
+#### OLLAMA_HOST
+
+Default: `http://localhost:11434`
+
+The Ollama host
+
+#### OLLAMA_TIMEOUT
+
+Default: `100000` (100 seconds)
+
+Request timeout for the Ollama. Default OLLAMA_TIMEOUT is **100 seconds** because it can take a long time to run locally.
+
 #### locale
 
 Default: `en`
@@ -422,7 +473,7 @@ aicommit2 config set type=
 ```
 
 #### max-tokens
-The maximum number of tokens that the AI models can generate. (for **Open AI, Anthropic, Gemini**)
+The maximum number of tokens that the AI models can generate.
 
 Default: `200`
 
@@ -431,7 +482,7 @@ aicommit2 config set max-tokens=1000
 ```
 
 #### temperature
-The temperature (0.0-2.0) is used to control the randomness of the output (for **Open AI, Anthropic, Gemini**)
+The temperature (0.0-2.0) is used to control the randomness of the output 
 
 Default: `0.7`
 

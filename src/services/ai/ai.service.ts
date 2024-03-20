@@ -13,6 +13,7 @@ export const AIType = {
     HUGGING: 'HUGGING_COOKIE',
     CLOVA_X: 'CLOVAX_COOKIE',
     MISTRAL: 'MISTRAL_KEY',
+    OLLAMA: 'OLLAMA_MODEL',
 } as const;
 export type ApiKeyName = (typeof AIType)[keyof typeof AIType];
 export const ApiKeyNames: ApiKeyName[] = Object.values(AIType).map(value => value);

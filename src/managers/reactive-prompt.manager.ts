@@ -1,3 +1,4 @@
+import chalk from 'chalk';
 import inquirer from 'inquirer';
 import ReactiveListPrompt, { ChoiceItem, ReactiveListChoice, ReactiveListLoader } from 'inquirer-reactive-list-prompt';
 import { BehaviorSubject, ReplaySubject } from 'rxjs';
@@ -8,6 +9,8 @@ const defaultLoader = {
         text: 'AI is analyzing your changes',
     },
 };
+
+const emptyCommitMessage = `No commit messages were generated`;
 
 export class ReactivePromptManager {
     private choices$: BehaviorSubject<ChoiceItem[]> = new BehaviorSubject<ChoiceItem[]>([]);
@@ -22,7 +25,7 @@ export class ReactivePromptManager {
             type: 'reactiveListPrompt',
             name: 'aicommit2Prompt',
             message: 'Pick a commit message to use: ',
-            emptyMessage: '⚠ No commit messages were generated',
+            emptyMessage: `⚠ ${emptyCommitMessage}`,
             choices$: this.choices$,
             loader$: this.loader$,
         });
@@ -56,6 +59,8 @@ export class ReactivePromptManager {
             .every(value => value?.isError || value?.disabled);
         if (isAllError) {
             this.alertNoGeneratedMessage();
+            this.logEmptyCommitMessage();
+            process.exit(1);
             return;
         }
         this.stopLoaderOnSuccess();
@@ -71,7 +76,7 @@ export class ReactivePromptManager {
     private alertNoGeneratedMessage() {
         this.loader$.next({
             isLoading: false,
-            message: 'No commit messages were generated',
+            message: emptyCommitMessage,
             stopOption: {
                 doneFrame: '⚠', // '✖'
                 color: 'yellow', // 'red'
@@ -81,5 +86,9 @@ export class ReactivePromptManager {
 
     private stopLoaderOnSuccess() {
         this.loader$.next({ isLoading: false, message: 'Changes analyzed' });
+    }
+
+    private logEmptyCommitMessage() {
+        console.log(`${chalk.bold.yellow('⚠')} ${chalk.yellow(`${emptyCommitMessage}`)}`);
     }
 }

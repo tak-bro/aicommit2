@@ -123,6 +123,30 @@ const configParsers = {
         parseAssert('MISTRAL_MODEL', supportModels.includes(model), 'Invalid model type of Mistral AI');
         return model;
     },
+    OLLAMA_MODEL(model?: string) {
+        if (!model) {
+            return '';
+        }
+        return model;
+    },
+    OLLAMA_HOST(host?: string) {
+        if (!host) {
+            return 'http://localhost:11434';
+        }
+        return host;
+    },
+    OLLAMA_TIMEOUT(timeout?: string) {
+        if (!timeout) {
+            return 100_000;
+        }
+
+        parseAssert('OLLAMA_TIMEOUT', /^\d+$/.test(timeout), 'Must be an integer');
+
+        const parsed = Number(timeout);
+        parseAssert('OLLAMA_TIMEOUT', parsed >= 500, 'Must be greater than 500ms');
+
+        return parsed;
+    },
     confirm(confirm?: string | boolean) {
         if (!confirm) {
             return false;

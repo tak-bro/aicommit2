@@ -9,6 +9,7 @@ import { ClovaXService } from '../services/ai/clova-x.service.js';
 import { GeminiService } from '../services/ai/gemini.service.js';
 import { HuggingService } from '../services/ai/hugging.service.js';
 import { MistralService } from '../services/ai/mistral.service.js';
+import { OllamaService } from '../services/ai/ollama.service.js';
 import { OpenAIService } from '../services/ai/openai.service.js';
 import { ValidConfig } from '../utils/config.js';
 import { StagedDiff } from '../utils/git.js';
@@ -39,6 +40,8 @@ export class AIRequestManager {
                         return AIServiceFactory.create(ClovaXService, params).generateCommitMessage$();
                     case AIType.MISTRAL:
                         return AIServiceFactory.create(MistralService, params).generateCommitMessage$();
+                    case AIType.OLLAMA:
+                        return AIServiceFactory.create(OllamaService, params).generateCommitMessage$();
                     default:
                         const prefixError = chalk.red.bold(`[${ai}]`);
                         return of({
