@@ -183,6 +183,7 @@ export const generateCommitMessage = async (
     timeout: number,
     maxTokens: number,
     temperature: number,
+    prompt: string,
     proxy?: string
 ) => {
     try {
@@ -193,7 +194,7 @@ export const generateCommitMessage = async (
                 messages: [
                     {
                         role: 'system',
-                        content: generatePrompt(locale, maxLength, type),
+                        content: generatePrompt(locale, maxLength, type, prompt),
                     },
                     {
                         role: 'user',

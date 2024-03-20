@@ -159,6 +159,12 @@ const configParsers = {
         parseAssert('confirm', /^(?:true|false)$/.test(confirm), 'Must be a boolean');
         return confirm === 'true';
     },
+    prompt(prompt?: string) {
+        if (!prompt) {
+            return '';
+        }
+        return prompt;
+    },
     locale(locale?: string) {
         if (!locale) {
             return 'en';

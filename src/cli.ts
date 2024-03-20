@@ -57,6 +57,11 @@ cli(
                 alias: 'c',
                 default: false,
             },
+            prompt: {
+                type: String,
+                description: 'Additional prompt to let users fine-tune provided prompt',
+                alias: 'p',
+            },
         },
 
         commands: [configCommand, hookCommand],
@@ -80,6 +85,7 @@ cli(
             argv.flags.type,
             argv.flags.confirm,
             argv.flags.clipboard,
+            argv.flags.prompt,
             rawArgv
         );
     },

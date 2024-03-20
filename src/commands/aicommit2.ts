@@ -21,6 +21,7 @@ export default async (
     commitType: string | undefined,
     confirm: boolean,
     useClipboard: boolean,
+    prompt: string | undefined,
     rawArgv: string[]
 ) =>
     (async () => {
@@ -57,6 +58,7 @@ export default async (
             generate: generate?.toString() || env.generate,
             type: commitType?.toString() || env.type,
             locale: locale?.toString() || env.locale,
+            prompt: prompt?.toString() || env.prompt,
         });
 
         const availableAPIKeyNames: ApiKeyName[] = Object.entries(config)

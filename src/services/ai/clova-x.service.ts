@@ -56,10 +56,10 @@ export class ClovaXService extends AIService {
 
     private async generateMessage(): Promise<string[]> {
         try {
-            const { locale, generate, type } = this.params.config;
+            const { locale, generate, type, prompt: userPrompt } = this.params.config;
             const maxLength = this.params.config['max-length'];
             const diff = this.params.stagedDiff.diff;
-            const prompt = this.buildPrompt(locale, diff, generate, maxLength, type);
+            const prompt = this.buildPrompt(locale, diff, generate, maxLength, type, userPrompt);
             await this.getAllConversationIds();
             const result = await this.sendMessage(prompt);
             const { conversationId, allText } = this.parseSendMessageResult(result);
