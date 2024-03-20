@@ -14,6 +14,10 @@
 
 ---
 
+## Introduction
+
+AICommit2 streamlines interactions with various AI, enabling users to send requests to multiple AI simultaneously and choose the most suitable response for their needs.
+
 ## Project Base & Inspiration
 
 The core functionalities and architecture of this project are inspired by [AI Commits](https://github.com/Nutlope/aicommits).
@@ -59,6 +63,7 @@ aicommit2 config set OPENAI_KEY=<your key> # OpenAI
 aicommit2 config set ANTHROPIC_KEY=<your key> # Anthropic Claude
 aicommit2 config set GEMINI_KEY=<your key> # Gemini
 aicommit2 config set MISTRAL_KEY=<your key> # Mistral AI
+
 # Please be cautious of Escape characters(\", \') in browser cookie string 
 aicommit2 config set HUGGING_COOKIE="<your browser cookie>" # Hugging Face
 aicommit2 config set CLOVAX_COOKIE="<your browser cookie>" # Clova X
@@ -68,7 +73,7 @@ This will create a `.aicommit2` file in your home directory.
 
 > It is not necessary to set all keys. **But at least one key must be set up.**
 
-## Using Local model
+## Using Locally
 
 You can also use your model for free with [Ollama](https://ollama.com/).
 
