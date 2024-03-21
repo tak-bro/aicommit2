@@ -32,7 +32,7 @@ The core functionalities and architecture of this project are inspired by [AI Co
 - [Clova X **(Unofficial)**](https://clova-x.naver.com/)
 
 ## Local Model
- 
+
 - [Ollama](https://ollama.com/)
 
 ## Setup
@@ -53,8 +53,8 @@ npm install -g aicommit2
 - [Mistral AI](https://console.mistral.ai/)
 - [Huggingface **(Unofficial)**](https://github.com/tak-bro/aicommit2?tab=readme-ov-file#how-to-get-cookieunofficial-api)
 - [Clova X **(Unofficial)**](https://github.com/tak-bro/aicommit2?tab=readme-ov-file#how-to-get-cookieunofficial-api)
- 
-> If you haven't already, you'll have to create an account and set up billing. 
+
+> If you haven't already, you'll have to create an account and set up billing.
 
 3. Set the key you intend to use:
 
@@ -77,7 +77,7 @@ This will create a `.aicommit2` file in your home directory.
 
 You can also use your model for free with [Ollama](https://ollama.com/).
 
-1. Install Ollama from [https://ollama.com](https://ollama.com/) 
+1. Install Ollama from [https://ollama.com](https://ollama.com/)
 
 2. Start it with your model
 
@@ -176,7 +176,7 @@ aicommit2 --confirm # or -y
 - Copy the selected message to the clipboard (default: **false**)
 - This is a useful option when you don't want to commit through AICommit2.
 - If you give this option, AICommit2 will not commit.
- 
+
 ```sh
 aicommit2 --clipboard # or -c
 ```
@@ -185,7 +185,7 @@ aicommit2 --clipboard # or -c
 - Additional prompt to let users fine-tune provided prompt
 
 ```sh
-aicommit2 --prompt # or -p
+aicommit2 --prompt <s> # or -p <s>
 ```
 
 ### Git hook
@@ -393,7 +393,7 @@ The [Huggingface Chat](https://huggingface.co/chat/) Cookie. Please check [how t
 
 Default: `mistralai/Mixtral-8x7B-Instruct-v0.1`
 
-Supported: 
+Supported:
 - `mistralai/Mixtral-8x7B-Instruct-v0.1`
 - `meta-llama/Llama-2-70b-chat-hf`
 - `NousResearch/Nous-Hermes-2-Mixtral-8x7B-DPO`
@@ -497,7 +497,7 @@ aicommit2 config set max-tokens=1000
 ```
 
 #### temperature
-The temperature (0.0-2.0) is used to control the randomness of the output 
+The temperature (0.0-2.0) is used to control the randomness of the output
 
 Default: `0.7`
 
@@ -520,7 +520,7 @@ This CLI tool runs `git diff` to grab all your latest code changes, sends them t
 
 * Login to the site you want
 * You can get cookie from the browser's developer tools network tab
-* See for any requests check out the Cookie, **Copy whole value** 
+* See for any requests check out the Cookie, **Copy whole value**
 * Check below image for the format of cookie
 
 > When setting cookies with long string values, ensure to **escape characters** like ", ', and others properly.
@@ -541,6 +541,9 @@ Users are responsible for understanding and abiding by the terms of use, rate li
 
 It is recommended that users thoroughly review the API documentation and adhere to best practices to ensure a positive and compliant experience.
 
+## Please Star⭐️ 
+If this project has been helpful to you, I would greatly appreciate it if you could click the Star⭐️ button on this repository!
+
 ## Maintainers
 
 - [@tak-bro](https://env-tak.github.io/)
@@ -548,6 +551,3 @@ It is recommended that users thoroughly review the API documentation and adhere 
 ## Contributing
 
 If you want to help fix a bug or implement a feature in [Issues](https://github.com/tak-bro/aicommit2/issues), checkout the [Contribution Guide](CONTRIBUTING.md) to learn how to setup and test the project.
-
-## Please Star⭐️ this Project!
-If this project has been helpful to you, I would greatly appreciate it if you could click the Star⭐️ button on this repository!
