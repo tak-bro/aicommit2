@@ -46,7 +46,9 @@ export class OllamaService extends AIService {
         try {
             await this.checkIsAvailableOllama();
             const chatResponse = await this.createChatCompletions();
-            return deduplicateMessages(this.sanitizeMessage(chatResponse, this.params.config.type, generate));
+            return deduplicateMessages(
+                this.sanitizeMessage(chatResponse, this.params.config.type, this.params.config.generate)
+            );
         } catch (error) {
             const errorAsAny = error as any;
             if (errorAsAny.code === 'ENOTFOUND') {
