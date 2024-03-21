@@ -56,7 +56,7 @@ export abstract class AIService {
         prompt: string
     ) {
         const defaultPrompt = generatePrompt(locale, maxLength, type, prompt);
-        return `${defaultPrompt}\nGenerate ${completions} messages in numbered list format. \nHere are git diff: \n${diff}`;
+        return `${defaultPrompt}\nPlease just generate ${completions} messages in numbered list format. \nHere are git diff: \n${diff}`;
     }
 
     protected handleError$ = (error: AIServiceError): Observable<ReactiveListChoice> => {
@@ -89,5 +89,19 @@ export abstract class AIService {
             default:
                 return text;
         }
+    }
+
+    protected sanitizeMessage(generatedText: string, type: CommitType, maxCount: number) {
+        const messages = generatedText
+            .split('\n')
+            .map((message: string) => message.trim().replace(/^\d+\.\s/, ''))
+            .map((message: string) => message.replace(/`/g, ''))
+            .map((message: string) => this.extractCommitMessageFromRawText(type, message))
+            .filter((message: string) => !!message);
+
+        if (messages.length > maxCount) {
+            return messages.slice(0, maxCount);
+        }
+        return messages;
     }
 }

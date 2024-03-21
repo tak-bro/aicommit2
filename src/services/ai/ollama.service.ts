@@ -60,7 +60,7 @@ export class OllamaService extends AIService {
             const prompt = this.buildPrompt(locale, diff, generate, maxLength, type, userPrompt);
             await this.checkIsAvailableOllama();
             const chatResponse = await this.createChatCompletions(prompt);
-            return deduplicateMessages(this.sanitizeMessage(chatResponse));
+            return deduplicateMessages(this.sanitizeMessage(chatResponse, this.params.config.type, generate));
         } catch (error) {
             const errorAsAny = error as any;
             if (errorAsAny.code === 'ENOTFOUND') {
@@ -120,14 +120,5 @@ export class OllamaService extends AIService {
             })
             .execute();
         return response.data.response;
-    }
-
-    private sanitizeMessage(generatedText: string) {
-        return generatedText
-            .split('\n')
-            .map((message: string) => message.trim().replace(/^\d+\.\s/, ''))
-            .map((message: string) => message.replace(/`/g, ''))
-            .map((message: string) => this.extractCommitMessageFromRawText(this.params.config.type, message))
-            .filter((message: string) => !!message);
     }
 }

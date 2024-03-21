@@ -64,7 +64,7 @@ export class ClovaXService extends AIService {
             const result = await this.sendMessage(prompt);
             const { conversationId, allText } = this.parseSendMessageResult(result);
             await this.deleteConversation(conversationId);
-            return deduplicateMessages(this.sanitizeMessage(allText));
+            return deduplicateMessages(this.sanitizeMessage(allText, this.params.config.type, generate));
         } catch (error) {
             const errorAsAny = error as any;
             if (errorAsAny.code === 'ENOTFOUND') {
@@ -161,15 +161,6 @@ export class ClovaXService extends AIService {
             throw new Error(`No allText!`);
         }
         return { conversationId, allText };
-    }
-
-    private sanitizeMessage(generatedText: string) {
-        return generatedText
-            .split('\n')
-            .map((message: string) => message.trim().replace(/^\d+\.\s/, ''))
-            .map((message: string) => message.replace(/`/g, ''))
-            .map((message: string) => this.extractCommitMessageFromRawText(this.params.config.type, message))
-            .filter((message: string) => !!message);
     }
 
     private async deleteConversation(conversationId: string): Promise<any> {

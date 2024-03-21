@@ -5,7 +5,7 @@ import { Observable, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIService, AIServiceParams } from './ai.service.js';
-import { hasOwn } from '../../utils/config.js';
+import { CommitType, hasOwn } from '../../utils/config.js';
 import { KnownError } from '../../utils/error.js';
 import { deduplicateMessages } from '../../utils/openai.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
@@ -50,7 +50,7 @@ export class HuggingService extends AIService {
             const { lastMessageId } = await this.getConversationInfo(conversationId);
             const generatedText = await this.sendMessage(conversationId, prompt, lastMessageId);
             await this.deleteConversation(conversationId);
-            return deduplicateMessages(this.sanitizeMessage(generatedText));
+            return deduplicateMessages(this.sanitizeHuggingMessage(generatedText, this.params.config.type, generate));
         } catch (error) {
             const errorAsAny = error as any;
             if (errorAsAny.code === 'ENOTFOUND') {
@@ -60,7 +60,7 @@ export class HuggingService extends AIService {
         }
     }
 
-    private sanitizeMessage(generatedText: string) {
+    private sanitizeHuggingMessage(generatedText: string, type: CommitType, maxCount: number) {
         const regex = /{[^{}]*}/g;
         const extractedObjects = generatedText.match(regex);
         if (!extractedObjects) {
@@ -80,12 +80,7 @@ export class HuggingService extends AIService {
         if (!finalAnswerObj || !hasOwn(finalAnswerObj, 'text')) {
             throw new Error(`Cannot parse finalAnswer`);
         }
-        return finalAnswerObj.text
-            .split('\n')
-            .map((message: string) => message.trim().replace(/^\d+\.\s/, ''))
-            .map((message: string) => message.replace(/`/g, ''))
-            .map((message: string) => this.extractCommitMessageFromRawText(this.params.config.type, message))
-            .filter((message: string) => !!message);
+        return this.sanitizeMessage(generatedText, type, maxCount);
     }
 
     private async prepareNewConversation() {

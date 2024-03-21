@@ -28,6 +28,7 @@ export class ReactivePromptManager {
             emptyMessage: `⚠ ${emptyCommitMessage}`,
             choices$: this.choices$,
             loader$: this.loader$,
+            loop: false,
         });
     }
 
