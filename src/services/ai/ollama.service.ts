@@ -1,32 +1,21 @@
-import { AxiosResponse } from 'axios';
 import chalk from 'chalk';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
+import { Ollama } from 'ollama';
 import { Observable, catchError, concatMap, from, map, of } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIService, AIServiceError, AIServiceParams } from './ai.service.js';
 import { KnownError } from '../../utils/error.js';
 import { deduplicateMessages } from '../../utils/openai.js';
+import { generatePrompt } from '../../utils/prompt.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
 
 export interface OllamaServiceError extends AIServiceError {}
 
-export interface OllamaChatCompletionsResponse {
-    model: string;
-    response: string;
-    done: boolean;
-    context?: any;
-    total_duration: number;
-    load_duration: number;
-    prompt_eval_count: number;
-    prompt_eval_duration: number;
-    eval_count: number;
-    eval_duration: number;
-}
-
 export class OllamaService extends AIService {
     private host = `http://localhost:11434`;
     private model = '';
+    private ollama: Ollama;
 
     constructor(private readonly params: AIServiceParams) {
         super(params);
@@ -38,6 +27,7 @@ export class OllamaService extends AIService {
         this.errorPrefix = chalk.red.bold(`[Ollama]`);
         this.model = this.params.config.OLLAMA_MODEL;
         this.host = this.params.config.OLLAMA_HOST || 'http://localhost:11434';
+        this.ollama = new Ollama({ host: this.host });
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
@@ -54,12 +44,8 @@ export class OllamaService extends AIService {
 
     private async generateMessage(): Promise<string[]> {
         try {
-            const diff = this.params.stagedDiff.diff;
-            const { locale, generate, type, prompt: userPrompt } = this.params.config;
-            const maxLength = this.params.config['max-length'];
-            const prompt = this.buildPrompt(locale, diff, generate, maxLength, type, userPrompt);
             await this.checkIsAvailableOllama();
-            const chatResponse = await this.createChatCompletions(prompt);
+            const chatResponse = await this.createChatCompletions();
             return deduplicateMessages(this.sanitizeMessage(chatResponse, this.params.config.type, generate));
         } catch (error) {
             const errorAsAny = error as any;
@@ -103,22 +89,28 @@ export class OllamaService extends AIService {
         }
     }
 
-    private async createChatCompletions(prompt: string) {
-        const response: AxiosResponse<OllamaChatCompletionsResponse> = await new HttpRequestBuilder({
-            method: 'POST',
-            baseURL: `${this.host}/api/generate`,
-            timeout: this.params.config.OLLAMA_TIMEOUT,
-        })
-            .setBody({
-                model: this.params.config.OLLAMA_MODEL,
-                prompt,
-                stream: false,
-                options: {
-                    temperature: this.params.config.temperature,
-                    top_p: 1,
+    private async createChatCompletions() {
+        const defaultPrompt = generatePrompt(
+            this.params.config.locale,
+            this.params.config['max-length'],
+            this.params.config.type,
+            this.params.config.prompt
+        );
+        const systemContent = `${defaultPrompt}\nPlease just generate ${this.params.config.generate} commit messages in numbered list format without explanation.`;
+        const response = await this.ollama.chat({
+            model: this.params.config.OLLAMA_MODEL,
+            messages: [
+                {
+                    role: 'system',
+                    content: systemContent,
                 },
-            })
-            .execute();
-        return response.data.response;
+                {
+                    role: 'user',
+                    content: this.params.stagedDiff.diff,
+                },
+            ],
+            stream: false,
+        });
+        return response.message.content;
     }
 }

@@ -1,9 +1,9 @@
 import type { CommitType } from './config.js';
 
 const commitTypeFormats: Record<CommitType, string> = {
-    '': '<commit message>',
-    conventional: '<type>(<optional scope>): <description>',
-    gitmoji: ':<emoji>: <description>',
+    '': 'commit message',
+    conventional: 'type(optional scope): description',
+    gitmoji: ':emoji: description',
 };
 const specifyCommitFormat = (type: CommitType) =>
     `The output response must be in ${type} commit type:\n${commitTypeFormats[type]}`;
