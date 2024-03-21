@@ -16,11 +16,16 @@
 
 ## Introduction
 
-AICommit2 streamlines interactions with various AI, enabling users to send requests to multiple AI simultaneously and choose the most suitable message, without the necessity of waiting for all AI responses.
+AICommit2 streamlines interactions with various AI, enabling users to request multiple AI simultaneously and select the most suitable message without waiting for all AI responses.
 
 ## Project Base & Inspiration
 
 The core functionalities and architecture of this project are inspired by [AI Commits](https://github.com/Nutlope/aicommits).
+
+## Features
+- **Generate Commit Messages**: Quickly generate commit messages based on AI predictions.
+- **Multiple AI Support**: Utilize various AI providers simultaneously.
+- **Local Model**: Integrate with the local Ollama model for offline use.
 
 ## Supported Providers
 
@@ -45,7 +50,7 @@ The core functionalities and architecture of this project are inspired by [AI Co
 npm install -g aicommit2
 ```
 
-2. Retrieve the API key or Cookie you intend to use
+2. Retrieve the API key or Cookie you intend to use:
 
 - [OpenAI](https://platform.openai.com/account/api-keys)
 - [Anthropic Claude](https://console.anthropic.com/)
@@ -54,9 +59,9 @@ npm install -g aicommit2
 - [Huggingface **(Unofficial)**](https://github.com/tak-bro/aicommit2?tab=readme-ov-file#how-to-get-cookieunofficial-api)
 - [Clova X **(Unofficial)**](https://github.com/tak-bro/aicommit2?tab=readme-ov-file#how-to-get-cookieunofficial-api)
 
-> If you haven't already, you'll have to create an account and set up billing.
+> You may need to create an account and set up billing.
 
-3. Set the key you intend to use:
+3. Set API keys you intend to use:
 
 ```sh
 aicommit2 config set OPENAI_KEY=<your key> # OpenAI
@@ -72,6 +77,12 @@ aicommit2 config set CLOVAX_COOKIE="<your browser cookie>" # Clova X
 This will create a `.aicommit2` file in your home directory.
 
 > It is not necessary to set all keys. **But at least one key must be set up.**
+
+4. Run aicommits with your staged in git repository:
+```shell
+git add <files...>
+aicommit2
+```
 
 ## Using Locally
 
@@ -95,19 +106,17 @@ aicommit2 config set OLLAMA_TIMEOUT=<timout> # Optional. default is 100000ms (10
 
 > If you want to use ollama, you must set **OLLAMA_MODEL**.
 
-## Upgrading
-
-Check the installed version with:
-
-```
-aicommit2 --version
+4. Run aicommits with your staged in git repository
+```shell
+git add <files...>
+aicommit2
 ```
 
-If it's not the [latest version](https://github.com/tak-bro/aicommit2/releases/latest), run:
+## How it works
 
-```sh
-npm update -g aicommit2
-```
+This CLI tool runs `git diff` to grab all your latest code changes, sends them to configured AI, then returns the AI generated commit message.
+
+> If the diff becomes too large, AI will not function properly. If you encounter an error saying the message is too long or it's not a valid commit message, try reducing the commit unit.
 
 ## Usage
 
@@ -271,7 +280,7 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 |-------------------|----------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
 | `OPENAI_KEY`      | N/A                                    | The OpenAI API key                                                                                                      |
 | `OPENAI_MODEL`    | `gpt-3.5-turbo`                        | The OpenAI Model to use                                                                                                 |
-| `OPENAI_HOST`     | `https://api.openai.com `              | The OpenAI URL for custom                                                                                               |
+| `OPENAI_HOST`     | `https://api.openai.com `              | The OpenAI URL                                                                                                          |
 | `ANTHROPIC_KEY`   | N/A                                    | The Anthropic API key                                                                                                   |
 | `ANTHROPIC_MODEL` | `claude-2.1`                           | The Anthropic Model to use                                                                                              |
 | `GEMINI_KEY`      | N/A                                    | The Gemini API key                                                                                                      |
@@ -512,9 +521,19 @@ Additional prompt to let users fine-tune provided prompt. Users provide extra in
 aicommit2 config set prompt="Do not mention config changes"
 ```
 
-## How it works
+## Upgrading
 
-This CLI tool runs `git diff` to grab all your latest code changes, sends them to configured AI, then returns the AI generated commit message.
+Check the installed version with:
+
+```
+aicommit2 --version
+```
+
+If it's not the [latest version](https://github.com/tak-bro/aicommit2/releases/latest), run:
+
+```sh
+npm update -g aicommit2
+```
 
 ## How to get Cookie(**Unofficial API**)
 
