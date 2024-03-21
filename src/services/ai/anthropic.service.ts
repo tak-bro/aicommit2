@@ -56,7 +56,7 @@ export class AnthropicService extends AIService {
                 prompt: `${Anthropic.HUMAN_PROMPT} ${prompt}${Anthropic.AI_PROMPT}`,
             });
             const completion = result.completion;
-            return deduplicateMessages(this.sanitizeMessage(completion));
+            return deduplicateMessages(this.sanitizeMessage(completion, this.params.config.type, generate));
         } catch (error) {
             const errorAsAny = error as any;
             if (errorAsAny.code === 'ENOTFOUND') {
@@ -75,13 +75,4 @@ export class AnthropicService extends AIService {
             isError: true,
         });
     };
-
-    private sanitizeMessage(generatedText: string) {
-        return generatedText
-            .split('\n')
-            .map((message: string) => message.trim().replace(/^\d+\.\s/, ''))
-            .map((message: string) => message.replace(/`/g, ''))
-            .map((message: string) => this.extractCommitMessageFromRawText(this.params.config.type, message))
-            .filter((message: string) => !!message);
-    }
 }

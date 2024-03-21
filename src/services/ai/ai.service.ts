@@ -90,4 +90,18 @@ export abstract class AIService {
                 return text;
         }
     }
+
+    protected sanitizeMessage(generatedText: string, type: CommitType, maxCount: number) {
+        const messages = generatedText
+            .split('\n')
+            .map((message: string) => message.trim().replace(/^\d+\.\s/, ''))
+            .map((message: string) => message.replace(/`/g, ''))
+            .map((message: string) => this.extractCommitMessageFromRawText(type, message))
+            .filter((message: string) => !!message);
+
+        if (messages.length > maxCount) {
+            return messages.slice(0, maxCount);
+        }
+        return messages;
+    }
 }

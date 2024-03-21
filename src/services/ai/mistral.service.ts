@@ -78,7 +78,7 @@ export class MistralService extends AIService {
             await this.checkAvailableModels();
 
             const chatResponse = await this.createChatCompletions(prompt);
-            return deduplicateMessages(this.sanitizeMessage(chatResponse));
+            return deduplicateMessages(this.sanitizeMessage(chatResponse, this.params.config.type, generate));
         } catch (error) {
             const errorAsAny = error as any;
             if (errorAsAny.code === 'ENOTFOUND') {
@@ -152,14 +152,5 @@ export class MistralService extends AIService {
             throw new Error(`No Content on response. Please open a Bug report`);
         }
         return result.choices[0].message.content;
-    }
-
-    private sanitizeMessage(generatedText: string) {
-        return generatedText
-            .split('\n')
-            .map((message: string) => message.trim().replace(/^\d+\.\s/, ''))
-            .map((message: string) => message.replace(/`/g, ''))
-            .map((message: string) => this.extractCommitMessageFromRawText(this.params.config.type, message))
-            .filter((message: string) => !!message);
     }
 }
