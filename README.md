@@ -32,7 +32,7 @@ The core functionalities and architecture of this project are inspired by [AI Co
 - [Clova X **(Unofficial)**](https://clova-x.naver.com/)
 
 ## Local Model
- 
+
 - [Ollama](https://ollama.com/)
 
 ## Setup
@@ -51,10 +51,10 @@ npm install -g aicommit2
 - [Anthropic Claude](https://console.anthropic.com/)
 - [Gemini](https://aistudio.google.com/app/apikey)
 - [Mistral AI](https://console.mistral.ai/)
-- [Huggingface **(Unofficial)**](https://github.com/tak-bro/aicommit2/blob/main/README.md#how-to-get-cookie)
-- [Clova X **(Unofficial)**](https://github.com/tak-bro/aicommit2/blob/main/README.md#how-to-get-cookie)
- 
-> If you haven't already, you'll have to create an account and set up billing. 
+- [Huggingface **(Unofficial)**](https://github.com/tak-bro/aicommit2?tab=readme-ov-file#how-to-get-cookieunofficial-api)
+- [Clova X **(Unofficial)**](https://github.com/tak-bro/aicommit2?tab=readme-ov-file#how-to-get-cookieunofficial-api)
+
+> If you haven't already, you'll have to create an account and set up billing.
 
 3. Set the key you intend to use:
 
@@ -77,7 +77,7 @@ This will create a `.aicommit2` file in your home directory.
 
 You can also use your model for free with [Ollama](https://ollama.com/).
 
-1. Install Ollama from [https://ollama.com](https://ollama.com/) 
+1. Install Ollama from [https://ollama.com](https://ollama.com/)
 
 2. Start it with your model
 
@@ -89,8 +89,8 @@ ollama run llama2 # model you want use
 
 ```sh
 aicommit2 config set OLLAMA_MODEL=<your model> 
-aicommit2 config set OLLAMA_HOST=<host> # The default host for ollama is http://localhost:11434.
-aicommit2 config set OLLAMA_TIMEOUT=<timout> # default is 100000ms (100s)
+aicommit2 config set OLLAMA_HOST=<host> # Optional. The default host for ollama is http://localhost:11434.
+aicommit2 config set OLLAMA_TIMEOUT=<timout> # Optional. default is 100000ms (100s)
 ```
 
 > If you want to use ollama, you must set **OLLAMA_MODEL**.
@@ -174,16 +174,23 @@ aicommit2 --confirm # or -y
 
 ##### `--clipboard` or `-c`
 - Copy the selected message to the clipboard (default: **false**)
-- This is a useful option when you don't want to commit through aicommit2.
-- If you give this option, aicommit2 will not commit.
- 
+- This is a useful option when you don't want to commit through AICommit2.
+- If you give this option, AICommit2 will not commit.
+
 ```sh
 aicommit2 --clipboard # or -c
 ```
 
+##### `--prompt` or `-p`
+- Additional prompt to let users fine-tune provided prompt
+
+```sh
+aicommit2 --prompt <s> # or -p <s>
+```
+
 ### Git hook
 
-You can also integrate _aicommit2_ with Git via the [`prepare-commit-msg`](https://git-scm.com/docs/githooks#_prepare_commit_msg) hook. This lets you use Git like you normally would, and edit the commit message before committing.
+You can also integrate _AICommit2_ with Git via the [`prepare-commit-msg`](https://git-scm.com/docs/githooks#_prepare_commit_msg) hook. This lets you use Git like you normally would, and edit the commit message before committing.
 
 #### Install
 
@@ -264,6 +271,7 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 |-------------------|----------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
 | `OPENAI_KEY`      | N/A                                    | The OpenAI API key                                                                                                      |
 | `OPENAI_MODEL`    | `gpt-3.5-turbo`                        | The OpenAI Model to use                                                                                                 |
+| `OPENAI_HOST`     | `https://api.openai.com `              | The OpenAI URL for custom                                                                                               |
 | `ANTHROPIC_KEY`   | N/A                                    | The Anthropic API key                                                                                                   |
 | `ANTHROPIC_MODEL` | `claude-2.1`                           | The Anthropic Model to use                                                                                              |
 | `GEMINI_KEY`      | N/A                                    | The Gemini API key                                                                                                      |
@@ -284,19 +292,20 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 | `max-length`      | `50`                                   | Maximum character length of the generated commit message                                                                |
 | `max-tokens`      | `200`                                  | The maximum number of tokens that the AI models can generate (for **Open AI, Anthropic, Gemini, Mistral**)              |
 | `temperature`     | `0.7`                                  | The temperature (0.0-2.0) is used to control the randomness of the output (for **Open AI, Anthropic, Gemini, Mistral**) |
+| `prompt`          | N/A                                    | Additional prompt to let users fine-tune provided prompt                                                                |
 
 > **Currently, options are set universally. However, there are plans to develop the ability to set individual options in the future.**
 
 #### Available Options by Model
-|                      | locale | generate | type  | proxy |        timeout         | max-length  | max-tokens | temperature |
-|:--------------------:|:------:|:--------:|:-----:|:-----:|:----------------------:|:-----------:|:----------:|:-----------:|
-|      **OpenAI**      |   ✓    |    ✓     |   ✓   |   ✓   |           ✓            |      ✓      |     ✓      |      ✓      |
-| **Anthropic Claude** |   ✓    |    ✓     |   ✓   |       |                        |      ✓      |     ✓      |      ✓      |
-|      **Gemini**      |   ✓    |    ✓     |   ✓   |       |                        |      ✓      |     ✓      |      ✓      |
-|    **Mistral AI**    |   ✓    |    ✓     |   ✓   |       |           ✓            |      ✓      |     ✓      |      ✓      |
-|   **Huggingface**    |   ✓    |    ✓     |   ✓   |       |           ✓            |      ✓      |            |             |
-|     **Clova X**      |   ✓    |    ✓     |   ✓   |       |           ✓            |      ✓      |            |             |
-|      **Ollama**      |   ✓    |    ✓     |   ✓   |       | ✓<br/>(OLLAMA_TIMEOUT) |      ✓      |            |      ✓      |
+|                      | locale | generate | type  | proxy |        timeout         | max-length  | max-tokens | temperature | prompt |
+|:--------------------:|:------:|:--------:|:-----:|:-----:|:----------------------:|:-----------:|:----------:|:-----------:|:------:|
+|      **OpenAI**      |   ✓    |    ✓     |   ✓   |   ✓   |           ✓            |      ✓      |     ✓      |      ✓      |   ✓    |
+| **Anthropic Claude** |   ✓    |    ✓     |   ✓   |       |                        |      ✓      |     ✓      |      ✓      |   ✓    |
+|      **Gemini**      |   ✓    |    ✓     |   ✓   |       |                        |      ✓      |     ✓      |      ✓      |   ✓    |
+|    **Mistral AI**    |   ✓    |    ✓     |   ✓   |       |           ✓            |      ✓      |     ✓      |      ✓      |   ✓    |
+|   **Huggingface**    |   ✓    |    ✓     |   ✓   |       |           ✓            |      ✓      |            |             |   ✓    |
+|     **Clova X**      |   ✓    |    ✓     |   ✓   |       |           ✓            |      ✓      |            |             |   ✓    |
+|      **Ollama**      |   ✓    |    ✓     |   ✓   |       | ✓<br/>(OLLAMA_TIMEOUT) |      ✓      |            |      ✓      |   ✓    |
 
 #### OPENAI_KEY
 
@@ -313,6 +322,12 @@ The Chat Completions (`/v1/chat/completions`) model to use. Consult the list of 
 ```sh
 aicommit2 config set OPENAI_MODEL=gpt-4
 ```
+
+#### OPENAI_HOST
+
+Default: `https://api.openai.com`
+
+The OpenAI URL for custom. Both https and http protocols supported. It allows to run local OpenAI-compatible server.
 
 #### ANTHROPIC_KEY
 
@@ -378,7 +393,7 @@ The [Huggingface Chat](https://huggingface.co/chat/) Cookie. Please check [how t
 
 Default: `mistralai/Mixtral-8x7B-Instruct-v0.1`
 
-Supported: 
+Supported:
 - `mistralai/Mixtral-8x7B-Instruct-v0.1`
 - `meta-llama/Llama-2-70b-chat-hf`
 - `NousResearch/Nous-Hermes-2-Mixtral-8x7B-DPO`
@@ -482,12 +497,19 @@ aicommit2 config set max-tokens=1000
 ```
 
 #### temperature
-The temperature (0.0-2.0) is used to control the randomness of the output 
+The temperature (0.0-2.0) is used to control the randomness of the output
 
 Default: `0.7`
 
 ```sh
 aicommit2 config set temperature=0
+```
+
+#### prompt
+Additional prompt to let users fine-tune provided prompt. Users provide extra instructions to AI and can guide how commit messages should look like.
+
+```sh
+aicommit2 config set prompt="Do not mention config changes"
 ```
 
 ## How it works
@@ -498,7 +520,7 @@ This CLI tool runs `git diff` to grab all your latest code changes, sends them t
 
 * Login to the site you want
 * You can get cookie from the browser's developer tools network tab
-* See for any requests check out the Cookie, **Copy whole value** 
+* See for any requests check out the Cookie, **Copy whole value**
 * Check below image for the format of cookie
 
 > When setting cookies with long string values, ensure to **escape characters** like ", ', and others properly.
@@ -518,6 +540,9 @@ This project utilizes certain functionalities or data from external APIs, but it
 Users are responsible for understanding and abiding by the terms of use, rate limits, and policies set forth by the respective API providers. The project maintainers cannot be held responsible for any misuse, downtime, or issues arising from the use of the external APIs.
 
 It is recommended that users thoroughly review the API documentation and adhere to best practices to ensure a positive and compliant experience.
+
+## Please Star⭐️ 
+If this project has been helpful to you, I would greatly appreciate it if you could click the Star⭐️ button on this repository!
 
 ## Maintainers
 

@@ -21,6 +21,7 @@ export default async (
     commitType: string | undefined,
     confirm: boolean,
     useClipboard: boolean,
+    prompt: string | undefined,
     rawArgv: string[]
 ) =>
     (async () => {
@@ -45,6 +46,7 @@ export default async (
         const config = await getConfig({
             OPENAI_KEY: env.OPENAI_KEY || env.OPENAI_API_KEY,
             OPENAI_MODEL: env.OPENAI_MODEL || env['openai-model'] || env['openai_model'],
+            OPENAI_HOST: env.OPENAI_HOST || env['openai-host'] || env['openai_host'],
             GEMINI_KEY: env.GEMINI_KEY || env.GEMINI_API_KEY,
             GEMINI_MODEL: env.GEMINI_MODEL || env['gemini-model'] || env['gemini_model'],
             ANTHROPIC_KEY: env.ANTHROPIC_KEY || env.ANTHROPIC_API_KEY,
@@ -57,6 +59,7 @@ export default async (
             generate: generate?.toString() || env.generate,
             type: commitType?.toString() || env.type,
             locale: locale?.toString() || env.locale,
+            prompt: prompt?.toString() || env.prompt,
         });
 
         const availableAPIKeyNames: ApiKeyName[] = Object.entries(config)

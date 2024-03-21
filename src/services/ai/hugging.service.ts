@@ -39,10 +39,10 @@ export class HuggingService extends AIService {
 
     private async generateMessage(): Promise<string[]> {
         try {
-            const { locale, generate, type } = this.params.config;
+            const { locale, generate, type, prompt: userPrompt } = this.params.config;
             const maxLength = this.params.config['max-length'];
             const diff = this.params.stagedDiff.diff;
-            const prompt = this.buildPrompt(locale, diff, generate, maxLength, type);
+            const prompt = this.buildPrompt(locale, diff, generate, maxLength, type, userPrompt);
 
             await this.prepareNewConversation();
             const { conversationId } = await this.getNewConversationId();

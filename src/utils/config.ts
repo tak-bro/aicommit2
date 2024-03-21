@@ -26,7 +26,6 @@ const configParsers = {
         if (!key) {
             return '';
         }
-        parseAssert('OPENAI_KEY', key.startsWith('sk-'), 'Must start with "sk-"');
         return key;
     },
     OPENAI_MODEL(model?: string) {
@@ -35,6 +34,13 @@ const configParsers = {
         }
 
         return model as TiktokenModel;
+    },
+    OPENAI_HOST(host?: string) {
+        if (!host) {
+            return 'https://api.openai.com';
+        }
+        parseAssert('OPENAI_HOST', /^https?:\/\//.test(host), 'Must be a valid URL');
+        return host;
     },
     HUGGING_COOKIE(cookie?: string) {
         if (!cookie) {
@@ -133,6 +139,7 @@ const configParsers = {
         if (!host) {
             return 'http://localhost:11434';
         }
+        parseAssert('OLLAMA_HOST', /^https?:\/\//.test(host), 'Must be a valid URL');
         return host;
     },
     OLLAMA_TIMEOUT(timeout?: string) {
@@ -158,6 +165,12 @@ const configParsers = {
 
         parseAssert('confirm', /^(?:true|false)$/.test(confirm), 'Must be a boolean');
         return confirm === 'true';
+    },
+    prompt(prompt?: string) {
+        if (!prompt) {
+            return '';
+        }
+        return prompt;
     },
     locale(locale?: string) {
         if (!locale) {

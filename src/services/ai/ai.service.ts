@@ -47,9 +47,16 @@ export abstract class AIService {
 
     abstract generateCommitMessage$(): Observable<ReactiveListChoice>;
 
-    protected buildPrompt(locale: string, diff: string, completions: number, maxLength: number, type: CommitType) {
-        const defaultPrompt = generatePrompt(locale, maxLength, type);
-        return `${defaultPrompt}\nPlease just generate ${completions} messages in numbered list format. \nHere are git diff: \n${diff}`;
+    protected buildPrompt(
+        locale: string,
+        diff: string,
+        completions: number,
+        maxLength: number,
+        type: CommitType,
+        prompt: string
+    ) {
+        const defaultPrompt = generatePrompt(locale, maxLength, type, prompt);
+        return `${defaultPrompt}\nGenerate ${completions} messages in numbered list format. \nHere are git diff: \n${diff}`;
     }
 
     protected handleError$ = (error: AIServiceError): Observable<ReactiveListChoice> => {
