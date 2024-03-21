@@ -56,7 +56,7 @@ export abstract class AIService {
         prompt: string
     ) {
         const defaultPrompt = generatePrompt(locale, maxLength, type, prompt);
-        return `${defaultPrompt}\nGenerate ${completions} messages in numbered list format. \nHere are git diff: \n${diff}`;
+        return `${defaultPrompt}\nPlease just generate ${completions} messages in numbered list format. \nHere are git diff: \n${diff}`;
     }
 
     protected handleError$ = (error: AIServiceError): Observable<ReactiveListChoice> => {
