@@ -124,9 +124,10 @@ const createChatCompletion = async (
     proxy?: string
 ) => {
     const openAIUrl = new URL(url);
+    const path = openAIUrl.pathname ? `${openAIUrl.pathname}/v1/chat/completions` : '/v1/chat/completions';
     const { response, data } = await httpsPost(
         openAIUrl,
-        '/v1/chat/completions',
+        path,
         {
             Authorization: `Bearer ${apiKey}`,
         },

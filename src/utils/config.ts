@@ -35,11 +35,11 @@ const configParsers = {
 
         return model as TiktokenModel;
     },
-    OPENAI_HOST(host?: string) {
+    OPENAI_URL(host?: string) {
         if (!host) {
             return 'https://api.openai.com';
         }
-        parseAssert('OPENAI_HOST', /^https?:\/\//.test(host), 'Must be a valid URL');
+        parseAssert('OPENAI_URL', /^https?:\/\//.test(host), 'Must be a valid URL');
         return host;
     },
     HUGGING_COOKIE(cookie?: string) {

@@ -46,7 +46,7 @@ export default async (
         const config = await getConfig({
             OPENAI_KEY: env.OPENAI_KEY || env.OPENAI_API_KEY,
             OPENAI_MODEL: env.OPENAI_MODEL || env['openai-model'] || env['openai_model'],
-            OPENAI_HOST: env.OPENAI_HOST || env['openai-host'] || env['openai_host'],
+            OPENAI_URL: env.OPENAI_URL || env['openai-url'] || env['OPENAI_URL'],
             GEMINI_KEY: env.GEMINI_KEY || env.GEMINI_API_KEY,
             GEMINI_MODEL: env.GEMINI_MODEL || env['gemini-model'] || env['gemini_model'],
             ANTHROPIC_KEY: env.ANTHROPIC_KEY || env.ANTHROPIC_API_KEY,
