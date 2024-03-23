@@ -21,6 +21,7 @@ export class OpenAIService extends AIService {
         return fromPromise(
             generateCommitMessage(
                 this.params.config.OPENAI_URL,
+                this.params.config.OPENAI_PATH,
                 this.params.config.OPENAI_KEY,
                 this.params.config.OPENAI_MODEL,
                 this.params.config.locale,

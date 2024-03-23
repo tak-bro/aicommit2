@@ -118,13 +118,13 @@ export const httpsPost = async (
 
 const createChatCompletion = async (
     url: string,
+    path: string,
     apiKey: string,
     json: CreateChatCompletionRequest,
     timeout: number,
     proxy?: string
 ) => {
     const openAIUrl = new URL(url);
-    const path = openAIUrl.pathname ? `${openAIUrl.pathname}/v1/chat/completions` : '/v1/chat/completions';
     const { response, data } = await httpsPost(
         openAIUrl,
         path,
@@ -180,6 +180,7 @@ const getTokens = (prompt: string, model: TiktokenModel) => {
 
 export const generateCommitMessage = async (
     url: string,
+    path: string,
     apiKey: string,
     model: TiktokenModel,
     locale: string,
@@ -196,6 +197,7 @@ export const generateCommitMessage = async (
     try {
         const completion = await createChatCompletion(
             url,
+            path,
             apiKey,
             {
                 model,

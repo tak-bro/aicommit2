@@ -42,6 +42,12 @@ const configParsers = {
         parseAssert('OPENAI_URL', /^https?:\/\//.test(host), 'Must be a valid URL');
         return host;
     },
+    OPENAI_PATH(path?: string) {
+        if (!path) {
+            return '/v1/chat/completions';
+        }
+        return path;
+    },
     HUGGING_COOKIE(cookie?: string) {
         if (!cookie) {
             return '';
