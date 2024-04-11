@@ -37,20 +37,37 @@ export class ReactivePromptManager {
     }
 
     refreshChoices(choice: ReactiveListChoice) {
-        const { name, value, isError } = choice;
+        const { id, name, value, isError } = choice;
         if (!choice || !value) {
             return;
         }
         const currentChoices = this.choices$.getValue();
-        this.choices$.next([
-            ...currentChoices,
-            {
-                name,
-                value,
-                disabled: isError,
-                isError,
-            },
-        ]);
+        const hasOriginChoice = currentChoices
+            .map(origin => origin as ReactiveListChoice)
+            .find(origin => origin?.id === id);
+
+        if (hasOriginChoice) {
+            this.choices$.next(
+                currentChoices
+                    .map(origin => origin as ReactiveListChoice)
+                    .map(origin => {
+                        if (origin.id !== id) {
+                            return origin;
+                        }
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-expect-error
+                        if (choice['done']) {
+                            return {
+                                ...choice,
+                                disabled: false,
+                            };
+                        }
+                        return choice;
+                    })
+            );
+            return;
+        }
+        this.choices$.next([...currentChoices, { ...choice }]);
     }
 
     checkErrorOnChoices() {

@@ -1,5 +1,4 @@
 import chalk from 'chalk';
-import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Observable, from, mergeMap, of } from 'rxjs';
 
 import { AIServiceFactory } from '../services/ai/ai-service.factory.js';
@@ -20,7 +19,7 @@ export class AIRequestManager {
         private readonly stagedDiff: StagedDiff
     ) {}
 
-    createAIRequests$(availableKeyNames: ApiKeyName[]): Observable<ReactiveListChoice> {
+    createAIRequests$(availableKeyNames: ApiKeyName[]): Observable<any> {
         return from(availableKeyNames).pipe(
             mergeMap(ai => {
                 const params: AIServiceParams = {

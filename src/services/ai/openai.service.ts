@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
-import { Observable, catchError, concatMap, from, map, of } from 'rxjs';
+import { Observable, catchError, concatMap, from, map, of, scan } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIService, AIServiceError, AIServiceParams } from './ai.service.js';
@@ -17,7 +17,78 @@ export class OpenAIService extends AIService {
         this.errorPrefix = chalk.red.bold(`[ChatGPT]`);
     }
 
+    generateNumbers1 = () => {
+        let currentNumber = 1;
+        let fullText = '';
+        return new Observable(observer => {
+            const intervalId = setInterval(() => {
+                if (currentNumber <= 10) {
+                    observer.next({
+                        id: 'OPENAI',
+                        name: `${this.serviceName} ${fullText}`,
+                        value: fullText,
+                        isError: false,
+                        done: false,
+                        disabled: true,
+                    });
+                    currentNumber++;
+                    fullText += currentNumber;
+                } else {
+                    observer.next({
+                        id: 'OPENAI',
+                        name: `${this.serviceName} ${fullText}`,
+                        value: `${fullText}`,
+                        isError: false,
+                        done: true,
+                        disabled: false,
+                    });
+
+                    clearInterval(intervalId);
+                    observer.complete();
+                }
+            }, 200);
+
+            return () => {
+                clearInterval(intervalId);
+            };
+        });
+    };
+
     generateCommitMessage$(): Observable<ReactiveListChoice> {
+        return from(this.generateNumbers1()).pipe(
+            scan((acc: any, data: any) => {
+                if (data.done) {
+                    const messages = [
+                        'feat: Add new user profile page',
+                        'fix: Correct typo in API endpoint',
+                        'refactor: Improve code structure for better readability',
+                    ];
+                    return messages.map((message, index) => {
+                        return {
+                            id: 'OPENAI' + index,
+                            name: `${this.serviceName} ${message}`,
+                            value: `${message}`,
+                            isError: false,
+                            done: true,
+                            disabled: false,
+                        };
+                    }) as any;
+                }
+                // if has data
+                const originData = acc.find((origin: any) => origin.id === data.id);
+                if (originData) {
+                    return [...acc.map(origin => (data.id === origin.id ? data : origin))];
+                }
+                // init
+                return [{ ...data }] as any;
+            }, []),
+            concatMap(messages => {
+                console.log(messages);
+                return from(messages);
+            }) // flat messages
+        );
+        ////
+
         return fromPromise(
             generateCommitMessage(
                 this.params.config.OPENAI_URL,

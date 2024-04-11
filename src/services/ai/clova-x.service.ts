@@ -5,10 +5,12 @@ import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Observable, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
+
 import { AIService, AIServiceParams } from './ai.service.js';
 import { hasOwn } from '../../utils/config.js';
 import { KnownError } from '../../utils/error.js';
 import { deduplicateMessages } from '../../utils/openai.js';
+import { createAsyncDelay } from '../../utils/utils.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
 
 export interface ClovaXConversationContent {
@@ -45,7 +47,8 @@ export class ClovaXService extends AIService {
     generateCommitMessage$(): Observable<ReactiveListChoice> {
         return fromPromise(this.generateMessage()).pipe(
             concatMap(messages => from(messages)),
-            map(message => ({
+            map((message, index) => ({
+                id: 'clova' + index,
                 name: `${this.serviceName} ${message}`,
                 value: message,
                 isError: false,
@@ -55,6 +58,8 @@ export class ClovaXService extends AIService {
     }
 
     private async generateMessage(): Promise<string[]> {
+        createAsyncDelay(6000);
+        return ['test: qwe213131212', 'asdasdasdasdasd'];
         try {
             const { locale, generate, type, prompt: userPrompt } = this.params.config;
             const maxLength = this.params.config['max-length'];
