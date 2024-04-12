@@ -1,14 +1,22 @@
 import chalk from 'chalk';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Ollama } from 'ollama';
-import { Observable, catchError, concatMap, from, map, of } from 'rxjs';
-import { fromPromise } from 'rxjs/internal/observable/innerFrom';
+import { Observable, catchError, concatMap, from, map, of, scan, tap } from 'rxjs';
 
 import { AIService, AIServiceError, AIServiceParams } from './ai.service.js';
 import { KnownError } from '../../utils/error.js';
 import { deduplicateMessages } from '../../utils/openai.js';
 import { generatePrompt } from '../../utils/prompt.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
+
+import type { ChatResponse } from 'ollama/src/interfaces.js';
+
+export async function* toObservable<T>(promiseAsyncGenerator: Promise<AsyncGenerator<T>>): AsyncGenerator<T> {
+    const asyncGenerator = await promiseAsyncGenerator;
+    for await (const value of asyncGenerator) {
+        yield value;
+    }
+}
 
 export interface OllamaServiceError extends AIServiceError {}
 
@@ -28,18 +36,90 @@ export class OllamaService extends AIService {
         this.model = this.params.config.OLLAMA_MODEL;
         this.host = this.params.config.OLLAMA_HOST || 'http://localhost:11434';
         this.ollama = new Ollama({ host: this.host });
+        this.name = 'ollama';
     }
 
-    generateCommitMessage$(): Observable<ReactiveListChoice> {
-        return fromPromise(this.generateMessage()).pipe(
-            concatMap(messages => from(messages)),
-            map(message => ({
-                name: `${this.serviceName} ${message}`,
-                value: message,
-                isError: false,
-            })),
+    generateStreamMessage$ = () => {
+        const defaultPrompt = generatePrompt(
+            this.params.config.locale,
+            this.params.config['max-length'],
+            this.params.config.type,
+            this.params.config.prompt
+        );
+        const systemContent = `${defaultPrompt}\nPlease just generate ${this.params.config.generate} commit messages in numbered list format without explanation.`;
+
+        const promiseAsyncGenerator: Promise<AsyncGenerator<ChatResponse>> = this.ollama.chat({
+            model: this.params.config.OLLAMA_MODEL,
+            messages: [
+                {
+                    role: 'system',
+                    content: systemContent,
+                },
+                {
+                    role: 'user',
+                    content: this.params.stagedDiff.diff,
+                },
+            ],
+            stream: true,
+        });
+
+        let fullText = '';
+        return from(toObservable(promiseAsyncGenerator)).pipe(
+            tap((part: ChatResponse) => (fullText += part.message.content)),
+            map((part: ChatResponse) => {
+                return {
+                    id: this.name,
+                    name: `${this.serviceName} ${fullText}`,
+                    value: `${fullText}`,
+                    isError: false,
+                    description: part.done ? `done` : `undone`,
+                    disabled: !part.done,
+                };
+            })
+        );
+    };
+
+    generateCommitMessage$(): Observable<any> {
+        return this.generateStreamMessage$().pipe(
+            scan((acc: any, data: any) => {
+                const isDone = data.description === `done`;
+                if (isDone) {
+                    const messages = deduplicateMessages(
+                        this.sanitizeMessage(data.value, this.params.config.type, this.params.config.generate)
+                    );
+                    return messages.map((message, index) => {
+                        return {
+                            id: `${this.name}_message${index}`,
+                            name: `${this.serviceName} ${message}`,
+                            value: `${message}`,
+                            isError: false,
+                            description: `done`,
+                            disabled: false,
+                        };
+                    });
+                }
+                // if has data
+                const originData = acc.find((origin: ReactiveListChoice) => origin.id === data.id);
+                if (originData) {
+                    return [...acc.map((origin: ReactiveListChoice) => (data.id === origin.id ? data : origin))];
+                }
+                // init
+                return [{ ...data }] as any;
+            }, []),
+            concatMap(messages => messages), // flat messages
             catchError(this.handleError$)
         );
+
+        // return fromPromise(this.generateMessage()).pipe(
+        //     concatMap(messages => from(messages)),
+        //     map(message => ({
+        //         id: this.name,
+        //         name: `${this.serviceName} ${message}`,
+        //         value: message,
+        //         isError: false,
+        //     })),
+        //     catchError(this.handleError$)
+        // );
     }
 
     private async generateMessage(): Promise<string[]> {
@@ -98,7 +178,7 @@ export class OllamaService extends AIService {
             this.params.config.type,
             this.params.config.prompt
         );
-        const systemContent = `${defaultPrompt}\nPlease just generate ${this.params.config.generate} commit messages in numbered list format without explanation.`;
+        const systemContent = `${defaultPrompt}\nPlease remember that just generate ${this.params.config.generate} commit messages in numbered list format without explanation.`;
         const response = await this.ollama.chat({
             model: this.params.config.OLLAMA_MODEL,
             messages: [

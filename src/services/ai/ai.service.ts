@@ -33,11 +33,13 @@ export interface Theme {
 }
 
 export abstract class AIService {
+    protected name: string;
     protected serviceName: string;
     protected errorPrefix: string;
     protected colors: Theme;
 
     protected constructor(params: AIServiceParams) {
+        this.name = this.constructor.name;
         this.serviceName = 'AI';
         this.errorPrefix = 'ERROR';
         this.colors = {

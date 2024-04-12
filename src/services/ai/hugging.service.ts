@@ -4,7 +4,6 @@ import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Observable, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
-
 import { AIService, AIServiceParams } from './ai.service.js';
 import { CommitType, hasOwn } from '../../utils/config.js';
 import { KnownError } from '../../utils/error.js';
@@ -41,8 +40,8 @@ export class HuggingService extends AIService {
     }
 
     private async generateMessage(): Promise<string[]> {
-        createAsyncDelay(3000);
-        return ['test: 123', 'qwasdasd'];
+        await createAsyncDelay(3000);
+        return ['test: test commit', 'chore: test'];
 
         try {
             const { locale, generate, type, prompt: userPrompt } = this.params.config;

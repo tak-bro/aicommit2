@@ -37,34 +37,43 @@ export class ReactivePromptManager {
     }
 
     refreshChoices(choice: ReactiveListChoice) {
-        const { id, name, value, isError } = choice;
+        const { name, value, isError } = choice;
         if (!choice || !value) {
             return;
         }
-        const currentChoices = this.choices$.getValue();
-        const hasOriginChoice = currentChoices
-            .map(origin => origin as ReactiveListChoice)
-            .find(origin => origin?.id === id);
+        if (!choice.id) {
+            // origin code
+            const currentChoices = this.choices$.getValue();
+            this.choices$.next([
+                ...currentChoices,
+                {
+                    ...choice,
+                    disabled: isError,
+                },
+            ]);
+        }
 
-        if (hasOriginChoice) {
-            this.choices$.next(
-                currentChoices
-                    .map(origin => origin as ReactiveListChoice)
-                    .map(origin => {
-                        if (origin.id !== id) {
-                            return origin;
-                        }
-                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                        // @ts-expect-error
-                        if (choice['done']) {
-                            return {
-                                ...choice,
-                                disabled: false,
-                            };
-                        }
-                        return choice;
-                    })
-            );
+        const currentChoices: ReactiveListChoice[] = this.choices$
+            .getValue()
+            .map(origin => origin as ReactiveListChoice);
+        const isDone = choice.description === `done`;
+        if (isDone) {
+            const findOriginChoice = currentChoices.find(origin => {
+                const originId = origin.id || '';
+                const hasNumber = /\d/.test(originId);
+                return choice.id?.includes(originId) && !hasNumber;
+            });
+            if (findOriginChoice) {
+                this.choices$.next([...currentChoices.filter(origin => origin.id !== findOriginChoice.id), choice]);
+                return;
+            }
+            this.choices$.next([...currentChoices, choice]);
+            return;
+        }
+
+        const origin = currentChoices.find(origin => origin?.id === choice.id);
+        if (origin) {
+            this.choices$.next(currentChoices.map(origin => (origin?.id === choice.id ? choice : origin)));
             return;
         }
         this.choices$.next([...currentChoices, { ...choice }]);
@@ -75,6 +84,7 @@ export class ReactivePromptManager {
             .getValue()
             .map(choice => choice as ReactiveListChoice)
             .every(value => value?.isError || value?.disabled);
+
         if (isAllError) {
             this.alertNoGeneratedMessage();
             this.logEmptyCommitMessage();
