@@ -7,3 +7,21 @@ export const getRandomNumber = (min: number, max: number): number => {
     const maxValue = Math.floor(max);
     return Math.floor(Math.random() * (maxValue - minValue + 1)) + minValue;
 };
+
+export async function* toObservable<T>(promiseAsyncGenerator: Promise<AsyncGenerator<T>>): AsyncGenerator<T> {
+    const asyncGenerator = await promiseAsyncGenerator;
+    for await (const value of asyncGenerator) {
+        yield value;
+    }
+}
+
+export const truncateString = (str: string, maxLength: number) => {
+    if (str.length > maxLength) {
+        return str.slice(0, maxLength);
+    } else {
+        return str;
+    }
+};
+
+export const DONE = `done`;
+export const UNDONE = `undone`;

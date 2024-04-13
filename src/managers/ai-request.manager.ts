@@ -25,6 +25,7 @@ export class AIRequestManager {
                 const params: AIServiceParams = {
                     config: this.config,
                     stagedDiff: this.stagedDiff,
+                    keyName: ai,
                 };
                 switch (ai) {
                     case AIType.OPEN_AI:

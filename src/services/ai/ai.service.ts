@@ -21,6 +21,7 @@ export const ApiKeyNames: ApiKeyName[] = Object.values(AIType).map(value => valu
 export interface AIServiceParams {
     config: ValidConfig;
     stagedDiff: StagedDiff;
+    keyName: ApiKeyName;
 }
 
 export interface AIServiceError extends Error {
@@ -33,13 +34,11 @@ export interface Theme {
 }
 
 export abstract class AIService {
-    protected name: string;
     protected serviceName: string;
     protected errorPrefix: string;
     protected colors: Theme;
 
     protected constructor(params: AIServiceParams) {
-        this.name = this.constructor.name;
         this.serviceName = 'AI';
         this.errorPrefix = 'ERROR';
         this.colors = {

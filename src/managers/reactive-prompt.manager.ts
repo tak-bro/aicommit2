@@ -3,6 +3,8 @@ import inquirer from 'inquirer';
 import ReactiveListPrompt, { ChoiceItem, ReactiveListChoice, ReactiveListLoader } from 'inquirer-reactive-list-prompt';
 import { BehaviorSubject, ReplaySubject } from 'rxjs';
 
+import { DONE } from '../utils/utils.js';
+
 const defaultLoader = {
     isLoading: false,
     startOption: {
@@ -37,46 +39,17 @@ export class ReactivePromptManager {
     }
 
     refreshChoices(choice: ReactiveListChoice) {
-        const { name, value, isError } = choice;
+        const { value, isError } = choice;
         if (!choice || !value) {
             return;
         }
-        if (!choice.id) {
-            // origin code
-            const currentChoices = this.choices$.getValue();
-            this.choices$.next([
-                ...currentChoices,
-                {
-                    ...choice,
-                    disabled: isError,
-                },
-            ]);
-        }
-
-        const currentChoices: ReactiveListChoice[] = this.choices$
-            .getValue()
-            .map(origin => origin as ReactiveListChoice);
-        const isDone = choice.description === `done`;
-        if (isDone) {
-            const findOriginChoice = currentChoices.find(origin => {
-                const originId = origin.id || '';
-                const hasNumber = /\d/.test(originId);
-                return choice.id?.includes(originId) && !hasNumber;
-            });
-            if (findOriginChoice) {
-                this.choices$.next([...currentChoices.filter(origin => origin.id !== findOriginChoice.id), choice]);
-                return;
-            }
-            this.choices$.next([...currentChoices, choice]);
+        const isNotStream = !choice.id;
+        if (isNotStream) {
+            this.choices$.next([...this.currentChoices, choice]);
             return;
         }
 
-        const origin = currentChoices.find(origin => origin?.id === choice.id);
-        if (origin) {
-            this.choices$.next(currentChoices.map(origin => (origin?.id === choice.id ? choice : origin)));
-            return;
-        }
-        this.choices$.next([...currentChoices, { ...choice }]);
+        this.checkStreamChoice(choice);
     }
 
     checkErrorOnChoices() {
@@ -118,5 +91,37 @@ export class ReactivePromptManager {
 
     private logEmptyCommitMessage() {
         console.log(`${chalk.bold.yellow('⚠')} ${chalk.yellow(`${emptyCommitMessage}`)}`);
+    }
+
+    private checkStreamChoice(choice: ReactiveListChoice) {
+        const isDone = choice.description === DONE;
+        if (isDone) {
+            const findOriginChoice = this.currentChoices.find(origin => {
+                const originId = origin.id || '';
+                const hasNumber = /\d/.test(originId);
+                return choice.id?.includes(originId) && !hasNumber;
+            });
+            if (findOriginChoice) {
+                this.choices$.next([
+                    ...this.currentChoices.filter(origin => origin.id !== findOriginChoice.id),
+                    choice,
+                ]);
+                return;
+            }
+            this.choices$.next([...this.currentChoices, choice]);
+            return;
+        }
+
+        // isUndone
+        const origin = this.currentChoices.find(origin => origin?.id === choice.id);
+        if (origin) {
+            this.choices$.next(this.currentChoices.map(origin => (origin?.id === choice.id ? choice : origin)));
+            return;
+        }
+        this.choices$.next([...this.currentChoices, choice]);
+    }
+
+    private get currentChoices(): ReactiveListChoice[] {
+        return this.choices$.getValue().map(origin => origin as ReactiveListChoice);
     }
 }
