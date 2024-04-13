@@ -1,3 +1,5 @@
+import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
+
 export const createAsyncDelay = (duration: number) => {
     return new Promise<void>(resolve => setTimeout(() => resolve(), duration));
 };
@@ -21,6 +23,16 @@ export const truncateString = (str: string, maxLength: number) => {
     } else {
         return str;
     }
+};
+
+export const sortByDisabled = (a: ReactiveListChoice, b: ReactiveListChoice) => {
+    if (a.disabled && !b.disabled) {
+        return 1;
+    }
+    if (!a.disabled && b.disabled) {
+        return -1;
+    }
+    return 0;
 };
 
 export const DONE = `done`;

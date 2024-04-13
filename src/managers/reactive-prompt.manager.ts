@@ -3,7 +3,7 @@ import inquirer from 'inquirer';
 import ReactiveListPrompt, { ChoiceItem, ReactiveListChoice, ReactiveListLoader } from 'inquirer-reactive-list-prompt';
 import { BehaviorSubject, ReplaySubject } from 'rxjs';
 
-import { DONE } from '../utils/utils.js';
+import { DONE, sortByDisabled } from '../utils/utils.js';
 
 const defaultLoader = {
     isLoading: false,
@@ -45,7 +45,7 @@ export class ReactivePromptManager {
         }
         const isNotStream = !choice.id;
         if (isNotStream) {
-            this.choices$.next([...this.currentChoices, choice]);
+            this.choices$.next([...this.currentChoices, choice].sort(sortByDisabled));
             return;
         }
 
@@ -102,23 +102,26 @@ export class ReactivePromptManager {
                 return choice.id?.includes(originId) && !hasNumber;
             });
             if (findOriginChoice) {
-                this.choices$.next([
-                    ...this.currentChoices.filter(origin => origin.id !== findOriginChoice.id),
-                    choice,
-                ]);
+                this.choices$.next(
+                    [...this.currentChoices.filter(origin => origin.id !== findOriginChoice.id), choice].sort(
+                        sortByDisabled
+                    )
+                );
                 return;
             }
-            this.choices$.next([...this.currentChoices, choice]);
+            this.choices$.next([...this.currentChoices, choice].sort(sortByDisabled));
             return;
         }
 
         // isUndone
         const origin = this.currentChoices.find(origin => origin?.id === choice.id);
         if (origin) {
-            this.choices$.next(this.currentChoices.map(origin => (origin?.id === choice.id ? choice : origin)));
+            this.choices$.next(
+                this.currentChoices.map(origin => (origin?.id === choice.id ? choice : origin)).sort(sortByDisabled)
+            );
             return;
         }
-        this.choices$.next([...this.currentChoices, choice]);
+        this.choices$.next([...this.currentChoices, choice].sort(sortByDisabled));
     }
 
     private get currentChoices(): ReactiveListChoice[] {

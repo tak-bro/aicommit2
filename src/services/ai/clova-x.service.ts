@@ -56,8 +56,6 @@ export class ClovaXService extends AIService {
     }
 
     private async generateMessage(): Promise<string[]> {
-        // await createAsyncDelay(6000);
-        // return ['test: qwe213131212', 'asdasdasdasdasd'];
         try {
             const { locale, generate, type, prompt: userPrompt } = this.params.config;
             const maxLength = this.params.config['max-length'];

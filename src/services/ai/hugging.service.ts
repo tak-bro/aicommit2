@@ -8,7 +8,6 @@ import { AIService, AIServiceParams } from './ai.service.js';
 import { CommitType, hasOwn } from '../../utils/config.js';
 import { KnownError } from '../../utils/error.js';
 import { deduplicateMessages } from '../../utils/openai.js';
-import { createAsyncDelay } from '../../utils/utils.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
 
 export class HuggingService extends AIService {
@@ -40,9 +39,6 @@ export class HuggingService extends AIService {
     }
 
     private async generateMessage(): Promise<string[]> {
-        await createAsyncDelay(3000);
-        return ['test: test commit', 'chore: test'];
-
         try {
             const { locale, generate, type, prompt: userPrompt } = this.params.config;
             const maxLength = this.params.config['max-length'];

@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Ollama } from 'ollama';
-import { Observable, catchError, concatMap, from, map, of, scan, tap } from 'rxjs';
+import { Observable, catchError, concatMap, from, map, of, scan, switchMap, tap } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIService, AIServiceError, AIServiceParams } from './ai.service.js';
@@ -34,6 +34,10 @@ export class OllamaService extends AIService {
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
+        if (this.params.config.OLLAMA_STREAM) {
+            console.log('is stream');
+            return this.generateStreamCommitMessage$();
+        }
         return fromPromise(this.generateMessage()).pipe(
             concatMap(messages => from(messages)),
             map(message => ({
@@ -104,13 +108,27 @@ export class OllamaService extends AIService {
     };
 
     generateStreamCommitMessage$(): Observable<ReactiveListChoice> {
-        return this.generateStreamChoice$().pipe(
+        return fromPromise(this.checkIsAvailableOllama()).pipe(
+            switchMap(() => this.generateStreamChoice$()),
             scan((acc: ReactiveListChoice[], data: ReactiveListChoice) => {
                 const isDone = data.description === DONE;
                 if (isDone) {
                     const messages = deduplicateMessages(
                         this.sanitizeMessage(data.value, this.params.config.type, this.params.config.generate)
                     );
+                    const isFailedExtract = !messages || messages.length === 0;
+                    if (isFailedExtract) {
+                        return [
+                            {
+                                id: `${this.params.keyName}_${DONE}_0`,
+                                name: `${this.serviceName} Failed to extract messages from response`,
+                                value: `Failed to extract messages from response`,
+                                isError: true,
+                                description: DONE,
+                                disabled: true,
+                            },
+                        ];
+                    }
                     return messages.map((message, index) => {
                         return {
                             id: `${this.params.keyName}_${DONE}_${index}`,
