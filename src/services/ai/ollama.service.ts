@@ -34,10 +34,9 @@ export class OllamaService extends AIService {
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
-        if (this.params.config.OLLAMA_STREAM) {
-            console.log('is stream');
-            return this.generateStreamCommitMessage$();
-        }
+        // if (this.params.config.OLLAMA_STREAM) {
+        //     return this.generateStreamCommitMessage$();
+        // }
         return fromPromise(this.generateMessage()).pipe(
             concatMap(messages => from(messages)),
             map(message => ({

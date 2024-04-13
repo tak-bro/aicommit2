@@ -81,7 +81,7 @@ export class HuggingService extends AIService {
         if (!finalAnswerObj || !hasOwn(finalAnswerObj, 'text')) {
             throw new Error(`Cannot parse finalAnswer`);
         }
-        return this.sanitizeMessage(generatedText, type, maxCount);
+        return this.sanitizeMessage(finalAnswerObj['text'], type, maxCount);
     }
 
     private async prepareNewConversation() {
