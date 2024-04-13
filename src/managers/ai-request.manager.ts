@@ -48,6 +48,7 @@ export class AIRequestManager {
                             name: prefixError + ' Invalid AI type',
                             value: 'Invalid AI type',
                             isError: true,
+                            disabled: true,
                         });
                 }
             })

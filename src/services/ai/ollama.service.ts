@@ -4,7 +4,6 @@ import { Ollama } from 'ollama';
 import { Observable, catchError, concatMap, from, map, of, scan, tap } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
-
 import { AIService, AIServiceError, AIServiceParams } from './ai.service.js';
 import { KnownError } from '../../utils/error.js';
 import { deduplicateMessages } from '../../utils/openai.js';
@@ -47,11 +46,12 @@ export class OllamaService extends AIService {
     }
 
     handleError$ = (error: OllamaServiceError) => {
-        if (error.response.data?.error) {
+        if (!!error.response && error.response.data?.error) {
             return of({
                 name: `${this.errorPrefix} ${error.response.data?.error}`,
                 value: error.response.data?.error,
                 isError: true,
+                disabled: true,
             });
         }
         const simpleMessage = error.message?.replace(/(\r\n|\n|\r)/gm, '') || 'An error occurred';
@@ -59,6 +59,7 @@ export class OllamaService extends AIService {
             name: `${this.errorPrefix} ${simpleMessage}`,
             value: simpleMessage,
             isError: true,
+            disabled: true,
         });
     };
 

@@ -73,6 +73,7 @@ export class AnthropicService extends AIService {
             name: `${this.errorPrefix} ${simpleMessage}`,
             value: simpleMessage,
             isError: true,
+            disabled: true,
         });
     };
 }
