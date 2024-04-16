@@ -34,19 +34,20 @@ export class OllamaService extends AIService {
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
+        // TODO: add below
         // if (this.params.config.OLLAMA_STREAM) {
-        return this.generateStreamCommitMessage$();
+        // return this.generateStreamCommitMessage$();
         // }
 
-        // return fromPromise(this.generateMessage()).pipe(
-        //     concatMap(messages => from(messages)),
-        //     map(message => ({
-        //         name: `${this.serviceName} ${message}`,
-        //         value: message,
-        //         isError: false,
-        //     })),
-        //     catchError(this.handleError$)
-        // );
+        return fromPromise(this.generateMessage()).pipe(
+            concatMap(messages => from(messages)),
+            map(message => ({
+                name: `${this.serviceName} ${message}`,
+                value: message,
+                isError: false,
+            })),
+            catchError(this.handleError$)
+        );
     }
 
     handleError$ = (error: OllamaServiceError) => {
