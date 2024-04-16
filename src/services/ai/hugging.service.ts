@@ -28,7 +28,7 @@ export class HuggingService extends AIService {
     generateCommitMessage$(): Observable<ReactiveListChoice> {
         return fromPromise(this.generateMessage()).pipe(
             concatMap(messages => from(messages)),
-            map(message => ({
+            map((message, index) => ({
                 name: `${this.serviceName} ${message}`,
                 value: message,
                 isError: false,
@@ -80,7 +80,7 @@ export class HuggingService extends AIService {
         if (!finalAnswerObj || !hasOwn(finalAnswerObj, 'text')) {
             throw new Error(`Cannot parse finalAnswer`);
         }
-        return this.sanitizeMessage(generatedText, type, maxCount);
+        return this.sanitizeMessage(finalAnswerObj['text'], type, maxCount);
     }
 
     private async prepareNewConversation() {

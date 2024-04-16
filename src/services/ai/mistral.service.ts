@@ -94,6 +94,7 @@ export class MistralService extends AIService {
             name: `${this.errorPrefix} ${simpleMessage}`,
             value: simpleMessage,
             isError: true,
+            disabled: true,
         });
     };
 

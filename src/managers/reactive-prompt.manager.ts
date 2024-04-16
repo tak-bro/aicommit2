@@ -3,6 +3,8 @@ import inquirer from 'inquirer';
 import ReactiveListPrompt, { ChoiceItem, ReactiveListChoice, ReactiveListLoader } from 'inquirer-reactive-list-prompt';
 import { BehaviorSubject, ReplaySubject } from 'rxjs';
 
+import { DONE, sortByDisabled } from '../utils/utils.js';
+
 const defaultLoader = {
     isLoading: false,
     startOption: {
@@ -37,20 +39,17 @@ export class ReactivePromptManager {
     }
 
     refreshChoices(choice: ReactiveListChoice) {
-        const { name, value, isError } = choice;
+        const { value, isError } = choice;
         if (!choice || !value) {
             return;
         }
-        const currentChoices = this.choices$.getValue();
-        this.choices$.next([
-            ...currentChoices,
-            {
-                name,
-                value,
-                disabled: isError,
-                isError,
-            },
-        ]);
+        const isNotStream = !choice.id;
+        if (isNotStream) {
+            this.choices$.next([...this.currentChoices, choice].sort(sortByDisabled));
+            return;
+        }
+
+        this.checkStreamChoice(choice);
     }
 
     checkErrorOnChoices() {
@@ -58,6 +57,7 @@ export class ReactivePromptManager {
             .getValue()
             .map(choice => choice as ReactiveListChoice)
             .every(value => value?.isError || value?.disabled);
+
         if (isAllError) {
             this.alertNoGeneratedMessage();
             this.logEmptyCommitMessage();
@@ -91,5 +91,40 @@ export class ReactivePromptManager {
 
     private logEmptyCommitMessage() {
         console.log(`${chalk.bold.yellow('⚠')} ${chalk.yellow(`${emptyCommitMessage}`)}`);
+    }
+
+    private checkStreamChoice(choice: ReactiveListChoice) {
+        const isDone = choice.description === DONE;
+        if (isDone) {
+            const findOriginChoice = this.currentChoices.find(origin => {
+                const originId = origin.id || '';
+                const hasNumber = /\d/.test(originId);
+                return choice.id?.includes(originId) && !hasNumber;
+            });
+            if (findOriginChoice) {
+                this.choices$.next(
+                    [...this.currentChoices.filter(origin => origin.id !== findOriginChoice.id), choice].sort(
+                        sortByDisabled
+                    )
+                );
+                return;
+            }
+            this.choices$.next([...this.currentChoices, choice].sort(sortByDisabled));
+            return;
+        }
+
+        // isUndone
+        const origin = this.currentChoices.find(origin => origin?.id === choice.id);
+        if (origin) {
+            this.choices$.next(
+                this.currentChoices.map(origin => (origin?.id === choice.id ? choice : origin)).sort(sortByDisabled)
+            );
+            return;
+        }
+        this.choices$.next([...this.currentChoices, choice].sort(sortByDisabled));
+    }
+
+    private get currentChoices(): ReactiveListChoice[] {
+        return this.choices$.getValue().map(origin => origin as ReactiveListChoice);
     }
 }

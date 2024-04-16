@@ -74,6 +74,7 @@ export class GeminiService extends AIService {
             name: `${this.errorPrefix} ${message}`,
             value: message,
             isError: true,
+            disabled: true,
         });
     };
 }

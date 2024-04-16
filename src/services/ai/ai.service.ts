@@ -21,6 +21,7 @@ export const ApiKeyNames: ApiKeyName[] = Object.values(AIType).map(value => valu
 export interface AIServiceParams {
     config: ValidConfig;
     stagedDiff: StagedDiff;
+    keyName: ApiKeyName;
 }
 
 export interface AIServiceError extends Error {
@@ -68,6 +69,7 @@ export abstract class AIService {
             name: `${this.errorPrefix} ${simpleMessage}`,
             value: simpleMessage,
             isError: true,
+            disabled: true,
         });
     };
 

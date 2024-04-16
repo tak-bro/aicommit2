@@ -1,14 +1,17 @@
 import chalk from 'chalk';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Ollama } from 'ollama';
-import { Observable, catchError, concatMap, from, map, of } from 'rxjs';
+import { Observable, catchError, concatMap, from, map, of, scan, switchMap, tap } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIService, AIServiceError, AIServiceParams } from './ai.service.js';
 import { KnownError } from '../../utils/error.js';
 import { deduplicateMessages } from '../../utils/openai.js';
 import { generatePrompt } from '../../utils/prompt.js';
+import { DONE, UNDONE, toObservable } from '../../utils/utils.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
+
+import type { ChatResponse } from 'ollama/src/interfaces.js';
 
 export interface OllamaServiceError extends AIServiceError {}
 
@@ -31,6 +34,11 @@ export class OllamaService extends AIService {
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
+        // TODO: add below
+        // if (this.params.config.OLLAMA_STREAM) {
+        // return this.generateStreamCommitMessage$();
+        // }
+
         return fromPromise(this.generateMessage()).pipe(
             concatMap(messages => from(messages)),
             map(message => ({
@@ -38,6 +46,110 @@ export class OllamaService extends AIService {
                 value: message,
                 isError: false,
             })),
+            catchError(this.handleError$)
+        );
+    }
+
+    handleError$ = (error: OllamaServiceError) => {
+        if (!!error.response && error.response.data?.error) {
+            return of({
+                name: `${this.errorPrefix} ${error.response.data?.error}`,
+                value: error.response.data?.error,
+                isError: true,
+                disabled: true,
+            });
+        }
+        const simpleMessage = error.message?.replace(/(\r\n|\n|\r)/gm, '') || 'An error occurred';
+        return of({
+            name: `${this.errorPrefix} ${simpleMessage}`,
+            value: simpleMessage,
+            isError: true,
+            disabled: true,
+        });
+    };
+
+    generateStreamChoice$ = (): Observable<ReactiveListChoice> => {
+        const defaultPrompt = generatePrompt(
+            this.params.config.locale,
+            this.params.config['max-length'],
+            this.params.config.type,
+            this.params.config.prompt
+        );
+        const systemContent = `${defaultPrompt}\nPlease just generate ${this.params.config.generate} commit messages in numbered list format without explanation.`;
+
+        const promiseAsyncGenerator: Promise<AsyncGenerator<ChatResponse>> = this.ollama.chat({
+            model: this.model,
+            messages: [
+                {
+                    role: 'system',
+                    content: systemContent,
+                },
+                {
+                    role: 'user',
+                    content: this.params.stagedDiff.diff,
+                },
+            ],
+            stream: true,
+        });
+
+        let allValue = '';
+        return from(toObservable(promiseAsyncGenerator)).pipe(
+            tap((part: ChatResponse) => (allValue += part.message.content)),
+            map((part: ChatResponse) => {
+                return {
+                    id: this.params.keyName,
+                    name: `${this.serviceName} ${allValue}`,
+                    value: `${allValue}`,
+                    isError: false,
+                    description: part.done ? DONE : UNDONE,
+                    disabled: !part.done,
+                };
+            })
+        );
+    };
+
+    generateStreamCommitMessage$(): Observable<ReactiveListChoice> {
+        return fromPromise(this.checkIsAvailableOllama()).pipe(
+            switchMap(() => this.generateStreamChoice$()),
+            scan((acc: ReactiveListChoice[], data: ReactiveListChoice) => {
+                const isDone = data.description === DONE;
+                if (isDone) {
+                    const messages = deduplicateMessages(
+                        this.sanitizeMessage(data.value, this.params.config.type, this.params.config.generate)
+                    );
+                    const isFailedExtract = !messages || messages.length === 0;
+                    if (isFailedExtract) {
+                        return [
+                            {
+                                id: `${this.params.keyName}_${DONE}_0`,
+                                name: `${this.serviceName} Failed to extract messages from response`,
+                                value: `Failed to extract messages from response`,
+                                isError: true,
+                                description: DONE,
+                                disabled: true,
+                            },
+                        ];
+                    }
+                    return messages.map((message, index) => {
+                        return {
+                            id: `${this.params.keyName}_${DONE}_${index}`,
+                            name: `${this.serviceName} ${message}`,
+                            value: `${message}`,
+                            isError: false,
+                            description: DONE,
+                            disabled: false,
+                        };
+                    });
+                }
+                // if has origin data
+                const originData = acc.find((origin: ReactiveListChoice) => origin.id === data.id);
+                if (originData) {
+                    return [...acc.map((origin: ReactiveListChoice) => (data.id === origin.id ? data : origin))];
+                }
+                // init
+                return [{ ...data }];
+            }, []),
+            concatMap(messages => messages), // flat messages
             catchError(this.handleError$)
         );
     }
@@ -57,22 +169,6 @@ export class OllamaService extends AIService {
             throw errorAsAny;
         }
     }
-
-    handleError$ = (error: OllamaServiceError) => {
-        if (error.response.data?.error) {
-            return of({
-                name: `${this.errorPrefix} ${error.response.data?.error}`,
-                value: error.response.data?.error,
-                isError: true,
-            });
-        }
-        const simpleMessage = error.message?.replace(/(\r\n|\n|\r)/gm, '') || 'An error occurred';
-        return of({
-            name: `${this.errorPrefix} ${simpleMessage}`,
-            value: simpleMessage,
-            isError: true,
-        });
-    };
 
     private async checkIsAvailableOllama() {
         try {
@@ -100,7 +196,7 @@ export class OllamaService extends AIService {
         );
         const systemContent = `${defaultPrompt}\nPlease just generate ${this.params.config.generate} commit messages in numbered list format without explanation.`;
         const response = await this.ollama.chat({
-            model: this.params.config.OLLAMA_MODEL,
+            model: this.model,
             messages: [
                 {
                     role: 'system',

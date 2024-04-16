@@ -13,7 +13,7 @@ export class OpenAIService extends AIService {
             primary: '#74AA9C',
             secondary: '#FFF',
         };
-        this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold('[ChatGPT]');
+        this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold(`[ChatGPT]`);
         this.errorPrefix = chalk.red.bold(`[ChatGPT]`);
     }
 
@@ -57,6 +57,7 @@ export class OpenAIService extends AIService {
             name: `${this.errorPrefix} ${simpleMessage}`,
             value: simpleMessage,
             isError: true,
+            disabled: true,
         });
     };
 

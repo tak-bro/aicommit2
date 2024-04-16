@@ -45,7 +45,7 @@ export class ClovaXService extends AIService {
     generateCommitMessage$(): Observable<ReactiveListChoice> {
         return fromPromise(this.generateMessage()).pipe(
             concatMap(messages => from(messages)),
-            map(message => ({
+            map((message, index) => ({
                 name: `${this.serviceName} ${message}`,
                 value: message,
                 isError: false,
