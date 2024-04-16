@@ -29,7 +29,6 @@ export class HuggingService extends AIService {
         return fromPromise(this.generateMessage()).pipe(
             concatMap(messages => from(messages)),
             map((message, index) => ({
-                id: 'hugging' + index,
                 name: `${this.serviceName} ${message}`,
                 value: message,
                 isError: false,

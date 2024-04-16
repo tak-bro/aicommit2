@@ -194,7 +194,7 @@ export class OllamaService extends AIService {
             this.params.config.type,
             this.params.config.prompt
         );
-        const systemContent = `${defaultPrompt}\nPlease remember that just generate ${this.params.config.generate} commit messages in numbered list format without explanation.`;
+        const systemContent = `${defaultPrompt}\nPlease just generate ${this.params.config.generate} commit messages in numbered list format without explanation.`;
         const response = await this.ollama.chat({
             model: this.model,
             messages: [

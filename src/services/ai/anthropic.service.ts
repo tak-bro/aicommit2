@@ -32,9 +32,10 @@ export class AnthropicService extends AIService {
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
-        // if (isStream)
-        // return this.generateStreamCommitMessage$();
-        //
+        // TODO: add below
+        // if (isStream) {
+        //     return this.generateStreamCommitMessage$();
+        // }
 
         return fromPromise(this.generateMessage()).pipe(
             concatMap(messages => from(messages)),

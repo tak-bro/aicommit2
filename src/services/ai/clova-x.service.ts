@@ -46,7 +46,6 @@ export class ClovaXService extends AIService {
         return fromPromise(this.generateMessage()).pipe(
             concatMap(messages => from(messages)),
             map((message, index) => ({
-                id: 'clova' + index,
                 name: `${this.serviceName} ${message}`,
                 value: message,
                 isError: false,
