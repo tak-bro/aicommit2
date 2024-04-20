@@ -65,7 +65,7 @@ npm install -g aicommit2
 
 3. Set API keys you intend to use:
 
-> It is not necessary to set all keys. **But at least one key must be set up.**
+It is not necessary to set all keys. **But at least one key must be set up.**
 
 - OpenAI
 ```sh
