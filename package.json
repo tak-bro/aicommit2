@@ -71,6 +71,12 @@
     },
     "devDependencies": {
         "@pvtnbr/eslint-config": "^0.33.0",
+        "@semantic-release/changelog": "^6.0.3",
+        "@semantic-release/commit-analyzer": "^12.0.0",
+        "@semantic-release/git": "^10.0.1",
+        "@semantic-release/github": "^10.0.3",
+        "@semantic-release/npm": "^12.0.0",
+        "@semantic-release/release-notes-generator": "^13.0.0",
         "@types/figlet": "^1.5.8",
         "@types/ini": "^1.3.31",
         "@types/inquirer": "^9.0.3",
@@ -80,6 +86,8 @@
         "@typescript-eslint/parser": "^6.2.0",
         "clean-pkg-json": "^1.2.0",
         "cleye": "^1.3.2",
+        "conventional-changelog-conventionalcommits": "^7.0.2",
+        "conventional-commits-parser": "^5.0.0",
         "eslint": "^8.52.0",
         "eslint-config-prettier": "^8.8.0",
         "eslint-plugin-eslint-comments": "^3.2.0",
@@ -123,6 +131,68 @@
     "release": {
         "branches": [
             "main"
+        ],
+        "plugins": [
+            [
+                "@semantic-release/commit-analyzer",
+                {
+                    "preset": "conventionalcommits",
+                    "releaseRules": [
+                        {
+                            "type": "docs",
+                            "scope": "README",
+                            "release": "patch"
+                        },
+                        {
+                            "type": "refactor",
+                            "release": "patch"
+                        },
+                        {
+                            "type": "chore",
+                            "release": "patch"
+                        },
+                        {
+                            "type": "feat",
+                            "release": "patch"
+                        }
+                    ]
+                }
+            ],
+            [
+                "@semantic-release/release-notes-generator",
+                {
+                    "preset": "conventionalcommits",
+                    "presetConfig": {
+                        "types": [
+                            { "type": "feat", "section": "✨ Features", "hidden": false },
+                            { "type": "fix", "section": "🐛 Bug Fixes", "hidden": false },
+                            { "type": "perf", "section": "🌈 Performance", "hidden": false },
+                            { "type": "refactor", "section": "♻️ Refactor", "hidden": false },
+                            { "type": "docs", "section": "📝 Docs", "hidden": false },
+                            { "type": "style", "section": "💄 Styles", "hidden": false },
+                            { "type": "revert", "section": "🕐 Reverts", "hidden": false },
+                            { "type": "ci", "section": "💫 CI/CD", "hidden": false },
+                            { "type": "test", "section": "✅ Tests", "hidden": false },
+                            { "type": "chore", "section": "📦 Chores", "hidden": false },
+                            { "type": "build", "section": "🔥 Build", "hidden": false }
+                        ]
+                    }
+                }
+            ],
+            [
+                "@semantic-release/changelog",
+                {
+                    "changelogFile": "CHANGELOG.md"
+                }
+            ],
+            "@semantic-release/github",
+            [
+                "@semantic-release/git",
+                {
+                    "assets": ["package.json", "CHANGELOG.md"],
+                    "message": "chore(release): ${nextRelease.version}\n\n${nextRelease.notes}"
+                }
+            ]
         ]
     }
 }
