@@ -34,10 +34,9 @@ export class OllamaService extends AIService {
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
-        // TODO: add below
-        // if (this.params.config.OLLAMA_STREAM) {
-        // return this.generateStreamCommitMessage$();
-        // }
+        if (this.params.config.OLLAMA_STREAM) {
+            return this.generateStreamCommitMessage$();
+        }
 
         return fromPromise(this.generateMessage()).pipe(
             concatMap(messages => from(messages)),
@@ -75,7 +74,7 @@ export class OllamaService extends AIService {
             this.params.config.type,
             this.params.config.prompt
         );
-        const systemContent = `${defaultPrompt}\nPlease just generate ${this.params.config.generate} commit messages in numbered list format without explanation.`;
+        const systemContent = `${defaultPrompt}\nPlease just generate ${this.params.config.generate} commit messages in numbered list format without any explanation.`;
 
         const promiseAsyncGenerator: Promise<AsyncGenerator<ChatResponse>> = this.ollama.chat({
             model: this.model,
@@ -86,7 +85,7 @@ export class OllamaService extends AIService {
                 },
                 {
                     role: 'user',
-                    content: this.params.stagedDiff.diff,
+                    content: `Here are git diff: \n${this.params.stagedDiff.diff}`,
                 },
             ],
             stream: true,
@@ -204,7 +203,7 @@ export class OllamaService extends AIService {
                 },
                 {
                     role: 'user',
-                    content: this.params.stagedDiff.diff,
+                    content: `Here are git diff: \n${this.params.stagedDiff.diff}`,
                 },
             ],
             stream: false,

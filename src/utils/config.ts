@@ -161,17 +161,17 @@ const configParsers = {
         return parsed;
     },
     // NOTE: it's experimental features
-    // OLLAMA_STREAM(stream?: string | boolean) {
-    //     if (!stream) {
-    //         return false;
-    //     }
-    //     if (typeof stream === 'boolean') {
-    //         return stream;
-    //     }
-    //
-    //     parseAssert('OLLAMA_STREAM', /^(?:true|false)$/.test(stream), 'Must be a boolean');
-    //     return stream === 'true';
-    // },
+    OLLAMA_STREAM(stream?: string | boolean) {
+        if (!stream) {
+            return false;
+        }
+        if (typeof stream === 'boolean') {
+            return stream;
+        }
+
+        parseAssert('OLLAMA_STREAM', /^(?:true|false)$/.test(stream), 'Must be a boolean');
+        return stream === 'true';
+    },
     confirm(confirm?: string | boolean) {
         if (!confirm) {
             return false;
