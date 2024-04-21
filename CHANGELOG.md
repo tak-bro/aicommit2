@@ -1,3 +1,15 @@
+## [1.8.2](https://github.com/tak-bro/aicommit2/compare/v1.8.1...v1.8.2) (2024-04-21)
+
+
+### 💫 CI/CD
+
+* add semantic-release npm plugin to release config ([2b756c8](https://github.com/tak-bro/aicommit2/commit/2b756c8cf9ca5770a270d3d76ef0e072fa7846bb))
+
+
+### 📦 Chores
+
+* update prompt to include commit type ([fd5647a](https://github.com/tak-bro/aicommit2/commit/fd5647ab8490adadd43cc8ea13345f55c20fe0d0))
+
 ## [1.8.1](https://github.com/tak-bro/aicommit2/compare/v1.8.0...v1.8.1) (2024-04-20)
 
 
