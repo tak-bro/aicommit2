@@ -16,16 +16,7 @@
 
 ## Introduction
 
-AICommit2 streamlines interactions with various AI, enabling users to request multiple AI simultaneously and select the most suitable message without waiting for all AI responses.
-
-## Project Base & Inspiration
-
-The core functionalities and architecture of this project are inspired by [AI Commits](https://github.com/Nutlope/aicommits).
-
-## Features
-- **Generate Messages**: Quickly generate commit messages based on AI predictions.
-- **Multiple AI Support**: Utilize various AI providers simultaneously.
-- **Local Model**: Integrate with the local Ollama model for offline use.
+AICommit2 streamlines interactions with various AI, enabling users to request multiple AI simultaneously and select the most suitable message without waiting for all AI responses. The core functionalities and architecture of this project are inspired by [AICommits](https://github.com/Nutlope/aicommits).
 
 ## Supported Providers
 
@@ -101,7 +92,7 @@ aicommit2 config set CLOVAX_COOKIE="<your browser cookie>"
 
 This will create a `.aicommit2` file in your home directory.
 
-4. Run aicommits with your staged in git repository:
+4. Run aicommit2 with your staged in git repository:
 ```shell
 git add <files...>
 aicommit2
@@ -109,7 +100,7 @@ aicommit2
 
 ## Using Locally
 
-You can also use your model for free with [Ollama](https://ollama.com/).
+You can also use your model for free with [Ollama](https://ollama.com/) and is available to use both Ollama and remote providers simultaneously.
 
 1. Install Ollama from [https://ollama.com](https://ollama.com/)
 
@@ -129,7 +120,7 @@ aicommit2 config set OLLAMA_TIMEOUT=<timout> # Optional. default is 100000ms (10
 
 > If you want to use ollama, you must set **OLLAMA_MODEL**.
 
-4. Run aicommits with your staged in git repository
+4. Run aicommit2 with your staged in git repository
 ```shell
 git add <files...>
 aicommit2

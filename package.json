@@ -10,6 +10,7 @@
         "aicommit",
         "aicommits",
         "aicommit2",
+        "aicommits2",
         "openai",
         "huggingface",
         "hugging face",
@@ -138,11 +139,6 @@
                 {
                     "preset": "conventionalcommits",
                     "releaseRules": [
-                        {
-                            "type": "docs",
-                            "scope": "README",
-                            "release": "patch"
-                        },
                         {
                             "type": "refactor",
                             "release": "patch"
