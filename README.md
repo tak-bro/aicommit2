@@ -567,7 +567,7 @@ Request timeout for the Ollama. Default OLLAMA_TIMEOUT is **100 seconds** becaus
 
 Default: `false`
 
-Determines whether the application will make stream requests to Ollama. This feature is experimental and may not be fully stable.
+Determines whether the application will make stream requests to Ollama. **Allow this option only when using Ollama alone.** This feature is experimental and may not be fully stable.
 
 ## Upgrading
 
