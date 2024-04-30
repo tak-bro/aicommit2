@@ -107,7 +107,7 @@ You can also use your model for free with [Ollama](https://ollama.com/) and is a
 2. Start it with your model
 
 ```shell
-ollama run codellama # model you want use. ex) llama2, codellama
+ollama run llama3 # model you want use. ex) llama2, codellama
 ```
 
 3. Set the model and host
@@ -528,12 +528,14 @@ The [Huggingface Chat](https://huggingface.co/chat/) Cookie. Please check [how t
 Default: `mistralai/Mixtral-8x7B-Instruct-v0.1`
 
 Supported:
+- `CohereForAI/c4ai-command-r-plus`
+- `meta-llama/Meta-Llama-3-70B-Instruct`
+- `HuggingFaceH4/zephyr-orpo-141b-A35b-v0.1`
 - `mistralai/Mixtral-8x7B-Instruct-v0.1`
-- `meta-llama/Llama-2-70b-chat-hf`
 - `NousResearch/Nous-Hermes-2-Mixtral-8x7B-DPO`
-- `codellama/CodeLlama-70b-Instruct-hf`
+- `google/gemma-1.1-7b-it`
 - `mistralai/Mistral-7B-Instruct-v0.2`
-- `openchat/openchat-3.5-0106`
+- `microsoft/Phi-3-mini-4k-instruct`
 
 >  The models mentioned above are subject to change.
 

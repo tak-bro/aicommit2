@@ -21,7 +21,8 @@
         "gemini",
         "generative-ai",
         "mistral",
-        "ollama"
+        "ollama",
+        "llama3"
     ],
     "license": "MIT",
     "repository": "tak-bro/aicommit2",
