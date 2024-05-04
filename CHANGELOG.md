@@ -1,3 +1,16 @@
+## [1.8.4](https://github.com/tak-bro/aicommit2/compare/v1.8.3...v1.8.4) (2024-05-04)
+
+
+### ✨ Features
+
+* **anthropic:** add temperature parameter to Anthropic API call ([ca32486](https://github.com/tak-bro/aicommit2/commit/ca32486357f9ace726419153a3ad8c7da3645995))
+* support claude3 models ([c4985b8](https://github.com/tak-bro/aicommit2/commit/c4985b886461e793d370f9539ee1eb12072182b2))
+
+
+### 📝 Docs
+
+* update Anthropic model default in README ([09db772](https://github.com/tak-bro/aicommit2/commit/09db7726bd099b5e1178a6590276cab9ea551d17))
+
 ## [1.8.3](https://github.com/tak-bro/aicommit2/compare/v1.8.2...v1.8.3) (2024-04-30)
 
 
