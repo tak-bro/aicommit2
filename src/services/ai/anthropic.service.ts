@@ -5,8 +5,10 @@ import { Observable, catchError, concatMap, from, map, of, scan, tap } from 'rxj
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIService, AIServiceError, AIServiceParams } from './ai.service.js';
+import { CommitType } from '../../utils/config.js';
 import { KnownError } from '../../utils/error.js';
 import { deduplicateMessages } from '../../utils/openai.js';
+import { generatePrompt } from '../../utils/prompt.js';
 import { DONE, UNDONE, toObservable } from '../../utils/utils.js';
 
 export interface AnthropicServiceError extends AIServiceError {
@@ -54,14 +56,19 @@ export class AnthropicService extends AIService {
             const { locale, generate, type, prompt: userPrompt } = this.params.config;
             const maxLength = this.params.config['max-length'];
             const prompt = this.buildPrompt(locale, diff, generate, maxLength, type, userPrompt);
-
-            const result = await this.anthropic.completions.create({
+            const params: Anthropic.MessageCreateParams = {
+                max_tokens: this.params.config['max-tokens'],
+                system: prompt,
+                messages: [
+                    {
+                        role: 'user',
+                        content: diff,
+                    },
+                ],
                 model: this.params.config.ANTHROPIC_MODEL,
-                max_tokens_to_sample: this.params.config['max-tokens'],
-                temperature: this.params.config.temperature,
-                prompt: `${Anthropic.HUMAN_PROMPT} ${prompt}${Anthropic.AI_PROMPT}`,
-            });
-            const completion = result.completion;
+            };
+            const result: Anthropic.Message = await this.anthropic.messages.create(params);
+            const completion = result.content.map(({ text }) => text).join('');
             return deduplicateMessages(this.sanitizeMessage(completion, this.params.config.type, generate));
         } catch (error) {
             const errorAsAny = error as any;
@@ -158,4 +165,16 @@ export class AnthropicService extends AIService {
             })
         );
     };
+
+    protected buildPrompt(
+        locale: string,
+        diff: string,
+        completions: number,
+        maxLength: number,
+        type: CommitType,
+        prompt: string
+    ) {
+        const defaultPrompt = generatePrompt(locale, maxLength, type, prompt);
+        return `${defaultPrompt}\nPlease just generate ${completions} commit messages in numbered list format without any explanation.`;
+    }
 }

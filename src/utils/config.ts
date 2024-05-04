@@ -95,10 +95,16 @@ const configParsers = {
     },
     ANTHROPIC_MODEL(model?: string) {
         if (!model || model.length === 0) {
-            return 'claude-2.1';
+            return 'claude-3-haiku-20240229';
         }
-        const supportModels = ['claude-2.1', 'claude-2.0', 'claude-instant-1.2'];
-
+        const supportModels = [
+            'claude-2.1',
+            'claude-2.0',
+            'claude-instant-1.2',
+            'claude-3-haiku-20240307',
+            'claude-3-sonnet-20240229',
+            'claude-3-opus-20240229',
+        ];
         parseAssert('ANTHROPIC_MODEL', supportModels.includes(model), 'Invalid model type of Anthropic');
         return model;
     },
