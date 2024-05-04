@@ -58,6 +58,7 @@ export class AnthropicService extends AIService {
             const prompt = this.buildPrompt(locale, diff, generate, maxLength, type, userPrompt);
             const params: Anthropic.MessageCreateParams = {
                 max_tokens: this.params.config['max-tokens'],
+                temperature: this.params.config.temperature,
                 system: prompt,
                 messages: [
                     {
