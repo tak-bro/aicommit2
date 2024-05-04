@@ -95,7 +95,7 @@ const configParsers = {
     },
     ANTHROPIC_MODEL(model?: string) {
         if (!model || model.length === 0) {
-            return 'claude-3-haiku-20240229';
+            return 'claude-3-haiku-20240307';
         }
         const supportModels = [
             'claude-2.1',
