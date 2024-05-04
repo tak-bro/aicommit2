@@ -297,7 +297,7 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 | `OPENAI_URL`      | `https://api.openai.com`               | The OpenAI URL                                                                                                          |
 | `OPENAI_PATH`     | `/v1/chat/completions`                 | The OpenAI request pathname                                                                                             |
 | `ANTHROPIC_KEY`   | N/A                                    | The Anthropic API key                                                                                                   |
-| `ANTHROPIC_MODEL` | `claude-2.1`                           | The Anthropic Model to use                                                                                              |
+| `ANTHROPIC_MODEL` | `claude-3-haiku-20240307`              | The Anthropic Model to use                                                                                              |
 | `GEMINI_KEY`      | N/A                                    | The Gemini API key                                                                                                      |
 | `GEMINI_MODEL`    | `gemini-pro`                           | The Gemini Model                                                                                                        |
 | `MISTRAL_KEY`     | N/A                                    | The Mistral API key                                                                                                     |
@@ -463,9 +463,12 @@ The Anthropic API key. To get started with Anthropic Claude, request access to t
 
 ##### ANTHROPIC_MODEL
 
-Default: `claude-2.1`
+Default: `claude-3-haiku-20240307`
 
 Supported:
+- `claude-3-haiku-20240307`
+- `claude-3-sonnet-20240229`
+- `claude-3-opus-20240229`
 - `claude-2.1`
 - `claude-2.0`
 - `claude-instant-1.2`
