@@ -85,7 +85,7 @@ export class OllamaService extends AIService {
                 },
                 {
                     role: 'user',
-                    content: `Here are git diff: \n${this.params.stagedDiff.diff}`,
+                    content: `${this.params.stagedDiff.diff}`,
                 },
             ],
             stream: true,
@@ -203,7 +203,7 @@ export class OllamaService extends AIService {
                 },
                 {
                     role: 'user',
-                    content: `Here are git diff: \n${this.params.stagedDiff.diff}`,
+                    content: `${this.params.stagedDiff.diff}`,
                 },
             ],
             stream: false,
