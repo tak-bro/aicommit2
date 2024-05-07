@@ -6,44 +6,44 @@ config:
   # the default is bash for Linux
   # or powershell.exe for Windows
   command: zsh
-  
+
   # Specify the current working directory path
   # the default is the current working directory path
   cwd: /Users/tak/workspace/tak-bro/aicommit2
-  
+
   # Export additional ENV variables
   env:
     recording: true
-  
+
   # Explicitly set the number of columns
   # or use `auto` to take the current
   # number of columns of your shell
   cols: 105
-  
+
   # Explicitly set the number of rows
   # or use `auto` to take the current
   # number of rows of your shell
   rows: 20
-  
+
   # Amount of times to repeat GIF
   # If value is -1, play once
   # If value is 0, loop indefinitely
   # If value is a positive number, loop n times
   repeat: 0
-  
+
   # Quality
   # 1 - 100
   quality: 100
-  
+
   # Delay between frames in ms
   # If the value is `auto` use the actual recording delays
   frameDelay: auto
-  
+
   # Maximum delay between frames in ms
   # Ignored if the `frameDelay` isn't set to `auto`
   # Set to `auto` to prevent limiting the max idle time
   maxIdleTime: 2000
-  
+
   # The surrounding frame box
   # The `type` can be null, window, floating, or solid`
   # To hide the title use the value null
@@ -55,7 +55,7 @@ config:
       border: 0px black solid
       # boxShadow: none
       # margin: 0px
-  
+
   # Add a watermark image to the rendered gif
   # You need to specify an absolute path for
   # the image on your machine or a URL, and you can also
@@ -68,25 +68,25 @@ config:
       bottom: 15px
       width: 100px
       opacity: 0.9
-  
+
   # Cursor style can be one of
   # `block`, `underline`, or `bar`
   cursorStyle: block
-  
+
   # Font family
   # You can use any font that is installed on your machine
   # in CSS-like syntax
   fontFamily: "Monaco, Lucida Console, Ubuntu Mono, Monospace"
-  
+
   # The size of the font
   fontSize: 12
-  
+
   # The height of lines
   lineHeight: 1
-  
+
   # The spacing between letters
   letterSpacing: 0
-  
+
   # Theme
   theme:
     background: "transparent"
@@ -108,32 +108,38 @@ config:
     brightMagenta: "#ae89fe"
     brightCyan: "#b1c6ca"
     brightWhite: "#f9f9f4"
-  
+
 # Records, feel free to edit them
 records:
-  - delay: 1498
-    content: "\e[1m\e[7m%\e[27m\e[1m\e[0m                                                                                                        \r \r\e]2;tak@louis-lemoncloud:~/workspace/tak-bro/aicommit2\a\e]1;..bro/aicommit2\a\e]7;file://louis-lemoncloud/Users/tak/workspace/tak-bro/aicommit2\e\\"
-  - delay: 381
-    content: "\e]697;OSCUnlock=b7b538c0-ac40-4d42-a96a-a4c471d28d6f\a\e]697;Dir=/Users/tak/workspace/tak-bro/aicommit2\a\e]697;Shell=zsh\a\e]697;ShellPath=/usr/local/Cellar/zsh/5.8_1/bin/zsh\a\e]697;PID=72285\a\e]697;ExitCode=0\a\e]697;TTY=/dev/ttys007\a\e]697;Log=\a\e]697;ZshAutosuggestionColor=fg=245\a\e]697;FigAutosuggestionColor=\a\e]697;User=tak\a"
-  - delay: 18
-    content: "\r\e[0m\e[27m\e[24m\e[J\e]697;StartPrompt\a\e[0m\e[38;5;242m\e[49m\e[39m\r\n\e[A\e[0m\e[49m\e[39m\e[0m\e[49m\e[39m\e[0m\e[49m \e[0m\e[49m\e[38;5;31m \e[1m\e[38;5;31m\e[38;5;39m~\e[0m\e[38;5;39m\e[49m\e[38;5;31m/workspace/tak-bro/\e[1m\e[38;5;31m\e[38;5;39maicommit2\e[0m\e[38;5;39m\e[49m\e[38;5;31m\e[0m\e[38;5;31m\e[49m\e[38;5;31m\e[0m\e[38;5;31m\e[49m \e[0m\e[38;5;31m\e[49m\e[38;5;178m\e[0m\e[38;5;178m\e[49m\e[38;5;76m \e[38;5;76m demo \e[38;5;76m*2 \e[38;5;178m+1 \e[38;5;178m!1\e[0m\e[38;5;178m\e[49m\e[38;5;178m\e[0m\e[38;5;178m\e[49m\e[30m \e[0m\e[30m\e[49m\e[39m\e[38;5;242m······································\e[0m\e[38;5;242m\e[49m\e[30m \e[0m\e[30m\e[49m\e[38;5;66m 18:24:57\e[0m\e[38;5;66m\e[49m\e[38;5;66m\e[0m\e[38;5;66m\e[49m\e[38;5;66m\e[49m\e[30m \e[0m\e[30m\e[49m\e[38;5;66m\e[0m\e[38;5;66m\e[49m\e[39m\e[38;5;242m─╮\r\n\e[0m\e[38;5;242m\e[49m\e[39m\e[0m\e[49m\e[38;5;76m❯\e[0m\e[38;5;76m\e[49m\e[38;5;76m\e[0m\e[38;5;76m\e[49m\e[30m\e[0m\e[30m\e[49m\e[39m \e[0m\e[49m\e[39m\e]697;EndPrompt\a\e]697;NewCmd=b7b538c0-ac40-4d42-a96a-a4c471d28d6f\a\e[K\e[100C\e]697;StartPrompt\a\e[0m\e[49m\e[39m\e[38;5;242m─╯\e]697;EndPrompt\a\e[39m\e[102D\e[?1h\e=\e[?2004h"
-  - delay: 1158
-    content: "\e[32ma\e[39m\b\e[32ma\e[39m\e[38;5;245micommit2 \e[39m\e[9D"
-  - delay: 63
+  - delay: 661
+    content: "\e[?25l\e8\e[0m\e[49m\e[39m\e[27m\e[24m\e[J\e]2;tak@louis-lemon:~/workspace/tak-bro/aicommit2\a\e]1;..bro/aicommit2\a\e]7;file://louis-lemon/Users/tak/workspace/tak-bro/aicommit2\e\\\e]697;OSCUnlock=787e168af5ba4af8ad22fbe6fa405bb3\a\e]697;Dir=/Users/tak/workspace/tak-bro/aicommit2\a\e]697;Shell=zsh\a\e]697;ShellPath=/opt/homebrew/Cellar/zsh/5.9/bin/zsh\a\e]697;PID=59763\a\e]697;ExitCode=0\a\e]697;TTY=/dev/ttys023\a\e]697;Log=\a\e]697;ZshAutosuggestionColor=fg=245\a\e]697;FigAutosuggestionColor=\a\e]697;User=tak\a\e[0m\e[38;5;31m\e[49m\e[39m\e[27m\e[24m\e[1m\e[7m%\e[27m\e[1m\e[0m                                                                                                        \r\e[0m\e[49m\e[39m\e[27m\e[24m\e[K\r\e[0m\e[27m\e[24m\e[J\e]697;StartPrompt\a\e[0m\e[49m\e[39m\r\n\e[A\e[0m\e[49m\e[39m\e[0m\e[49m\e[39m\e[0m\e[49m \e[0m\e[49m\e[38;5;31m \e[1m\e[38;5;31m\e[38;5;39m~\e[0m\e[38;5;39m\e[49m\e[38;5;31m/workspace/tak-bro/\e[1m\e[38;5;31m\e[38;5;39maicommit2\e[0m\e[38;5;39m\e[49m\e[38;5;31m\e[0m\e[38;5;31m\e[49m\e[38;5;31m\e[0m\e[38;5;31m\e[49m \e[0m\e[38;5;31m\e[49m\e[38;5;178m\e[0m\e[38;5;178m\e[49m\e[38;5;76m\e[0m\e[38;5;76m\e[49m\e[38;5;178m \e[38;5;76m feature/update-prompt \e[38;5;76m*2 \e[38;5;178m+1 \e[38;5;39m?1\e[0m\e[38;5;39m\e[49m\e[38;5;178m\e[0m\e[38;5;178m\e[49m\e[30m \e[0m\e[30m\e[49m\e[39m\e[38;5;238m························\e[0m\e[38;5;238m\e[49m\e[30m \e[0m\e[30m\e[49m\e[38;5;66m 19:32:32\e[0m\e[38;5;66m\e[49m\e[38;5;66m\e[0m\e[38;5;66m\e[49m\e[38;5;66m\e[0m\e[38;5;66m\e[49m\e[39m\r\n\e[0m\e[49m\e[39m\e[0m\e[49m\e[38;5;76m❯\e[0m\e[38;5;76m\e[49m\e[38;5;76m\e[0m\e[38;5;76m\e[49m\e[30m\e[0m\e[30m\e[49m\e[39m \e[0m\e[49m\e[39m\e]697;EndPrompt\a\e]697;NewCmd=787e168af5ba4af8ad22fbe6fa405bb3\a\e[K\e[102C\e]697;StartPrompt\a\e]697;EndPrompt\a\e[102D\e[?1h\e=\e[?25h\e[?2004h"
+  - delay: 452
+    content: "a\b\e[1m\e[31ma\e[0m\e[39m\b\e[1m\e[31ma\e[0m\e[39m\e[38;5;245micommit2\e[39m\e[8D"
+  - delay: 73
     content: "\b\e[1m\e[31ma\e[1m\e[31mi\e[0m\e[39m"
-  - delay: 277
-    content: "\b\b\e[0m\e[32ma\e[0m\e[32mi\e[32mc\e[32mo\e[32mm\e[32mm\e[32mi\e[32mt\e[32m2\e[39m\e[39m "
-  - delay: 430
-    content: "\e[?1l\e>\e[?25l\e[?2004l\r\r\e[A\e[0m\e[27m\e[24m\e[J\e[0m\e[49m\e[27m\e[24m\e[38;5;76m❯\e[0m\e[38;5;76m\e[49m\e[39m\e[27m\e[24m \e[32maicommit2\e[39m\e[K\e[1C\e[?12l\e[?25h\r\r\n\e]697;OSCLock=b7b538c0-ac40-4d42-a96a-a4c471d28d6f\a\e]697;PreExec\a\e]2;./dist/cli.mjs\a\e]1;aicommit2\a"
-  - delay: 500
+  - delay: 117
+    content: "\b\b\e[1m\e[31ma\e[1m\e[31mi\e[1m\e[31mc\e[0m\e[39m"
+  - delay: 84
+    content: "\b\e[1m\e[31mc\e[1m\e[31mo\e[0m\e[39m"
+  - delay: 144
+    content: "\b\e[1m\e[31mo\e[1m\e[31mm\e[0m\e[39m"
+  - delay: 104
+    content: "\b\e[1m\e[31mm\e[1m\e[31mm\e[0m\e[39m"
+  - delay: 138
+    content: "\b\e[1m\e[31mm\e[1m\e[31mi\e[0m\e[39m"
+  - delay: 117
+    content: "\b\e[1m\e[31mi\e[1m\e[31mt\e[0m\e[39m"
+  - delay: 86
+    content: "\b\e[1m\e[31mt\e[1m\e[31m2\e[0m\e[39m\e[9D\e[0m\e[32ma\e[0m\e[32mi\e[0m\e[32mc\e[0m\e[32mo\e[0m\e[32mm\e[0m\e[32mm\e[0m\e[32mi\e[0m\e[32mt\e[0m\e[32m2\e[39m"
+  - delay: 187
+    content: "\e[?1l\e>\e[?2004l\e[?25l\r\r\e[A\e[0m\e[27m\e[24m\e[J\e[0m\e[49m\e[27m\e[24m\e[38;5;76m❯\e[0m\e[38;5;76m\e[49m\e[39m\e[27m\e[24m \e[32maicommit2\e[39m\e[K\e[?25h\r\r\n\e]697;OSCLock=787e168af5ba4af8ad22fbe6fa405bb3\a\e]697;PreExec\a\e]2;aicommit2\a\e]1;aicommit2\a"
+  - delay: 167
     content: "       _                    _ _   ___ \r\n  __ _(_)__ ___ _ __  _ __ (_) |_|_  )\r\n / _` | / _/ _ \\ '  \\| '  \\| |  _|/ / \r\n \\__,_|_\\__\\___/_|_|_|_|_|_|_|\\__/___|\r\n                                      \r\n"
-  - delay: 29
+  - delay: 9
     content: "\e[?25l\e[1G\e[1G\e[36m⠋\e[39m Detecting staged files"
-  - delay: 29
-    content: "\e[1G\e[0K\e[?25h"
+  - delay: 14
+    content: "\e[1G\e[0K\e[?25h\e[1m\e[32m✔ \e[39m\e[22m\e[1mDetected 1 staged file:\e[22m\r\n     src/utils/prompt.ts\r\n\r\n"
   - delay: 5
-    content: "\e[1m\e[32m✔ \e[39m\e[22m\e[1mDetected 1 staged file:\e[22m\r\n     src/managers/console.manager.ts\r\n\r\n"
-  - delay: 10
     content: "\e[?25l⚠ No commit messages were generated\e[35D\e[35C\e[?25l\e[1G\e[1G\e[36m⠋\e[39m AI is analyzing your changes"
   - delay: 81
     content: "\e[1G\e[0K\e[36m⠙\e[39m AI is analyzing your changes"
@@ -141,147 +147,155 @@ records:
     content: "\e[1G\e[0K\e[36m⠹\e[39m AI is analyzing your changes"
   - delay: 81
     content: "\e[1G\e[0K\e[36m⠸\e[39m AI is analyzing your changes"
-  - delay: 81
-    content: "\e[1G\e[0K\e[36m⠼\e[39m AI is analyzing your changes"
-  - delay: 81
-    content: "\e[1G\e[0K\e[36m⠴\e[39m AI is analyzing your changes"
-  - delay: 81
-    content: "\e[1G\e[0K\e[36m⠦\e[39m AI is analyzing your changes"
-  - delay: 80
-    content: "\e[1G\e[0K\e[36m⠧\e[39m AI is analyzing your changes"
-  - delay: 80
-    content: "\e[1G\e[0K\e[36m⠇\e[39m AI is analyzing your changes"
-  - delay: 81
-    content: "\e[1G\e[0K\e[36m⠏\e[39m AI is analyzing your changes"
-  - delay: 81
-    content: "\e[1G\e[0K\e[36m⠋\e[39m AI is analyzing your changes"
-  - delay: 80
-    content: "\e[1G\e[0K\e[36m⠙\e[39m AI is analyzing your changes"
-  - delay: 79
-    content: "\e[1G\e[0K\e[36m⠹\e[39m AI is analyzing your changes"
-  - delay: 81
-    content: "\e[1G\e[0K\e[36m⠸\e[39m AI is analyzing your changes"
-  - delay: 80
-    content: "\e[1G\e[0K\e[36m⠼\e[39m AI is analyzing your changes"
-  - delay: 58
-    content: "\e[2K\e[G\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[0m \e[0m\e[2m(Use arrow keys)\e[22m\r\n\e[36m❯ \e[48;2;116;170;156m\e[38;2;255;255;255m\e[1m[ChatGPT]\e[22m\e[39m\e[36m\e[49m refactor(console.manager): remove unused methods\e[39m \r\n\r\n\e[0D"
-  - delay: 23
-    content: "\e[1G\e[0K\e[36m⠴\e[39m AI is analyzing your changes"
-  - delay: 80
-    content: "\e[1G\e[0K\e[36m⠦\e[39m AI is analyzing your changes"
-  - delay: 81
-    content: "\e[1G\e[0K\e[36m⠧\e[39m AI is analyzing your changes"
-  - delay: 80
-    content: "\e[1G\e[0K\e[36m⠇\e[39m AI is analyzing your changes"
-  - delay: 81
-    content: "\e[1G\e[0K\e[36m⠏\e[39m AI is analyzing your changes"
-  - delay: 81
-    content: "\e[1G\e[0K\e[36m⠋\e[39m AI is analyzing your changes"
-  - delay: 79
-    content: "\e[1G\e[0K\e[36m⠙\e[39m AI is analyzing your changes"
-  - delay: 81
-    content: "\e[1G\e[0K\e[36m⠹\e[39m AI is analyzing your changes"
-  - delay: 81
-    content: "\e[1G\e[0K\e[36m⠸\e[39m AI is analyzing your changes"
-  - delay: 80
-    content: "\e[1G\e[0K\e[36m⠼\e[39m AI is analyzing your changes"
   - delay: 82
+    content: "\e[1G\e[0K\e[36m⠼\e[39m AI is analyzing your changes"
+  - delay: 81
     content: "\e[1G\e[0K\e[36m⠴\e[39m AI is analyzing your changes"
   - delay: 80
     content: "\e[1G\e[0K\e[36m⠦\e[39m AI is analyzing your changes"
   - delay: 81
     content: "\e[1G\e[0K\e[36m⠧\e[39m AI is analyzing your changes"
-  - delay: 80
+  - delay: 27
+    content: "\e[2K\e[G\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[0m \e[0m\e[2m(Use arrow keys)\e[22m\r\n\e[36m❯ \e[48;2;255;255;255m\e[38;2;0;0;0m\e[1m[Ollama]\e[22m\e[39m\e[36m\e[49m refactor: add additional prompts for generatePrompt function\e[39m \r\n\r\n\e[0D"
+  - delay: 54
     content: "\e[1G\e[0K\e[36m⠇\e[39m AI is analyzing your changes"
-  - delay: 81
+  - delay: 80
     content: "\e[1G\e[0K\e[36m⠏\e[39m AI is analyzing your changes"
-  - delay: 5
-    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[0m \e[0m\r\n\e[36m❯ \e[48;2;116;170;156m\e[38;2;255;255;255m\e[1m[ChatGPT]\e[22m\e[39m\e[36m\e[49m refactor(console.manager): remove unused methods\e[39m \r\n  \e[48;2;254;210;31m\e[38;2;0;0;0m\e[1m[HuggingFace]\e[22m\e[39m\e[49m refactor(console.manager): remove unused methods 'stopSpinner' and 'moveCursorDown' \r\n\r\n\e[0D"
-  - delay: 75
+  - delay: 81
     content: "\e[1G\e[0K\e[36m⠋\e[39m AI is analyzing your changes"
   - delay: 80
     content: "\e[1G\e[0K\e[36m⠙\e[39m AI is analyzing your changes"
-  - delay: 80
+  - delay: 81
     content: "\e[1G\e[0K\e[36m⠹\e[39m AI is analyzing your changes"
-  - delay: 80
+  - delay: 17
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[0m \e[0m\r\n\e[36m❯ \e[48;2;255;255;255m\e[38;2;0;0;0m\e[1m[Ollama]\e[22m\e[39m\e[36m\e[49m refactor: add additional prompts for generatePrompt function\e[39m \r\n  \e[48;2;174;86;48m\e[38;2;255;255;255m\e[1m[Anthropic]\e[22m\e[39m\e[49m refactor(prompt): optimize generatePrompt function \r\n\r\n\e[0D"
+  - delay: 64
     content: "\e[1G\e[0K\e[36m⠸\e[39m AI is analyzing your changes"
-  - delay: 27
-    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[0m \e[0m\r\n  \e[48;2;116;170;156m\e[38;2;255;255;255m\e[1m[ChatGPT]\e[22m\e[39m\e[49m refactor(console.manager): remove unused methods \r\n\e[36m❯ \e[48;2;254;210;31m\e[38;2;0;0;0m\e[1m[HuggingFace]\e[22m\e[39m\e[36m\e[49m refactor(console.manager): remove unused methods 'stopSpinner' and 'moveCursorDown'\e[39m \r\n\r\n\e[0D"
-  - delay: 53
-    content: "\e[1G\e[0K\e[36m⠼\e[39m AI is analyzing your changes"
   - delay: 80
+    content: "\e[1G\e[0K\e[36m⠼\e[39m AI is analyzing your changes"
+  - delay: 50
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[0m \e[0m\r\n\e[36m❯ \e[48;2;255;255;255m\e[38;2;0;0;0m\e[1m[Ollama]\e[22m\e[39m\e[36m\e[49m refactor: add additional prompts for generatePrompt function\e[39m \r\n  \e[48;2;174;86;48m\e[38;2;255;255;255m\e[1m[Anthropic]\e[22m\e[39m\e[49m refactor(prompt): optimize generatePrompt function \r\n  \e[48;2;252;74;10m\e[38;2;255;255;255m\e[1m[MistralAI]\e[22m\e[39m\e[49m refactor: add optional 'additionalPrompts' to generatePrompt function. \r\n\r\n\e[0D"
+  - delay: 31
+    content: "\e[1G\e[0K\e[36m⠴\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠦\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠧\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠇\e[39m AI is analyzing your changes"
+  - delay: 82
+    content: "\e[1G\e[0K\e[36m⠏\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠋\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠙\e[39m AI is analyzing your changes"
+  - delay: 68
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[0m \e[0m\r\n  \e[48;2;255;255;255m\e[38;2;0;0;0m\e[1m[Ollama]\e[22m\e[39m\e[49m refactor: add additional prompts for generatePrompt function \r\n\e[36m❯ \e[48;2;174;86;48m\e[38;2;255;255;255m\e[1m[Anthropic]\e[22m\e[39m\e[36m\e[49m refactor(prompt): optimize generatePrompt function\e[39m \r\n  \e[48;2;252;74;10m\e[38;2;255;255;255m\e[1m[MistralAI]\e[22m\e[39m\e[49m refactor: add optional 'additionalPrompts' to generatePrompt function. \r\n\r\n\e[0D"
+  - delay: 12
+    content: "\e[1G\e[0K\e[36m⠹\e[39m AI is analyzing your changes"
+  - delay: 82
+    content: "\e[1G\e[0K\e[36m⠸\e[39m AI is analyzing your changes"
+  - delay: 17
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[0m \e[0m\r\n  \e[48;2;255;255;255m\e[38;2;0;0;0m\e[1m[Ollama]\e[22m\e[39m\e[49m refactor: add additional prompts for generatePrompt function \r\n\e[36m❯ \e[48;2;174;86;48m\e[38;2;255;255;255m\e[1m[Anthropic]\e[22m\e[39m\e[36m\e[49m refactor(prompt): optimize generatePrompt function\e[39m \r\n  \e[48;2;252;74;10m\e[38;2;255;255;255m\e[1m[MistralAI]\e[22m\e[39m\e[49m refactor: add optional 'additionalPrompts' to generatePrompt function. \r\n  \e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[39m\e[49m feat: allow additional prompts for generatePrompt \r\n\r\n\e[0D"
+  - delay: 62
+    content: "\e[1G\e[0K\e[36m⠼\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠴\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠦\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠧\e[39m AI is analyzing your changes"
+  - delay: 79
+    content: "\e[1G\e[0K\e[36m⠇\e[39m AI is analyzing your changes"
+  - delay: 10
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[0m \e[0m\r\n  \e[48;2;255;255;255m\e[38;2;0;0;0m\e[1m[Ollama]\e[22m\e[39m\e[49m refactor: add additional prompts for generatePrompt function \r\n  \e[48;2;174;86;48m\e[38;2;255;255;255m\e[1m[Anthropic]\e[22m\e[39m\e[49m refactor(prompt): optimize generatePrompt function \r\n\e[36m❯ \e[48;2;252;74;10m\e[38;2;255;255;255m\e[1m[MistralAI]\e[22m\e[39m\e[36m\e[49m refactor: add optional 'additionalPrompts' to generatePrompt function.\e[39m \r\n  \e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[39m\e[49m feat: allow additional prompts for generatePrompt \r\n\r\n\e[0D"
+  - delay: 70
+    content: "\e[1G\e[0K\e[36m⠏\e[39m AI is analyzing your changes"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠋\e[39m AI is analyzing your changes"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠙\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠹\e[39m AI is analyzing your changes"
+  - delay: 13
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[0m \e[0m\r\n  \e[48;2;255;255;255m\e[38;2;0;0;0m\e[1m[Ollama]\e[22m\e[39m\e[49m refactor: add additional prompts for generatePrompt function \r\n  \e[48;2;174;86;48m\e[38;2;255;255;255m\e[1m[Anthropic]\e[22m\e[39m\e[49m refactor(prompt): optimize generatePrompt function \r\n\e[36m❯ \e[48;2;252;74;10m\e[38;2;255;255;255m\e[1m[MistralAI]\e[22m\e[39m\e[36m\e[49m refactor: add optional 'additionalPrompts' to generatePrompt function.\e[39m \r\n  \e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[39m\e[49m feat: allow additional prompts for generatePrompt \r\n  \e[48;2;254;210;31m\e[38;2;0;0;0m\e[1m[HuggingFace]\e[22m\e[39m\e[49m chore: update prompt.ts to use additionalPrompts instead of prompt \r\n\r\n\e[0D"
+  - delay: 67
+    content: "\e[1G\e[0K\e[36m⠸\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠼\e[39m AI is analyzing your changes"
+  - delay: 81
     content: "\e[1G\e[0K\e[36m⠴\e[39m AI is analyzing your changes"
   - delay: 79
-    content: "\e[1G\e[0K\e[36m⠦\e[39m AI is analyzing your changes\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[0m \e[0m\r\n  \e[48;2;116;170;156m\e[38;2;255;255;255m\e[1m[ChatGPT]\e[22m\e[39m\e[49m refactor(console.manager): remove unused methods \r\n\e[36m❯ \e[48;2;254;210;31m\e[38;2;0;0;0m\e[1m[HuggingFace]\e[22m\e[39m\e[36m\e[49m refactor(console.manager): remove unused methods 'stopSpinner' and 'moveCursorDown'\e[39m \r\n  \e[48;2;0;219;155m\e[38;2;255;255;255m\e[1m[CLOVA X]\e[22m\e[39m\e[49m style(ConsoleManager): removed unused methods \r\n\r\n\e[0D"
-  - delay: 77
+    content: "\e[1G\e[0K\e[36m⠦\e[39m AI is analyzing your changes"
+  - delay: 52
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[0m \e[0m\r\n  \e[48;2;255;255;255m\e[38;2;0;0;0m\e[1m[Ollama]\e[22m\e[39m\e[49m refactor: add additional prompts for generatePrompt function \r\n  \e[48;2;174;86;48m\e[38;2;255;255;255m\e[1m[Anthropic]\e[22m\e[39m\e[49m refactor(prompt): optimize generatePrompt function \r\n  \e[48;2;252;74;10m\e[38;2;255;255;255m\e[1m[MistralAI]\e[22m\e[39m\e[49m refactor: add optional 'additionalPrompts' to generatePrompt function. \r\n\e[36m❯ \e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[39m\e[36m\e[49m feat: allow additional prompts for generatePrompt\e[39m \r\n  \e[48;2;254;210;31m\e[38;2;0;0;0m\e[1m[HuggingFace]\e[22m\e[39m\e[49m chore: update prompt.ts to use additionalPrompts instead of prompt \r\n\r\n\e[0D"
+  - delay: 27
+    content: "\e[1G\e[0K\e[36m⠧\e[39m AI is analyzing your changes"
+  - delay: 54
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[0m \e[0m\r\n  \e[48;2;255;255;255m\e[38;2;0;0;0m\e[1m[Ollama]\e[22m\e[39m\e[49m refactor: add additional prompts for generatePrompt function \r\n  \e[48;2;174;86;48m\e[38;2;255;255;255m\e[1m[Anthropic]\e[22m\e[39m\e[49m refactor(prompt): optimize generatePrompt function \r\n  \e[48;2;252;74;10m\e[38;2;255;255;255m\e[1m[MistralAI]\e[22m\e[39m\e[49m refactor: add optional 'additionalPrompts' to generatePrompt function. \r\n\e[36m❯ \e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[39m\e[36m\e[49m feat: allow additional prompts for generatePrompt\e[39m \r\n  \e[48;2;254;210;31m\e[38;2;0;0;0m\e[1m[HuggingFace]\e[22m\e[39m\e[49m chore: update prompt.ts to use additionalPrompts instead of prompt \r\n  \e[48;2;0;219;155m\e[38;2;255;255;255m\e[1m[CLOVA X]\e[22m\e[39m\e[49m fix(prompt): fix generatePrompt function to accept additionalPrompts \r\n\r\n\e[0D"
+  - delay: 26
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
+  - delay: 14
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[0m \e[0m\r\n  \e[48;2;255;255;255m\e[38;2;0;0;0m\e[1m[Ollama]\e[22m\e[39m\e[49m refactor: add additional prompts for generatePrompt function \r\n  \e[48;2;174;86;48m\e[38;2;255;255;255m\e[1m[Anthropic]\e[22m\e[39m\e[49m refactor(prompt): optimize generatePrompt function \r\n  \e[48;2;252;74;10m\e[38;2;255;255;255m\e[1m[MistralAI]\e[22m\e[39m\e[49m refactor: add optional 'additionalPrompts' to generatePrompt function. \r\n  \e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[39m\e[49m feat: allow additional prompts for generatePrompt \r\n\e[36m❯ \e[48;2;254;210;31m\e[38;2;0;0;0m\e[1m[HuggingFace]\e[22m\e[39m\e[36m\e[49m chore: update prompt.ts to use additionalPrompts instead of prompt\e[39m \r\n  \e[48;2;0;219;155m\e[38;2;255;255;255m\e[1m[CLOVA X]\e[22m\e[39m\e[49m fix(prompt): fix generatePrompt function to accept additionalPrompts \r\n\r\n\e[0D"
+  - delay: 66
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
+  - delay: 81
     content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
   - delay: 79
     content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
-  - delay: 81
-    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
-  - delay: 81
-    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
-  - delay: 80
-    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
-  - delay: 70
-    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[0m \e[0m\r\n\e[36m❯ \e[48;2;116;170;156m\e[38;2;255;255;255m\e[1m[ChatGPT]\e[22m\e[39m\e[36m\e[49m refactor(console.manager): remove unused methods\e[39m \r\n  \e[48;2;254;210;31m\e[38;2;0;0;0m\e[1m[HuggingFace]\e[22m\e[39m\e[49m refactor(console.manager): remove unused methods 'stopSpinner' and 'moveCursorDown' \r\n  \e[48;2;0;219;155m\e[38;2;255;255;255m\e[1m[CLOVA X]\e[22m\e[39m\e[49m style(ConsoleManager): removed unused methods \r\n\r\n\e[0D"
-  - delay: 9
-    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
-  - delay: 81
-    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
-  - delay: 80
-    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
-  - delay: 81
-    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
   - delay: 23
-    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[0m \e[0m\r\n  \e[48;2;116;170;156m\e[38;2;255;255;255m\e[1m[ChatGPT]\e[22m\e[39m\e[49m refactor(console.manager): remove unused methods \r\n\e[36m❯ \e[48;2;254;210;31m\e[38;2;0;0;0m\e[1m[HuggingFace]\e[22m\e[39m\e[36m\e[49m refactor(console.manager): remove unused methods 'stopSpinner' and 'moveCursorDown'\e[39m \r\n  \e[48;2;0;219;155m\e[38;2;255;255;255m\e[1m[CLOVA X]\e[22m\e[39m\e[49m style(ConsoleManager): removed unused methods \r\n\r\n\e[0D"
-  - delay: 59
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[0m \e[0m\r\n  \e[48;2;255;255;255m\e[38;2;0;0;0m\e[1m[Ollama]\e[22m\e[39m\e[49m refactor: add additional prompts for generatePrompt function \r\n  \e[48;2;174;86;48m\e[38;2;255;255;255m\e[1m[Anthropic]\e[22m\e[39m\e[49m refactor(prompt): optimize generatePrompt function \r\n  \e[48;2;252;74;10m\e[38;2;255;255;255m\e[1m[MistralAI]\e[22m\e[39m\e[49m refactor: add optional 'additionalPrompts' to generatePrompt function. \r\n  \e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[39m\e[49m feat: allow additional prompts for generatePrompt \r\n  \e[48;2;254;210;31m\e[38;2;0;0;0m\e[1m[HuggingFace]\e[22m\e[39m\e[49m chore: update prompt.ts to use additionalPrompts instead of prompt \r\n\e[36m❯ \e[48;2;0;219;155m\e[38;2;255;255;255m\e[1m[CLOVA X]\e[22m\e[39m\e[36m\e[49m fix(prompt): fix generatePrompt function to accept additionalPrompts\e[39m \r\n\r\n\e[0D"
+  - delay: 57
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
+  - delay: 81
     content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
   - delay: 80
-    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[0m \e[0m\r\n  \e[48;2;116;170;156m\e[38;2;255;255;255m\e[1m[ChatGPT]\e[22m\e[39m\e[49m refactor(console.manager): remove unused methods \r\n  \e[48;2;254;210;31m\e[38;2;0;0;0m\e[1m[HuggingFace]\e[22m\e[39m\e[49m refactor(console.manager): remove unused methods 'stopSpinner' and 'moveCursorDown' \r\n\e[36m❯ \e[48;2;0;219;155m\e[38;2;255;255;255m\e[1m[CLOVA X]\e[22m\e[39m\e[36m\e[49m style(ConsoleManager): removed unused methods\e[39m \r\n\r\n\e[0D\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
-  - delay: 81
     content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
   - delay: 81
     content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
-  - delay: 83
+  - delay: 80
     content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
-  - delay: 34
-    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[0m \e[0m\e[36mstyle(ConsoleManager): removed unused methods\e[39m\r\n  \e[48;2;116;170;156m\e[38;2;255;255;255m\e[1m[ChatGPT]\e[22m\e[39m\e[49m refactor(console.manager): remove unused methods \r\n  \e[48;2;254;210;31m\e[38;2;0;0;0m\e[1m[HuggingFace]\e[22m\e[39m\e[49m refactor(console.manager): remove unused methods 'stopSpinner' and 'moveCursorDown' \r\n\e[36m❯ \e[48;2;0;219;155m\e[38;2;255;255;255m\e[1m[CLOVA X]\e[22m\e[39m\e[36m\e[49m style(ConsoleManager): removed unused methods\e[39m \r\n\r\n\e[0D\e[1G\e[0K\e[?25h\e[1G\r\n\e[?25h\e[1A\e[32m?\e[39m \e[1mUse selected message?\e[22m\e[0m \e[0m\e[2m(Y/n) \e[22m\e[30D\e[30C"
-  - delay: 610
+  - delay: 35
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[0m \e[0m\e[36mfix(prompt): fix generatePrompt function to accept additionalPrompts\e[39m\r\n  \e[48;2;255;255;255m\e[38;2;0;0;0m\e[1m[Ollama]\e[22m\e[39m\e[49m refactor: add additional prompts for generatePrompt function \r\n  \e[48;2;174;86;48m\e[38;2;255;255;255m\e[1m[Anthropic]\e[22m\e[39m\e[49m refactor(prompt): optimize generatePrompt function \r\n  \e[48;2;252;74;10m\e[38;2;255;255;255m\e[1m[MistralAI]\e[22m\e[39m\e[49m refactor: add optional 'additionalPrompts' to generatePrompt function. \r\n  \e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[39m\e[49m feat: allow additional prompts for generatePrompt \r\n  \e[48;2;254;210;31m\e[38;2;0;0;0m\e[1m[HuggingFace]\e[22m\e[39m\e[49m chore: update prompt.ts to use additionalPrompts instead of prompt \r\n\e[36m❯ \e[48;2;0;219;155m\e[38;2;255;255;255m\e[1m[CLOVA X]\e[22m\e[39m\e[36m\e[49m fix(prompt): fix generatePrompt function to accept additionalPrompts\e[39m \r\n\r\n\e[0D\e[1G\e[0K\e[?25h\e[1G\r\n\e[?25h\e[1A\e[32m?\e[39m \e[1mUse selected message?\e[22m\e[0m \e[0m\e[2m(Y/n) \e[22m\e[30D\e[30C"
+  - delay: 556
     content: "\e[2K\e[G\e[32m?\e[39m \e[1mUse selected message?\e[22m\e[0m \e[0m\e[36mYes\e[39m\e[27D\e[27C\r\n\e[?25l\e[1G\e[1G\e[36m⠋\e[39m Committing with the generated message"
   - delay: 81
     content: "\e[1G\e[0K\e[36m⠙\e[39m Committing with the generated message"
-  - delay: 81
+  - delay: 80
     content: "\e[1G\e[0K\e[36m⠹\e[39m Committing with the generated message"
-  - delay: 81
+  - delay: 80
     content: "\e[1G\e[0K\e[36m⠸\e[39m Committing with the generated message"
-  - delay: 80
-    content: "\e[1G\e[0K\e[36m⠼\e[39m Committing with the generated message"
   - delay: 81
-    content: "\e[1G\e[0K\e[36m⠴\e[39m Committing with the generated message"
+    content: "\e[1G\e[0K\e[36m⠼\e[39m Committing with the generated message"
   - delay: 80
+    content: "\e[1G\e[0K\e[36m⠴\e[39m Committing with the generated message"
+  - delay: 81
     content: "\e[1G\e[0K\e[36m⠦\e[39m Committing with the generated message"
   - delay: 81
     content: "\e[1G\e[0K\e[36m⠧\e[39m Committing with the generated message"
   - delay: 80
     content: "\e[1G\e[0K\e[36m⠇\e[39m Committing with the generated message"
-  - delay: 80
+  - delay: 81
     content: "\e[1G\e[0K\e[36m⠏\e[39m Committing with the generated message"
-  - delay: 79
+  - delay: 81
     content: "\e[1G\e[0K\e[36m⠋\e[39m Committing with the generated message"
   - delay: 81
     content: "\e[1G\e[0K\e[36m⠙\e[39m Committing with the generated message"
-  - delay: 79
+  - delay: 81
     content: "\e[1G\e[0K\e[36m⠹\e[39m Committing with the generated message"
-  - delay: 36
-    content: "\e[1G\e[0K\e[?25h\e[1G\r\n\e[1m\e[32m✔\e[39m\e[22m \e[1mSuccessfully committed!\e[22m\r\n\e[?25h"
-  - delay: 9
-    content: "\e[1m\e[7m%\e[27m\e[1m\e[0m                                                                                                        \r \r\e]2;tak@louis-lemoncloud:~/workspace/tak-bro/aicommit2\a\e]1;..bro/aicommit2\a"
-  - delay: 6
-    content: "\e]7;file://louis-lemoncloud/Users/tak/workspace/tak-bro/aicommit2\e\\"
-  - delay: 39
-    content: "\e]697;OSCUnlock=b7b538c0-ac40-4d42-a96a-a4c471d28d6f\a\e]697;Dir=/Users/tak/workspace/tak-bro/aicommit2\a\e]697;Shell=zsh\a\e]697;ShellPath=/usr/local/Cellar/zsh/5.8_1/bin/zsh\a\e]697;PID=72285\a\e]697;ExitCode=0\a\e]697;TTY=/dev/ttys007\a\e]697;Log=\a\e]697;ZshAutosuggestionColor=fg=245\a\e]697;FigAutosuggestionColor=\a\e]697;User=tak\a"
-  - delay: 19
-    content: "\r\e[0m\e[27m\e[24m\e[J\e]697;StartPrompt\a\e[0m\e[38;5;242m\e[49m\e[39m\r\n\r\n\e[A\e[0m\e[49m\e[39m\e[0m\e[49m\e[39m\e[0m\e[49m \e[0m\e[49m\e[38;5;31m \e[1m\e[38;5;31m\e[38;5;39m~\e[0m\e[38;5;39m\e[49m\e[38;5;31m/workspace/tak-bro/\e[1m\e[38;5;31m\e[38;5;39maicommit2\e[0m\e[38;5;39m\e[49m\e[38;5;31m\e[0m\e[38;5;31m\e[49m\e[38;5;31m\e[0m\e[38;5;31m\e[49m \e[0m\e[38;5;31m\e[49m\e[38;5;178m\e[0m\e[38;5;178m\e[49m\e[38;5;76m \e[38;5;76m demo \e[38;5;76m*2 \e[38;5;178m!1\e[0m\e[38;5;178m\e[49m\e[38;5;178m\e[0m\e[38;5;178m\e[49m\e[30m \e[0m\e[30m\e[49m\e[39m\e[38;5;242m····································\e[0m\e[38;5;242m\e[49m\e[30m \e[0m\e[30m\e[49m\e[38;5;101m 6s\e[0m\e[38;5;101m\e[49m\e[38;5;101m\e[0m\e[38;5;101m\e[49m\e[38;5;101m\e[0m\e[38;5;101m\e[49m\e[38;5;66m  18:25:06\e[0m\e[38;5;66m\e[49m\e[38;5;66m\e[0m\e[38;5;66m\e[49m\e[38;5;66m\e[49m\e[30m \e[0m\e[30m\e[49m\e[38;5;66m\e[0m\e[38;5;66m\e[49m\e[39m\e[38;5;242m─╮\r\n\e[0m\e[38;5;242m\e[49m\e[39m\e[0m\e[49m\e[38;5;76m❯\e[0m\e[38;5;76m\e[49m\e[38;5;76m\e[0m\e[38;5;76m\e[49m\e[30m\e[0m\e[30m\e[49m\e[39m \e[0m\e[49m\e[39m\e]697;EndPrompt\a\e]697;NewCmd=b7b538c0-ac40-4d42-a96a-a4c471d28d6f\a\e[K\e[100C\e]697;StartPrompt\a\e[0m\e[49m\e[39m\e[38;5;242m─╯\e]697;EndPrompt\a\e[39m\e[102D\e[?1h\e=\e[?2004h"
-  - delay: 786
+  - delay: 69
+    content: "\e[1G\e[0K\e[?25h\e[1G\r\n\e[1m\e[32m✔\e[39m\e[22m \e[1mSuccessfully committed!\e[22m\r\n\e[?25h\e[?25h\e[1m\e[7m%\e[27m\e[1m\e[0m                                                                                                        \r \r\e]2;tak@louis-lemon:~/workspace/tak-bro/aicommit2\a\e]1;..bro/aicommit2\a\e]7;file://louis-lemon/Users/tak/workspace/tak-bro/aicommit2\e\\"
+  - delay: 46
+    content: "\e]697;OSCUnlock=787e168af5ba4af8ad22fbe6fa405bb3\a\e]697;Dir=/Users/tak/workspace/tak-bro/aicommit2\a\e]697;Shell=zsh\a\e]697;ShellPath=/opt/homebrew/Cellar/zsh/5.9/bin/zsh\a\e]697;PID=59763\a\e]697;ExitCode=0\a\e]697;TTY=/dev/ttys023\a\e]697;Log=\a\e]697;ZshAutosuggestionColor=fg=245\a\e]697;FigAutosuggestionColor=\a\e]697;User=tak\a\r\e[0m\e[27m\e[24m\e[J\e]697;StartPrompt\a\e[0m\e[49m\e[39m\r\n\r\n\e[A\e[0m\e[49m\e[39m\e[0m\e[49m\e[39m\e[0m\e[49m \e[0m\e[49m\e[38;5;31m \e[1m\e[38;5;31m\e[38;5;39m~\e[0m\e[38;5;39m\e[49m\e[38;5;31m/workspace/tak-bro/\e[1m\e[38;5;31m\e[38;5;39maicommit2\e[0m\e[38;5;39m\e[49m\e[38;5;31m\e[0m\e[38;5;31m\e[49m\e[38;5;31m\e[0m\e[38;5;31m\e[49m \e[0m\e[38;5;31m\e[49m\e[38;5;76m \e[38;5;76m feature/update-prompt \e[38;5;76m*2 \e[38;5;39m?1\e[0m\e[38;5;39m\e[49m\e[38;5;76m\e[0m\e[38;5;76m\e[49m\e[30m \e[0m\e[30m\e[49m\e[39m\e[38;5;238m······················\e[0m\e[38;5;238m\e[49m\e[30m \e[0m\e[30m\e[49m\e[38;5;101m 6s\e[0m\e[38;5;101m\e[49m\e[38;5;101m\e[0m\e[38;5;101m\e[49m\e[38;5;101m\e[0m\e[38;5;101m\e[49m\e[38;5;66m  19:32:40\e[0m\e[38;5;66m\e[49m\e[38;5;66m\e[0m\e[38;5;66m\e[49m\e[38;5;66m\e[0m\e[38;5;66m\e[49m\e[39m\r\n\e[0m\e[49m\e[39m\e[0m\e[49m\e[38;5;76m❯\e[0m\e[38;5;76m\e[49m\e[38;5;76m\e[0m\e[38;5;76m\e[49m\e[30m\e[0m\e[30m\e[49m\e[39m \e[0m\e[49m\e[39m\e]697;EndPrompt\a\e]697;NewCmd=787e168af5ba4af8ad22fbe6fa405bb3\a\e[K\e[102C\e]697;StartPrompt\a\e]697;EndPrompt\a\e[102D\e[?1h\e=\e[?2004h"
+  - delay: 697
     content: "\e[?2004l\r\r\n"

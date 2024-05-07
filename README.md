@@ -1,6 +1,6 @@
 <div align="center">
   <div>
-    <img src="https://github.com/tak-bro/aicommit2/assets/7614353/9046d4ab-5652-4f2a-99b8-e58920ddbe17" alt="AICommit2"/>
+    <img src="https://github.com/tak-bro/aicommit2/blob/main/img/demo-min.gif?raw=true" alt="AICommit2"/>
     <h1 align="center">AICommit2</h1>
   </div>
 	<p>A Reactive CLI that generates git commit messages with various AI</p>
@@ -43,48 +43,37 @@ AICommit2 streamlines interactions with various AI, enabling users to request mu
 npm install -g aicommit2
 ```
 
-2. Retrieve the API key or Cookie you intend to use:
-
-- [OpenAI](https://platform.openai.com/account/api-keys)
-- [Anthropic Claude](https://console.anthropic.com/)
-- [Gemini](https://aistudio.google.com/app/apikey)
-- [Mistral AI](https://console.mistral.ai/)
-- [Huggingface **(Unofficial)**](https://github.com/tak-bro/aicommit2?tab=readme-ov-file#how-to-get-cookieunofficial-api)
-- [Clova X **(Unofficial)**](https://github.com/tak-bro/aicommit2?tab=readme-ov-file#how-to-get-cookieunofficial-api)
-
-> You may need to create an account and set up billing.
-
-3. Set API keys you intend to use:
+2. Retrieve and Set API keys or Cookie you intend to use:
 
 It is not necessary to set all keys. **But at least one key must be set up.**
-
-- OpenAI
+ 
+- [OpenAI](https://platform.openai.com/account/api-keys)
 ```sh
 aicommit2 config set OPENAI_KEY=<your key>
 ```
 
-- Anthropic Claude
+- [Anthropic Claude](https://console.anthropic.com/)
 ```sh
 aicommit2 config set ANTHROPIC_KEY=<your key>
 ```
 
-- Gemini
+- [Gemini](https://aistudio.google.com/app/apikey)
 ```sh
 aicommit2 config set GEMINI_KEY=<your key>
 ```
 
-- Mistral AI
+- [Mistral AI](https://console.mistral.ai/)
 ```sh
 aicommit2 config set MISTRAL_KEY=<your key>
 ```
 
-- Huggingface Chat
+- [Huggingface **(Unofficial)**](https://github.com/tak-bro/aicommit2?tab=readme-ov-file#how-to-get-cookieunofficial-api)
 ```shell
 # Please be cautious of Escape characters(\", \') in browser cookie string 
 aicommit2 config set HUGGING_COOKIE="<your browser cookie>"
 ```
 
-- Clova X
+- [Clova X **(Unofficial)**](https://github.com/tak-bro/aicommit2?tab=readme-ov-file#how-to-get-cookieunofficial-api)
 ```shell
 # Please be cautious of Escape characters(\", \') in browser cookie string 
 aicommit2 config set CLOVAX_COOKIE="<your browser cookie>"
@@ -92,7 +81,9 @@ aicommit2 config set CLOVAX_COOKIE="<your browser cookie>"
 
 This will create a `.aicommit2` file in your home directory.
 
-4. Run aicommit2 with your staged in git repository:
+> You may need to create an account and set up billing.
+
+3. Run aicommit2 with your staged in git repository:
 ```shell
 git add <files...>
 aicommit2
