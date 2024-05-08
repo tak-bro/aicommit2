@@ -320,15 +320,15 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 > **Currently, options are set universally. However, there are plans to develop the ability to set individual options in the future.**
 
 ### Available Options by Model
-|                      | locale | generate | type  | proxy |        timeout         | max-length  | max-tokens | temperature | prompt |
-|:--------------------:|:------:|:--------:|:-----:|:-----:|:----------------------:|:-----------:|:----------:|:-----------:|:------:|
-|      **OpenAI**      |   ✓    |    ✓     |   ✓   |   ✓   |           ✓            |      ✓      |     ✓      |      ✓      |   ✓    |
-| **Anthropic Claude** |   ✓    |    ✓     |   ✓   |       |                        |      ✓      |     ✓      |      ✓      |   ✓    |
-|      **Gemini**      |   ✓    |    ✓     |   ✓   |       |                        |      ✓      |     ✓      |      ✓      |   ✓    |
-|    **Mistral AI**    |   ✓    |    ✓     |   ✓   |       |           ✓            |      ✓      |     ✓      |      ✓      |   ✓    |
-|   **Huggingface**    |   ✓    |    ✓     |   ✓   |       |           ✓            |      ✓      |            |             |   ✓    |
-|     **Clova X**      |   ✓    |    ✓     |   ✓   |       |           ✓            |      ✓      |            |             |   ✓    |
-|      **Ollama**      |   ✓    |    ✓     |   ✓   |       | ✓<br/>(OLLAMA_TIMEOUT) |      ✓      |            |      ✓      |   ✓    |
+|                      | locale | generate | type  | proxy |        timeout        | max-length  | max-tokens | temperature | prompt |
+|:--------------------:|:------:|:--------:|:-----:|:-----:|:---------------------:|:-----------:|:----------:|:-----------:|:------:|
+|      **OpenAI**      |   ✓    |    ✓     |   ✓   |   ✓   |           ✓           |      ✓      |     ✓      |      ✓      |   ✓    |
+| **Anthropic Claude** |   ✓    |    ✓     |   ✓   |       |                       |      ✓      |     ✓      |      ✓      |   ✓    |
+|      **Gemini**      |   ✓    |    ✓     |   ✓   |       |                       |      ✓      |     ✓      |      ✓      |   ✓    |
+|    **Mistral AI**    |   ✓    |    ✓     |   ✓   |       |           ✓           |      ✓      |     ✓      |      ✓      |   ✓    |
+|   **Huggingface**    |   ✓    |    ✓     |   ✓   |       |           ✓           |      ✓      |            |             |   ✓    |
+|     **Clova X**      |   ✓    |    ✓     |   ✓   |       |           ✓           |      ✓      |            |             |   ✓    |
+|      **Ollama**      |   ✓    |    ✓     |   ✓   |       | ⚠<br/>(OLLAMA_TIMEOUT) |      ✓      |            |      ✓      |   ✓    |
 
 
 ### Common Options
