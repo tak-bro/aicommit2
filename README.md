@@ -4,18 +4,15 @@
     <h1 align="center">AICommit2</h1>
   </div>
 	<p>A Reactive CLI that generates git commit messages with various AI</p>
-	<a aria-label="npm" href="https://github.com/tak-bro" target="_blank">
-        <img src="https://img.shields.io/badge/by-tak--bro-293462?logo=github" alt="tak-bro">
-    </a>
-    <a aria-label="license" href="https://github.com/tak-bro/aicommit2/blob/main/LICENSE" target="_blank">
-        <img src="https://img.shields.io/github/license/tak-bro/aicommit2.svg?color=211A4C" alt="license">
-    </a>
-	<a aria-label="npm" href="https://www.npmjs.com/package/aicommit2" target="_blank">
-        <img src="https://img.shields.io/npm/v/aicommit2?color=A51C2D" alt="Current version">
-    </a>
-	<a aria-label="npm" href="https://www.npmjs.com/package/aicommit2" target="_blank">
-        <img src="https://img.shields.io/npm/dt/aicommit2?color=F33535&logo=npm" alt="downloads">
-    </a>
+</div>
+
+<div align="center" markdown="1">
+
+[![tak-bro](https://img.shields.io/badge/by-tak--bro-293462?logo=github)](https://github.com/tak-bro)
+[![license](https://img.shields.io/github/license/tak-bro/aicommit2?color=211A4C)](https://github.com/tak-bro/aicommit2/blob/main/LICENSE)
+[![version](https://img.shields.io/npm/v/aicommit2?logo=semanticrelease&label=release&color=A51C2D)](https://www.npmjs.com/package/aicommit2)
+[![downloads](https://img.shields.io/npm/dt/aicommit2?color=F33535&logo=npm)](https://www.npmjs.com/package/aicommit2)
+
 </div>
 
 ---
@@ -29,8 +26,8 @@ AICommit2 streamlines interactions with various AI, enabling users to request mu
 ### Local
 
 - [Ollama](https://ollama.com/)
- 
-### Remote 
+
+### Remote
 
 - [OpenAI](https://openai.com/)
 - [Anthropic Claude](https://console.anthropic.com/)
@@ -53,7 +50,7 @@ npm install -g aicommit2
 2. Retrieve and Set API keys or Cookie you intend to use:
 
 It is not necessary to set all keys. **But at least one key must be set up.**
- 
+
 - [OpenAI](https://platform.openai.com/account/api-keys)
 ```sh
 aicommit2 config set OPENAI_KEY=<your key>
@@ -612,7 +609,7 @@ Users are responsible for understanding and abiding by the terms of use, rate li
 
 It is recommended that users thoroughly review the API documentation and adhere to best practices to ensure a positive and compliant experience.
 
-## Please Star ⭐️ 
+## Please Star ⭐️
 If this project has been helpful to you, I would greatly appreciate it if you could click the Star⭐️ button on this repository!
 
 ## Maintainers
