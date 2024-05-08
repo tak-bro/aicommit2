@@ -422,6 +422,34 @@ Additional prompt to let users fine-tune provided prompt. Users provide extra in
 aicommit2 config set prompt="Do not mention config changes"
 ```
 
+### Ollama
+
+##### OLLAMA_MODEL
+
+The Ollama Model. Please see [a list of models available](https://ollama.com/library)
+
+##### OLLAMA_HOST
+
+Default: `http://localhost:11434`
+
+The Ollama host
+
+##### OLLAMA_TIMEOUT
+
+Default: `100000` (100 seconds)
+
+Request timeout for the Ollama. Default OLLAMA_TIMEOUT is **100 seconds** because it can take a long time to run locally.
+
+##### OLLAMA_STREAM
+
+<img src="https://github.com/tak-bro/aicommit2/blob/main/img/ollama_stream-min.gif?raw=true" alt="OLLAMA_STREAM" />
+
+Default: `false`
+
+Determines whether the application will make stream requests to Ollama. **Allow this option only when using Ollama alone.**
+
+> This feature is experimental and may not be fully stable.
+
 ### OPEN AI
 
 ##### OPENAI_KEY
@@ -451,7 +479,6 @@ The OpenAI URL. Both https and http protocols supported. It allows to run local 
 Default: `/v1/chat/completions`
 
 The OpenAI Path.
-
 
 ### Anthropic Claude
 
@@ -538,41 +565,13 @@ Supported:
 - `mistralai/Mistral-7B-Instruct-v0.2`
 - `microsoft/Phi-3-mini-4k-instruct`
 
->  The models mentioned above are subject to change.
+> The models mentioned above are subject to change.
 
 ### Clova X
 
 ##### CLOVAX_COOKIE
 
 The [Clova X](https://clova-x.naver.com/) Cookie. Please check [how to get cookie](https://github.com/tak-bro/aicommit2?tab=readme-ov-file#how-to-get-cookieunofficial-api)
-
-### Ollama
-
-##### OLLAMA_MODEL
-
-The Ollama Model. Please see [a list of models available](https://ollama.com/library)
-
-##### OLLAMA_HOST
-
-Default: `http://localhost:11434`
-
-The Ollama host
-
-##### OLLAMA_TIMEOUT
-
-Default: `100000` (100 seconds)
-
-Request timeout for the Ollama. Default OLLAMA_TIMEOUT is **100 seconds** because it can take a long time to run locally.
-
-##### OLLAMA_STREAM
-
-<img src="https://github.com/tak-bro/aicommit2/blob/main/img/ollama_stream-min.gif?raw=true" alt="OLLAMA_STREAM" />
-
-Default: `false`
-
-Determines whether the application will make stream requests to Ollama. **Allow this option only when using Ollama alone.**
-
-> This feature is experimental and may not be fully stable.
 
 ## Upgrading
 
