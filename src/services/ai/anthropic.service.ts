@@ -1,11 +1,10 @@
 import Anthropic from '@anthropic-ai/sdk';
 import chalk from 'chalk';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
-import { Observable, catchError, concatMap, from, map, of, scan, tap } from 'rxjs';
+import { Observable, catchError, concatMap, filter, from, map, of, scan, tap } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIService, AIServiceError, AIServiceParams } from './ai.service.js';
-import { CommitType } from '../../utils/config.js';
 import { KnownError } from '../../utils/error.js';
 import { deduplicateMessages } from '../../utils/openai.js';
 import { generatePrompt } from '../../utils/prompt.js';
@@ -55,11 +54,14 @@ export class AnthropicService extends AIService {
             const diff = this.params.stagedDiff.diff;
             const { locale, generate, type, prompt: userPrompt } = this.params.config;
             const maxLength = this.params.config['max-length'];
-            const prompt = this.buildPrompt(locale, diff, generate, maxLength, type, userPrompt);
+
+            const defaultPrompt = generatePrompt(locale, maxLength, type, userPrompt);
+            const systemPrompt = `${defaultPrompt}\nPlease just generate ${generate} commit messages in numbered list format without any explanation.`;
+
             const params: Anthropic.MessageCreateParams = {
                 max_tokens: this.params.config['max-tokens'],
                 temperature: this.params.config.temperature,
-                system: prompt,
+                system: systemPrompt,
                 messages: [
                     {
                         role: 'user',
@@ -140,21 +142,45 @@ export class AnthropicService extends AIService {
         const diff = this.params.stagedDiff.diff;
         const { locale, generate, type, prompt: userPrompt } = this.params.config;
         const maxLength = this.params.config['max-length'];
-        const prompt = this.buildPrompt(locale, diff, generate, maxLength, type, userPrompt);
 
-        const anthropicStream: Promise<AsyncGenerator<Anthropic.Completion>> = this.anthropic.completions.create({
-            model: this.params.config.ANTHROPIC_MODEL,
-            max_tokens_to_sample: this.params.config['max-tokens'],
+        const defaultPrompt = generatePrompt(locale, maxLength, type, userPrompt);
+        const systemPrompt = `${defaultPrompt}\nPlease just generate ${generate} commit messages in numbered list format without any explanation.`;
+
+        const params: Anthropic.MessageCreateParams = {
+            max_tokens: this.params.config['max-tokens'],
             temperature: this.params.config.temperature,
-            prompt: `${Anthropic.HUMAN_PROMPT} ${prompt}${Anthropic.AI_PROMPT}`,
+            system: systemPrompt,
+            messages: [
+                {
+                    role: 'user',
+                    content: diff,
+                },
+            ],
+            model: this.params.config.ANTHROPIC_MODEL,
             stream: true,
-        }) as any as Promise<AsyncGenerator<Anthropic.Completion>>;
+        };
+
+        // NOTE: refer https://docs.anthropic.com/claude/reference/messages-streaming
+        const anthropicStream = this.anthropic.messages.create(params) as any as Promise<
+            AsyncGenerator<Anthropic.MessageStreamEvent>
+        >;
 
         let allValue = '';
         return from(toObservable(anthropicStream)).pipe(
-            tap((completion: Anthropic.Completion) => (allValue += completion.completion)),
-            map((completion: Anthropic.Completion) => {
-                const isDone = !!completion.stop_reason && completion.stop_reason === `stop_sequence`;
+            filter((streamEvent: Anthropic.MessageStreamEvent) =>
+                ['content_block_delta', 'message_stop'].includes(streamEvent.type)
+            ),
+            map(
+                (streamEvent: Anthropic.MessageStreamEvent) =>
+                    streamEvent as Anthropic.ContentBlockDeltaEvent | Anthropic.MessageStopEvent
+            ),
+            tap(streamEvent => {
+                if (streamEvent.type === 'content_block_delta') {
+                    allValue += streamEvent.delta.text;
+                }
+            }),
+            map((streamEvent: Anthropic.ContentBlockDeltaEvent | Anthropic.MessageStopEvent) => {
+                const isDone = streamEvent.type === 'message_stop';
                 return {
                     id: this.params.keyName,
                     name: `${this.serviceName} ${allValue}`,
@@ -166,16 +192,4 @@ export class AnthropicService extends AIService {
             })
         );
     };
-
-    protected buildPrompt(
-        locale: string,
-        diff: string,
-        completions: number,
-        maxLength: number,
-        type: CommitType,
-        prompt: string
-    ) {
-        const defaultPrompt = generatePrompt(locale, maxLength, type, prompt);
-        return `${defaultPrompt}\nPlease just generate ${completions} commit messages in numbered list format without any explanation.`;
-    }
 }
