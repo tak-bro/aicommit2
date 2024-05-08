@@ -4,11 +4,17 @@
     <h1 align="center">AICommit2</h1>
   </div>
 	<p>A Reactive CLI that generates git commit messages with various AI</p>
-	<a aria-label="npm" href="https://www.npmjs.com/package/aicommit2">
-        <img src="https://img.shields.io/npm/v/aicommit2" alt="Current version">
+	<a aria-label="npm" href="https://github.com/tak-bro" target="_blank">
+        <img src="https://img.shields.io/badge/by-tak--bro-293462?logo=github" alt="tak-bro">
     </a>
-    <a aria-label="license" href="https://github.com/tak-bro/aicommit2/blob/main/LICENSE">
-        <img src="https://img.shields.io/github/license/tak-bro/aicommit2.svg" alt="license">
+    <a aria-label="license" href="https://github.com/tak-bro/aicommit2/blob/main/LICENSE" target="_blank">
+        <img src="https://img.shields.io/github/license/tak-bro/aicommit2.svg?color=211A4C" alt="license">
+    </a>
+	<a aria-label="npm" href="https://www.npmjs.com/package/aicommit2" target="_blank">
+        <img src="https://img.shields.io/npm/v/aicommit2?color=A51C2D" alt="Current version">
+    </a>
+	<a aria-label="npm" href="https://www.npmjs.com/package/aicommit2" target="_blank">
+        <img src="https://img.shields.io/npm/dt/aicommit2?color=F33535&logo=npm" alt="downloads">
     </a>
 </div>
 
@@ -20,6 +26,10 @@ AICommit2 streamlines interactions with various AI, enabling users to request mu
 
 ## Supported Providers
 
+### Local
+
+- [Ollama](https://ollama.com/)
+ 
 ### Remote 
 
 - [OpenAI](https://openai.com/)
@@ -29,9 +39,6 @@ AICommit2 streamlines interactions with various AI, enabling users to request mu
 - [Huggingface **(Unofficial)**](https://huggingface.co/chat/)
 - [Clova X **(Unofficial)**](https://clova-x.naver.com/)
 
-### Local 
-
-- [Ollama](https://ollama.com/)
 
 ## Setup
 
@@ -91,7 +98,7 @@ aicommit2
 
 ## Using Locally
 
-You can also use your model for free with [Ollama](https://ollama.com/) and is available to use both Ollama and remote providers simultaneously.
+You can also use your model for free with [Ollama](https://ollama.com/) and it is available to use both Ollama and remote providers **simultaneously**.
 
 1. Install Ollama from [https://ollama.com](https://ollama.com/)
 
