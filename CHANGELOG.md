@@ -1,3 +1,31 @@
+## [1.8.5](https://github.com/tak-bro/aicommit2/compare/v1.8.4...v1.8.5) (2024-05-08)
+
+
+### ✨ Features
+
+* improved OllamaService with configurable prompt and temperature ([c200906](https://github.com/tak-bro/aicommit2/commit/c20090638067e2309921658e69f9c00eae1041e0))
+* simplify prompt generation and update buildPrompt method ([6c39016](https://github.com/tak-bro/aicommit2/commit/6c390168746c4e9e71c76fbe523d6b88826d91bb))
+
+
+### 🐛 Bug Fixes
+
+* correct prompt format ([2b258f1](https://github.com/tak-bro/aicommit2/commit/2b258f1d06a9c89795180031f103f205213369af))
+* **prompt:** fix generatePrompt function to accept additionalPrompts ([d42507d](https://github.com/tak-bro/aicommit2/commit/d42507da601b474729ce457c5abd527dd2e55081))
+
+
+### 📝 Docs
+
+* update badges ([c765a64](https://github.com/tak-bro/aicommit2/commit/c765a64b187abd1e87f20c6694ffe77b3583bf3e))
+* update documentation for Ollama model, host, and stream ([6750db1](https://github.com/tak-bro/aicommit2/commit/6750db18558ed55f3ea2f26fe33d6c9defd13956))
+* update README ([fdb080b](https://github.com/tak-bro/aicommit2/commit/fdb080bbae2951ef280f87acd5cfb8f76191bacb))
+* update README ([b9c2c73](https://github.com/tak-bro/aicommit2/commit/b9c2c73bb8edf8eb6dbdbb676f0cad7e1b2037f5))
+* update README.md with new links and images ([3e9f87e](https://github.com/tak-bro/aicommit2/commit/3e9f87e1f1061566114ffd0d9f925db9491c7340))
+
+
+### 📦 Chores
+
+* rollback code for ollama service ([721710c](https://github.com/tak-bro/aicommit2/commit/721710cccb17154f9e7ad4df9d46b62ca296e339))
+
 ## [1.8.4](https://github.com/tak-bro/aicommit2/compare/v1.8.3...v1.8.4) (2024-05-04)
 
 
