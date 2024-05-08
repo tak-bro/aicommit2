@@ -85,10 +85,13 @@ export class OllamaService extends AIService {
                 },
                 {
                     role: 'user',
-                    content: `Here are git diff: \n${this.params.stagedDiff.diff}`,
+                    content: `${this.params.stagedDiff.diff}`,
                 },
             ],
             stream: true,
+            options: {
+                temperature: this.params.config.temperature,
+            },
         });
 
         let allValue = '';
@@ -203,10 +206,13 @@ export class OllamaService extends AIService {
                 },
                 {
                     role: 'user',
-                    content: `Here are git diff: \n${this.params.stagedDiff.diff}`,
+                    content: `${this.params.stagedDiff.diff}`,
                 },
             ],
             stream: false,
+            options: {
+                temperature: this.params.config.temperature,
+            },
         });
         return response.message.content;
     }

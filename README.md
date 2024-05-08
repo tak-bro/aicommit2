@@ -1,15 +1,18 @@
 <div align="center">
   <div>
-    <img src="https://github.com/tak-bro/aicommit2/assets/7614353/9046d4ab-5652-4f2a-99b8-e58920ddbe17" alt="AICommit2"/>
+    <img src="https://github.com/tak-bro/aicommit2/blob/main/img/demo-min.gif?raw=true" alt="AICommit2"/>
     <h1 align="center">AICommit2</h1>
   </div>
 	<p>A Reactive CLI that generates git commit messages with various AI</p>
-	<a aria-label="npm" href="https://www.npmjs.com/package/aicommit2">
-        <img src="https://img.shields.io/npm/v/aicommit2" alt="Current version">
-    </a>
-    <a aria-label="license" href="https://github.com/tak-bro/aicommit2/blob/main/LICENSE">
-        <img src="https://img.shields.io/github/license/tak-bro/aicommit2.svg" alt="license">
-    </a>
+</div>
+
+<div align="center" markdown="1">
+
+[![tak-bro](https://img.shields.io/badge/by-tak--bro-293462?logo=github)](https://github.com/tak-bro)
+[![license](https://img.shields.io/github/license/tak-bro/aicommit2?color=211A4C)](https://github.com/tak-bro/aicommit2/blob/main/LICENSE)
+[![version](https://img.shields.io/npm/v/aicommit2?logo=semanticrelease&label=release&color=A51C2D)](https://www.npmjs.com/package/aicommit2)
+[![downloads](https://img.shields.io/npm/dt/aicommit2?color=F33535&logo=npm)](https://www.npmjs.com/package/aicommit2)
+
 </div>
 
 ---
@@ -20,7 +23,11 @@ AICommit2 streamlines interactions with various AI, enabling users to request mu
 
 ## Supported Providers
 
-### Remote 
+### Local
+
+- [Ollama](https://ollama.com/)
+
+### Remote
 
 - [OpenAI](https://openai.com/)
 - [Anthropic Claude](https://console.anthropic.com/)
@@ -29,9 +36,6 @@ AICommit2 streamlines interactions with various AI, enabling users to request mu
 - [Huggingface **(Unofficial)**](https://huggingface.co/chat/)
 - [Clova X **(Unofficial)**](https://clova-x.naver.com/)
 
-### Local 
-
-- [Ollama](https://ollama.com/)
 
 ## Setup
 
@@ -43,48 +47,37 @@ AICommit2 streamlines interactions with various AI, enabling users to request mu
 npm install -g aicommit2
 ```
 
-2. Retrieve the API key or Cookie you intend to use:
-
-- [OpenAI](https://platform.openai.com/account/api-keys)
-- [Anthropic Claude](https://console.anthropic.com/)
-- [Gemini](https://aistudio.google.com/app/apikey)
-- [Mistral AI](https://console.mistral.ai/)
-- [Huggingface **(Unofficial)**](https://github.com/tak-bro/aicommit2?tab=readme-ov-file#how-to-get-cookieunofficial-api)
-- [Clova X **(Unofficial)**](https://github.com/tak-bro/aicommit2?tab=readme-ov-file#how-to-get-cookieunofficial-api)
-
-> You may need to create an account and set up billing.
-
-3. Set API keys you intend to use:
+2. Retrieve and Set API keys or Cookie you intend to use:
 
 It is not necessary to set all keys. **But at least one key must be set up.**
 
-- OpenAI
+- [OpenAI](https://platform.openai.com/account/api-keys)
 ```sh
 aicommit2 config set OPENAI_KEY=<your key>
 ```
 
-- Anthropic Claude
+- [Anthropic Claude](https://console.anthropic.com/)
 ```sh
 aicommit2 config set ANTHROPIC_KEY=<your key>
 ```
 
-- Gemini
+- [Gemini](https://aistudio.google.com/app/apikey)
 ```sh
 aicommit2 config set GEMINI_KEY=<your key>
 ```
 
-- Mistral AI
+- [Mistral AI](https://console.mistral.ai/)
 ```sh
 aicommit2 config set MISTRAL_KEY=<your key>
 ```
 
-- Huggingface Chat
+- [Huggingface **(Unofficial)**](https://github.com/tak-bro/aicommit2?tab=readme-ov-file#how-to-get-cookieunofficial-api)
 ```shell
 # Please be cautious of Escape characters(\", \') in browser cookie string 
 aicommit2 config set HUGGING_COOKIE="<your browser cookie>"
 ```
 
-- Clova X
+- [Clova X **(Unofficial)**](https://github.com/tak-bro/aicommit2?tab=readme-ov-file#how-to-get-cookieunofficial-api)
 ```shell
 # Please be cautious of Escape characters(\", \') in browser cookie string 
 aicommit2 config set CLOVAX_COOKIE="<your browser cookie>"
@@ -92,7 +85,9 @@ aicommit2 config set CLOVAX_COOKIE="<your browser cookie>"
 
 This will create a `.aicommit2` file in your home directory.
 
-4. Run aicommit2 with your staged in git repository:
+> You may need to create an account and set up billing.
+
+3. Run aicommit2 with your staged in git repository:
 ```shell
 git add <files...>
 aicommit2
@@ -100,7 +95,7 @@ aicommit2
 
 ## Using Locally
 
-You can also use your model for free with [Ollama](https://ollama.com/) and is available to use both Ollama and remote providers simultaneously.
+You can also use your model for free with [Ollama](https://ollama.com/) and it is available to use both Ollama and remote providers **simultaneously**.
 
 1. Install Ollama from [https://ollama.com](https://ollama.com/)
 
@@ -120,7 +115,7 @@ aicommit2 config set OLLAMA_TIMEOUT=<timout> # Optional. default is 100000ms (10
 
 > If you want to use ollama, you must set **OLLAMA_MODEL**.
 
-4. Run aicommit2 with your staged in git repository
+4. Run _aicommit2_ with your staged in git repository
 ```shell
 git add <files...>
 aicommit2
@@ -322,15 +317,15 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 > **Currently, options are set universally. However, there are plans to develop the ability to set individual options in the future.**
 
 ### Available Options by Model
-|                      | locale | generate | type  | proxy |        timeout         | max-length  | max-tokens | temperature | prompt |
-|:--------------------:|:------:|:--------:|:-----:|:-----:|:----------------------:|:-----------:|:----------:|:-----------:|:------:|
-|      **OpenAI**      |   ✓    |    ✓     |   ✓   |   ✓   |           ✓            |      ✓      |     ✓      |      ✓      |   ✓    |
-| **Anthropic Claude** |   ✓    |    ✓     |   ✓   |       |                        |      ✓      |     ✓      |      ✓      |   ✓    |
-|      **Gemini**      |   ✓    |    ✓     |   ✓   |       |                        |      ✓      |     ✓      |      ✓      |   ✓    |
-|    **Mistral AI**    |   ✓    |    ✓     |   ✓   |       |           ✓            |      ✓      |     ✓      |      ✓      |   ✓    |
-|   **Huggingface**    |   ✓    |    ✓     |   ✓   |       |           ✓            |      ✓      |            |             |   ✓    |
-|     **Clova X**      |   ✓    |    ✓     |   ✓   |       |           ✓            |      ✓      |            |             |   ✓    |
-|      **Ollama**      |   ✓    |    ✓     |   ✓   |       | ✓<br/>(OLLAMA_TIMEOUT) |      ✓      |            |      ✓      |   ✓    |
+|                      | locale | generate | type  | proxy |        timeout        | max-length  | max-tokens | temperature | prompt |
+|:--------------------:|:------:|:--------:|:-----:|:-----:|:---------------------:|:-----------:|:----------:|:-----------:|:------:|
+|      **OpenAI**      |   ✓    |    ✓     |   ✓   |   ✓   |           ✓           |      ✓      |     ✓      |      ✓      |   ✓    |
+| **Anthropic Claude** |   ✓    |    ✓     |   ✓   |       |                       |      ✓      |     ✓      |      ✓      |   ✓    |
+|      **Gemini**      |   ✓    |    ✓     |   ✓   |       |                       |      ✓      |     ✓      |      ✓      |   ✓    |
+|    **Mistral AI**    |   ✓    |    ✓     |   ✓   |       |           ✓           |      ✓      |     ✓      |      ✓      |   ✓    |
+|   **Huggingface**    |   ✓    |    ✓     |   ✓   |       |           ✓           |      ✓      |            |             |   ✓    |
+|     **Clova X**      |   ✓    |    ✓     |   ✓   |       |           ✓           |      ✓      |            |             |   ✓    |
+|      **Ollama**      |   ✓    |    ✓     |   ✓   |       | ⚠<br/>(OLLAMA_TIMEOUT) |      ✓      |            |      ✓      |   ✓    |
 
 
 ### Common Options
@@ -424,6 +419,34 @@ Additional prompt to let users fine-tune provided prompt. Users provide extra in
 aicommit2 config set prompt="Do not mention config changes"
 ```
 
+### Ollama
+
+##### OLLAMA_MODEL
+
+The Ollama Model. Please see [a list of models available](https://ollama.com/library)
+
+##### OLLAMA_HOST
+
+Default: `http://localhost:11434`
+
+The Ollama host
+
+##### OLLAMA_TIMEOUT
+
+Default: `100000` (100 seconds)
+
+Request timeout for the Ollama. Default OLLAMA_TIMEOUT is **100 seconds** because it can take a long time to run locally.
+
+##### OLLAMA_STREAM
+
+<img src="https://github.com/tak-bro/aicommit2/blob/main/img/ollama_stream-min.gif?raw=true" alt="OLLAMA_STREAM" />
+
+Default: `false`
+
+Determines whether the application will make stream requests to Ollama. **Allow this option only when using Ollama alone.**
+
+> This feature is experimental and may not be fully stable.
+
 ### OPEN AI
 
 ##### OPENAI_KEY
@@ -453,7 +476,6 @@ The OpenAI URL. Both https and http protocols supported. It allows to run local 
 Default: `/v1/chat/completions`
 
 The OpenAI Path.
-
 
 ### Anthropic Claude
 
@@ -540,37 +562,13 @@ Supported:
 - `mistralai/Mistral-7B-Instruct-v0.2`
 - `microsoft/Phi-3-mini-4k-instruct`
 
->  The models mentioned above are subject to change.
+> The models mentioned above are subject to change.
 
 ### Clova X
 
 ##### CLOVAX_COOKIE
 
 The [Clova X](https://clova-x.naver.com/) Cookie. Please check [how to get cookie](https://github.com/tak-bro/aicommit2?tab=readme-ov-file#how-to-get-cookieunofficial-api)
-
-### Ollama
-
-##### OLLAMA_MODEL
-
-The Ollama Model. Please see [a list of models available](https://ollama.com/library)
-
-##### OLLAMA_HOST
-
-Default: `http://localhost:11434`
-
-The Ollama host
-
-##### OLLAMA_TIMEOUT
-
-Default: `100000` (100 seconds)
-
-Request timeout for the Ollama. Default OLLAMA_TIMEOUT is **100 seconds** because it can take a long time to run locally.
-
-##### OLLAMA_STREAM
-
-Default: `false`
-
-Determines whether the application will make stream requests to Ollama. **Allow this option only when using Ollama alone.** This feature is experimental and may not be fully stable.
 
 ## Upgrading
 
@@ -611,7 +609,7 @@ Users are responsible for understanding and abiding by the terms of use, rate li
 
 It is recommended that users thoroughly review the API documentation and adhere to best practices to ensure a positive and compliant experience.
 
-## Please Star⭐️ 
+## Please Star ⭐️
 If this project has been helpful to you, I would greatly appreciate it if you could click the Star⭐️ button on this repository!
 
 ## Maintainers
