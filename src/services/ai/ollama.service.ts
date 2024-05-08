@@ -187,13 +187,12 @@ export class OllamaService extends AIService {
     }
 
     private async createChatCompletions() {
-        const defaultPrompt = generatePrompt(
+        const systemContent = generatePrompt(
             this.params.config.locale,
             this.params.config['max-length'],
             this.params.config.type,
             this.params.config.prompt
         );
-        const systemContent = `${defaultPrompt}\nPlease just generate ${this.params.config.generate} commit messages in numbered list format without explanation.`;
         const response = await this.ollama.chat({
             model: this.model,
             messages: [
@@ -207,6 +206,10 @@ export class OllamaService extends AIService {
                 },
             ],
             stream: false,
+            options: {
+                temperature: this.params.config.temperature,
+                num_predict: this.params.config.generate,
+            },
         });
         return response.message.content;
     }
