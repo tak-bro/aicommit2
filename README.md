@@ -118,7 +118,7 @@ aicommit2 config set OLLAMA_TIMEOUT=<timout> # Optional. default is 100000ms (10
 
 > If you want to use ollama, you must set **OLLAMA_MODEL**.
 
-4. Run aicommit2 with your staged in git repository
+4. Run _aicommit2_ with your staged in git repository
 ```shell
 git add <files...>
 aicommit2
@@ -566,9 +566,13 @@ Request timeout for the Ollama. Default OLLAMA_TIMEOUT is **100 seconds** becaus
 
 ##### OLLAMA_STREAM
 
+<img src="https://github.com/tak-bro/aicommit2/blob/main/img/ollama_stream-min.gif?raw=true" alt="OLLAMA_STREAM" />
+
 Default: `false`
 
-Determines whether the application will make stream requests to Ollama. **Allow this option only when using Ollama alone.** This feature is experimental and may not be fully stable.
+Determines whether the application will make stream requests to Ollama. **Allow this option only when using Ollama alone.**
+
+> This feature is experimental and may not be fully stable.
 
 ## Upgrading
 
@@ -609,7 +613,7 @@ Users are responsible for understanding and abiding by the terms of use, rate li
 
 It is recommended that users thoroughly review the API documentation and adhere to best practices to ensure a positive and compliant experience.
 
-## Please Star⭐️ 
+## Please Star ⭐️ 
 If this project has been helpful to you, I would greatly appreciate it if you could click the Star⭐️ button on this repository!
 
 ## Maintainers
