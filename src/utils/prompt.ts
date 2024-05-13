@@ -5,7 +5,7 @@ const commitTypeFormats: Record<CommitType, string> = {
     conventional: 'type(optional scope): description',
     gitmoji: ':emoji: description',
 };
-const specifyCommitFormat = (type: CommitType) =>
+const specifyCommitFormat = (type: CommitType = 'conventional') =>
     `The output response must be in ${type} commit type:\n${commitTypeFormats[type]}`;
 
 const commitTypes: Record<CommitType, string> = {
@@ -38,7 +38,7 @@ const commitTypes: Record<CommitType, string> = {
     )}`,
 };
 
-export const generatePrompt = (locale: string, maxLength: number, type: CommitType, additionalPrompts: string) =>
+export const generatePrompt = (locale: string, maxLength: number, type: CommitType, additionalPrompts: string = '') =>
     [
         'Generate a concise git commit message written in present tense for the following code diff with the given specifications below:',
         `Message language: ${locale}`,
