@@ -3,7 +3,9 @@
     <img src="https://github.com/tak-bro/aicommit2/blob/main/img/demo-min.gif?raw=true" alt="AICommit2"/>
     <h1 align="center">AICommit2</h1>
   </div>
-  <p>A Reactive CLI that generates git commit messages with various AI like Ollama, Claude, ChatGPT</p>
+  <p>
+    A Reactive CLI that generates git commit messages with Ollama, ChatGPT, Gemini, Claude, Mistral and others
+  </p>
 </div>
 
 <div align="center" markdown="1">
@@ -19,13 +21,9 @@
 
 ## Introduction
 
-AICommit2 streamlines interactions with various AI, enabling users to request multiple AI simultaneously and select the most suitable message without waiting for all AI responses. The core functionalities and architecture of this project are inspired by [AICommits](https://github.com/Nutlope/aicommits).
+AICommit2 streamlines interactions with various AI, enabling users to request multiple AI simultaneously and select the most suitable commit message without waiting for all AI responses. The core functionalities and architecture of this project are inspired by [AICommits](https://github.com/Nutlope/aicommits).
 
 ## Supported Providers
-
-### Local
-
-- [Ollama](https://ollama.com/)
 
 ### Remote
 
@@ -36,6 +34,9 @@ AICommit2 streamlines interactions with various AI, enabling users to request mu
 - [Huggingface **(Unofficial)**](https://huggingface.co/chat/)
 - [Clova X **(Unofficial)**](https://clova-x.naver.com/)
 
+### Local
+
+- [Ollama](https://ollama.com/)
 
 ## Setup
 
