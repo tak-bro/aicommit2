@@ -3,13 +3,13 @@
     <img src="https://github.com/tak-bro/aicommit2/blob/main/img/demo-min.gif?raw=true" alt="AICommit2"/>
     <h1 align="center">AICommit2</h1>
   </div>
-	<p>A Reactive CLI that generates git commit messages with various AI</p>
+  <p>A Reactive CLI that generates git commit messages with various AI like Ollama, Claude, ChatGPT</p>
 </div>
 
 <div align="center" markdown="1">
 
 [![tak-bro](https://img.shields.io/badge/by-tak--bro-293462?logo=github)](https://github.com/tak-bro)
-[![license](https://img.shields.io/github/license/tak-bro/aicommit2?color=211A4C)](https://github.com/tak-bro/aicommit2/blob/main/LICENSE)
+[![license](https://img.shields.io/badge/license-MIT-211A4C.svg?logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGZpbGw9Im5vbmUiIHN0cm9rZT0iI0ZGRiIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS13aWR0aD0iMiIgZD0ibTMgNiAzIDFtMCAwLTMgOWE1IDUgMCAwIDAgNi4wMDEgME02IDdsMyA5TTYgN2w2LTJtNiAyIDMtMW0tMyAxLTMgOWE1IDUgMCAwIDAgNi4wMDEgME0xOCA3bDMgOW0tMy05LTYtMm0wLTJ2Mm0wIDE2VjVtMCAxNkg5bTMgMGgzIi8+PC9zdmc+)](https://github.com/tak-bro/aicommit2/blob/main/LICENSE)
 [![version](https://img.shields.io/npm/v/aicommit2?logo=semanticrelease&label=release&color=A51C2D)](https://www.npmjs.com/package/aicommit2)
 [![downloads](https://img.shields.io/npm/dt/aicommit2?color=F33535&logo=npm)](https://www.npmjs.com/package/aicommit2)
 
@@ -47,7 +47,7 @@ AICommit2 streamlines interactions with various AI, enabling users to request mu
 npm install -g aicommit2
 ```
 
-2. Retrieve and Set API keys or Cookie you intend to use:
+2. Retrieve and set API keys or Cookie you intend to use:
 
 It is not necessary to set all keys. **But at least one key must be set up.**
 
