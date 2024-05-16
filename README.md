@@ -4,7 +4,7 @@
     <h1 align="center">AICommit2</h1>
   </div>
   <p>
-    A Reactive CLI that generates git commit messages with Ollama, ChatGPT, Gemini, Claude, Mistral and others
+    A Reactive CLI that generates git commit messages with Ollama, ChatGPT, Gemini, Claude, Mistral and other AI
   </p>
 </div>
 
@@ -103,7 +103,7 @@ You can also use your model for free with [Ollama](https://ollama.com/) and it i
 2. Start it with your model
 
 ```shell
-ollama run llama3 # model you want use. ex) llama2, codellama
+ollama run llama3 # model you want use. ex) codellama, deepseek-coder
 ```
 
 3. Set the model and host

@@ -5,6 +5,7 @@ import { Observable, catchError, concatMap, from, map, of, scan, switchMap, tap 
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIService, AIServiceError, AIServiceParams } from './ai.service.js';
+import { DEFAULT_OLLMA_HOST } from '../../utils/config.js';
 import { KnownError } from '../../utils/error.js';
 import { deduplicateMessages } from '../../utils/openai.js';
 import { generatePrompt } from '../../utils/prompt.js';
@@ -16,7 +17,7 @@ import type { ChatResponse } from 'ollama/src/interfaces.js';
 export interface OllamaServiceError extends AIServiceError {}
 
 export class OllamaService extends AIService {
-    private host = `http://localhost:11434`;
+    private host = DEFAULT_OLLMA_HOST;
     private model = '';
     private ollama: Ollama;
 
@@ -29,7 +30,7 @@ export class OllamaService extends AIService {
         this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold('[Ollama]');
         this.errorPrefix = chalk.red.bold(`[Ollama]`);
         this.model = this.params.config.OLLAMA_MODEL;
-        this.host = this.params.config.OLLAMA_HOST || 'http://localhost:11434';
+        this.host = this.params.config.OLLAMA_HOST || DEFAULT_OLLMA_HOST;
         this.ollama = new Ollama({ host: this.host });
     }
 
