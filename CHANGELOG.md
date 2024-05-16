@@ -1,3 +1,10 @@
+## [1.8.6](https://github.com/tak-bro/aicommit2/compare/v1.8.5...v1.8.6) (2024-05-16)
+
+
+### ♻️ Refactor
+
+* replace localhost url with default constant and add DEFAULT_OLLMA_HOST to config.ts ([76b9d00](https://github.com/tak-bro/aicommit2/commit/76b9d00fdebc2fbbabfc92d8976bf9b7bf5cc30a))
+
 ## [1.8.5](https://github.com/tak-bro/aicommit2/compare/v1.8.4...v1.8.5) (2024-05-08)
 
 
