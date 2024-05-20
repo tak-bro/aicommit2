@@ -214,7 +214,6 @@ export class OllamaService extends AIService {
             options: {
                 temperature: this.params.config.temperature,
             },
-            keep_alive: '0',
         });
         return response.message.content;
     }
