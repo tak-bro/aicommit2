@@ -57,7 +57,7 @@ export abstract class AIService {
         prompt: string
     ) {
         const defaultPrompt = generatePrompt(locale, maxLength, type, prompt);
-        return `${defaultPrompt}\nPlease just generate ${completions} commit messages in numbered list format without explanation.\nHere are diff: \n${diff}`;
+        return `${defaultPrompt}\nYou must generate ${completions} commit messages in numbered list format in Markdown without any explanation.\nHere are diff: \n${diff}`;
     }
 
     protected handleError$ = (error: AIServiceError): Observable<ReactiveListChoice> => {
@@ -83,11 +83,11 @@ export abstract class AIService {
                 // NOTE: to lowercase
                 return match
                     ? match[0].replace(/: (\w)/, (_: any, firstLetter: string) => `: ${firstLetter.toLowerCase()}`)
-                    : text;
+                    : '';
             case 'gitmoji':
                 const gitmojiRegexp = new RegExp(/^\:\w+\: (.*)$/gm);
                 const gitmojoMatched = text.match(gitmojiRegexp);
-                return gitmojoMatched ? gitmojoMatched[0] : text;
+                return gitmojoMatched ? gitmojoMatched[0] : '';
             default:
                 return text;
         }
