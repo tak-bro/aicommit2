@@ -1,3 +1,17 @@
+## [1.8.7](https://github.com/tak-bro/aicommit2/compare/v1.8.6...v1.8.7) (2024-05-22)
+
+
+### ✨ Features
+
+* correct prompt message for generating commit messages ([2c4f854](https://github.com/tak-bro/aicommit2/commit/2c4f8545f3cc7aa307b82752b650aaa1ac8e4cd8))
+* update prompt and commit type format messages ([447ce8a](https://github.com/tak-bro/aicommit2/commit/447ce8aa0879a130a7b02393842ec3e6841c6d6a))
+
+
+### 📦 Chores
+
+* remove keep_alive option from OllamaService ([4879337](https://github.com/tak-bro/aicommit2/commit/4879337a9c6076ca6352f1638e5b409e62ea1d21))
+* update prompt for commit message guidelines ([4121875](https://github.com/tak-bro/aicommit2/commit/41218754896e0d2594a1ac0ddac57a2ead7d4d6b))
+
 ## [1.8.6](https://github.com/tak-bro/aicommit2/compare/v1.8.5...v1.8.6) (2024-05-16)
 
 
