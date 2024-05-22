@@ -78,7 +78,7 @@ export class MistralService extends AIService {
             const prompt = this.buildPrompt(locale, diff, generate, maxLength, type, userPrompt);
             await this.checkAvailableModels();
             const chatResponse = await this.createChatCompletions(prompt);
-            logging && createLogResponse('MistralAI', diff, chatResponse);
+            logging && createLogResponse('MistralAI', diff, prompt, chatResponse);
             return deduplicateMessages(this.sanitizeMessage(chatResponse, this.params.config.type, generate));
         } catch (error) {
             const errorAsAny = error as any;

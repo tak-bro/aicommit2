@@ -73,7 +73,7 @@ export class AnthropicService extends AIService {
             };
             const result: Anthropic.Message = await this.anthropic.messages.create(params);
             const completion = result.content.map(({ text }) => text).join('');
-            logging && createLogResponse('Anthropic', diff, completion);
+            logging && createLogResponse('Anthropic', diff, systemPrompt, completion);
             return deduplicateMessages(this.sanitizeMessage(completion, this.params.config.type, generate));
         } catch (error) {
             const errorAsAny = error as any;
@@ -102,7 +102,14 @@ export class AnthropicService extends AIService {
                     const messages = deduplicateMessages(
                         this.sanitizeMessage(data.value, this.params.config.type, this.params.config.generate)
                     );
-                    this.params.config.logging && createLogResponse('Anthropic', this.params.stagedDiff.diff, data.value);
+
+                    // TODO: refactor below
+                    const diff = this.params.stagedDiff.diff;
+                    const { locale, generate, type, prompt: userPrompt, logging } = this.params.config;
+                    const maxLength = this.params.config['max-length'];
+                    const defaultPrompt = generateDefaultPrompt(locale, maxLength, type, userPrompt);
+                    const systemPrompt = `${defaultPrompt}\n${extraPrompt(generate)}`;
+                    logging && createLogResponse('Anthropic', diff, systemPrompt, data.value);
 
                     const isFailedExtract = !messages || messages.length === 0;
                     if (isFailedExtract) {
@@ -147,7 +154,7 @@ export class AnthropicService extends AIService {
         const maxLength = this.params.config['max-length'];
 
         const defaultPrompt = generateDefaultPrompt(locale, maxLength, type, userPrompt);
-        const systemPrompt = `${defaultPrompt}\nPlease just generate ${generate} commit messages in numbered list format without any explanation.`;
+        const systemPrompt = `${defaultPrompt}\n${extraPrompt(generate)}`;
 
         const params: Anthropic.MessageCreateParams = {
             max_tokens: this.params.config['max-tokens'],

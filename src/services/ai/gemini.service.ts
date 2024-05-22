@@ -54,7 +54,7 @@ export class GeminiService extends AIService {
             const response = await result.response;
             const completion = response.text();
 
-            logging && createLogResponse('Gemini', diff, completion);
+            logging && createLogResponse('Gemini', diff, prompt, completion);
             return deduplicateMessages(this.sanitizeMessage(completion, this.params.config.type, generate));
         } catch (error) {
             const errorAsAny = error as any;

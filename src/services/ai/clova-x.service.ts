@@ -66,7 +66,7 @@ export class ClovaXService extends AIService {
             const { conversationId, allText } = this.parseSendMessageResult(result);
             await this.deleteConversation(conversationId);
 
-            logging && createLogResponse('CLOVA X', diff, allText);
+            logging && createLogResponse('CLOVA X', diff, prompt, allText);
             return deduplicateMessages(this.sanitizeMessage(allText, this.params.config.type, generate));
         } catch (error) {
             const errorAsAny = error as any;

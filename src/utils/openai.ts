@@ -187,6 +187,8 @@ export const generateCommitMessage = async (
     proxy?: string
 ) => {
     try {
+        const systemPrompt = generateDefaultPrompt(locale, maxLength, type, false, prompt);
+
         const completion = await createChatCompletion(
             url,
             path,
@@ -196,7 +198,7 @@ export const generateCommitMessage = async (
                 messages: [
                     {
                         role: 'system',
-                        content: generateDefaultPrompt(locale, maxLength, type, prompt),
+                        content: systemPrompt,
                     },
                     {
                         role: 'user',
@@ -243,7 +245,7 @@ export const generateCommitMessage = async (
             .filter(choice => choice.message?.content)
             .map(choice => sanitizeMessage(choice.message!.content))
             .join();
-        logging && createLogResponse('OPEN AI', diff, fullText);
+        logging && createLogResponse('OPEN AI', diff, systemPrompt, fullText);
         return resultMessages;
     } catch (error) {
         const errorAsAny = error as any;
