@@ -5,7 +5,8 @@ import { Observable, catchError, concatMap, filter, from, map, of, scan, tap } f
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIService, AIServiceError, AIServiceParams } from './ai.service.js';
-import { KnownError, createErrorLog } from '../../utils/error.js';
+import { KnownError } from '../../utils/error.js';
+import { createLogResponse } from '../../utils/log.js';
 import { deduplicateMessages } from '../../utils/openai.js';
 import { extraPrompt, generateDefaultPrompt } from '../../utils/prompt.js';
 import { DONE, UNDONE, toObservable } from '../../utils/utils.js';
@@ -52,7 +53,7 @@ export class AnthropicService extends AIService {
     private async generateMessage(): Promise<string[]> {
         try {
             const diff = this.params.stagedDiff.diff;
-            const { locale, generate, type, prompt: userPrompt, ERROR_LOGGING } = this.params.config;
+            const { locale, generate, type, prompt: userPrompt, logging } = this.params.config;
             const maxLength = this.params.config['max-length'];
 
             const defaultPrompt = generateDefaultPrompt(locale, maxLength, type, userPrompt);
@@ -72,15 +73,8 @@ export class AnthropicService extends AIService {
             };
             const result: Anthropic.Message = await this.anthropic.messages.create(params);
             const completion = result.content.map(({ text }) => text).join('');
-
-            const resultMessages = deduplicateMessages(
-                this.sanitizeMessage(completion, this.params.config.type, generate)
-            );
-            const noMessages = !resultMessages || resultMessages.length === 0;
-            if (noMessages && ERROR_LOGGING) {
-                createErrorLog('Anthropic', diff, completion);
-            }
-            return resultMessages;
+            logging && createLogResponse('Anthropic', diff, completion);
+            return deduplicateMessages(this.sanitizeMessage(completion, this.params.config.type, generate));
         } catch (error) {
             const errorAsAny = error as any;
             if (errorAsAny.code === 'ENOTFOUND') {
@@ -91,8 +85,7 @@ export class AnthropicService extends AIService {
     }
 
     handleError$ = (anthropicError: AnthropicServiceError) => {
-        const simpleMessage =
-            anthropicError.error?.error?.message?.replace(/(\r\n|\n|\r)/gm, '') || 'An error occurred';
+        const simpleMessage = anthropicError.error?.error?.message?.replace(/(\r\n|\n|\r)/gm, '') || 'An error occurred';
         return of({
             name: `${this.errorPrefix} ${simpleMessage}`,
             value: simpleMessage,
@@ -109,10 +102,10 @@ export class AnthropicService extends AIService {
                     const messages = deduplicateMessages(
                         this.sanitizeMessage(data.value, this.params.config.type, this.params.config.generate)
                     );
+                    this.params.config.logging && createLogResponse('Anthropic', this.params.stagedDiff.diff, data.value);
+
                     const isFailedExtract = !messages || messages.length === 0;
                     if (isFailedExtract) {
-                        this.params.config.ERROR_LOGGING &&
-                            createErrorLog('Anthropic', this.params.stagedDiff.diff, data.value);
                         return [
                             {
                                 id: `${this.params.keyName}_${DONE}_0`,
@@ -171,18 +164,13 @@ export class AnthropicService extends AIService {
         };
 
         // NOTE: refer https://docs.anthropic.com/claude/reference/messages-streaming
-        const anthropicStream = this.anthropic.messages.create(params) as any as Promise<
-            AsyncGenerator<Anthropic.MessageStreamEvent>
-        >;
+        const anthropicStream = this.anthropic.messages.create(params) as any as Promise<AsyncGenerator<Anthropic.MessageStreamEvent>>;
 
         let allValue = '';
         return from(toObservable(anthropicStream)).pipe(
-            filter((streamEvent: Anthropic.MessageStreamEvent) =>
-                ['content_block_delta', 'message_stop'].includes(streamEvent.type)
-            ),
+            filter((streamEvent: Anthropic.MessageStreamEvent) => ['content_block_delta', 'message_stop'].includes(streamEvent.type)),
             map(
-                (streamEvent: Anthropic.MessageStreamEvent) =>
-                    streamEvent as Anthropic.ContentBlockDeltaEvent | Anthropic.MessageStopEvent
+                (streamEvent: Anthropic.MessageStreamEvent) => streamEvent as Anthropic.ContentBlockDeltaEvent | Anthropic.MessageStopEvent
             ),
             tap(streamEvent => {
                 if (streamEvent.type === 'content_block_delta') {

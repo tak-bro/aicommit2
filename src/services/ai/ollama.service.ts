@@ -6,7 +6,8 @@ import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIService, AIServiceError, AIServiceParams } from './ai.service.js';
 import { DEFAULT_OLLMA_HOST } from '../../utils/config.js';
-import { KnownError, createErrorLog } from '../../utils/error.js';
+import { KnownError } from '../../utils/error.js';
+import { createLogResponse } from '../../utils/log.js';
 import { deduplicateMessages } from '../../utils/openai.js';
 import { extraPrompt, generateDefaultPrompt } from '../../utils/prompt.js';
 import { DONE, UNDONE, toObservable } from '../../utils/utils.js';
@@ -122,8 +123,7 @@ export class OllamaService extends AIService {
                     );
                     const isFailedExtract = !messages || messages.length === 0;
                     if (isFailedExtract) {
-                        this.params.config.ERROR_LOGGING &&
-                            createErrorLog('Ollama', this.params.stagedDiff.diff, data.value);
+                        this.params.config.logging && createLogResponse('Ollama', this.params.stagedDiff.diff, data.value);
                         return [
                             {
                                 id: `${this.params.keyName}_${DONE}_0`,
@@ -163,13 +163,9 @@ export class OllamaService extends AIService {
         try {
             await this.checkIsAvailableOllama();
             const chatResponse = await this.createChatCompletions();
-            const { type, generate, ERROR_LOGGING } = this.params.config;
-            const resultMessages = deduplicateMessages(this.sanitizeMessage(chatResponse, type, generate));
-            const noMessages = !resultMessages || resultMessages.length === 0;
-            if (noMessages && ERROR_LOGGING) {
-                createErrorLog('Ollama', this.params.stagedDiff.diff, chatResponse);
-            }
-            return resultMessages;
+            const { type, generate, logging } = this.params.config;
+            logging && createLogResponse('Ollama', this.params.stagedDiff.diff, chatResponse);
+            return deduplicateMessages(this.sanitizeMessage(chatResponse, type, generate));
         } catch (error) {
             const errorAsAny = error as any;
             if (errorAsAny.code === 'ENOTFOUND') {

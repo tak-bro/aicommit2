@@ -7,7 +7,8 @@ import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIService, AIServiceParams } from './ai.service.js';
 import { hasOwn } from '../../utils/config.js';
-import { KnownError, createErrorLog } from '../../utils/error.js';
+import { KnownError } from '../../utils/error.js';
+import { createLogResponse } from '../../utils/log.js';
 import { deduplicateMessages } from '../../utils/openai.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
 
@@ -56,7 +57,7 @@ export class ClovaXService extends AIService {
 
     private async generateMessage(): Promise<string[]> {
         try {
-            const { locale, generate, type, prompt: userPrompt, ERROR_LOGGING } = this.params.config;
+            const { locale, generate, type, prompt: userPrompt, logging } = this.params.config;
             const maxLength = this.params.config['max-length'];
             const diff = this.params.stagedDiff.diff;
             const prompt = this.buildPrompt(locale, diff, generate, maxLength, type, userPrompt);
@@ -65,14 +66,8 @@ export class ClovaXService extends AIService {
             const { conversationId, allText } = this.parseSendMessageResult(result);
             await this.deleteConversation(conversationId);
 
-            const resultMessages = deduplicateMessages(
-                this.sanitizeMessage(allText, this.params.config.type, generate)
-            );
-            const noMessages = !resultMessages || resultMessages.length === 0;
-            if (noMessages && ERROR_LOGGING) {
-                createErrorLog('CLOVA X', diff, allText);
-            }
-            return resultMessages;
+            logging && createLogResponse('CLOVA X', diff, allText);
+            return deduplicateMessages(this.sanitizeMessage(allText, this.params.config.type, generate));
         } catch (error) {
             const errorAsAny = error as any;
             if (errorAsAny.code === 'ENOTFOUND') {

@@ -6,7 +6,8 @@ import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIService, AIServiceParams } from './ai.service.js';
 import { CommitType, hasOwn } from '../../utils/config.js';
-import { KnownError, createErrorLog } from '../../utils/error.js';
+import { KnownError } from '../../utils/error.js';
+import { createLogResponse } from '../../utils/log.js';
 import { deduplicateMessages } from '../../utils/openai.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
 
@@ -39,7 +40,7 @@ export class HuggingService extends AIService {
 
     private async generateMessage(): Promise<string[]> {
         try {
-            const { locale, generate, type, prompt: userPrompt, ERROR_LOGGING } = this.params.config;
+            const { locale, generate, type, prompt: userPrompt } = this.params.config;
             const maxLength = this.params.config['max-length'];
             const diff = this.params.stagedDiff.diff;
             const prompt = this.buildPrompt(locale, diff, generate, maxLength, type, userPrompt);
@@ -51,14 +52,7 @@ export class HuggingService extends AIService {
             const generatedText = await this.sendMessage(conversationId, prompt, lastMessageId);
             await this.deleteConversation(conversationId);
 
-            const resultMessages = deduplicateMessages(
-                this.sanitizeHuggingMessage(generatedText, this.params.config.type, generate)
-            );
-            const noMessages = !resultMessages || resultMessages.length === 0;
-            if (noMessages && ERROR_LOGGING) {
-                createErrorLog('HuggingFace', diff, generatedText);
-            }
-            return resultMessages;
+            return deduplicateMessages(this.sanitizeHuggingMessage(generatedText, this.params.config.type, generate));
         } catch (error) {
             const errorAsAny = error as any;
             if (errorAsAny.code === 'ENOTFOUND') {
@@ -86,8 +80,10 @@ export class HuggingService extends AIService {
             }
         });
         if (!finalAnswerObj || !hasOwn(finalAnswerObj, 'text')) {
+            this.params.config.logging && createLogResponse('HuggingFace', this.params.stagedDiff.diff, generatedText);
             throw new Error(`Cannot parse finalAnswer`);
         }
+        this.params.config.logging && createLogResponse('HuggingFace', this.params.stagedDiff.diff, finalAnswerObj['text']);
         return this.sanitizeMessage(finalAnswerObj['text'], type, maxCount);
     }
 
@@ -155,9 +151,7 @@ export class HuggingService extends AIService {
         return response.data;
     }
 
-    private async getConversationInfo(
-        conversationId: string
-    ): Promise<{ conversationInfo: any; lastMessageId: string }> {
+    private async getConversationInfo(conversationId: string): Promise<{ conversationInfo: any; lastMessageId: string }> {
         const response: AxiosResponse<any> = await new HttpRequestBuilder({
             method: 'GET',
             baseURL: `${this.host}/chat/conversation/${conversationId}/__data.json`,

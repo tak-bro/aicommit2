@@ -180,7 +180,7 @@ const configParsers = {
             return stream;
         }
 
-        parseAssert('OLLAMA_STREAM', /^(?:true|false)$/.test(stream), 'Must be a boolean');
+        parseAssert('OLLAMA_STREAM', /^(?:true|false)$/.test(stream), 'Must be a boolean(true or false)');
         return stream === 'true';
     },
     confirm(confirm?: string | boolean) {
@@ -291,15 +291,15 @@ const configParsers = {
         const parsed = Number(maxTokens);
         return parsed;
     },
-    ERROR_LOGGING(enable?: string | boolean) {
+    logging(enable?: string | boolean) {
         if (!enable) {
-            return true;
+            return false;
         }
         if (typeof enable === 'boolean') {
             return enable;
         }
 
-        parseAssert('ERROR_LOGGING', /^(?:true|false)$/.test(enable), 'Must be a boolean');
+        parseAssert('logging', /^(?:true|false)$/.test(enable), 'Must be a boolean(true or false)');
         return enable === 'true';
     },
 } as const;

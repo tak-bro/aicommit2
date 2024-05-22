@@ -8,20 +8,15 @@ import {
 } from '@dqbd/tiktoken';
 import createHttpsProxyAgent from 'https-proxy-agent';
 
-import { KnownError, createErrorLog } from './error.js';
+import { KnownError } from './error.js';
+import { createLogResponse } from './log.js';
 import { generateDefaultPrompt, isValidConventionalMessage, isValidGitmojiMessage } from './prompt.js';
 
 import type { CommitType } from './config.js';
 import type { ClientRequest, IncomingMessage } from 'http';
 import type { CreateChatCompletionRequest, CreateChatCompletionResponse } from 'openai';
 
-export const httpsGet = async (
-    url: URL,
-    path: string,
-    headers: Record<string, string>,
-    timeout: number,
-    proxy?: string
-) =>
+export const httpsGet = async (url: URL, path: string, headers: Record<string, string>, timeout: number, proxy?: string) =>
     new Promise<{
         request: ClientRequest;
         response: IncomingMessage;
@@ -55,9 +50,7 @@ export const httpsGet = async (
         request.on('error', reject);
         request.on('timeout', () => {
             request.destroy();
-            reject(
-                new KnownError(`Time out error: request took over ${timeout}ms. Try increasing the \`timeout\` config`)
-            );
+            reject(new KnownError(`Time out error: request took over ${timeout}ms. Try increasing the \`timeout\` config`));
         });
         request.end();
     });
@@ -107,9 +100,7 @@ export const httpsPost = async (
         request.on('error', reject);
         request.on('timeout', () => {
             request.destroy();
-            reject(
-                new KnownError(`Time out error: request took over ${timeout}ms. Try increasing the \`timeout\` config`)
-            );
+            reject(new KnownError(`Time out error: request took over ${timeout}ms. Try increasing the \`timeout\` config`));
         });
 
         request.write(postContent);
@@ -192,7 +183,7 @@ export const generateCommitMessage = async (
     maxTokens: number,
     temperature: number,
     prompt: string,
-    ERROR_LOGGING: boolean,
+    logging: boolean,
     proxy?: string
 ) => {
     try {
@@ -231,10 +222,7 @@ export const generateCommitMessage = async (
                 .map(message => {
                     if (type === 'conventional') {
                         const regex = /: (\w)/;
-                        return message.replace(
-                            regex,
-                            (_: any, firstLetter: string) => `: ${firstLetter.toLowerCase()}`
-                        );
+                        return message.replace(regex, (_: any, firstLetter: string) => `: ${firstLetter.toLowerCase()}`);
                     }
                     return message;
                 })
@@ -255,10 +243,7 @@ export const generateCommitMessage = async (
             .filter(choice => choice.message?.content)
             .map(choice => sanitizeMessage(choice.message!.content))
             .join();
-        const noMessages = !resultMessages || resultMessages.length === 0;
-        if (noMessages && ERROR_LOGGING) {
-            createErrorLog('OPEN AI', diff, fullText);
-        }
+        logging && createLogResponse('OPEN AI', diff, fullText);
         return resultMessages;
     } catch (error) {
         const errorAsAny = error as any;
