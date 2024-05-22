@@ -6,9 +6,9 @@ import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIService, AIServiceError, AIServiceParams } from './ai.service.js';
 import { DEFAULT_OLLMA_HOST } from '../../utils/config.js';
-import { KnownError } from '../../utils/error.js';
+import { KnownError, createErrorLog } from '../../utils/error.js';
 import { deduplicateMessages } from '../../utils/openai.js';
-import { generatePrompt } from '../../utils/prompt.js';
+import { extraPrompt, generateDefaultPrompt } from '../../utils/prompt.js';
 import { DONE, UNDONE, toObservable } from '../../utils/utils.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
 
@@ -69,13 +69,13 @@ export class OllamaService extends AIService {
     };
 
     generateStreamChoice$ = (): Observable<ReactiveListChoice> => {
-        const defaultPrompt = generatePrompt(
+        const defaultPrompt = generateDefaultPrompt(
             this.params.config.locale,
             this.params.config['max-length'],
             this.params.config.type,
             this.params.config.prompt
         );
-        const systemContent = `${defaultPrompt}\nPlease just generate ${this.params.config.generate} commit messages in numbered list format without any explanation.`;
+        const systemContent = `${defaultPrompt}\n${extraPrompt(this.params.config.generate)}`;
 
         const promiseAsyncGenerator: Promise<AsyncGenerator<ChatResponse>> = this.ollama.chat({
             model: this.model,
@@ -122,6 +122,8 @@ export class OllamaService extends AIService {
                     );
                     const isFailedExtract = !messages || messages.length === 0;
                     if (isFailedExtract) {
+                        this.params.config.ERROR_LOGGING &&
+                            createErrorLog('Ollama', this.params.stagedDiff.diff, data.value);
                         return [
                             {
                                 id: `${this.params.keyName}_${DONE}_0`,
@@ -161,9 +163,13 @@ export class OllamaService extends AIService {
         try {
             await this.checkIsAvailableOllama();
             const chatResponse = await this.createChatCompletions();
-            return deduplicateMessages(
-                this.sanitizeMessage(chatResponse, this.params.config.type, this.params.config.generate)
-            );
+            const { type, generate, ERROR_LOGGING } = this.params.config;
+            const resultMessages = deduplicateMessages(this.sanitizeMessage(chatResponse, type, generate));
+            const noMessages = !resultMessages || resultMessages.length === 0;
+            if (noMessages && ERROR_LOGGING) {
+                createErrorLog('Ollama', this.params.stagedDiff.diff, chatResponse);
+            }
+            return resultMessages;
         } catch (error) {
             const errorAsAny = error as any;
             if (errorAsAny.code === 'ENOTFOUND') {
@@ -191,7 +197,7 @@ export class OllamaService extends AIService {
     }
 
     private async createChatCompletions() {
-        const defaultPrompt = generatePrompt(
+        const defaultPrompt = generateDefaultPrompt(
             this.params.config.locale,
             this.params.config['max-length'],
             this.params.config.type,

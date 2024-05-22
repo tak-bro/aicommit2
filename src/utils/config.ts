@@ -291,6 +291,17 @@ const configParsers = {
         const parsed = Number(maxTokens);
         return parsed;
     },
+    ERROR_LOGGING(enable?: string | boolean) {
+        if (!enable) {
+            return true;
+        }
+        if (typeof enable === 'boolean') {
+            return enable;
+        }
+
+        parseAssert('ERROR_LOGGING', /^(?:true|false)$/.test(enable), 'Must be a boolean');
+        return enable === 'true';
+    },
 } as const;
 
 type ConfigKeys = keyof typeof configParsers;

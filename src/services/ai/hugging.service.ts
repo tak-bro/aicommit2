@@ -6,7 +6,7 @@ import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIService, AIServiceParams } from './ai.service.js';
 import { CommitType, hasOwn } from '../../utils/config.js';
-import { KnownError } from '../../utils/error.js';
+import { KnownError, createErrorLog } from '../../utils/error.js';
 import { deduplicateMessages } from '../../utils/openai.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
 
@@ -39,7 +39,7 @@ export class HuggingService extends AIService {
 
     private async generateMessage(): Promise<string[]> {
         try {
-            const { locale, generate, type, prompt: userPrompt } = this.params.config;
+            const { locale, generate, type, prompt: userPrompt, ERROR_LOGGING } = this.params.config;
             const maxLength = this.params.config['max-length'];
             const diff = this.params.stagedDiff.diff;
             const prompt = this.buildPrompt(locale, diff, generate, maxLength, type, userPrompt);
@@ -50,7 +50,15 @@ export class HuggingService extends AIService {
             const { lastMessageId } = await this.getConversationInfo(conversationId);
             const generatedText = await this.sendMessage(conversationId, prompt, lastMessageId);
             await this.deleteConversation(conversationId);
-            return deduplicateMessages(this.sanitizeHuggingMessage(generatedText, this.params.config.type, generate));
+
+            const resultMessages = deduplicateMessages(
+                this.sanitizeHuggingMessage(generatedText, this.params.config.type, generate)
+            );
+            const noMessages = !resultMessages || resultMessages.length === 0;
+            if (noMessages && ERROR_LOGGING) {
+                createErrorLog('HuggingFace', diff, generatedText);
+            }
+            return resultMessages;
         } catch (error) {
             const errorAsAny = error as any;
             if (errorAsAny.code === 'ENOTFOUND') {

@@ -5,7 +5,7 @@ import { Observable, catchError, concatMap, from, map, of } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIService, AIServiceError, AIServiceParams } from './ai.service.js';
-import { KnownError } from '../../utils/error.js';
+import { KnownError, createErrorLog } from '../../utils/error.js';
 import { deduplicateMessages } from '../../utils/openai.js';
 import { getRandomNumber } from '../../utils/utils.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
@@ -72,13 +72,19 @@ export class MistralService extends AIService {
     private async generateMessage(): Promise<string[]> {
         try {
             const diff = this.params.stagedDiff.diff;
-            const { locale, generate, type, prompt: userPrompt } = this.params.config;
+            const { locale, generate, type, prompt: userPrompt, ERROR_LOGGING } = this.params.config;
             const maxLength = this.params.config['max-length'];
             const prompt = this.buildPrompt(locale, diff, generate, maxLength, type, userPrompt);
             await this.checkAvailableModels();
-
             const chatResponse = await this.createChatCompletions(prompt);
-            return deduplicateMessages(this.sanitizeMessage(chatResponse, this.params.config.type, generate));
+            const resultMessages = deduplicateMessages(
+                this.sanitizeMessage(chatResponse, this.params.config.type, generate)
+            );
+            const noMessages = !resultMessages || resultMessages.length === 0;
+            if (noMessages && ERROR_LOGGING) {
+                createErrorLog('MistralAI', diff, chatResponse);
+            }
+            return resultMessages;
         } catch (error) {
             const errorAsAny = error as any;
             if (errorAsAny.code === 'ENOTFOUND') {

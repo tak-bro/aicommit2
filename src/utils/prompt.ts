@@ -7,6 +7,7 @@ const commitTypeFormats: Record<CommitType, string> = {
     conventional: `type(optional scope): description`,
     gitmoji: `:emoji: description`,
 };
+
 const specifyCommitFormat = (type: CommitType = 'conventional') => {
     if (type === '') {
         return '';
@@ -62,7 +63,12 @@ const commitTypes: Record<CommitType, string> = {
     )}`,
 };
 
-export const generatePrompt = (locale: string, maxLength: number, type: CommitType, additionalPrompts: string = '') =>
+export const generateDefaultPrompt = (
+    locale: string,
+    maxLength: number,
+    type: CommitType,
+    additionalPrompts: string = ''
+) =>
     [
         'You are the author of the changes, you are going to provide a professional git commit message.',
         'Generate a concise git commit message written in imperative present tense for the following code diff with the given specifications below.',
@@ -76,6 +82,9 @@ export const generatePrompt = (locale: string, maxLength: number, type: CommitTy
     ]
         .filter(Boolean)
         .join('\n');
+
+export const extraPrompt = (generate: number) =>
+    `You must generate ${generate} commit messages in numbered list format in Markdown without any explanation.`;
 
 export const isValidConventionalMessage = (message: string): boolean => {
     const conventionalReg =

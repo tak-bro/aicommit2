@@ -5,9 +5,9 @@ import { Observable, catchError, concatMap, filter, from, map, of, scan, tap } f
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIService, AIServiceError, AIServiceParams } from './ai.service.js';
-import { KnownError } from '../../utils/error.js';
+import { KnownError, createErrorLog } from '../../utils/error.js';
 import { deduplicateMessages } from '../../utils/openai.js';
-import { generatePrompt } from '../../utils/prompt.js';
+import { extraPrompt, generateDefaultPrompt } from '../../utils/prompt.js';
 import { DONE, UNDONE, toObservable } from '../../utils/utils.js';
 
 export interface AnthropicServiceError extends AIServiceError {
@@ -52,11 +52,11 @@ export class AnthropicService extends AIService {
     private async generateMessage(): Promise<string[]> {
         try {
             const diff = this.params.stagedDiff.diff;
-            const { locale, generate, type, prompt: userPrompt } = this.params.config;
+            const { locale, generate, type, prompt: userPrompt, ERROR_LOGGING } = this.params.config;
             const maxLength = this.params.config['max-length'];
 
-            const defaultPrompt = generatePrompt(locale, maxLength, type, userPrompt);
-            const systemPrompt = `${defaultPrompt}\nPlease just generate ${generate} commit messages in numbered list format without any explanation.`;
+            const defaultPrompt = generateDefaultPrompt(locale, maxLength, type, userPrompt);
+            const systemPrompt = `${defaultPrompt}\n${extraPrompt(generate)}`;
 
             const params: Anthropic.MessageCreateParams = {
                 max_tokens: this.params.config['max-tokens'],
@@ -72,7 +72,15 @@ export class AnthropicService extends AIService {
             };
             const result: Anthropic.Message = await this.anthropic.messages.create(params);
             const completion = result.content.map(({ text }) => text).join('');
-            return deduplicateMessages(this.sanitizeMessage(completion, this.params.config.type, generate));
+
+            const resultMessages = deduplicateMessages(
+                this.sanitizeMessage(completion, this.params.config.type, generate)
+            );
+            const noMessages = !resultMessages || resultMessages.length === 0;
+            if (noMessages && ERROR_LOGGING) {
+                createErrorLog('Anthropic', diff, completion);
+            }
+            return resultMessages;
         } catch (error) {
             const errorAsAny = error as any;
             if (errorAsAny.code === 'ENOTFOUND') {
@@ -103,6 +111,8 @@ export class AnthropicService extends AIService {
                     );
                     const isFailedExtract = !messages || messages.length === 0;
                     if (isFailedExtract) {
+                        this.params.config.ERROR_LOGGING &&
+                            createErrorLog('Anthropic', this.params.stagedDiff.diff, data.value);
                         return [
                             {
                                 id: `${this.params.keyName}_${DONE}_0`,
@@ -143,7 +153,7 @@ export class AnthropicService extends AIService {
         const { locale, generate, type, prompt: userPrompt } = this.params.config;
         const maxLength = this.params.config['max-length'];
 
-        const defaultPrompt = generatePrompt(locale, maxLength, type, userPrompt);
+        const defaultPrompt = generateDefaultPrompt(locale, maxLength, type, userPrompt);
         const systemPrompt = `${defaultPrompt}\nPlease just generate ${generate} commit messages in numbered list format without any explanation.`;
 
         const params: Anthropic.MessageCreateParams = {

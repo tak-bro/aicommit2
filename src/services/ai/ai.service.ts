@@ -3,7 +3,7 @@ import { Observable, of } from 'rxjs';
 
 import { CommitType, ValidConfig } from '../../utils/config.js';
 import { StagedDiff } from '../../utils/git.js';
-import { generatePrompt } from '../../utils/prompt.js';
+import { extraPrompt, generateDefaultPrompt } from '../../utils/prompt.js';
 
 // NOTE: get AI Type from key names
 export const AIType = {
@@ -56,8 +56,8 @@ export abstract class AIService {
         type: CommitType,
         prompt: string
     ) {
-        const defaultPrompt = generatePrompt(locale, maxLength, type, prompt);
-        return `${defaultPrompt}\nYou must generate ${completions} commit messages in numbered list format in Markdown without any explanation.\nHere are diff: \n${diff}`;
+        const defaultPrompt = generateDefaultPrompt(locale, maxLength, type, prompt);
+        return `${defaultPrompt}\n${extraPrompt(completions)}\nHere are diff: \n${diff}`;
     }
 
     protected handleError$ = (error: AIServiceError): Observable<ReactiveListChoice> => {

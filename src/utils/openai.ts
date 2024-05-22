@@ -8,8 +8,8 @@ import {
 } from '@dqbd/tiktoken';
 import createHttpsProxyAgent from 'https-proxy-agent';
 
-import { KnownError } from './error.js';
-import { generatePrompt, isValidConventionalMessage, isValidGitmojiMessage } from './prompt.js';
+import { KnownError, createErrorLog } from './error.js';
+import { generateDefaultPrompt, isValidConventionalMessage, isValidGitmojiMessage } from './prompt.js';
 
 import type { CommitType } from './config.js';
 import type { ClientRequest, IncomingMessage } from 'http';
@@ -192,6 +192,7 @@ export const generateCommitMessage = async (
     maxTokens: number,
     temperature: number,
     prompt: string,
+    ERROR_LOGGING: boolean,
     proxy?: string
 ) => {
     try {
@@ -204,7 +205,7 @@ export const generateCommitMessage = async (
                 messages: [
                     {
                         role: 'system',
-                        content: generatePrompt(locale, maxLength, type, prompt),
+                        content: generateDefaultPrompt(locale, maxLength, type, prompt),
                     },
                     {
                         role: 'user',
@@ -223,7 +224,7 @@ export const generateCommitMessage = async (
             proxy
         );
 
-        return deduplicateMessages(
+        const resultMessages = deduplicateMessages(
             completion.choices
                 .filter(choice => choice.message?.content)
                 .map(choice => sanitizeMessage(choice.message!.content))
@@ -249,6 +250,16 @@ export const generateCommitMessage = async (
                     }
                 })
         );
+
+        const fullText = completion.choices
+            .filter(choice => choice.message?.content)
+            .map(choice => sanitizeMessage(choice.message!.content))
+            .join();
+        const noMessages = !resultMessages || resultMessages.length === 0;
+        if (noMessages && ERROR_LOGGING) {
+            createErrorLog('OPEN AI', diff, fullText);
+        }
+        return resultMessages;
     } catch (error) {
         const errorAsAny = error as any;
         if (errorAsAny.code === 'ENOTFOUND') {

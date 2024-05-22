@@ -466,13 +466,13 @@ The Chat Completions (`/v1/chat/completions`) model to use. Consult the list of 
 aicommit2 config set OPENAI_MODEL=gpt-4
 ```
 
-#### OPENAI_URL
+##### OPENAI_URL
 
 Default: `https://api.openai.com`
 
 The OpenAI URL. Both https and http protocols supported. It allows to run local OpenAI-compatible server.
 
-#### OPENAI_PATH
+##### OPENAI_PATH
 
 Default: `/v1/chat/completions`
 

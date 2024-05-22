@@ -68,6 +68,7 @@
         "axios": "^1.6.8",
         "chalk": "^5.3.0",
         "copy-paste": "^1.5.3",
+        "crypto": "^1.0.1",
         "figlet": "^1.7.0",
         "formdata-node": "^6.0.3",
         "inquirer": "^9.0.3",
@@ -168,17 +169,61 @@
                     "preset": "conventionalcommits",
                     "presetConfig": {
                         "types": [
-                            { "type": "feat", "section": "✨ Features", "hidden": false },
-                            { "type": "fix", "section": "🐛 Bug Fixes", "hidden": false },
-                            { "type": "perf", "section": "🌈 Performance", "hidden": false },
-                            { "type": "refactor", "section": "♻️ Refactor", "hidden": false },
-                            { "type": "style", "section": "💄 Styles", "hidden": false },
-                            { "type": "revert", "section": "🕐 Reverts", "hidden": false },
-                            { "type": "ci", "section": "💫 CI/CD", "hidden": false },
-                            { "type": "test", "section": "✅ Tests", "hidden": false },
-                            { "type": "chore", "section": "📦 Chores", "hidden": false },
-                            { "type": "build", "section": "🔥 Build", "hidden": false },
-                            { "type": "docs", "section": "📝 Docs", "hidden": true }
+                            {
+                                "type": "feat",
+                                "section": "✨ Features",
+                                "hidden": false
+                            },
+                            {
+                                "type": "fix",
+                                "section": "🐛 Bug Fixes",
+                                "hidden": false
+                            },
+                            {
+                                "type": "perf",
+                                "section": "🌈 Performance",
+                                "hidden": false
+                            },
+                            {
+                                "type": "refactor",
+                                "section": "♻️ Refactor",
+                                "hidden": false
+                            },
+                            {
+                                "type": "style",
+                                "section": "💄 Styles",
+                                "hidden": false
+                            },
+                            {
+                                "type": "revert",
+                                "section": "🕐 Reverts",
+                                "hidden": false
+                            },
+                            {
+                                "type": "ci",
+                                "section": "💫 CI/CD",
+                                "hidden": false
+                            },
+                            {
+                                "type": "test",
+                                "section": "✅ Tests",
+                                "hidden": false
+                            },
+                            {
+                                "type": "chore",
+                                "section": "📦 Chores",
+                                "hidden": false
+                            },
+                            {
+                                "type": "build",
+                                "section": "🔥 Build",
+                                "hidden": false
+                            },
+                            {
+                                "type": "docs",
+                                "section": "📝 Docs",
+                                "hidden": true
+                            }
                         ]
                     }
                 }
@@ -193,7 +238,9 @@
             [
                 "@semantic-release/git",
                 {
-                    "assets": ["CHANGELOG.md"],
+                    "assets": [
+                        "CHANGELOG.md"
+                    ],
                     "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
                 }
             ],
