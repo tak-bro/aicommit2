@@ -48,14 +48,7 @@ export abstract class AIService {
 
     abstract generateCommitMessage$(): Observable<ReactiveListChoice>;
 
-    protected buildPrompt(
-        locale: string,
-        diff: string,
-        completions: number,
-        maxLength: number,
-        type: CommitType,
-        prompt: string
-    ) {
+    protected buildPrompt(locale: string, diff: string, completions: number, maxLength: number, type: CommitType, prompt: string) {
         const defaultPrompt = generateDefaultPrompt(locale, maxLength, type, prompt);
         return `${defaultPrompt}\n${extraPrompt(completions)}\nHere are diff: \n${diff}`;
     }
@@ -76,14 +69,10 @@ export abstract class AIService {
     protected extractCommitMessageFromRawText(type: CommitType, text: string): string {
         switch (type) {
             case 'conventional':
-                const regex = new RegExp(
-                    /(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\(.*\))?: .*$/
-                );
+                // NOTE: check loosely for issue that message is not coming out
+                const regex = new RegExp(/(\w+)(\(.*\))?: .*$/);
                 const match = text.match(regex);
-                // NOTE: to lowercase
-                return match
-                    ? match[0].replace(/: (\w)/, (_: any, firstLetter: string) => `: ${firstLetter.toLowerCase()}`)
-                    : '';
+                return match ? match[0].replace(/: (\w)/, (_: any, firstLetter: string) => `: ${firstLetter.toLowerCase()}`) : '';
             case 'gitmoji':
                 const gitmojiRegexp = new RegExp(/^\:\w+\: (.*)$/gm);
                 const gitmojoMatched = text.match(gitmojiRegexp);

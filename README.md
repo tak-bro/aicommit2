@@ -426,7 +426,7 @@ aicommit2 config set prompt="Do not mention config changes"
 Default: `false`
 
 Option that allows users to decide whether to generate a log file capturing the responses.
-The log files will be stored in the `.aicommit2_log` directory within the user's home.
+The log files will be stored in the `~/.aicommit2_log` directory(user's home).
 
 ![log-path](https://github.com/tak-bro/aicommit2/blob/main/img/log_path.png?raw=true)
 
