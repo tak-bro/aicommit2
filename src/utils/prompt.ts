@@ -15,6 +15,7 @@ const specifyCommitFormat = (type: CommitType = 'conventional') => {
     return `The output format must be in ${type} commit type:\n${commitTypeFormats[type]}`;
 };
 
+// TODO: use below for description
 const commitTypes: Record<CommitType, string> = {
     '': '',
     gitmoji: `Choose a emoji from the emoji-to-description JSON below that best describes the git diff:\n${JSON.stringify(
@@ -71,7 +72,6 @@ export const generateDefaultPrompt = (locale: string, maxLength: number, type: C
         `Commit message must be a maximum of ${Math.min(Math.max(maxLength, 0), MAX_COMMIT_LENGTH)} characters.`,
         'Exclude anything unnecessary such as explanation. Your entire response will be passed directly into git commit.',
         additionalPrompts,
-        commitTypes[type],
         specifyCommitFormat(type),
     ]
         .filter(Boolean)

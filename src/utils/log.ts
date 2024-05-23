@@ -11,8 +11,7 @@ export const logPath = path.join(os.homedir(), '.aicommit2_log');
 const now = new Date();
 
 export const createLogResponse = (aiName: string, diff: string, prompt: string, response: string) => {
-    const { year, month, day, hours, minutes, seconds } = getDateString(now);
-    const title = `[${year}-${month}-${day} ${hours}:${minutes}:${seconds}] ${aiName} Response:`;
+    const title = `[${aiName} Response]`;
     const fileName = generateLogFileName(now, diff);
     const fullPath = `${logPath}/${fileName}`;
     if (fs.existsSync(fullPath)) {
@@ -21,14 +20,14 @@ export const createLogResponse = (aiName: string, diff: string, prompt: string, 
         return;
     }
     const removedPrompt = removeTextAfterPhrase(prompt, 'Here are diff');
-    writeFileSyncRecursive(fullPath, `${title}\n${response}\n\n[Prompt]\n${removedPrompt}\n\n[Git Diff]\n${diff}`);
+    writeFileSyncRecursive(fullPath, `${title}\n${response}\n\n\n[AICommit2 Prompt]\n${removedPrompt}\n\n\n[Git Diff]\n${diff}`);
 };
 
 export const generateLogFileName = (date: Date, diff: string) => {
     const { year, month, day, hours, minutes, seconds } = getDateString(date);
     const hasher = xxh64(0);
     const hash = hasher.update(diff).digest('hex');
-    return `${year}-${month}-${day}_${hours}:${minutes}:${seconds}_${hash}.log`;
+    return `aic2_${year}-${month}-${day}_${hours}:${minutes}:${seconds}_${hash}.log`;
 };
 
 export const writeFileSyncRecursive = (fileName: string, content: string = '') => {
