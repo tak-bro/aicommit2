@@ -159,6 +159,14 @@
                         {
                             "type": "feat",
                             "release": "patch"
+                        },
+                        {
+                            "scope": "minor",
+                            "release": "minor"
+                        },
+                        {
+                            "scope": "major",
+                            "release": "major"
                         }
                     ]
                 }
