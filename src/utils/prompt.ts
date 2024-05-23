@@ -3,9 +3,9 @@ import type { CommitType } from './config.js';
 const MAX_COMMIT_LENGTH = 80;
 
 const commitTypeFormats: Record<CommitType, string> = {
-    '': 'commit message',
-    conventional: `type(optional scope): description`,
-    gitmoji: `:emoji: description`,
+    '': '<commit message>',
+    conventional: `<type>(<optional scope>): <description>`,
+    gitmoji: `:<emoji>: <description>`,
 };
 
 const specifyCommitFormat = (type: CommitType = 'conventional') => {
@@ -67,7 +67,7 @@ export const generateDefaultPrompt = (locale: string, maxLength: number, type: C
     [
         'You are the author of the changes, you are going to provide a professional git commit message.',
         'Generate a concise git commit message written in present tense for the following code diff with the given specifications below:',
-        `Message language: ${locale}`,
+        `Message language: ${locale}.`,
         `Commit message must be a maximum of ${Math.min(Math.max(maxLength, 0), MAX_COMMIT_LENGTH)} characters.`,
         'Exclude anything unnecessary such as explanation. Your entire response will be passed directly into git commit.',
         additionalPrompts,

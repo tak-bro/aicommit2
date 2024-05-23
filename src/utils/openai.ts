@@ -187,7 +187,7 @@ export const generateCommitMessage = async (
     proxy?: string
 ) => {
     try {
-        const systemPrompt = generateDefaultPrompt(locale, maxLength, type, false, prompt);
+        const systemPrompt = generateDefaultPrompt(locale, maxLength, type, prompt);
 
         const completion = await createChatCompletion(
             url,
