@@ -8,6 +8,7 @@ import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 import { AIService, AIServiceParams } from './ai.service.js';
 import { hasOwn } from '../../utils/config.js';
 import { KnownError } from '../../utils/error.js';
+import { createLogResponse } from '../../utils/log.js';
 import { deduplicateMessages } from '../../utils/openai.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
 
@@ -56,7 +57,7 @@ export class ClovaXService extends AIService {
 
     private async generateMessage(): Promise<string[]> {
         try {
-            const { locale, generate, type, prompt: userPrompt } = this.params.config;
+            const { locale, generate, type, prompt: userPrompt, logging } = this.params.config;
             const maxLength = this.params.config['max-length'];
             const diff = this.params.stagedDiff.diff;
             const prompt = this.buildPrompt(locale, diff, generate, maxLength, type, userPrompt);
@@ -64,6 +65,8 @@ export class ClovaXService extends AIService {
             const result = await this.sendMessage(prompt);
             const { conversationId, allText } = this.parseSendMessageResult(result);
             await this.deleteConversation(conversationId);
+
+            logging && createLogResponse('CLOVA X', diff, prompt, allText);
             return deduplicateMessages(this.sanitizeMessage(allText, this.params.config.type, generate));
         } catch (error) {
             const errorAsAny = error as any;

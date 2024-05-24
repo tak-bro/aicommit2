@@ -17,6 +17,9 @@ dependencies:
   '@inquirer/prompts':
     specifier: ^3.0.0
     version: 3.0.0
+  '@pacote/xxhash':
+    specifier: ^0.3.2
+    version: 0.3.2
   axios:
     specifier: ^1.6.8
     version: 1.6.8
@@ -923,6 +926,16 @@ packages:
     dependencies:
       '@octokit/openapi-types': 22.1.0
     dev: true
+
+  /@pacote/u64@0.2.2:
+    resolution: {integrity: sha512-J4xs42l+Anz3/Qq6ocSWq4OSub7nn9DfNHIWC4dd4XPQlBIzKbE2Qf65m9W+ogYMMNzKRwJ2kbqq1RT4sMPfKg==}
+    dev: false
+
+  /@pacote/xxhash@0.3.2:
+    resolution: {integrity: sha512-vj6qcyl9kaNXZFZ6xsm8hREMRF2wHk70X9okGVPua0bcL052ZHLvYnxIbc9Bdv6lX/9qvxjg9E0ufi7+CFB6NA==}
+    dependencies:
+      '@pacote/u64': 0.2.2
+    dev: false
 
   /@pkgr/utils@2.4.2:
     resolution: {integrity: sha512-POgTXhjrTfbTV63DiFXav4lBHiICLKKwDeaKn9Nphwj7WH6m0hMMCaJkMyRWjgtPFyRKRVoMXXjczsTQRDEhYw==}

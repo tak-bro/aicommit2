@@ -37,3 +37,12 @@ export const sortByDisabled = (a: ReactiveListChoice, b: ReactiveListChoice) => 
 
 export const DONE = `done`;
 export const UNDONE = `undone`;
+
+export const removeTextAfterPhrase = (text: string, phrase: string, includePhrase: boolean = false) => {
+    const index = text.indexOf(phrase);
+    if (index !== -1) {
+        const extraIndex = includePhrase ? phrase.length : 0;
+        return text.slice(0, index + extraIndex).trim();
+    }
+    return text;
+};

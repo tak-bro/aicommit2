@@ -7,6 +7,7 @@ import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 import { AIService, AIServiceParams } from './ai.service.js';
 import { CommitType, hasOwn } from '../../utils/config.js';
 import { KnownError } from '../../utils/error.js';
+import { createLogResponse } from '../../utils/log.js';
 import { deduplicateMessages } from '../../utils/openai.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
 
@@ -39,10 +40,7 @@ export class HuggingService extends AIService {
 
     private async generateMessage(): Promise<string[]> {
         try {
-            const { locale, generate, type, prompt: userPrompt } = this.params.config;
-            const maxLength = this.params.config['max-length'];
-            const diff = this.params.stagedDiff.diff;
-            const prompt = this.buildPrompt(locale, diff, generate, maxLength, type, userPrompt);
+            const prompt = this.getFullPrompt();
 
             await this.prepareNewConversation();
             const { conversationId } = await this.getNewConversationId();
@@ -50,6 +48,8 @@ export class HuggingService extends AIService {
             const { lastMessageId } = await this.getConversationInfo(conversationId);
             const generatedText = await this.sendMessage(conversationId, prompt, lastMessageId);
             await this.deleteConversation(conversationId);
+
+            const { generate } = this.params.config;
             return deduplicateMessages(this.sanitizeHuggingMessage(generatedText, this.params.config.type, generate));
         } catch (error) {
             const errorAsAny = error as any;
@@ -77,9 +77,12 @@ export class HuggingService extends AIService {
                 /* empty */
             }
         });
+        const prompt = this.getFullPrompt();
         if (!finalAnswerObj || !hasOwn(finalAnswerObj, 'text')) {
+            this.params.config.logging && createLogResponse('HuggingFace', this.params.stagedDiff.diff, prompt, generatedText);
             throw new Error(`Cannot parse finalAnswer`);
         }
+        this.params.config.logging && createLogResponse('HuggingFace', this.params.stagedDiff.diff, prompt, finalAnswerObj['text']);
         return this.sanitizeMessage(finalAnswerObj['text'], type, maxCount);
     }
 
@@ -147,9 +150,7 @@ export class HuggingService extends AIService {
         return response.data;
     }
 
-    private async getConversationInfo(
-        conversationId: string
-    ): Promise<{ conversationInfo: any; lastMessageId: string }> {
+    private async getConversationInfo(conversationId: string): Promise<{ conversationInfo: any; lastMessageId: string }> {
         const response: AxiosResponse<any> = await new HttpRequestBuilder({
             method: 'GET',
             baseURL: `${this.host}/chat/conversation/${conversationId}/__data.json`,
@@ -233,5 +234,12 @@ export class HuggingService extends AIService {
             .execute();
 
         return response.data;
+    }
+
+    private getFullPrompt() {
+        const { locale, generate, type, prompt: userPrompt } = this.params.config;
+        const maxLength = this.params.config['max-length'];
+        const diff = this.params.stagedDiff.diff;
+        return this.buildPrompt(locale, diff, generate, maxLength, type, userPrompt);
     }
 }

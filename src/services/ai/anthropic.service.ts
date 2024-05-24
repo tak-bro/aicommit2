@@ -6,8 +6,9 @@ import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIService, AIServiceError, AIServiceParams } from './ai.service.js';
 import { KnownError } from '../../utils/error.js';
+import { createLogResponse } from '../../utils/log.js';
 import { deduplicateMessages } from '../../utils/openai.js';
-import { generatePrompt } from '../../utils/prompt.js';
+import { extraPrompt, generateDefaultPrompt } from '../../utils/prompt.js';
 import { DONE, UNDONE, toObservable } from '../../utils/utils.js';
 
 export interface AnthropicServiceError extends AIServiceError {
@@ -52,11 +53,11 @@ export class AnthropicService extends AIService {
     private async generateMessage(): Promise<string[]> {
         try {
             const diff = this.params.stagedDiff.diff;
-            const { locale, generate, type, prompt: userPrompt } = this.params.config;
+            const { locale, generate, type, prompt: userPrompt, logging } = this.params.config;
             const maxLength = this.params.config['max-length'];
 
-            const defaultPrompt = generatePrompt(locale, maxLength, type, userPrompt);
-            const systemPrompt = `${defaultPrompt}\nPlease just generate ${generate} commit messages in numbered list format without any explanation.`;
+            const defaultPrompt = generateDefaultPrompt(locale, maxLength, type, userPrompt);
+            const systemPrompt = `${defaultPrompt}\n${extraPrompt(generate)}`;
 
             const params: Anthropic.MessageCreateParams = {
                 max_tokens: this.params.config['max-tokens'],
@@ -72,6 +73,7 @@ export class AnthropicService extends AIService {
             };
             const result: Anthropic.Message = await this.anthropic.messages.create(params);
             const completion = result.content.map(({ text }) => text).join('');
+            logging && createLogResponse('Anthropic', diff, systemPrompt, completion);
             return deduplicateMessages(this.sanitizeMessage(completion, this.params.config.type, generate));
         } catch (error) {
             const errorAsAny = error as any;
@@ -83,8 +85,7 @@ export class AnthropicService extends AIService {
     }
 
     handleError$ = (anthropicError: AnthropicServiceError) => {
-        const simpleMessage =
-            anthropicError.error?.error?.message?.replace(/(\r\n|\n|\r)/gm, '') || 'An error occurred';
+        const simpleMessage = anthropicError.error?.error?.message?.replace(/(\r\n|\n|\r)/gm, '') || 'An error occurred';
         return of({
             name: `${this.errorPrefix} ${simpleMessage}`,
             value: simpleMessage,
@@ -101,6 +102,15 @@ export class AnthropicService extends AIService {
                     const messages = deduplicateMessages(
                         this.sanitizeMessage(data.value, this.params.config.type, this.params.config.generate)
                     );
+
+                    // TODO: refactor below
+                    const diff = this.params.stagedDiff.diff;
+                    const { locale, generate, type, prompt: userPrompt, logging } = this.params.config;
+                    const maxLength = this.params.config['max-length'];
+                    const defaultPrompt = generateDefaultPrompt(locale, maxLength, type, userPrompt);
+                    const systemPrompt = `${defaultPrompt}\n${extraPrompt(generate)}`;
+                    logging && createLogResponse('Anthropic', diff, systemPrompt, data.value);
+
                     const isFailedExtract = !messages || messages.length === 0;
                     if (isFailedExtract) {
                         return [
@@ -143,8 +153,8 @@ export class AnthropicService extends AIService {
         const { locale, generate, type, prompt: userPrompt } = this.params.config;
         const maxLength = this.params.config['max-length'];
 
-        const defaultPrompt = generatePrompt(locale, maxLength, type, userPrompt);
-        const systemPrompt = `${defaultPrompt}\nPlease just generate ${generate} commit messages in numbered list format without any explanation.`;
+        const defaultPrompt = generateDefaultPrompt(locale, maxLength, type, userPrompt);
+        const systemPrompt = `${defaultPrompt}\n${extraPrompt(generate)}`;
 
         const params: Anthropic.MessageCreateParams = {
             max_tokens: this.params.config['max-tokens'],
@@ -161,18 +171,13 @@ export class AnthropicService extends AIService {
         };
 
         // NOTE: refer https://docs.anthropic.com/claude/reference/messages-streaming
-        const anthropicStream = this.anthropic.messages.create(params) as any as Promise<
-            AsyncGenerator<Anthropic.MessageStreamEvent>
-        >;
+        const anthropicStream = this.anthropic.messages.create(params) as any as Promise<AsyncGenerator<Anthropic.MessageStreamEvent>>;
 
         let allValue = '';
         return from(toObservable(anthropicStream)).pipe(
-            filter((streamEvent: Anthropic.MessageStreamEvent) =>
-                ['content_block_delta', 'message_stop'].includes(streamEvent.type)
-            ),
+            filter((streamEvent: Anthropic.MessageStreamEvent) => ['content_block_delta', 'message_stop'].includes(streamEvent.type)),
             map(
-                (streamEvent: Anthropic.MessageStreamEvent) =>
-                    streamEvent as Anthropic.ContentBlockDeltaEvent | Anthropic.MessageStopEvent
+                (streamEvent: Anthropic.MessageStreamEvent) => streamEvent as Anthropic.ContentBlockDeltaEvent | Anthropic.MessageStopEvent
             ),
             tap(streamEvent => {
                 if (streamEvent.type === 'content_block_delta') {

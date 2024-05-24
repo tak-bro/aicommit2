@@ -314,6 +314,7 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 | `max-tokens`      | `200`                                  | The maximum number of tokens that the AI models can generate (for **Open AI, Anthropic, Gemini, Mistral**)              |
 | `temperature`     | `0.7`                                  | The temperature (0.0-2.0) is used to control the randomness of the output (for **Open AI, Anthropic, Gemini, Mistral**) |
 | `prompt`          | N/A                                    | Additional prompt to let users fine-tune provided prompt                                                                |
+| `logging`         | `false`                                | Whether to log AI reponses for debugging (true or false)                                                                |
 
 > **Currently, options are set universally. However, there are plans to develop the ability to set individual options in the future.**
 
@@ -420,6 +421,16 @@ Additional prompt to let users fine-tune provided prompt. Users provide extra in
 aicommit2 config set prompt="Do not mention config changes"
 ```
 
+##### logging
+
+Default: `false`
+
+Option that allows users to decide whether to generate a log file capturing the responses.
+The log files will be stored in the `~/.aicommit2_log` directory(user's home).
+
+![log-path](https://github.com/tak-bro/aicommit2/blob/main/img/log_path.png?raw=true)
+
+
 ### Ollama
 
 ##### OLLAMA_MODEL
@@ -466,13 +477,13 @@ The Chat Completions (`/v1/chat/completions`) model to use. Consult the list of 
 aicommit2 config set OPENAI_MODEL=gpt-4
 ```
 
-#### OPENAI_URL
+##### OPENAI_URL
 
 Default: `https://api.openai.com`
 
 The OpenAI URL. Both https and http protocols supported. It allows to run local OpenAI-compatible server.
 
-#### OPENAI_PATH
+##### OPENAI_PATH
 
 Default: `/v1/chat/completions`
 

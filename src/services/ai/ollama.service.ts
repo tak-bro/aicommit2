@@ -7,8 +7,9 @@ import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 import { AIService, AIServiceError, AIServiceParams } from './ai.service.js';
 import { DEFAULT_OLLMA_HOST } from '../../utils/config.js';
 import { KnownError } from '../../utils/error.js';
+import { createLogResponse } from '../../utils/log.js';
 import { deduplicateMessages } from '../../utils/openai.js';
-import { generatePrompt } from '../../utils/prompt.js';
+import { extraPrompt, generateDefaultPrompt } from '../../utils/prompt.js';
 import { DONE, UNDONE, toObservable } from '../../utils/utils.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
 
@@ -69,13 +70,13 @@ export class OllamaService extends AIService {
     };
 
     generateStreamChoice$ = (): Observable<ReactiveListChoice> => {
-        const defaultPrompt = generatePrompt(
+        const defaultPrompt = generateDefaultPrompt(
             this.params.config.locale,
             this.params.config['max-length'],
             this.params.config.type,
             this.params.config.prompt
         );
-        const systemContent = `${defaultPrompt}\nPlease just generate ${this.params.config.generate} commit messages in numbered list format without any explanation.`;
+        const systemContent = `${defaultPrompt}\n${extraPrompt(this.params.config.generate)}`;
 
         const promiseAsyncGenerator: Promise<AsyncGenerator<ChatResponse>> = this.ollama.chat({
             model: this.model,
@@ -117,9 +118,12 @@ export class OllamaService extends AIService {
             scan((acc: ReactiveListChoice[], data: ReactiveListChoice) => {
                 const isDone = data.description === DONE;
                 if (isDone) {
-                    const messages = deduplicateMessages(
-                        this.sanitizeMessage(data.value, this.params.config.type, this.params.config.generate)
-                    );
+                    const { type, generate, logging } = this.params.config;
+                    if (logging) {
+                        const systemPrompt = this.createSystemPrompt();
+                        createLogResponse('Ollama', this.params.stagedDiff.diff, systemPrompt, data.value);
+                    }
+                    const messages = deduplicateMessages(this.sanitizeMessage(data.value, type, generate));
                     const isFailedExtract = !messages || messages.length === 0;
                     if (isFailedExtract) {
                         return [
@@ -161,9 +165,10 @@ export class OllamaService extends AIService {
         try {
             await this.checkIsAvailableOllama();
             const chatResponse = await this.createChatCompletions();
-            return deduplicateMessages(
-                this.sanitizeMessage(chatResponse, this.params.config.type, this.params.config.generate)
-            );
+            const { type, generate, logging } = this.params.config;
+            const systemPrompt = this.createSystemPrompt();
+            logging && createLogResponse('Ollama', this.params.stagedDiff.diff, systemPrompt, chatResponse);
+            return deduplicateMessages(this.sanitizeMessage(chatResponse, type, generate));
         } catch (error) {
             const errorAsAny = error as any;
             if (errorAsAny.code === 'ENOTFOUND') {
@@ -191,19 +196,13 @@ export class OllamaService extends AIService {
     }
 
     private async createChatCompletions() {
-        const defaultPrompt = generatePrompt(
-            this.params.config.locale,
-            this.params.config['max-length'],
-            this.params.config.type,
-            this.params.config.prompt
-        );
-        const systemContent = `${defaultPrompt}\nPlease just generate ${this.params.config.generate} commit messages in numbered list format without explanation.`;
+        const systemPrompt = this.createSystemPrompt();
         const response = await this.ollama.chat({
             model: this.model,
             messages: [
                 {
                     role: 'system',
-                    content: systemContent,
+                    content: systemPrompt,
                 },
                 {
                     role: 'user',
@@ -216,5 +215,15 @@ export class OllamaService extends AIService {
             },
         });
         return response.message.content;
+    }
+
+    private createSystemPrompt() {
+        const defaultPrompt = generateDefaultPrompt(
+            this.params.config.locale,
+            this.params.config['max-length'],
+            this.params.config.type,
+            this.params.config.prompt
+        );
+        return `${defaultPrompt}\n${extraPrompt(this.params.config.generate)}`;
     }
 }
