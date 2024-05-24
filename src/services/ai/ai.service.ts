@@ -70,7 +70,7 @@ export abstract class AIService {
         switch (type) {
             case 'conventional':
                 // NOTE: check loosely for issue that message is not coming out
-                const regex = new RegExp(/(\w+)(\(.*\))?: .*$/);
+                const regex = new RegExp(/(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\(.*\))?: .*$/);
                 const match = text.match(regex);
                 return match ? match[0].replace(/: (\w)/, (_: any, firstLetter: string) => `: ${firstLetter.toLowerCase()}`) : '';
             case 'gitmoji':

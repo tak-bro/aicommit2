@@ -118,13 +118,14 @@ export class OllamaService extends AIService {
             scan((acc: ReactiveListChoice[], data: ReactiveListChoice) => {
                 const isDone = data.description === DONE;
                 if (isDone) {
-                    const messages = deduplicateMessages(
-                        this.sanitizeMessage(data.value, this.params.config.type, this.params.config.generate)
-                    );
+                    const { type, generate, logging } = this.params.config;
+                    if (logging) {
+                        const systemPrompt = this.createSystemPrompt();
+                        createLogResponse('Ollama', this.params.stagedDiff.diff, systemPrompt, data.value);
+                    }
+                    const messages = deduplicateMessages(this.sanitizeMessage(data.value, type, generate));
                     const isFailedExtract = !messages || messages.length === 0;
                     if (isFailedExtract) {
-                        const systemPrompt = this.createSystemPrompt();
-                        this.params.config.logging && createLogResponse('Ollama', this.params.stagedDiff.diff, systemPrompt, data.value);
                         return [
                             {
                                 id: `${this.params.keyName}_${DONE}_0`,
