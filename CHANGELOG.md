@@ -1,3 +1,33 @@
+## [1.9.0](https://github.com/tak-bro/aicommit2/compare/v1.8.7...v1.9.0) (2024-05-24)
+
+
+### ✨ Features
+
+* add error logging to check ai response ([d050a81](https://github.com/tak-bro/aicommit2/commit/d050a81caf7ff3c708669df6418a3f2a1bedc698))
+* update log file name and content format ([9777072](https://github.com/tak-bro/aicommit2/commit/9777072e9de5a03a2355a22439509bf8b8c74ce7))
+* update log message to include prompt ([47f3c5f](https://github.com/tak-bro/aicommit2/commit/47f3c5fd2c7e0c2e7efb11500040e0f511d6d47d))
+
+
+### 🐛 Bug Fixes
+
+* correct the generateDefaultPrompt function ([fc0aa0c](https://github.com/tak-bro/aicommit2/commit/fc0aa0cfea918f1d96135cf82d87143218f190d0))
+
+
+### ♻️ Refactor
+
+* improve regular expression pattern to check message loosely ([d527fa4](https://github.com/tak-bro/aicommit2/commit/d527fa4198c6d64ae593e3717bceb4fd4f7b72a8))
+
+
+### 💫 CI/CD
+
+* **minor:** update release configuration ([461c0fd](https://github.com/tak-bro/aicommit2/commit/461c0fdcd92bef5f095850a2fadf209a5f48006a))
+
+
+### 📦 Chores
+
+* update logging logic for OllamaService ([7b346ec](https://github.com/tak-bro/aicommit2/commit/7b346ec8fe29c451e6ba2c11a5423418995b5e2a))
+* update logging mechanism ([ad06ac1](https://github.com/tak-bro/aicommit2/commit/ad06ac1200f8670cdcdbb0fafc5ff7ecd040cf14))
+
 ## [1.8.7](https://github.com/tak-bro/aicommit2/compare/v1.8.6...v1.8.7) (2024-05-22)
 
 
