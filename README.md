@@ -525,7 +525,7 @@ Supported:
 - `gemini-1.5-flash-latest`
 - `gemini-pro`
 
-> Currently supporting only one model, but as Gemini starts supporting other models, it will be updated.
+> The models mentioned above are subject to change.
 
 ### MISTRAL
 

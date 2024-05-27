@@ -357,7 +357,7 @@ export const setConfigs = async (keyValues: [key: string, value: any][]) => {
     const allConfigParsers = { ...generalConfigParsers, ...configParsers };
 
     for (const [key, value] of keyValues) {
-        if (!hasOwn(config, key)) {
+        if (!hasOwn(allConfigParsers, key)) {
             throw new KnownError(`Invalid config property: ${key}`);
         }
 
