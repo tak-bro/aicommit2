@@ -1,3 +1,20 @@
+## [1.9.1](https://github.com/tak-bro/aicommit2/compare/v1.9.0...v1.9.1) (2024-05-27)
+
+
+### ✨ Features
+
+* **gemini:** update default Gemini model to 'gemini-1.5-flash-latest' ([9e50f5e](https://github.com/tak-bro/aicommit2/commit/9e50f5e15822e10f0bbdb052a8f71905c2e0bf13))
+
+
+### 🐛 Bug Fixes
+
+* validate against all config parsers ([193d68c](https://github.com/tak-bro/aicommit2/commit/193d68c34eea806b07f5c92ebc105f4ed6e36613))
+
+
+### ♻️ Refactor
+
+* add generalConfigParsers ([8ebb2fe](https://github.com/tak-bro/aicommit2/commit/8ebb2fe29f6cf871a5f89f9995451406754db468))
+
 ## [1.9.0](https://github.com/tak-bro/aicommit2/compare/v1.8.7...v1.9.0) (2024-05-24)
 
 
