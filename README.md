@@ -519,12 +519,13 @@ The Gemini API key. If you don't have one, create a key in [Google AI Studio](ht
 
 ##### GEMINI_MODEL
 
-Default: `gemini-pro`
+Default: `gemini-1.5-flash-latest`
 
 Supported:
+- `gemini-1.5-flash-latest`
 - `gemini-pro`
 
-> Currently supporting only one model, but as Gemini starts supporting other models, it will be updated.
+> The models mentioned above are subject to change.
 
 ### MISTRAL
 
