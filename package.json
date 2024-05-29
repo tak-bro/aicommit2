@@ -24,6 +24,7 @@
         "claude2",
         "claude3",
         "gemini",
+        "gemini-pro",
         "generative-ai",
         "mistral",
         "ollama",
