@@ -314,7 +314,7 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 | `max-tokens`      | `200`                                  | The maximum number of tokens that the AI models can generate (for **Open AI, Anthropic, Gemini, Mistral**)              |
 | `temperature`     | `0.7`                                  | The temperature (0.0-2.0) is used to control the randomness of the output (for **Open AI, Anthropic, Gemini, Mistral**) |
 | `prompt`          | N/A                                    | Additional prompt to let users fine-tune provided prompt                                                                |
-| `logging`         | `false`                                | Whether to log AI reponses for debugging (true or false)                                                                |
+| `logging`         | `false`                                | Whether to log AI responses for debugging (true or false)                                                               |
 
 > **Currently, options are set universally. However, there are plans to develop the ability to set individual options in the future.**
 
