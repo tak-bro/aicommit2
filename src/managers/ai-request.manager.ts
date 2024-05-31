@@ -6,6 +6,7 @@ import { AIServiceFactory } from '../services/ai/ai-service.factory.js';
 import { AIServiceParams, AIType, ApiKeyName } from '../services/ai/ai.service.js';
 import { AnthropicService } from '../services/ai/anthropic.service.js';
 import { ClovaXService } from '../services/ai/clova-x.service.js';
+import { CohereService } from '../services/ai/cohere.service.js';
 import { GeminiService } from '../services/ai/gemini.service.js';
 import { HuggingService } from '../services/ai/hugging.service.js';
 import { MistralService } from '../services/ai/mistral.service.js';
@@ -43,6 +44,8 @@ export class AIRequestManager {
                         return AIServiceFactory.create(MistralService, params).generateCommitMessage$();
                     case AIType.OLLAMA:
                         return AIServiceFactory.create(OllamaService, params).generateCommitMessage$();
+                    case AIType.COHERE:
+                        return AIServiceFactory.create(CohereService, params).generateCommitMessage$();
                     default:
                         const prefixError = chalk.red.bold(`[${ai}]`);
                         return of({

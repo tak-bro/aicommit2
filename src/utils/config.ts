@@ -193,7 +193,7 @@ const configParsers = {
             `microsoft/Phi-3-mini-4k-instruct`,
         ];
 
-        parseAssert('HUGGING_MODEL', supportModels.includes(model), 'Invalid model type of hugging');
+        parseAssert('HUGGING_MODEL', supportModels.includes(model), 'Invalid model type of HuggingFace chat');
         return model;
     },
     CLOVAX_COOKIE(cookie?: string) {
@@ -303,6 +303,20 @@ const configParsers = {
 
         parseAssert('OLLAMA_STREAM', /^(?:true|false)$/.test(stream), 'Must be a boolean(true or false)');
         return stream === 'true';
+    },
+    COHERE_KEY(key?: string) {
+        if (!key) {
+            return '';
+        }
+        return key;
+    },
+    COHERE_MODEL(model?: string) {
+        if (!model || model.length === 0) {
+            return 'command';
+        }
+        const supportModels = ['command', `command-nightly`, `command-light`, `command-light-nightly`];
+        parseAssert('COHERE_MODEL', supportModels.includes(model), 'Invalid model type of Cohere');
+        return model;
     },
 } as const;
 
