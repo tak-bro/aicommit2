@@ -1,3 +1,22 @@
+## [1.9.2](https://github.com/tak-bro/aicommit2/compare/v1.9.1...v1.9.2) (2024-05-31)
+
+
+### ✨ Features
+
+* add Cohere AI service ([34f2d7e](https://github.com/tak-bro/aicommit2/commit/34f2d7e56419e01d76a2ef5087631785b11cd6ed))
+
+
+### 💫 CI/CD
+
+* add no response issue workflow ([c017ec4](https://github.com/tak-bro/aicommit2/commit/c017ec41317516c820540a7755bc48a1c1e703ed))
+* add no-response-issues workflow ([16aac67](https://github.com/tak-bro/aicommit2/commit/16aac675ad2b1e3d85819bd5d60ef20926a9cb3a))
+* add stale_issues.yml workflow ([0b718e8](https://github.com/tak-bro/aicommit2/commit/0b718e85368702b5e5c3696bf1b3d84e0c1a8c3d))
+
+
+### 📦 Chores
+
+* add scheduled job for no response issues ([e2f0a74](https://github.com/tak-bro/aicommit2/commit/e2f0a74cf0835d244ba1ca4ea098632c7eb96a1c))
+
 ## [1.9.1](https://github.com/tak-bro/aicommit2/compare/v1.9.0...v1.9.1) (2024-05-27)
 
 
