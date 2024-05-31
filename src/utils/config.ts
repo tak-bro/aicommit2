@@ -304,6 +304,20 @@ const configParsers = {
         parseAssert('OLLAMA_STREAM', /^(?:true|false)$/.test(stream), 'Must be a boolean(true or false)');
         return stream === 'true';
     },
+    COHERE_KEY(key?: string) {
+        if (!key) {
+            return '';
+        }
+        return key;
+    },
+    COHERE_MODEL(model?: string) {
+        if (!model || model.length === 0) {
+            return 'command';
+        }
+        const supportModels = ['command', `command-nightly`, `command-light`, `command-light-nightly`];
+        parseAssert('COHERE_MODEL', supportModels.includes(model), 'Invalid model type of Anthropic');
+        return model;
+    },
 } as const;
 
 type ConfigKeys = keyof typeof generalConfigParsers | keyof typeof configParsers;
