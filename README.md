@@ -31,6 +31,7 @@ AICommit2 streamlines interactions with various AI, enabling users to request mu
 - [Anthropic Claude](https://console.anthropic.com/)
 - [Gemini](https://gemini.google.com/)
 - [Mistral AI](https://mistral.ai/)
+- [Cohere](https://cohere.com/)
 - [Huggingface **(Unofficial)**](https://huggingface.co/chat/)
 - [Clova X **(Unofficial)**](https://clova-x.naver.com/)
 
@@ -70,6 +71,11 @@ aicommit2 config set GEMINI_KEY=<your key>
 - [Mistral AI](https://console.mistral.ai/)
 ```sh
 aicommit2 config set MISTRAL_KEY=<your key>
+```
+
+- [Cohere](https://dashboard.cohere.com/)
+```sh
+aicommit2 config set COHERE_KEY=<your key>
 ```
 
 - [Huggingface **(Unofficial)**](https://github.com/tak-bro/aicommit2?tab=readme-ov-file#how-to-get-cookieunofficial-api)
@@ -298,6 +304,8 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 | `GEMINI_MODEL`    | `gemini-1.5-flash-latest`              | The Gemini Model                                                                                                        |
 | `MISTRAL_KEY`     | N/A                                    | The Mistral API key                                                                                                     |
 | `MISTRAL_MODEL`   | `mistral-tiny`                         | The Mistral Model to use                                                                                                |
+| `COHERE_KEY`      | N/A                                    | The Cohere API Key                                                                                                      |
+| `COHERE_MODEL`    | `command`                              | The identifier of the Cohere model                                                                                      |
 | `HUGGING_COOKIE`  | N/A                                    | The HuggingFace Cookie string                                                                                           |
 | `HUGGING_MODEL`   | `mistralai/Mixtral-8x7B-Instruct-v0.1` | The HuggingFace Model to use                                                                                            |
 | `CLOVAX_COOKIE`   | N/A                                    | The Clova X Cookie string                                                                                               |
@@ -319,14 +327,15 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 > **Currently, options are set universally. However, there are plans to develop the ability to set individual options in the future.**
 
 ### Available Options by Model
-|                      | locale | generate | type  | proxy |        timeout        | max-length  | max-tokens | temperature | prompt |
-|:--------------------:|:------:|:--------:|:-----:|:-----:|:---------------------:|:-----------:|:----------:|:-----------:|:------:|
-|      **OpenAI**      |   ✓    |    ✓     |   ✓   |   ✓   |           ✓           |      ✓      |     ✓      |      ✓      |   ✓    |
-| **Anthropic Claude** |   ✓    |    ✓     |   ✓   |       |                       |      ✓      |     ✓      |      ✓      |   ✓    |
-|      **Gemini**      |   ✓    |    ✓     |   ✓   |       |                       |      ✓      |     ✓      |      ✓      |   ✓    |
-|    **Mistral AI**    |   ✓    |    ✓     |   ✓   |       |           ✓           |      ✓      |     ✓      |      ✓      |   ✓    |
-|   **Huggingface**    |   ✓    |    ✓     |   ✓   |       |           ✓           |      ✓      |            |             |   ✓    |
-|     **Clova X**      |   ✓    |    ✓     |   ✓   |       |           ✓           |      ✓      |            |             |   ✓    |
+|                      | locale | generate | type  | proxy |        timeout         | max-length  | max-tokens | temperature | prompt |
+|:--------------------:|:------:|:--------:|:-----:|:-----:|:----------------------:|:-----------:|:----------:|:-----------:|:------:|
+|      **OpenAI**      |   ✓    |    ✓     |   ✓   |   ✓   |           ✓            |      ✓      |     ✓      |      ✓      |   ✓    |
+| **Anthropic Claude** |   ✓    |    ✓     |   ✓   |       |                        |      ✓      |     ✓      |      ✓      |   ✓    |
+|      **Gemini**      |   ✓    |    ✓     |   ✓   |       |                        |      ✓      |     ✓      |      ✓      |   ✓    |
+|    **Mistral AI**    |   ✓    |    ✓     |   ✓   |       |           ✓            |      ✓      |     ✓      |      ✓      |   ✓    |
+|      **Cohere**      |   ✓    |    ✓     |   ✓   |       |                        |      ✓      |     ✓      |      ✓      |   ✓    |
+|   **Huggingface**    |   ✓    |    ✓     |   ✓   |       |           ✓            |      ✓      |            |             |   ✓    |
+|     **Clova X**      |   ✓    |    ✓     |   ✓   |       |           ✓            |      ✓      |            |             |   ✓    |
 |      **Ollama**      |   ✓    |    ✓     |   ✓   |       | ⚠<br/>(OLLAMA_TIMEOUT) |      ✓      |            |      ✓      |   ✓    |
 
 
@@ -429,7 +438,6 @@ Option that allows users to decide whether to generate a log file capturing the 
 The log files will be stored in the `~/.aicommit2_log` directory(user's home).
 
 ![log-path](https://github.com/tak-bro/aicommit2/blob/main/img/log_path.png?raw=true)
-
 
 ### Ollama
 
@@ -552,6 +560,24 @@ Supported:
 - `mistral-large-latest`
 - `mistral-large-2402`
 - `mistral-embed`
+
+> The models mentioned above are subject to change.
+
+### Cohere
+
+##### COHERE_KEY
+
+The Cohere API key. If you don't have one, please sign up and get the API key in [Cohere Dashboard](https://dashboard.cohere.com/).
+
+##### COHERE_MODEL
+
+Default: `command`
+
+Supported:
+- `command`
+- `command-nightly`
+- `command-light`
+- `command-light-nightly`
 
 > The models mentioned above are subject to change.
 

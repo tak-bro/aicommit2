@@ -30,7 +30,8 @@
         "ollama",
         "llama3",
         "llm",
-        "chatgpt"
+        "chatgpt",
+        "cohere"
     ],
     "license": "MIT",
     "repository": "tak-bro/aicommit2",

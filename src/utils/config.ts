@@ -193,7 +193,7 @@ const configParsers = {
             `microsoft/Phi-3-mini-4k-instruct`,
         ];
 
-        parseAssert('HUGGING_MODEL', supportModels.includes(model), 'Invalid model type of hugging');
+        parseAssert('HUGGING_MODEL', supportModels.includes(model), 'Invalid model type of HuggingFace chat');
         return model;
     },
     CLOVAX_COOKIE(cookie?: string) {
@@ -315,7 +315,7 @@ const configParsers = {
             return 'command';
         }
         const supportModels = ['command', `command-nightly`, `command-light`, `command-light-nightly`];
-        parseAssert('COHERE_MODEL', supportModels.includes(model), 'Invalid model type of Anthropic');
+        parseAssert('COHERE_MODEL', supportModels.includes(model), 'Invalid model type of Cohere');
         return model;
     },
 } as const;
