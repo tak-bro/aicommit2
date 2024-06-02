@@ -439,6 +439,12 @@ The log files will be stored in the `~/.aicommit2_log` directory(user's home).
 
 ![log-path](https://github.com/tak-bro/aicommit2/blob/main/img/log_path.png?raw=true)
 
+- You can remove all logs below comamnd.
+ 
+```sh
+aicommit2 log removeAll 
+```
+
 ### Ollama
 
 ##### OLLAMA_MODEL

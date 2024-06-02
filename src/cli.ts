@@ -3,6 +3,7 @@ import { cli } from 'cleye';
 import aicommit2 from './commands/aicommit2.js';
 import configCommand from './commands/config.js';
 import hookCommand, { isCalledFromGitHook } from './commands/hook.js';
+import logCommand from './commands/log.js';
 import prepareCommitMessageHook from './commands/prepare-commit-msg-hook.js';
 import { description, version } from '../package.json';
 
@@ -64,7 +65,7 @@ cli(
             },
         },
 
-        commands: [configCommand, hookCommand],
+        commands: [configCommand, hookCommand, logCommand],
 
         help: {
             description,
