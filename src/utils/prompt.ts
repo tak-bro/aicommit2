@@ -4,18 +4,17 @@ const MAX_COMMIT_LENGTH = 80;
 
 const commitTypeFormats: Record<CommitType, string> = {
     '': '<commit message>',
-    conventional: `<type>(<optional scope>): <description>`,
-    gitmoji: `:<emoji>: <description>`,
+    conventional: `<type>(<optional scope>): <commit message>`,
+    gitmoji: `:<emoji>: <commit message>`,
 };
 
 const specifyCommitFormat = (type: CommitType = 'conventional') => {
     if (type === '') {
         return '';
     }
-    return `The output format must be in ${type} commit type:\n${commitTypeFormats[type]}`;
+    return `The commit message must be in format:\n${commitTypeFormats[type]}`;
 };
 
-// TODO: use below for description
 const commitTypes: Record<CommitType, string> = {
     '': '',
     gitmoji: `Choose a emoji from the emoji-to-description JSON below that best describes the git diff:\n${JSON.stringify(
@@ -66,19 +65,19 @@ const commitTypes: Record<CommitType, string> = {
 
 export const generateDefaultPrompt = (locale: string, maxLength: number, type: CommitType, additionalPrompts: string = '') =>
     [
-        'You are the author of the changes, you are going to provide a professional git commit message.',
-        'Generate a concise git commit message written in present tense for the following code diff with the given specifications below:',
-        `Message language: ${locale}.`,
+        'You are the expert programmer. You are going to provide a professional git commit message.',
+        'Generate a concise git commit message written in present tense with the given specifications below:',
+        `Message language: ${locale}`,
         `Commit message must be a maximum of ${Math.min(Math.max(maxLength, 0), MAX_COMMIT_LENGTH)} characters.`,
-        'Exclude anything unnecessary such as explanation. Your entire response will be passed directly into git commit.',
-        additionalPrompts,
+        `${additionalPrompts}`,
+        'Exclude anything unnecessary such as explanation or translation. Your entire response will be passed directly into git commit.',
+        commitTypes[type],
         specifyCommitFormat(type),
     ]
         .filter(Boolean)
         .join('\n');
 
-export const extraPrompt = (generate: number) =>
-    `You must generate ${generate} commit messages in numbered list format in Markdown without any explanation.`;
+export const extraPrompt = (generate: number) => `You must generate ${generate} commit messages in numbered list output format.`;
 
 export const isValidConventionalMessage = (message: string): boolean => {
     const conventionalReg =
