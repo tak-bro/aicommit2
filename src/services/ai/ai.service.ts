@@ -89,6 +89,7 @@ export abstract class AIService {
             .map((message: string) => message.trim().replace(/^\d+\.\s/, ''))
             .map((message: string) => message.replace(/`/g, ''))
             .map((message: string) => message.replace(/"/g, ''))
+            .map((message: string) => message.replace(/\*/g, ''))
             .map((message: string) => this.extractCommitMessageFromRawText(type, message))
             .filter((message: string) => !!message);
 
