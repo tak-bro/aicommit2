@@ -1,3 +1,11 @@
+## [1.9.3](https://github.com/tak-bro/aicommit2/compare/v1.9.2...v1.9.3) (2024-06-02)
+
+
+### Features
+
+* implement removeAll command to delete all log files ([20b7fa8](https://github.com/tak-bro/aicommit2/commit/20b7fa8c5f6d0ade5eb4d289908c638e253d388a))
+* updated commit message format description ([15e6a38](https://github.com/tak-bro/aicommit2/commit/15e6a3844faea310d41af7d527da763f9f5f6ac1))
+
 ## [1.9.2](https://github.com/tak-bro/aicommit2/compare/v1.9.1...v1.9.2) (2024-05-31)
 
 
