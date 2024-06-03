@@ -273,6 +273,12 @@ const configParsers = {
         }
         return model;
     },
+    OLLAMA_MODELS(models?: string) {
+        if (!models) {
+            return [];
+        }
+        return models.split(',');
+    },
     OLLAMA_HOST(host?: string) {
         if (!host) {
             return DEFAULT_OLLMA_HOST;

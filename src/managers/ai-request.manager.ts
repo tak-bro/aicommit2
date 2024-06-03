@@ -12,6 +12,7 @@ import { HuggingService } from '../services/ai/hugging.service.js';
 import { MistralService } from '../services/ai/mistral.service.js';
 import { OllamaService } from '../services/ai/ollama.service.js';
 import { OpenAIService } from '../services/ai/openai.service.js';
+import { ParallelOllamaService } from '../services/ai/parallel-ollama.service.js';
 import { ValidConfig } from '../utils/config.js';
 import { StagedDiff } from '../utils/git.js';
 
@@ -44,6 +45,16 @@ export class AIRequestManager {
                         return AIServiceFactory.create(MistralService, params).generateCommitMessage$();
                     case AIType.OLLAMA:
                         return AIServiceFactory.create(OllamaService, params).generateCommitMessage$();
+                    case AIType.PARALLEL_OLLAMA:
+                        return from(this.config.OLLAMA_MODELS).pipe(
+                            mergeMap(model => {
+                                const parallelParams = {
+                                    ...params,
+                                    keyName: model,
+                                } as AIServiceParams;
+                                return AIServiceFactory.create(ParallelOllamaService, parallelParams).generateCommitMessage$();
+                            })
+                        );
                     case AIType.COHERE:
                         return AIServiceFactory.create(CohereService, params).generateCommitMessage$();
                     default:
