@@ -1,3 +1,10 @@
+## [1.9.4](https://github.com/tak-bro/aicommit2/compare/v1.9.3...v1.9.4) (2024-06-03)
+
+
+### Bug Fixes
+
+* update gitmoji regular expression ([e8a3d36](https://github.com/tak-bro/aicommit2/commit/e8a3d368fd0333870a15e7d6ce37b059d6e8e562))
+
 ## [1.9.3](https://github.com/tak-bro/aicommit2/compare/v1.9.2...v1.9.3) (2024-06-02)
 
 
