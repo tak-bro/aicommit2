@@ -3,7 +3,7 @@ import { Observable, of } from 'rxjs';
 
 import { CommitType, ValidConfig } from '../../utils/config.js';
 import { StagedDiff } from '../../utils/git.js';
-import { extraPrompt, generateDefaultPrompt } from '../../utils/prompt.js';
+import { extraPrompt, generateDefaultPrompt, isValidConventionalMessage, isValidGitmojiMessage } from '../../utils/prompt.js';
 
 // NOTE: get AI Type from key names
 export const AIType = {
@@ -67,30 +67,28 @@ export abstract class AIService {
         });
     };
 
-    protected extractCommitMessageFromRawText(type: CommitType, text: string): string {
-        switch (type) {
-            case 'conventional':
-                // NOTE: check loosely for issue that message is not coming out
-                const regex = new RegExp(/(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\(.*\))?: .*$/);
-                const match = text.match(regex);
-                return match ? match[0].replace(/: (\w)/, (_: any, firstLetter: string) => `: ${firstLetter.toLowerCase()}`) : '';
-            case 'gitmoji':
-                const gitmojiRegexp = new RegExp(/^\:\w+\: (.*)$/gm);
-                const gitmojoMatched = text.match(gitmojiRegexp);
-                return gitmojoMatched ? gitmojoMatched[0] : '';
-            default:
-                return text;
-        }
-    }
-
     protected sanitizeMessage(generatedText: string, type: CommitType, maxCount: number) {
         const messages = generatedText
             .split('\n')
             .map((message: string) => message.trim().replace(/^\d+\.\s/, ''))
-            .map((message: string) => message.replace(/`/g, ''))
-            .map((message: string) => message.replace(/"/g, ''))
-            .map((message: string) => message.replace(/\*/g, ''))
-            .map((message: string) => this.extractCommitMessageFromRawText(type, message))
+            .map((message: string) => message.replace(/[`'"*]/g, ''))
+            .filter((message: string) => {
+                switch (type) {
+                    case 'conventional':
+                        return isValidConventionalMessage(message);
+                    case 'gitmoji':
+                        return isValidGitmojiMessage(message);
+                    default:
+                        return true;
+                }
+            })
+            .map(message => {
+                if (type === 'conventional') {
+                    const regex = /: (\w)/;
+                    return message.replace(regex, (_: any, firstLetter: string) => `: ${firstLetter.toLowerCase()}`);
+                }
+                return message;
+            })
             .filter((message: string) => !!message);
 
         if (messages.length > maxCount) {
