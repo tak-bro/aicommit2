@@ -113,7 +113,7 @@ export class ParallelOllamaService extends AIService {
             const chatResponse = await this.createChatCompletions();
             const { type, generate, logging } = this.params.config;
             const systemPrompt = this.createSystemPrompt();
-            logging && createLogResponse('Ollama', this.params.stagedDiff.diff, systemPrompt, chatResponse);
+            logging && createLogResponse(`Ollama-${this.model}`, this.params.stagedDiff.diff, systemPrompt, chatResponse);
             return deduplicateMessages(this.sanitizeMessage(chatResponse, type, generate));
         } catch (error) {
             const errorAsAny = error as any;
