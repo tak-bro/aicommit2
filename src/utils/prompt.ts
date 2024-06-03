@@ -10,8 +10,8 @@ const commitTypeFormats: Record<CommitType, string> = {
 
 const exampleCommitByType: Record<CommitType, string> = {
     '': '',
-    conventional: `Example commit message: 'feat: add new disabled boolean variable to button'`,
-    gitmoji: `Example commit message: ':sparkles: Add a generic preset using configuration'`,
+    conventional: `Example commit message => feat: add new disabled boolean variable to button`,
+    gitmoji: `Example commit message => :sparkles: Add a generic preset using configuration`,
 };
 
 const specifyCommitFormat = (type: CommitType = 'conventional') => {
@@ -86,8 +86,10 @@ export const generateDefaultPrompt = (locale: string, maxLength: number, type: C
 export const extraPrompt = (generate: number) => `THE RESULT MUST BE ${generate} COMMIT MESSAGES AND MUST BE IN NUMBERED LIST FORMAT.`;
 
 export const isValidConventionalMessage = (message: string): boolean => {
-    const conventionalReg =
-        /^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test){1}(\([\w\-]+\))?(!)?: .{1,80}(\n|\r\n){2}(.*(\n|\r\n)*)*$/;
+    // TODO: check loosely for issue that message is not coming out
+    // const conventionalReg =
+    //     /^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test){1}(\([\w\-]+\))?(!)?: .{1,80}(\n|\r\n){2}(.*(\n|\r\n)*)*$/;
+    const conventionalReg = /(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\(.*\))?: .*$/;
     return conventionalReg.test(message);
 };
 
