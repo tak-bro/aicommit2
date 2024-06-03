@@ -75,9 +75,9 @@ export abstract class AIService {
                 const match = text.match(regex);
                 return match ? match[0].replace(/: (\w)/, (_: any, firstLetter: string) => `: ${firstLetter.toLowerCase()}`) : '';
             case 'gitmoji':
-                const gitmojiRegexp = new RegExp(/^\:\w+\: (.*)$/gm);
+                const gitmojiRegexp = new RegExp(/:\w*:/);
                 const gitmojoMatched = text.match(gitmojiRegexp);
-                return gitmojoMatched ? gitmojoMatched[0] : '';
+                return gitmojoMatched ? text : '';
             default:
                 return text;
         }
@@ -87,9 +87,7 @@ export abstract class AIService {
         const messages = generatedText
             .split('\n')
             .map((message: string) => message.trim().replace(/^\d+\.\s/, ''))
-            .map((message: string) => message.replace(/`/g, ''))
-            .map((message: string) => message.replace(/"/g, ''))
-            .map((message: string) => message.replace(/\*/g, ''))
+            .map((message: string) => message.replace(/[`'"*]/g, ''))
             .map((message: string) => this.extractCommitMessageFromRawText(type, message))
             .filter((message: string) => !!message);
 

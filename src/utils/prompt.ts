@@ -4,15 +4,21 @@ const MAX_COMMIT_LENGTH = 80;
 
 const commitTypeFormats: Record<CommitType, string> = {
     '': '<commit message>',
-    conventional: `<type>(<optional scope>): <commit message>`,
-    gitmoji: `:<emoji>: <commit message>`,
+    conventional: `<type>(<optional scope>): <description>`,
+    gitmoji: `:<emoji>: <description>`,
+};
+
+const exampleCommitByType: Record<CommitType, string> = {
+    '': '',
+    conventional: `Example commit message: 'feat: add new disabled boolean variable to button'`,
+    gitmoji: `Example commit message: ':sparkles: Add a generic preset using configuration'`,
 };
 
 const specifyCommitFormat = (type: CommitType = 'conventional') => {
     if (type === '') {
         return '';
     }
-    return `The commit message must be in format:\n${commitTypeFormats[type]}`;
+    return `The commit message must be in format:\n${commitTypeFormats[type]}\n${exampleCommitByType[type]}`;
 };
 
 const commitTypes: Record<CommitType, string> = {
@@ -44,7 +50,7 @@ const commitTypes: Record<CommitType, string> = {
      * Conventional Changelog:
      * https://github.com/conventional-changelog/conventional-changelog/blob/d0e5d5926c8addba74bc962553dd8bcfba90e228/packages/conventional-changelog-conventionalcommits/writer-opts.js#L182-L193
      */
-    conventional: `Choose a type from the type-to-description JSON below that best describes the git diff\n${JSON.stringify(
+    conventional: `Choose a type from the type-to-description JSON below that best describes the git diff.\n${JSON.stringify(
         {
             docs: 'Documentation only changes',
             style: 'Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)',
@@ -65,7 +71,7 @@ const commitTypes: Record<CommitType, string> = {
 
 export const generateDefaultPrompt = (locale: string, maxLength: number, type: CommitType, additionalPrompts: string = '') =>
     [
-        'You are the expert programmer. You are going to provide a professional git commit message.',
+        'You are the expert programmer, trained to write commit messages. You are going to provide a professional git commit message.',
         'Generate a concise git commit message written in present tense with the given specifications below:',
         `Message language: ${locale}`,
         `Commit message must be a maximum of ${Math.min(Math.max(maxLength, 0), MAX_COMMIT_LENGTH)} characters.`,
@@ -77,7 +83,7 @@ export const generateDefaultPrompt = (locale: string, maxLength: number, type: C
         .filter(Boolean)
         .join('\n');
 
-export const extraPrompt = (generate: number) => `You must generate ${generate} commit messages in numbered list output format.`;
+export const extraPrompt = (generate: number) => `THE RESULT MUST BE ${generate} COMMIT MESSAGES AND MUST BE IN NUMBERED LIST FORMAT.`;
 
 export const isValidConventionalMessage = (message: string): boolean => {
     const conventionalReg =
@@ -86,6 +92,6 @@ export const isValidConventionalMessage = (message: string): boolean => {
 };
 
 export const isValidGitmojiMessage = (message: string): boolean => {
-    const gitmojiCommitMessageRegex = /^\:\w+\: (.*)$/;
+    const gitmojiCommitMessageRegex = /:\w*:/;
     return gitmojiCommitMessageRegex.test(message);
 };
