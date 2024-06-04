@@ -4,6 +4,8 @@ export const createAsyncDelay = (duration: number) => {
     return new Promise<void>(resolve => setTimeout(() => resolve(), duration));
 };
 
+export const capitalizeFirstLetter = (text: string) => (text ? `${text[0].toUpperCase()}${text.slice(1)}` : text);
+
 export const getRandomNumber = (min: number, max: number): number => {
     const minValue = Math.ceil(min);
     const maxValue = Math.floor(max);

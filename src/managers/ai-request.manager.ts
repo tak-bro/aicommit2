@@ -43,7 +43,15 @@ export class AIRequestManager {
                     case AIType.MISTRAL:
                         return AIServiceFactory.create(MistralService, params).generateCommitMessage$();
                     case AIType.OLLAMA:
-                        return AIServiceFactory.create(OllamaService, params).generateCommitMessage$();
+                        return from(this.config.OLLAMA_MODEL).pipe(
+                            mergeMap(model => {
+                                const ollamaParams = {
+                                    ...params,
+                                    keyName: model,
+                                } as AIServiceParams;
+                                return AIServiceFactory.create(OllamaService, ollamaParams).generateCommitMessage$();
+                            })
+                        );
                     case AIType.COHERE:
                         return AIServiceFactory.create(CohereService, params).generateCommitMessage$();
                     default:
