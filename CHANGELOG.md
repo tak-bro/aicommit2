@@ -1,3 +1,17 @@
+## [1.9.5](https://github.com/tak-bro/aicommit2/compare/v1.9.4...v1.9.5) (2024-06-04)
+
+
+### Bug Fixes
+
+* update logging in ParallelOllamaService to include model information ([2ad9f76](https://github.com/tak-bro/aicommit2/commit/2ad9f760988e8d60aab2c36cc80057cd08081432))
+
+
+### Features
+
+* add ParallelOllamaService ([5a13ce3](https://github.com/tak-bro/aicommit2/commit/5a13ce38d9eb83a5d410b04953e326c0981b53f6))
+* support multiple Ollama models ([cb865d9](https://github.com/tak-bro/aicommit2/commit/cb865d93284034ee705a7601d3309d906e6466f8))
+* update OllamaService to support multiple models ([7103f03](https://github.com/tak-bro/aicommit2/commit/7103f0338de726f7267d115acb95487e08ac884b))
+
 ## [1.9.4](https://github.com/tak-bro/aicommit2/compare/v1.9.3...v1.9.4) (2024-06-03)
 
 
