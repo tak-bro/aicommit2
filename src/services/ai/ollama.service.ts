@@ -10,7 +10,7 @@ import { KnownError } from '../../utils/error.js';
 import { createLogResponse } from '../../utils/log.js';
 import { deduplicateMessages } from '../../utils/openai.js';
 import { extraPrompt, generateDefaultPrompt } from '../../utils/prompt.js';
-import { DONE, UNDONE, toObservable } from '../../utils/utils.js';
+import { DONE, UNDONE, capitalizeFirstLetter, toObservable } from '../../utils/utils.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
 
 import type { ChatResponse } from 'ollama/src/interfaces.js';
@@ -28,9 +28,12 @@ export class OllamaService extends AIService {
             primary: '#FFF',
             secondary: '#000',
         };
-        this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold('[Ollama]');
-        this.errorPrefix = chalk.red.bold(`[Ollama]`);
-        this.model = this.params.config.OLLAMA_MODEL;
+        this.model = this.params.keyName;
+        this.serviceName = chalk
+            .bgHex(this.colors.primary)
+            .hex(this.colors.secondary)
+            .bold(`[${capitalizeFirstLetter(this.model)}]`);
+        this.errorPrefix = chalk.red.bold(`[${capitalizeFirstLetter(this.model)}]`);
         this.host = this.params.config.OLLAMA_HOST || DEFAULT_OLLMA_HOST;
         this.ollama = new Ollama({ host: this.host });
     }
@@ -101,7 +104,7 @@ export class OllamaService extends AIService {
             tap((part: ChatResponse) => (allValue += part.message.content)),
             map((part: ChatResponse) => {
                 return {
-                    id: this.params.keyName,
+                    id: `Ollama_${this.model}`,
                     name: `${this.serviceName} ${allValue}`,
                     value: `${allValue}`,
                     isError: false,
@@ -128,7 +131,7 @@ export class OllamaService extends AIService {
                     if (isFailedExtract) {
                         return [
                             {
-                                id: `${this.params.keyName}_${DONE}_0`,
+                                id: `Ollama_${this.model}_${DONE}_0`,
                                 name: `${this.serviceName} Failed to extract messages from response`,
                                 value: `Failed to extract messages from response`,
                                 isError: true,
@@ -139,7 +142,7 @@ export class OllamaService extends AIService {
                     }
                     return messages.map((message, index) => {
                         return {
-                            id: `${this.params.keyName}_${DONE}_${index}`,
+                            id: `Ollama_${this.model}_${DONE}_${index}`,
                             name: `${this.serviceName} ${message}`,
                             value: `${message}`,
                             isError: false,
@@ -167,7 +170,7 @@ export class OllamaService extends AIService {
             const chatResponse = await this.createChatCompletions();
             const { type, generate, logging } = this.params.config;
             const systemPrompt = this.createSystemPrompt();
-            logging && createLogResponse('Ollama', this.params.stagedDiff.diff, systemPrompt, chatResponse);
+            logging && createLogResponse(`Ollama_${this.model}`, this.params.stagedDiff.diff, systemPrompt, chatResponse);
             return deduplicateMessages(this.sanitizeMessage(chatResponse, type, generate));
         } catch (error) {
             const errorAsAny = error as any;

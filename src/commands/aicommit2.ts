@@ -6,7 +6,7 @@ import ora from 'ora';
 import { AIRequestManager } from '../managers/ai-request.manager.js';
 import { ConsoleManager } from '../managers/console.manager.js';
 import { ReactivePromptManager } from '../managers/reactive-prompt.manager.js';
-import { ApiKeyName, ApiKeyNames } from '../services/ai/ai.service.js';
+import { AIType, ApiKeyName, ApiKeyNames } from '../services/ai/ai.service.js';
 import { getConfig } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
 import { assertGitRepo, getStagedDiff } from '../utils/git.js';
@@ -64,7 +64,12 @@ export default async (
 
         const availableAPIKeyNames: ApiKeyName[] = Object.entries(config)
             .filter(([key]) => ApiKeyNames.includes(key as ApiKeyName))
-            .filter(([_, value]) => !!value)
+            .filter(([key, value]) => {
+                if (key === AIType.OLLAMA) {
+                    return !!value && (value as string[]).length > 0;
+                }
+                return !!value;
+            })
             .map(([key]) => key as ApiKeyName);
 
         const hasNoAvailableAIs = availableAPIKeyNames.length === 0;

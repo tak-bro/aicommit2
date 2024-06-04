@@ -14,7 +14,6 @@ export const AIType = {
     CLOVA_X: 'CLOVAX_COOKIE',
     MISTRAL: 'MISTRAL_KEY',
     OLLAMA: 'OLLAMA_MODEL',
-    PARALLEL_OLLAMA: 'OLLAMA_MODELS',
     COHERE: 'COHERE_KEY',
 } as const;
 export type ApiKeyName = (typeof AIType)[keyof typeof AIType];

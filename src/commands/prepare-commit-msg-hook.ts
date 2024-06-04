@@ -4,7 +4,7 @@ import { filter, lastValueFrom, map, toArray } from 'rxjs';
 
 import { AIRequestManager } from '../managers/ai-request.manager.js';
 import { ConsoleManager } from '../managers/console.manager.js';
-import { ApiKeyName, ApiKeyNames } from '../services/ai/ai.service.js';
+import { AIType, ApiKeyName, ApiKeyNames } from '../services/ai/ai.service.js';
 import { getConfig } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
 import { getStagedDiff } from '../utils/git.js';
@@ -14,9 +14,7 @@ const [messageFilePath, commitSource] = process.argv.slice(2);
 export default () =>
     (async () => {
         if (!messageFilePath) {
-            throw new KnownError(
-                'Commit message file path is missing. This file should be called from the "prepare-commit-msg" git hook'
-            );
+            throw new KnownError('Commit message file path is missing. This file should be called from the "prepare-commit-msg" git hook');
         }
 
         // If a commit message is passed in, ignore
@@ -40,7 +38,12 @@ export default () =>
 
         const availableAPIKeyNames: ApiKeyName[] = Object.entries(config)
             .filter(([key]) => ApiKeyNames.includes(key as ApiKeyName))
-            .filter(([_, value]) => !!value)
+            .filter(([key, value]) => {
+                if (key === AIType.OLLAMA) {
+                    return !!value && (value as string[]).length > 0;
+                }
+                return !!value;
+            })
             .map(([key]) => key as ApiKeyName);
 
         const hasNoAvailableAIs = availableAPIKeyNames.length === 0;

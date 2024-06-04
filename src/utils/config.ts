@@ -267,17 +267,11 @@ const configParsers = {
         parseAssert('MISTRAL_MODEL', supportModels.includes(model), 'Invalid model type of Mistral AI');
         return model;
     },
-    OLLAMA_MODEL(model?: string) {
-        if (!model) {
-            return '';
-        }
-        return model;
-    },
-    OLLAMA_MODELS(models?: string) {
+    OLLAMA_MODEL(models?: string): string[] {
         if (!models) {
             return [];
         }
-        return models.split(',');
+        return models.split(',').filter(model => !!model && model.length > 0);
     },
     OLLAMA_HOST(host?: string) {
         if (!host) {
