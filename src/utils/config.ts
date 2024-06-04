@@ -267,11 +267,12 @@ const configParsers = {
         parseAssert('MISTRAL_MODEL', supportModels.includes(model), 'Invalid model type of Mistral AI');
         return model;
     },
-    OLLAMA_MODEL(models?: string): string[] {
+    OLLAMA_MODEL(models?: string | string[]): string[] {
         if (!models) {
             return [];
         }
-        return models.split(',').filter(model => !!model && model.length > 0);
+        const modelList = typeof models === 'string' ? models?.split(',') : models;
+        return modelList.map(model => model.trim()).filter(model => !!model && model.length > 0);
     },
     OLLAMA_HOST(host?: string) {
         if (!host) {
@@ -323,7 +324,7 @@ const configParsers = {
 type ConfigKeys = keyof typeof generalConfigParsers | keyof typeof configParsers;
 
 type RawConfig = {
-    [key in ConfigKeys]?: string;
+    [key in ConfigKeys]?: string | string[];
 };
 
 export type ValidConfig = {
@@ -339,7 +340,12 @@ const readConfigFile = async (): Promise<RawConfig> => {
     }
 
     const configString = await fs.readFile(configPath, 'utf8');
-    return ini.parse(configString);
+    let config = ini.parse(configString);
+    const hasOllmaModel = hasOwn(config, 'OLLAMA_MODEL');
+    if (hasOllmaModel) {
+        config = { ...config, OLLAMA_MODEL: typeof config.OLLAMA_MODEL === 'string' ? [config.OLLAMA_MODEL] : config.OLLAMA_MODEL };
+    }
+    return config;
 };
 
 export const getConfig = async (cliConfig?: RawConfig, suppressErrors?: boolean): Promise<ValidConfig> => {

@@ -21,7 +21,7 @@
 
 ## Introduction
 
-AICommit2 streamlines interactions with various AI, enabling users to request multiple AI simultaneously and select the most suitable commit message without waiting for all AI responses. The core functionalities and architecture of this project are inspired by [AICommits](https://github.com/Nutlope/aicommits).
+_aicommit2_ streamlines interactions with various AI, enabling users to request multiple AI simultaneously and select the most suitable commit message without waiting for all AI responses. The core functionalities and architecture of this project are inspired by [AICommits](https://github.com/Nutlope/aicommits).
 
 ## Supported Providers
 
@@ -128,6 +128,8 @@ git add <files...>
 aicommit2
 ```
 
+> 👉 **Tip:** Ollama can run LLMs **in parallel** from v0.1.33. Please see [this section](#loading-multiple-ollama-models).
+
 ## How it works
 
 This CLI tool runs `git diff` to grab all your latest code changes, sends them to configured AI, then returns the AI generated commit message.
@@ -199,8 +201,8 @@ aicommit2 --confirm # or -y
 
 ##### `--clipboard` or `-c`
 - Copy the selected message to the clipboard (default: **false**)
-- This is a useful option when you don't want to commit through AICommit2.
-- If you give this option, AICommit2 will not commit.
+- This is a useful option when you don't want to commit through _aicommit2_.
+- If you give this option, _aicommit2_ will not commit.
 
 ```sh
 aicommit2 --clipboard # or -c
@@ -215,7 +217,7 @@ aicommit2 --prompt <s> # or -p <s>
 
 ### Git hook
 
-You can also integrate _AICommit2_ with Git via the [`prepare-commit-msg`](https://git-scm.com/docs/githooks#_prepare_commit_msg) hook. This lets you use Git like you normally would, and edit the commit message before committing.
+You can also integrate _aicommit2_ with Git via the [`prepare-commit-msg`](https://git-scm.com/docs/githooks#_prepare_commit_msg) hook. This lets you use Git like you normally would, and edit the commit message before committing.
 
 #### Install
 
@@ -244,7 +246,7 @@ git commit # Only generates a message when it's not passed in
 
 > If you ever want to write your own message instead of generating one, you can simply pass one in: `git commit -m "My message"`
 
-2. AICommit2 will generate the commit message for you and pass it back to Git. Git will open it with the [configured editor](https://docs.github.com/en/get-started/getting-started-with-git/associating-text-editors-with-git) for you to review/edit it.
+2. _aicommit2_ will generate the commit message for you and pass it back to Git. Git will open it with the [configured editor](https://docs.github.com/en/get-started/getting-started-with-git/associating-text-editors-with-git) for you to review/edit it.
 
 3. Save and close the editor to commit!
 
@@ -451,6 +453,11 @@ aicommit2 log removeAll
 
 The Ollama Model. Please see [a list of models available](https://ollama.com/library)
 
+```sh
+aicommit2 config set OLLAMA_MODEL=llama3
+aicommit2 config set OLLAMA_MODEL="llama3,codellama" # for multiple models
+```
+
 ##### OLLAMA_HOST
 
 Default: `http://localhost:11434`
@@ -628,6 +635,46 @@ If it's not the [latest version](https://github.com/tak-bro/aicommit2/releases/l
 ```sh
 npm update -g aicommit2
 ```
+
+## Loading Multiple Ollama Models
+
+<img src="https://github.com/tak-bro/aicommit2/blob/main/img/ollama_parallel.gif?raw=true" alt="OLLAMA_PARALLEL" />
+
+You can load and make simultaneous requests to multiple models using Ollama's experimental feature, the `OLLAMA_MAX_LOADED_MODELS` option.
+- `OLLAMA_MAX_LOADED_MODELS`: Load multiple models simultaneously
+
+#### Setup Guide
+
+Follow these steps to set up and utilize multiple models simultaneously:
+
+##### 1. Running Ollama Server
+
+First, launch the Ollama server with the `OLLAMA_MAX_LOADED_MODELS` environment variable set. This variable specifies the maximum number of models to be loaded simultaneously. 
+For example, to load up to 3 models, use the following command:
+
+```shell
+OLLAMA_MAX_LOADED_MODELS=3 ollama serve
+```
+> Refer to [configuration](https://github.com/ollama/ollama/blob/main/docs/faq.md#how-do-i-configure-ollama-server) for detailed instructions.
+
+##### 2. Configuring _aicommit2_
+
+Next, set up _aicommit2_ to specify multiple models. You can assign a list of models, separated by **commas(`,`)**, to the OLLAMA_MODEL environment variable. Here's how you do it:
+
+```shell
+aicommit2 config set OLLAMA_MODEL="mistral,dolphin-llama3"
+```
+
+With this command, _aicommit2_ is instructed to utilize both the "mistral" and "dolphin-llama3" models when making requests to the Ollama server.
+
+##### 3. Run _aicommit2_
+
+```shell
+aicommit2
+```
+
+> Note that this feature is available starting from Ollama version [**0.1.33**](https://github.com/ollama/ollama/releases/tag/v0.1.33) and _aicommit2_ version [**1.9.5**](https://www.npmjs.com/package/aicommit2/v/1.9.5).
+
 
 ## How to get Cookie(**Unofficial API**)
 
