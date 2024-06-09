@@ -312,6 +312,8 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 | `MISTRAL_MODEL`   | `mistral-tiny`                         | The Mistral Model to use                                                                                                |
 | `COHERE_KEY`      | N/A                                    | The Cohere API Key                                                                                                      |
 | `COHERE_MODEL`    | `command`                              | The identifier of the Cohere model                                                                                      |
+| `GROQ_KEY`        | N/A                                    | The Groq API Key                                                                                                        |
+| `GROQ_MODEL`      | `mixtral-8x7b-32768`                   | The Groq model name to use                                                                                              |
 | `HUGGING_COOKIE`  | N/A                                    | The HuggingFace Cookie string                                                                                           |
 | `HUGGING_MODEL`   | `mistralai/Mixtral-8x7B-Instruct-v0.1` | The HuggingFace Model to use                                                                                            |
 | `CLOVAX_COOKIE`   | N/A                                    | The Clova X Cookie string                                                                                               |
@@ -340,6 +342,7 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 |      **Gemini**      |   ✓    |    ✓     |   ✓   |       |                        |      ✓      |     ✓      |      ✓      |   ✓    |
 |    **Mistral AI**    |   ✓    |    ✓     |   ✓   |       |           ✓            |      ✓      |     ✓      |      ✓      |   ✓    |
 |      **Cohere**      |   ✓    |    ✓     |   ✓   |       |                        |      ✓      |     ✓      |      ✓      |   ✓    |
+|       **Groq**       |   ✓    |    ✓     |   ✓   |       |           ✓            |      ✓      |            |             |   ✓    |
 |   **Huggingface**    |   ✓    |    ✓     |   ✓   |       |           ✓            |      ✓      |            |             |   ✓    |
 |     **Clova X**      |   ✓    |    ✓     |   ✓   |       |           ✓            |      ✓      |            |             |   ✓    |
 |      **Ollama**      |   ✓    |    ✓     |   ✓   |       | ⚠<br/>(OLLAMA_TIMEOUT) |      ✓      |            |      ✓      |   ✓    |
@@ -458,7 +461,7 @@ aicommit2 log removeAll
 The Ollama Model. Please see [a list of models available](https://ollama.com/library)
 
 ```sh
-aicommit2 config set OLLAMA_MODEL=llama3
+aicommit2 config set OLLAMA_MODEL="llama3"
 aicommit2 config set OLLAMA_MODEL="llama3,codellama" # for multiple models
 ```
 
@@ -471,7 +474,6 @@ The Ollama host
 ```sh
 aicommit2 config set OLLAMA_HOST=<host>
 ```
-
 
 ##### OLLAMA_TIMEOUT
 
@@ -604,6 +606,24 @@ Supported:
 - `command-nightly`
 - `command-light`
 - `command-light-nightly`
+
+> The models mentioned above are subject to change.
+
+### Groq
+
+##### GROQ_KEY
+
+The Groq API key. If you don't have one, please sign up and get the API key in [Groq Console](https://console.groq.com).
+
+##### GROQ_MODEL
+
+Default: `mixtral-8x7b-32768`
+
+Supported:
+- `llama3-8b-8192`
+- 'llama3-70b-8192'
+- `mixtral-8x7b-32768`
+- `gemma-7b-it`
 
 > The models mentioned above are subject to change.
 

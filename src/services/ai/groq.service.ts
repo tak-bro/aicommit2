@@ -10,8 +10,6 @@ import { createLogResponse } from '../../utils/log.js';
 import { deduplicateMessages } from '../../utils/openai.js';
 import { extraPrompt, generateDefaultPrompt } from '../../utils/prompt.js';
 
-
-
 export class GroqService extends AIService {
     private groq: Groq;
 
