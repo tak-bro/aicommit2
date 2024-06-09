@@ -66,7 +66,7 @@ export class AnthropicService extends AIService {
                 messages: [
                     {
                         role: 'user',
-                        content: diff,
+                        content: `Here are diff: ${diff}`,
                     },
                 ],
                 model: this.params.config.ANTHROPIC_MODEL,

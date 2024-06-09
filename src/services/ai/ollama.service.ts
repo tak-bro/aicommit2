@@ -209,7 +209,7 @@ export class OllamaService extends AIService {
                 },
                 {
                     role: 'user',
-                    content: `${this.params.stagedDiff.diff}`,
+                    content: `Here are diff: ${this.params.stagedDiff.diff}`,
                 },
             ],
             stream: false,
