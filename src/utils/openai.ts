@@ -202,7 +202,7 @@ export const generateCommitMessage = async (
                     },
                     {
                         role: 'user',
-                        content: diff,
+                        content: `Here are diff: ${diff}`,
                     },
                 ],
                 temperature,

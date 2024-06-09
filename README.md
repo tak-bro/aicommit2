@@ -115,9 +115,7 @@ ollama run llama3 # model you want use. ex) codellama, deepseek-coder
 3. Set the model and host
 
 ```sh
-aicommit2 config set OLLAMA_MODEL=<your model> 
-aicommit2 config set OLLAMA_HOST=<host> # Optional. The default host for ollama is http://localhost:11434.
-aicommit2 config set OLLAMA_TIMEOUT=<timout> # Optional. default is 100000ms (100s)
+aicommit2 config set OLLAMA_MODEL=<your model>
 ```
 
 > If you want to use ollama, you must set **OLLAMA_MODEL**.
@@ -313,13 +311,13 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 | `CLOVAX_COOKIE`   | N/A                                    | The Clova X Cookie string                                                                                               |
 | `OLLAMA_MODEL`    | N/A                                    | The Ollama Model. It should be downloaded your local                                                                    |
 | `OLLAMA_HOST`     | `http://localhost:11434`               | The Ollama Host                                                                                                         |
-| `OLLAMA_TIMEOUT`  | `100000` ms                            | Request timeout for the Ollama                                                                                          |
+| `OLLAMA_TIMEOUT`  | `100_000` ms                           | Request timeout for the Ollama                                                                                          |
 | `OLLAMA_STREAM`   | N/A                                    | Whether to make stream requests (**experimental feature**)                                                              |
 | `locale`          | `en`                                   | Locale for the generated commit messages                                                                                |
 | `generate`        | `1`                                    | Number of commit messages to generate                                                                                   |
 | `type`            | `conventional`                         | Type of commit message to generate                                                                                      |
 | `proxy`           | N/A                                    | Set a HTTP/HTTPS proxy to use for requests(only **OpenAI**)                                                             |
-| `timeout`         | `10000` ms                             | Network request timeout                                                                                                 |
+| `timeout`         | `10_000` ms                            | Network request timeout                                                                                                 |
 | `max-length`      | `50`                                   | Maximum character length of the generated commit message                                                                |
 | `max-tokens`      | `200`                                  | The maximum number of tokens that the AI models can generate (for **Open AI, Anthropic, Gemini, Mistral**)              |
 | `temperature`     | `0.7`                                  | The temperature (0.0-2.0) is used to control the randomness of the output (for **Open AI, Anthropic, Gemini, Mistral**) |
@@ -373,7 +371,7 @@ aicommit2 config set proxy=
 
 The timeout for network requests to the OpenAI API in milliseconds.
 
-Default: `10000` (10 seconds)
+Default: `10_000` (10 seconds)
 
 ```sh
 aicommit2 config set timeout=20000 # 20s
@@ -464,11 +462,20 @@ Default: `http://localhost:11434`
 
 The Ollama host
 
+```sh
+aicommit2 config set OLLAMA_HOST=<host>
+```
+
+
 ##### OLLAMA_TIMEOUT
 
-Default: `100000` (100 seconds)
+Default: `100_000` (100 seconds)
 
 Request timeout for the Ollama. Default OLLAMA_TIMEOUT is **100 seconds** because it can take a long time to run locally.
+
+```sh
+aicommit2 config set OLLAMA_TIMEOUT=<timout>
+```
 
 ##### OLLAMA_STREAM
 
