@@ -32,6 +32,7 @@ _aicommit2_ streamlines interactions with various AI, enabling users to request 
 - [Gemini](https://gemini.google.com/)
 - [Mistral AI](https://mistral.ai/)
 - [Cohere](https://cohere.com/)
+- [Groq](https://groq.com/)
 - [Huggingface **(Unofficial)**](https://huggingface.co/chat/)
 - [Clova X **(Unofficial)**](https://clova-x.naver.com/)
 
@@ -76,6 +77,11 @@ aicommit2 config set MISTRAL_KEY=<your key>
 - [Cohere](https://dashboard.cohere.com/)
 ```sh
 aicommit2 config set COHERE_KEY=<your key>
+```
+
+- [Groq](https://console.groq.com)
+```sh
+aicommit2 config set GROQ_KEY=<your key>
 ```
 
 - [Huggingface **(Unofficial)**](https://github.com/tak-bro/aicommit2?tab=readme-ov-file#how-to-get-cookieunofficial-api)

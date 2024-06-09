@@ -319,6 +319,20 @@ const configParsers = {
         parseAssert('COHERE_MODEL', supportModels.includes(model), 'Invalid model type of Cohere');
         return model;
     },
+    GROQ_KEY(key?: string) {
+        if (!key) {
+            return '';
+        }
+        return key;
+    },
+    GROQ_MODEL(model?: string) {
+        if (!model || model.length === 0) {
+            return 'mixtral-8x7b-32768';
+        }
+        const supportModels = [`llama3-8b-8192`, 'llama3-70b-8192', `mixtral-8x7b-32768`, `gemma-7b-it`];
+        parseAssert('GROQ_MODEL', supportModels.includes(model), 'Invalid model type of Cohere');
+        return model;
+    },
 } as const;
 
 type ConfigKeys = keyof typeof generalConfigParsers | keyof typeof configParsers;
