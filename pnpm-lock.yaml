@@ -38,6 +38,9 @@ dependencies:
   formdata-node:
     specifier: ^6.0.3
     version: 6.0.3
+  groq-sdk:
+    specifier: ^0.4.0
+    version: 0.4.0
   inquirer:
     specifier: ^9.0.3
     version: 9.2.8
@@ -4966,6 +4969,21 @@ packages:
   /graphemer@1.4.0:
     resolution: {integrity: sha512-EtKwoO6kxCL9WO5xipiHTZlSzBm7WLT627TqC/uVRd0HKmq8NXyebnNYxDoBi7wt8eTWrUrKXCOVaFq9x1kgag==}
     dev: true
+
+  /groq-sdk@0.4.0:
+    resolution: {integrity: sha512-h79q9sv4hcOBESR05N5eqHlGhAug9H9lr3EIiB+37ysWWekeG+KYQDK2lIIHYCm6O9LzgZzO/VdLdPP298+T0w==}
+    dependencies:
+      '@types/node': 18.14.2
+      '@types/node-fetch': 2.6.11
+      abort-controller: 3.0.0
+      agentkeepalive: 4.5.0
+      form-data-encoder: 1.7.2
+      formdata-node: 4.4.1
+      node-fetch: 2.7.0
+      web-streams-polyfill: 3.3.2
+    transitivePeerDependencies:
+      - encoding
+    dev: false
 
   /handlebars@4.7.8:
     resolution: {integrity: sha512-vafaFqs8MZkRrSX7sFVUdo3ap/eNiLnb4IakshzvP56X5Nr1iGKAIqdX6tMlm6HcNRIkr6AxO5jFEoJzzpT8aQ==}
