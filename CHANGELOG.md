@@ -1,3 +1,10 @@
+## [1.9.7](https://github.com/tak-bro/aicommit2/compare/v1.9.6...v1.9.7) (2024-06-10)
+
+
+### Features
+
+* implement GroqService for Groq AI ([8c4ad8c](https://github.com/tak-bro/aicommit2/commit/8c4ad8cd7a0595c412e63e51cfd164dff1a0590b))
+
 ## [1.9.6](https://github.com/tak-bro/aicommit2/compare/v1.9.5...v1.9.6) (2024-06-09)
 
 ## [1.9.5](https://github.com/tak-bro/aicommit2/compare/v1.9.4...v1.9.5) (2024-06-04)
