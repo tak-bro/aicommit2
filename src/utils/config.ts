@@ -327,7 +327,7 @@ const configParsers = {
     },
     GROQ_MODEL(model?: string) {
         if (!model || model.length === 0) {
-            return 'mixtral-8x7b-32768';
+            return 'gemma-7b-it';
         }
         const supportModels = [`llama3-8b-8192`, 'llama3-70b-8192', `mixtral-8x7b-32768`, `gemma-7b-it`];
         parseAssert('GROQ_MODEL', supportModels.includes(model), 'Invalid model type of Groq');

@@ -61,7 +61,7 @@ export class GroqService extends AIService {
             );
 
             const result = chatCompletion.choices[0].message.content || '';
-            logging && createLogResponse('Anthropic', diff, systemPrompt, result);
+            logging && createLogResponse('Groq', diff, systemPrompt, result);
             return deduplicateMessages(this.sanitizeMessage(result, this.params.config.type, generate));
         } catch (error) {
             throw error as any;

@@ -313,7 +313,7 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 | `COHERE_KEY`      | N/A                                    | The Cohere API Key                                                                                                      |
 | `COHERE_MODEL`    | `command`                              | The identifier of the Cohere model                                                                                      |
 | `GROQ_KEY`        | N/A                                    | The Groq API Key                                                                                                        |
-| `GROQ_MODEL`      | `mixtral-8x7b-32768`                   | The Groq model name to use                                                                                              |
+| `GROQ_MODEL`      | `gemma-7b-it`                          | The Groq model name to use                                                                                              |
 | `HUGGING_COOKIE`  | N/A                                    | The HuggingFace Cookie string                                                                                           |
 | `HUGGING_MODEL`   | `mistralai/Mixtral-8x7B-Instruct-v0.1` | The HuggingFace Model to use                                                                                            |
 | `CLOVAX_COOKIE`   | N/A                                    | The Clova X Cookie string                                                                                               |
@@ -617,7 +617,7 @@ The Groq API key. If you don't have one, please sign up and get the API key in [
 
 ##### GROQ_MODEL
 
-Default: `mixtral-8x7b-32768`
+Default: `gemma-7b-it`
 
 Supported:
 - `llama3-8b-8192`

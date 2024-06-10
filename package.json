@@ -31,7 +31,8 @@
         "llama3",
         "llm",
         "chatgpt",
-        "cohere"
+        "cohere",
+        "groq"
     ],
     "license": "MIT",
     "repository": "tak-bro/aicommit2",
