@@ -44,24 +44,24 @@ export interface CreateChatCompletionsResponse {
 }
 
 export class MistralService extends AIService {
-    private use_codestral = ['codestral-latest', 'codestral-2405'].includes(this.params.config.MISTRAL_MODEL);
-    private host = this.use_codestral ? 'https://codestral.mistral.ai' : 'https://api.mistral.ai';
-    private mistral_apiKey = '';
-    private codestral_apiKey = '';
+    private useCodestral = ['codestral-latest', 'codestral-2405'].includes(this.params.config.MISTRAL_MODEL);
+    private host = this.useCodestral ? 'https://codestral.mistral.ai' : 'https://api.mistral.ai';
+    private apiKeyMistral = '';
+    private apiKeyCodestral = '';
 
     constructor(private readonly params: AIServiceParams) {
         super(params);
         this.colors = {
-            primary: this.use_codestral ? '#199910' : '#FC4A0A',
+            primary: this.useCodestral ? '#199910' : '#FC4A0A',
             secondary: '#fff',
         };
-        this.serviceName = this.use_codestral
+        this.serviceName = this.useCodestral
             ? chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold('[MistralAI-Codestral]')
             : chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold('[MistralAI]');
-        this.errorPrefix = this.use_codestral ? chalk.red.bold(`[MistralAI-Codestral]`) : chalk.red.bold(`[MistralAI]`);
-        //this.apiKey = this.use_codestral ? this.params.config.CODESTRAL_KEY : this.params.config.MISTRAL_KEY;
-        this.codestral_apiKey = this.params.config.CODESTRAL_KEY;
-        this.mistral_apiKey = this.params.config.MISTRAL_KEY;
+        this.errorPrefix = this.useCodestral ? chalk.red.bold(`[MistralAI-Codestral]`) : chalk.red.bold(`[MistralAI]`);
+        //this.apiKey = this.useCodestral ? this.params.config.CODESTRAL_KEY : this.params.config.MISTRAL_KEY;
+        this.apiKeyCodestral = this.params.config.CODESTRAL_KEY;
+        this.apiKeyMistral = this.params.config.MISTRAL_KEY;
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
@@ -123,7 +123,7 @@ export class MistralService extends AIService {
             timeout: this.params.config.timeout,
         })
             .setHeaders({
-                Authorization: `Bearer ${this.mistral_apiKey}`,
+                Authorization: `Bearer ${this.apiKeyMistral}`,
                 'content-type': 'application/json',
             })
             .execute();
@@ -139,7 +139,7 @@ export class MistralService extends AIService {
         })
             .setHeaders({
                 //Authorization: `Bearer ${this.apiKey}`,
-                Authorization: this.use_codestral ? `Bearer ${this.codestral_apiKey}` : `Bearer ${this.mistral_apiKey}`,
+                Authorization: this.useCodestral ? `Bearer ${this.apiKeyCodestral}` : `Bearer ${this.apiKeyMistral}`,
                 'content-type': 'application/json',
             })
             .setBody({
