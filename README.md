@@ -31,6 +31,7 @@ _aicommit2_ streamlines interactions with various AI, enabling users to request 
 - [Anthropic Claude](https://console.anthropic.com/)
 - [Gemini](https://gemini.google.com/)
 - [Mistral AI](https://mistral.ai/)
+    - [Codestral **(Free till August 1, 2024)**](https://mistral.ai/news/codestral/)
 - [Cohere](https://cohere.com/)
 - [Groq](https://groq.com/)
 - [Huggingface **(Unofficial)**](https://huggingface.co/chat/)
@@ -74,6 +75,11 @@ aicommit2 config set GEMINI_KEY=<your key>
 aicommit2 config set MISTRAL_KEY=<your key>
 ```
 
+- [Codestral](https://console.mistral.ai/)
+```sh
+aicommit2 config set CODESTRAL_KEY=<your key>
+```
+
 - [Cohere](https://dashboard.cohere.com/)
 ```sh
 aicommit2 config set COHERE_KEY=<your key>
@@ -100,7 +106,7 @@ This will create a `.aicommit2` file in your home directory.
 
 > You may need to create an account and set up billing.
 
-3. Run aicommit2 with your staged in git repository:
+3. Run aicommit2 with your staged files in git repository:
 ```shell
 git add <files...>
 aicommit2
@@ -310,6 +316,7 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 | `GEMINI_MODEL`    | `gemini-1.5-flash-latest`              | The Gemini Model                                                                                                        |
 | `MISTRAL_KEY`     | N/A                                    | The Mistral API key                                                                                                     |
 | `MISTRAL_MODEL`   | `mistral-tiny`                         | The Mistral Model to use                                                                                                |
+| `CODESTRAL_KEY`   | N/A                                    | The Codestral API key                                                                                                     | | 
 | `COHERE_KEY`      | N/A                                    | The Cohere API Key                                                                                                      |
 | `COHERE_MODEL`    | `command`                              | The identifier of the Cohere model                                                                                      |
 | `GROQ_KEY`        | N/A                                    | The Groq API Key                                                                                                        |
@@ -569,6 +576,12 @@ Supported:
 
 The Mistral API key. If you don't have one, please sign up and subscribe in [Mistral Console](https://console.mistral.ai/).
 
+##### CODESTRAL_KEY
+
+The Codestral API key. If you don't have one, please sign up and subscribe in [Mistral Console](https://console.mistral.ai/codestral).
+
+> To use a Codestral model, the `MISTRAL_MODEL` value needs to be set to `codestral-latest` (or `codestral-2405`).  
+
 ##### MISTRAL_MODEL
 
 Default: `mistral-tiny`
@@ -588,8 +601,11 @@ Supported:
 - `mistral-large-latest`
 - `mistral-large-2402`
 - `mistral-embed`
+- `codestral-latest`
+- `codestral-2405`
 
 > The models mentioned above are subject to change.
+
 
 ### Cohere
 
