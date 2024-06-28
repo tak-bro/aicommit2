@@ -42,6 +42,7 @@ export class AIRequestManager {
                     case AIType.CLOVA_X:
                         return AIServiceFactory.create(ClovaXService, params).generateCommitMessage$();
                     case AIType.MISTRAL:
+                    case AIType.CODESTRAL:
                         return AIServiceFactory.create(MistralService, params).generateCommitMessage$();
                     case AIType.OLLAMA:
                         return from(this.config.OLLAMA_MODEL).pipe(

@@ -53,6 +53,9 @@ export default async (
             ANTHROPIC_MODEL: env.ANTHROPIC_MODEL || env['anthropic-model'] || env['anthropic_model'],
             HUGGING_COOKIE: env.HUGGING_COOKIE || env.HUGGING_API_KEY || env.HF_TOKEN,
             HUGGING_MODEL: env.HUGGING_MODEL || env['hugging-model'],
+            MISTRAL_KEY: env.MISTRAL_KEY || env.MISTRAL_API_KEY,
+            CODESTRAL_KEY: env.CODESTRAL_KEY || env.CODESTRAL_API_KEY,
+            MISTRAL_MODEL: env.MISTRAL_MODEL || env['mistral-model'] || env['mistral_model'],
             CLOVAX_COOKIE: env.CLOVAX_COOKIE || env.CLOVA_X_COOKIE,
             proxy: env.https_proxy || env.HTTPS_PROXY || env.http_proxy || env.HTTP_PROXY,
             temperature: env.temperature,
@@ -74,7 +77,7 @@ export default async (
 
         const hasNoAvailableAIs = availableAPIKeyNames.length === 0;
         if (hasNoAvailableAIs) {
-            throw new KnownError('Please set at least one API key via `aicommit2 config set OPENAI_KEY=<your token>`');
+            throw new KnownError('Please set at least one API key via the `aicommit2 config set` command');
         }
 
         const aiRequestManager = new AIRequestManager(config, staged);

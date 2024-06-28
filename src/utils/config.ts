@@ -210,9 +210,9 @@ const configParsers = {
     },
     GEMINI_MODEL(model?: string) {
         if (!model || model.length === 0) {
-            return 'gemini-1.5-pro-latest';
+            return 'gemini-1.5-flash-latest';
         }
-        const supportModels = ['gemini-1.5-flash-latest', 'gemini-1.5-pro-latest'];
+        const supportModels = ['gemini-1.5-flash-latest', 'gemini-pro'];
         parseAssert('GEMINI_MODEL', supportModels.includes(model), 'Invalid model type of Gemini');
         return model;
     },
@@ -243,6 +243,12 @@ const configParsers = {
         }
         return key;
     },
+    CODESTRAL_KEY(key?: string) {
+        if (!key) {
+            return '';
+        }
+        return key;
+    },
     MISTRAL_MODEL(model?: string) {
         if (!model || model.length === 0) {
             return 'mistral-tiny';
@@ -262,6 +268,8 @@ const configParsers = {
             'mistral-large-latest',
             'mistral-large-2402',
             'mistral-embed',
+            'codestral-latest',
+            'codestral-2405',
         ];
 
         parseAssert('MISTRAL_MODEL', supportModels.includes(model), 'Invalid model type of Mistral AI');
