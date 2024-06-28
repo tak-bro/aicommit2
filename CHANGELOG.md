@@ -1,3 +1,10 @@
+## [1.9.8](https://github.com/tak-bro/aicommit2/compare/v1.9.7...v1.9.8) (2024-06-28)
+
+
+### Bug Fixes
+
+* **config:** update default Gemini model ([db0ea19](https://github.com/tak-bro/aicommit2/commit/db0ea19c8fbd3dde46ea1634d756b889b9c42019))
+
 ## [1.9.7](https://github.com/tak-bro/aicommit2/compare/v1.9.6...v1.9.7) (2024-06-10)
 
 
