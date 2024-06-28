@@ -46,6 +46,7 @@ export interface CreateChatCompletionsResponse {
 export class MistralService extends AIService {
     private useCodestral = ['codestral-latest', 'codestral-2405'].includes(this.params.config.MISTRAL_MODEL);
     private host = this.useCodestral ? 'https://codestral.mistral.ai' : 'https://api.mistral.ai';
+    private displayProvider = this.useCodestral ? '[MistralAI-Codestral]' : '[MistralAI]';
     private apiKeyMistral = '';
     private apiKeyCodestral = '';
 
@@ -55,10 +56,8 @@ export class MistralService extends AIService {
             primary: this.useCodestral ? '#199910' : '#FC4A0A',
             secondary: '#fff',
         };
-        this.serviceName = this.useCodestral
-            ? chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold('[MistralAI-Codestral]')
-            : chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold('[MistralAI]');
-        this.errorPrefix = this.useCodestral ? chalk.red.bold(`[MistralAI-Codestral]`) : chalk.red.bold(`[MistralAI]`);
+        this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold(this.displayProvider);
+        this.errorPrefix = chalk.red.bold(this.displayProvider);
         //this.apiKey = this.useCodestral ? this.params.config.CODESTRAL_KEY : this.params.config.MISTRAL_KEY;
         this.apiKeyCodestral = this.params.config.CODESTRAL_KEY;
         this.apiKeyMistral = this.params.config.MISTRAL_KEY;
@@ -84,7 +83,7 @@ export class MistralService extends AIService {
             const prompt = this.buildPrompt(locale, diff, generate, maxLength, type, userPrompt);
             await this.checkAvailableModels();
             const chatResponse = await this.createChatCompletions(prompt);
-            logging && createLogResponse('MistralAI', diff, prompt, chatResponse);
+            logging && createLogResponse(this.displayProvider, diff, prompt, chatResponse);
             return deduplicateMessages(this.sanitizeMessage(chatResponse, this.params.config.type, generate));
         } catch (error) {
             const errorAsAny = error as any;
