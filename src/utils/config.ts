@@ -210,9 +210,9 @@ const configParsers = {
     },
     GEMINI_MODEL(model?: string) {
         if (!model || model.length === 0) {
-            return 'gemini-1.5-flash-latest';
+            return 'gemini-1.5-pro-latest';
         }
-        const supportModels = ['gemini-1.5-flash-latest', 'gemini-pro'];
+        const supportModels = ['gemini-1.5-flash-latest', 'gemini-1.5-pro-latest'];
         parseAssert('GEMINI_MODEL', supportModels.includes(model), 'Invalid model type of Gemini');
         return model;
     },
