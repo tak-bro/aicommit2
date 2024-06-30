@@ -44,18 +44,23 @@ export interface CreateChatCompletionsResponse {
 }
 
 export class MistralService extends AIService {
-    private host = `https://api.mistral.ai`;
-    private apiKey = '';
+    private useCodestral = ['codestral-latest', 'codestral-2405'].includes(this.params.config.MISTRAL_MODEL);
+    private host = this.useCodestral ? 'https://codestral.mistral.ai' : 'https://api.mistral.ai';
+    private displayProvider = this.useCodestral ? '[MistralAI-Codestral]' : '[MistralAI]';
+    private apiKeyMistral = '';
+    private apiKeyCodestral = '';
 
     constructor(private readonly params: AIServiceParams) {
         super(params);
         this.colors = {
-            primary: '#FC4A0A',
+            primary: this.useCodestral ? '#199910' : '#FC4A0A',
             secondary: '#fff',
         };
-        this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold('[MistralAI]');
-        this.errorPrefix = chalk.red.bold(`[MistralAI]`);
-        this.apiKey = this.params.config.MISTRAL_KEY;
+        this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold(this.displayProvider);
+        this.errorPrefix = chalk.red.bold(this.displayProvider);
+        //this.apiKey = this.useCodestral ? this.params.config.CODESTRAL_KEY : this.params.config.MISTRAL_KEY;
+        this.apiKeyCodestral = this.params.config.CODESTRAL_KEY;
+        this.apiKeyMistral = this.params.config.MISTRAL_KEY;
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
@@ -78,7 +83,7 @@ export class MistralService extends AIService {
             const prompt = this.buildPrompt(locale, diff, generate, maxLength, type, userPrompt);
             await this.checkAvailableModels();
             const chatResponse = await this.createChatCompletions(prompt);
-            logging && createLogResponse('MistralAI', diff, prompt, chatResponse);
+            logging && createLogResponse(this.displayProvider, diff, prompt, chatResponse);
             return deduplicateMessages(this.sanitizeMessage(chatResponse, this.params.config.type, generate));
         } catch (error) {
             const errorAsAny = error as any;
@@ -110,11 +115,14 @@ export class MistralService extends AIService {
     private async getAvailableModels() {
         const response: AxiosResponse<ListAvailableModelsResponse> = await new HttpRequestBuilder({
             method: 'GET',
-            baseURL: `${this.host}/v1/models`,
+            // The 'List Available Models' endpoint is only available in the `api.mistral.ai` domain, codestral models included in the response
+            // thus the CODESTRAL_KEY, used for codestral models, cannot be used to send this request
+            // also currently `codestral-latest` points to `codestral-2405` src: https://docs.mistral.ai/getting-started/models/#api-versioning
+            baseURL: 'https://api.mistral.ai/v1/models',
             timeout: this.params.config.timeout,
         })
             .setHeaders({
-                Authorization: `Bearer ${this.apiKey}`,
+                Authorization: `Bearer ${this.apiKeyMistral}`,
                 'content-type': 'application/json',
             })
             .execute();
@@ -129,7 +137,8 @@ export class MistralService extends AIService {
             timeout: this.params.config.timeout,
         })
             .setHeaders({
-                Authorization: `Bearer ${this.apiKey}`,
+                //Authorization: `Bearer ${this.apiKey}`,
+                Authorization: this.useCodestral ? `Bearer ${this.apiKeyCodestral}` : `Bearer ${this.apiKeyMistral}`,
                 'content-type': 'application/json',
             })
             .setBody({
