@@ -313,7 +313,7 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 | `ANTHROPIC_KEY`   | N/A                                    | The Anthropic API key                                                                                                   |
 | `ANTHROPIC_MODEL` | `claude-3-haiku-20240307`              | The Anthropic Model to use                                                                                              |
 | `GEMINI_KEY`      | N/A                                    | The Gemini API key                                                                                                      |
-| `GEMINI_MODEL`    | `gemini-1.5-flash-latest`              | The Gemini Model                                                                                                        |
+| `GEMINI_MODEL`    | `gemini-1.5-pro-latest`                | The Gemini Model                                                                                                        |
 | `MISTRAL_KEY`     | N/A                                    | The Mistral API key                                                                                                     |
 | `MISTRAL_MODEL`   | `mistral-tiny`                         | The Mistral Model to use                                                                                                |
 | `CODESTRAL_KEY`   | N/A                                    | The Codestral API key                                                                                                     | | 
@@ -562,11 +562,11 @@ The Gemini API key. If you don't have one, create a key in [Google AI Studio](ht
 
 ##### GEMINI_MODEL
 
-Default: `gemini-1.5-flash-latest`
+Default: `gemini-1.5-pro-latest`
 
 Supported:
+- `gemini-1.5-pro-latest`
 - `gemini-1.5-flash-latest`
-- `gemini-pro`
 
 > The models mentioned above are subject to change.
 
