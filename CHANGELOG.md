@@ -1,3 +1,15 @@
+## [1.9.9](https://github.com/tak-bro/aicommit2/compare/v1.9.8...v1.9.9) (2024-06-30)
+
+
+### Bug Fixes
+
+* **config:** update default Gemini model [#47](https://github.com/tak-bro/aicommit2/issues/47) ([63dfc40](https://github.com/tak-bro/aicommit2/commit/63dfc40e23172b0bb670b966b967bdf485485a17))
+
+
+### Features
+
+* add Codestral support in MistralService ([d54be92](https://github.com/tak-bro/aicommit2/commit/d54be9212490ece0d45b6d418a6c0e874f5bf392))
+
 ## [1.9.8](https://github.com/tak-bro/aicommit2/compare/v1.9.7...v1.9.8) (2024-06-28)
 
 
