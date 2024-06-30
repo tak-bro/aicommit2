@@ -5,59 +5,27 @@ import { Observable, catchError, concatMap, from, map, of } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIService, AIServiceError, AIServiceParams } from './ai.service.js';
+import { CreateChatCompletionsResponse } from './mistral.service.js';
 import { KnownError } from '../../utils/error.js';
 import { createLogResponse } from '../../utils/log.js';
 import { deduplicateMessages } from '../../utils/openai.js';
 import { getRandomNumber } from '../../utils/utils.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
+export interface CodestralServiceError extends AIServiceError {}
 
-export interface MistralServiceError extends AIServiceError {}
-
-export interface ListAvailableModelsResponse {
-    object: string;
-    data: {
-        id: string;
-        object: string;
-        created: number;
-        owned_by: string;
-    }[];
-}
-
-export interface CreateChatCompletionsResponse {
-    id: string;
-    object: string;
-    created: number;
-    model: string;
-    choices: {
-        index: number;
-        message: {
-            role: string;
-            content: string;
-        };
-        finish_reason: string;
-    }[];
-    usage: {
-        prompt_tokens: number;
-        completion_tokens: number;
-        total_tokens: number;
-    };
-}
-
-export class MistralService extends AIService {
-    private host = `https://api.mistral.ai`;
+export class CodestralService extends AIService {
+    private host = 'https://codestral.mistral.ai';
     private apiKey = '';
-
     constructor(private readonly params: AIServiceParams) {
         super(params);
         this.colors = {
-            primary: '#ff7000',
+            primary: '#e28c58',
             secondary: '#fff',
         };
-        this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold('[MistralAI]');
-        this.errorPrefix = chalk.red.bold(`[MistralAI]`);
-        this.apiKey = this.params.config.MISTRAL_KEY;
+        this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold(`[Codestral]`);
+        this.errorPrefix = chalk.red.bold(`[Codestral]`);
+        this.apiKey = this.params.config.CODESTRAL_KEY;
     }
-
     generateCommitMessage$(): Observable<ReactiveListChoice> {
         return fromPromise(this.generateMessage()).pipe(
             concatMap(messages => from(messages)),
@@ -69,16 +37,15 @@ export class MistralService extends AIService {
             catchError(this.handleError$)
         );
     }
-
     private async generateMessage(): Promise<string[]> {
         try {
             const diff = this.params.stagedDiff.diff;
             const { locale, generate, type, prompt: userPrompt, logging } = this.params.config;
             const maxLength = this.params.config['max-length'];
             const prompt = this.buildPrompt(locale, diff, generate, maxLength, type, userPrompt);
-            await this.checkAvailableModels();
+            this.checkAvailableModels();
             const chatResponse = await this.createChatCompletions(prompt);
-            logging && createLogResponse('MistralAI', diff, prompt, chatResponse);
+            logging && createLogResponse('Codestral', diff, prompt, chatResponse);
             return deduplicateMessages(this.sanitizeMessage(chatResponse, this.params.config.type, generate));
         } catch (error) {
             const errorAsAny = error as any;
@@ -88,8 +55,7 @@ export class MistralService extends AIService {
             throw errorAsAny;
         }
     }
-
-    handleError$ = (error: MistralServiceError) => {
+    handleError$ = (error: CodestralServiceError) => {
         const simpleMessage = error.message?.replace(/(\r\n|\n|\r)/gm, '') || 'An error occurred';
         return of({
             name: `${this.errorPrefix} ${simpleMessage}`,
@@ -98,30 +64,14 @@ export class MistralService extends AIService {
             disabled: true,
         });
     };
+    private checkAvailableModels() {
+        const supportModels = ['codestral-latest', 'codestral-2405'];
 
-    private async checkAvailableModels() {
-        const availableModels = await this.getAvailableModels();
-        if (availableModels.includes(this.params.config.MISTRAL_MODEL)) {
+        if (supportModels.includes(this.params.config.CODESTRAL_MODEL)) {
             return true;
         }
-        throw new Error(`Invalid model type of Mistral AI`);
+        throw new Error(`Invalid model type of Codestral AI`);
     }
-
-    private async getAvailableModels() {
-        const response: AxiosResponse<ListAvailableModelsResponse> = await new HttpRequestBuilder({
-            method: 'GET',
-            baseURL: `${this.host}/v1/models`,
-            timeout: this.params.config.timeout,
-        })
-            .setHeaders({
-                Authorization: `Bearer ${this.apiKey}`,
-                'content-type': 'application/json',
-            })
-            .execute();
-
-        return response.data.data.filter(model => model.object === 'model').map(model => model.id);
-    }
-
     private async createChatCompletions(prompt: string) {
         const response: AxiosResponse<CreateChatCompletionsResponse> = await new HttpRequestBuilder({
             method: 'POST',
@@ -133,7 +83,7 @@ export class MistralService extends AIService {
                 'content-type': 'application/json',
             })
             .setBody({
-                model: this.params.config.MISTRAL_MODEL,
+                model: this.params.config.CODESTRAL_MODEL,
                 messages: [
                     {
                         role: 'user',

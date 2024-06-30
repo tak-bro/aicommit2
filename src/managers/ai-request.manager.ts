@@ -6,6 +6,7 @@ import { AIServiceFactory } from '../services/ai/ai-service.factory.js';
 import { AIServiceParams, AIType, ApiKeyName } from '../services/ai/ai.service.js';
 import { AnthropicService } from '../services/ai/anthropic.service.js';
 import { ClovaXService } from '../services/ai/clova-x.service.js';
+import { CodestralService } from '../services/ai/codestral.service.js';
 import { CohereService } from '../services/ai/cohere.service.js';
 import { GeminiService } from '../services/ai/gemini.service.js';
 import { GroqService } from '../services/ai/groq.service.js';
@@ -42,8 +43,9 @@ export class AIRequestManager {
                     case AIType.CLOVA_X:
                         return AIServiceFactory.create(ClovaXService, params).generateCommitMessage$();
                     case AIType.MISTRAL:
-                    case AIType.CODESTRAL:
                         return AIServiceFactory.create(MistralService, params).generateCommitMessage$();
+                    case AIType.CODESTRAL:
+                        return AIServiceFactory.create(CodestralService, params).generateCommitMessage$();
                     case AIType.OLLAMA:
                         return from(this.config.OLLAMA_MODEL).pipe(
                             mergeMap(model => {
