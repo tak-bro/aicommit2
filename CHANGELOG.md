@@ -1,3 +1,15 @@
+## [1.9.10](https://github.com/tak-bro/aicommit2/compare/v1.9.9...v1.9.10) (2024-06-30)
+
+
+### Bug Fixes
+
+* update selection logic based on CODESTRAL_MODEL ([27541b7](https://github.com/tak-bro/aicommit2/commit/27541b7232be91c55f6d316f5480270b0115b28e))
+
+
+### Features
+
+* implement Codestral service ([5f72689](https://github.com/tak-bro/aicommit2/commit/5f72689c2cf9391f9b62d201048c91b9efd6b64a))
+
 ## [1.9.9](https://github.com/tak-bro/aicommit2/compare/v1.9.8...v1.9.9) (2024-06-30)
 
 
