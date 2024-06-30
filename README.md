@@ -304,40 +304,41 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 
 ## Options
 
-| Option            | Default                                | Description                                                                                                             |
-|-------------------|----------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
-| `OPENAI_KEY`      | N/A                                    | The OpenAI API key                                                                                                      |
-| `OPENAI_MODEL`    | `gpt-3.5-turbo`                        | The OpenAI Model to use                                                                                                 |
-| `OPENAI_URL`      | `https://api.openai.com`               | The OpenAI URL                                                                                                          |
-| `OPENAI_PATH`     | `/v1/chat/completions`                 | The OpenAI request pathname                                                                                             |
-| `ANTHROPIC_KEY`   | N/A                                    | The Anthropic API key                                                                                                   |
-| `ANTHROPIC_MODEL` | `claude-3-haiku-20240307`              | The Anthropic Model to use                                                                                              |
-| `GEMINI_KEY`      | N/A                                    | The Gemini API key                                                                                                      |
-| `GEMINI_MODEL`    | `gemini-1.5-pro-latest`                | The Gemini Model                                                                                                        |
-| `MISTRAL_KEY`     | N/A                                    | The Mistral API key                                                                                                     |
-| `MISTRAL_MODEL`   | `mistral-tiny`                         | The Mistral Model to use                                                                                                |
-| `CODESTRAL_KEY`   | N/A                                    | The Codestral API key                                                                                                     | | 
-| `COHERE_KEY`      | N/A                                    | The Cohere API Key                                                                                                      |
-| `COHERE_MODEL`    | `command`                              | The identifier of the Cohere model                                                                                      |
-| `GROQ_KEY`        | N/A                                    | The Groq API Key                                                                                                        |
-| `GROQ_MODEL`      | `gemma-7b-it`                          | The Groq model name to use                                                                                              |
-| `HUGGING_COOKIE`  | N/A                                    | The HuggingFace Cookie string                                                                                           |
-| `HUGGING_MODEL`   | `mistralai/Mixtral-8x7B-Instruct-v0.1` | The HuggingFace Model to use                                                                                            |
-| `CLOVAX_COOKIE`   | N/A                                    | The Clova X Cookie string                                                                                               |
-| `OLLAMA_MODEL`    | N/A                                    | The Ollama Model. It should be downloaded your local                                                                    |
-| `OLLAMA_HOST`     | `http://localhost:11434`               | The Ollama Host                                                                                                         |
-| `OLLAMA_TIMEOUT`  | `100_000` ms                           | Request timeout for the Ollama                                                                                          |
-| `OLLAMA_STREAM`   | N/A                                    | Whether to make stream requests (**experimental feature**)                                                              |
-| `locale`          | `en`                                   | Locale for the generated commit messages                                                                                |
-| `generate`        | `1`                                    | Number of commit messages to generate                                                                                   |
-| `type`            | `conventional`                         | Type of commit message to generate                                                                                      |
-| `proxy`           | N/A                                    | Set a HTTP/HTTPS proxy to use for requests(only **OpenAI**)                                                             |
-| `timeout`         | `10_000` ms                            | Network request timeout                                                                                                 |
-| `max-length`      | `50`                                   | Maximum character length of the generated commit message                                                                |
-| `max-tokens`      | `200`                                  | The maximum number of tokens that the AI models can generate (for **Open AI, Anthropic, Gemini, Mistral**)              |
-| `temperature`     | `0.7`                                  | The temperature (0.0-2.0) is used to control the randomness of the output (for **Open AI, Anthropic, Gemini, Mistral**) |
-| `prompt`          | N/A                                    | Additional prompt to let users fine-tune provided prompt                                                                |
-| `logging`         | `false`                                | Whether to log AI responses for debugging (true or false)                                                               |
+| Option            | Default                                | Description                                                                                                                        |
+|-------------------|----------------------------------------|------------------------------------------------------------------------------------------------------------------------------------|
+| `OPENAI_KEY`      | N/A                                    | The OpenAI API key                                                                                                                 |
+| `OPENAI_MODEL`    | `gpt-3.5-turbo`                        | The OpenAI Model to use                                                                                                            |
+| `OPENAI_URL`      | `https://api.openai.com`               | The OpenAI URL                                                                                                                     |
+| `OPENAI_PATH`     | `/v1/chat/completions`                 | The OpenAI request pathname                                                                                                        |
+| `ANTHROPIC_KEY`   | N/A                                    | The Anthropic API key                                                                                                              |
+| `ANTHROPIC_MODEL` | `claude-3-haiku-20240307`              | The Anthropic Model to use                                                                                                         |
+| `GEMINI_KEY`      | N/A                                    | The Gemini API key                                                                                                                 |
+| `GEMINI_MODEL`    | `gemini-1.5-pro-latest`                | The Gemini Model                                                                                                                   |
+| `MISTRAL_KEY`     | N/A                                    | The Mistral API key                                                                                                                |
+| `MISTRAL_MODEL`   | `mistral-tiny`                         | The Mistral Model to use                                                                                                           |
+| `CODESTRAL_KEY`   | N/A                                    | The Codestral API key                                                                                                              |  
+| `CODESTRAL_MODEL` | `codestral-latest`                     | The Codestral Model to use                                                                                                         |
+| `COHERE_KEY`      | N/A                                    | The Cohere API Key                                                                                                                 |
+| `COHERE_MODEL`    | `command`                              | The identifier of the Cohere model                                                                                                 |
+| `GROQ_KEY`        | N/A                                    | The Groq API Key                                                                                                                   |
+| `GROQ_MODEL`      | `gemma-7b-it`                          | The Groq model name to use                                                                                                         |
+| `HUGGING_COOKIE`  | N/A                                    | The HuggingFace Cookie string                                                                                                      |
+| `HUGGING_MODEL`   | `mistralai/Mixtral-8x7B-Instruct-v0.1` | The HuggingFace Model to use                                                                                                       |
+| `CLOVAX_COOKIE`   | N/A                                    | The Clova X Cookie string                                                                                                          |
+| `OLLAMA_MODEL`    | N/A                                    | The Ollama Model. It should be downloaded your local                                                                               |
+| `OLLAMA_HOST`     | `http://localhost:11434`               | The Ollama Host                                                                                                                    |
+| `OLLAMA_TIMEOUT`  | `100_000` ms                           | Request timeout for the Ollama                                                                                                     |
+| `OLLAMA_STREAM`   | N/A                                    | Whether to make stream requests (**experimental feature**)                                                                         |
+| `locale`          | `en`                                   | Locale for the generated commit messages                                                                                           |
+| `generate`        | `1`                                    | Number of commit messages to generate                                                                                              |
+| `type`            | `conventional`                         | Type of commit message to generate                                                                                                 |
+| `proxy`           | N/A                                    | Set a HTTP/HTTPS proxy to use for requests(only **OpenAI**)                                                                        |
+| `timeout`         | `10_000` ms                            | Network request timeout                                                                                                            |
+| `max-length`      | `50`                                   | Maximum character length of the generated commit message                                                                           |
+| `max-tokens`      | `200`                                  | The maximum number of tokens that the AI models can generate (for **Open AI, Anthropic, Gemini, Mistral, Codestral**)              |
+| `temperature`     | `0.7`                                  | The temperature (0.0-2.0) is used to control the randomness of the output (for **Open AI, Anthropic, Gemini, Mistral, Codestral**) |
+| `prompt`          | N/A                                    | Additional prompt to let users fine-tune provided prompt                                                                           |
+| `logging`         | `false`                                | Whether to log AI responses for debugging (true or false)                                                                          |
 
 > **Currently, options are set universally. However, there are plans to develop the ability to set individual options in the future.**
 
@@ -348,6 +349,7 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 | **Anthropic Claude** |   ✓    |    ✓     |   ✓   |       |                        |      ✓      |     ✓      |      ✓      |   ✓    |
 |      **Gemini**      |   ✓    |    ✓     |   ✓   |       |                        |      ✓      |     ✓      |      ✓      |   ✓    |
 |    **Mistral AI**    |   ✓    |    ✓     |   ✓   |       |           ✓            |      ✓      |     ✓      |      ✓      |   ✓    |
+|    **Codestral**     |   ✓    |    ✓     |   ✓   |       |           ✓            |      ✓      |     ✓      |      ✓      |   ✓    |
 |      **Cohere**      |   ✓    |    ✓     |   ✓   |       |                        |      ✓      |     ✓      |      ✓      |   ✓    |
 |       **Groq**       |   ✓    |    ✓     |   ✓   |       |           ✓            |      ✓      |            |             |   ✓    |
 |   **Huggingface**    |   ✓    |    ✓     |   ✓   |       |           ✓            |      ✓      |            |             |   ✓    |
@@ -576,12 +578,6 @@ Supported:
 
 The Mistral API key. If you don't have one, please sign up and subscribe in [Mistral Console](https://console.mistral.ai/).
 
-##### CODESTRAL_KEY
-
-The Codestral API key. If you don't have one, please sign up and subscribe in [Mistral Console](https://console.mistral.ai/codestral).
-
-> To use a Codestral model, the `MISTRAL_MODEL` value needs to be set to `codestral-latest` (or `codestral-2405`).  
-
 ##### MISTRAL_MODEL
 
 Default: `mistral-tiny`
@@ -606,6 +602,21 @@ Supported:
 
 > The models mentioned above are subject to change.
 
+### CODESTRAL
+
+##### CODESTRAL_KEY
+
+The Codestral API key. If you don't have one, please sign up and subscribe in [Mistral Console](https://console.mistral.ai/codestral).
+
+##### CODESTRAL_MODEL
+
+Default: `codestral-latest`
+
+Supported:
+- `codestral-latest`
+- `codestral-2405`
+
+> The models mentioned above are subject to change.
 
 ### Cohere
 

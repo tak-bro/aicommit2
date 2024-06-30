@@ -243,12 +243,6 @@ const configParsers = {
         }
         return key;
     },
-    CODESTRAL_KEY(key?: string) {
-        if (!key) {
-            return '';
-        }
-        return key;
-    },
     MISTRAL_MODEL(model?: string) {
         if (!model || model.length === 0) {
             return 'mistral-tiny';
@@ -268,11 +262,24 @@ const configParsers = {
             'mistral-large-latest',
             'mistral-large-2402',
             'mistral-embed',
-            'codestral-latest',
-            'codestral-2405',
         ];
 
         parseAssert('MISTRAL_MODEL', supportModels.includes(model), 'Invalid model type of Mistral AI');
+        return model;
+    },
+    CODESTRAL_KEY(key?: string) {
+        if (!key) {
+            return '';
+        }
+        return key;
+    },
+    CODESTRAL_MODEL(model?: string) {
+        if (!model || model.length === 0) {
+            return 'codestral-latest';
+        }
+        const supportModels = ['codestral-latest', 'codestral-2405'];
+
+        parseAssert('MISTRAL_MODEL', supportModels.includes(model), 'Invalid model type of Codestral');
         return model;
     },
     OLLAMA_MODEL(models?: string | string[]): string[] {
