@@ -1,0 +1,26 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "commitType": "docs",
+  "commitConvention": "angular",
+  "contributors": [
+    {
+      "login": "bhodrolok",
+      "name": "RC",
+      "avatar_url": "https://avatars.githubusercontent.com/u/51386657?v=4",
+      "profile": "http://bhodrolok.github.io",
+      "contributions": [
+        "code"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "skipCi": true,
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "projectName": "aicommit2",
+  "projectOwner": "tak-bro"
+}
