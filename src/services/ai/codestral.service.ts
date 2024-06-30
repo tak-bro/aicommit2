@@ -43,7 +43,7 @@ export class CodestralService extends AIService {
             const { locale, generate, type, prompt: userPrompt, logging } = this.params.config;
             const maxLength = this.params.config['max-length'];
             const prompt = this.buildPrompt(locale, diff, generate, maxLength, type, userPrompt);
-            await this.checkAvailableModels();
+            this.checkAvailableModels();
             const chatResponse = await this.createChatCompletions(prompt);
             logging && createLogResponse('Codestral', diff, prompt, chatResponse);
             return deduplicateMessages(this.sanitizeMessage(chatResponse, this.params.config.type, generate));
@@ -64,7 +64,7 @@ export class CodestralService extends AIService {
             disabled: true,
         });
     };
-    private async checkAvailableModels() {
+    private checkAvailableModels() {
         const supportModels = ['codestral-latest', 'codestral-2405'];
 
         if (supportModels.includes(this.params.config.CODESTRAL_MODEL)) {
@@ -83,7 +83,7 @@ export class CodestralService extends AIService {
                 'content-type': 'application/json',
             })
             .setBody({
-                model: this.params.config.MISTRAL_MODEL,
+                model: this.params.config.CODESTRAL_MODEL,
                 messages: [
                     {
                         role: 'user',

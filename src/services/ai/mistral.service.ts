@@ -50,7 +50,7 @@ export class MistralService extends AIService {
     constructor(private readonly params: AIServiceParams) {
         super(params);
         this.colors = {
-            primary: '#FC4A0A',
+            primary: '#ff7000',
             secondary: '#fff',
         };
         this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold('[MistralAI]');

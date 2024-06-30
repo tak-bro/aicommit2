@@ -279,7 +279,7 @@ const configParsers = {
         }
         const supportModels = ['codestral-latest', 'codestral-2405'];
 
-        parseAssert('MISTRAL_MODEL', supportModels.includes(model), 'Invalid model type of Codestral');
+        parseAssert('CODESTRAL_MODEL', supportModels.includes(model), 'Invalid model type of Codestral');
         return model;
     },
     OLLAMA_MODEL(models?: string | string[]): string[] {
