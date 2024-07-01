@@ -76,7 +76,7 @@
         "figlet": "^1.7.0",
         "formdata-node": "^6.0.3",
         "groq-sdk": "^0.4.0",
-        "inquirer": "^9.0.3",
+        "inquirer": "9.2.8",
         "inquirer-reactive-list-prompt": "^1.0.5",
         "ollama": "^0.5.0",
         "ora": "^8.0.1",
