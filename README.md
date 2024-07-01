@@ -597,8 +597,6 @@ Supported:
 - `mistral-large-latest`
 - `mistral-large-2402`
 - `mistral-embed`
-- `codestral-latest`
-- `codestral-2405`
 
 > The models mentioned above are subject to change.
 
