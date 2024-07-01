@@ -45,8 +45,8 @@ dependencies:
     specifier: 9.2.8
     version: 9.2.8
   inquirer-reactive-list-prompt:
-    specifier: ^1.0.5
-    version: 1.0.5(inquirer@9.2.8)
+    specifier: ^1.0.7
+    version: 1.0.7(inquirer@9.2.8)
   ollama:
     specifier: ^0.5.0
     version: 0.5.2
@@ -2632,11 +2632,6 @@ packages:
       type-fest: 1.4.0
     dev: true
 
-  /ansi-escapes@6.2.1:
-    resolution: {integrity: sha512-4nJ3yixlEthEJ9Rk4vPcdBRkZvQZlYyu8j4/Mqz5sgIkddmEnH2Yj2ZrnP9S3tQOvSNRUIgVNF/1yPpRAGNRig==}
-    engines: {node: '>=14.16'}
-    dev: false
-
   /ansi-escapes@7.0.0:
     resolution: {integrity: sha512-GdYO7a61mR0fOlAsvC9/rIHf7L96sBc6dEWzeOu+KAea5bZyQRPIpojrVoI4AXGJS/ycu/fBTdLrUkA4ODrvjw==}
     engines: {node: '>=18'}
@@ -4905,30 +4900,15 @@ packages:
     engines: {node: ^12.13.0 || ^14.15.0 || >=16.0.0}
     dev: true
 
-  /inquirer-autocomplete-prompt@3.0.1(inquirer@9.2.8):
-    resolution: {integrity: sha512-DQBXwX2fVQPVUzu4v4lGgtNgyjcX2+rTyphb2MeSOQh3xUayKAfHAF4y0KgsMi06m6ZiR3xIOdzMZMfQgX2m9w==}
-    engines: {node: '>=16'}
+  /inquirer-reactive-list-prompt@1.0.7(inquirer@9.2.8):
+    resolution: {integrity: sha512-0/F8sfQFceE7ejXDb8YRpK869y0mruOjHHs2syCfafN8UueUyU9tctYTIfoqP/K/7cFCuMcE4VDy9/8/7M5Akw==}
     peerDependencies:
-      inquirer: ^9.1.0
-    dependencies:
-      ansi-escapes: 6.2.1
-      figures: 5.0.0
       inquirer: 9.2.8
-      picocolors: 1.0.1
-      run-async: 2.4.1
-      rxjs: 7.8.1
-    dev: false
-
-  /inquirer-reactive-list-prompt@1.0.5(inquirer@9.2.8):
-    resolution: {integrity: sha512-bgqRUwGj0r5XOF90GeZRsLxlpmLbh0hvGUfhZJ5J9O4WnhgjOM5zmNQNZC9o26HkwSdQb8w7yYmqItAmPfxQLA==}
-    peerDependencies:
-      inquirer: ^9.0.3
     dependencies:
       chalk: 5.3.0
       cli-cursor: 4.0.0
       figures: 5.0.0
       inquirer: 9.2.8
-      inquirer-autocomplete-prompt: 3.0.1(inquirer@9.2.8)
       ora: 7.0.1
       rxjs: 7.8.1
     dev: false
@@ -6326,6 +6306,7 @@ packages:
 
   /picocolors@1.0.1:
     resolution: {integrity: sha512-anP1Z8qwhkbmu7MFP5iTt+wQKXgwzf7zTyGlcdzabySa9vd0Xt392U0rVmz9poOaBj0uHJKyyo9/upk0HrEQew==}
+    dev: true
 
   /picomatch@2.3.1:
     resolution: {integrity: sha512-JU3teHTNjmE2VCGFzuY8EXzCDVwEqB2a8fsIvwaStHhAWJEeVd1o1QD80CU6+ZdEXXSLbSsuLwJjkCBWqRQUVA==}
@@ -6705,11 +6686,6 @@ packages:
     optionalDependencies:
       fsevents: 2.3.3
     dev: true
-
-  /run-async@2.4.1:
-    resolution: {integrity: sha512-tvVnVv01b8c1RrA6Ep7JkStj85Guv/YrMcwqYQnwjsAS2cTmmPGBBjAjpCW7RrSodNSoE2/qg9O4bceNvUuDgQ==}
-    engines: {node: '>=0.12.0'}
-    dev: false
 
   /run-async@3.0.0:
     resolution: {integrity: sha512-540WwVDOMxA6dN6We19EcT9sc3hkXPw5mzRNGM3FkdN/vtE9NFvj5lFAPNwUDmJjXidm3v7TC1cTE7t17Ulm1Q==}
