@@ -1,3 +1,10 @@
+## [1.10.1](https://github.com/tak-bro/aicommit2/compare/v1.10.0...v1.10.1) (2024-07-01)
+
+
+### Bug Fixes
+
+* update dependencies to address compatibility issues ([1fcf318](https://github.com/tak-bro/aicommit2/commit/1fcf3189a4d461d9718d98616add58d5d41ed400))
+
 # [1.10.0](https://github.com/tak-bro/aicommit2/compare/v1.9.10...v1.10.0) (2024-07-01)
 
 
