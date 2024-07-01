@@ -1,3 +1,10 @@
+# [1.10.0](https://github.com/tak-bro/aicommit2/compare/v1.9.10...v1.10.0) (2024-07-01)
+
+
+### Bug Fixes
+
+* **minor:** hotfix for inquirer error ([35e5556](https://github.com/tak-bro/aicommit2/commit/35e5556f221b1a7864c2ce126f305341e86b5477))
+
 ## [1.9.10](https://github.com/tak-bro/aicommit2/compare/v1.9.9...v1.9.10) (2024-06-30)
 
 
