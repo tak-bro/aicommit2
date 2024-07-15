@@ -21,7 +21,7 @@ export class ReactivePromptManager {
 
     constructor() {}
 
-    initPrompt() {
+    initPrompt(showDescription: boolean) {
         inquirer.registerPrompt('reactiveListPrompt', ReactiveListPrompt);
         return inquirer.prompt({
             type: 'reactiveListPrompt',
@@ -29,7 +29,7 @@ export class ReactivePromptManager {
             message: 'Pick a commit message to use: ',
             emptyMessage: `⚠ ${emptyCommitMessage}`,
             loop: false,
-            showDescription: true,
+            showDescription,
             descPageSize: 10,
             choices$: this.choices$,
             loader$: this.loader$,

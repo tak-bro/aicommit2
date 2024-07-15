@@ -56,7 +56,6 @@ export default async (
             MISTRAL_KEY: env.MISTRAL_KEY || env.MISTRAL_API_KEY,
             CODESTRAL_KEY: env.CODESTRAL_KEY || env.CODESTRAL_API_KEY,
             MISTRAL_MODEL: env.MISTRAL_MODEL || env['mistral-model'] || env['mistral_model'],
-            CLOVAX_COOKIE: env.CLOVAX_COOKIE || env.CLOVA_X_COOKIE,
             proxy: env.https_proxy || env.HTTPS_PROXY || env.http_proxy || env.HTTP_PROXY,
             temperature: env.temperature,
             generate: generate?.toString() || env.generate,
@@ -82,7 +81,7 @@ export default async (
 
         const aiRequestManager = new AIRequestManager(config, staged);
         const reactivePromptManager = new ReactivePromptManager();
-        const selectPrompt = reactivePromptManager.initPrompt();
+        const selectPrompt = reactivePromptManager.initPrompt(!config.ignoreBody);
 
         reactivePromptManager.startLoader();
         const subscription = aiRequestManager.createAIRequests$(availableAPIKeyNames).subscribe(

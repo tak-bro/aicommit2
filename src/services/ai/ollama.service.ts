@@ -73,7 +73,7 @@ export class OllamaService extends AIService {
             const { type, generate, logging } = this.params.config;
             const systemPrompt = this.createSystemPrompt();
             logging && createLogResponse(`Ollama_${this.model}`, this.params.stagedDiff.diff, systemPrompt, chatResponse);
-            return this.sanitizeMessage(chatResponse, type, generate);
+            return this.sanitizeMessage(chatResponse, type, generate, this.params.config.ignoreBody);
         } catch (error) {
             const errorAsAny = error as any;
             if (errorAsAny.code === 'ENOTFOUND') {

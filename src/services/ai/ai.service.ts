@@ -11,7 +11,6 @@ export const AIType = {
     GEMINI: 'GEMINI_KEY',
     ANTHROPIC: 'ANTHROPIC_KEY',
     HUGGING: 'HUGGING_COOKIE',
-    CLOVA_X: 'CLOVAX_COOKIE',
     MISTRAL: 'MISTRAL_KEY',
     CODESTRAL: 'CODESTRAL_KEY',
     OLLAMA: 'OLLAMA_MODEL',
@@ -79,7 +78,7 @@ export abstract class AIService {
         });
     };
 
-    protected sanitizeMessage(generatedText: string, type: CommitType, maxCount: number): CommitMessage[] {
+    protected sanitizeMessage(generatedText: string, type: CommitType, maxCount: number, ignoreBody: boolean): CommitMessage[] {
         const jsonPattern = /\[[\s\S]*?\]/;
 
         try {
@@ -93,6 +92,12 @@ export abstract class AIService {
             const filtedMessages = commitMessages
                 .map(data => this.extractMessageAsType(data, type))
                 .map((data: RawCommitMessage) => {
+                    if (ignoreBody) {
+                        return {
+                            title: `${data.message}`,
+                            value: `${data.message}`,
+                        };
+                    }
                     return {
                         title: `${data.message}`,
                         value: data.body ? `${data.message}\n\n${data.body}` : `${data.message}`,

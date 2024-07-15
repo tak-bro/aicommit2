@@ -39,7 +39,9 @@ export class ClovaXService extends AIService {
         };
         this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold('[CLOVA X]');
         this.errorPrefix = chalk.red.bold(`[CLOVA X]`);
-        this.cookie = this.params.config.CLOVAX_COOKIE;
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
+        this.cookie = this.params.config['CLOVAX_COOKIE'];
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
@@ -67,7 +69,7 @@ export class ClovaXService extends AIService {
             await this.deleteConversation(conversationId);
 
             logging && createLogResponse('CLOVA X', diff, prompt, allText);
-            return this.sanitizeMessage(allText, this.params.config.type, generate);
+            return this.sanitizeMessage(allText, this.params.config.type, generate, this.params.config.ignoreBody);
         } catch (error) {
             const errorAsAny = error as any;
             if (errorAsAny.code === 'ENOTFOUND') {

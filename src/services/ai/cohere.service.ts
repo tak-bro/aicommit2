@@ -55,7 +55,7 @@ export class CohereService extends AIService {
 
             const result = prediction.generations.map(data => data.text).join('');
             logging && createLogResponse('Cohere', diff, prompt, result);
-            return this.sanitizeMessage(result, this.params.config.type, generate);
+            return this.sanitizeMessage(result, this.params.config.type, generate, this.params.config.ignoreBody);
         } catch (error) {
             const errorAsAny = error as any;
             if (errorAsAny instanceof CohereTimeoutError) {

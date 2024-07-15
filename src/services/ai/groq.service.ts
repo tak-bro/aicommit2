@@ -62,7 +62,7 @@ export class GroqService extends AIService {
 
             const result = chatCompletion.choices[0].message.content || '';
             logging && createLogResponse('Groq', diff, systemPrompt, result);
-            return this.sanitizeMessage(result, this.params.config.type, generate);
+            return this.sanitizeMessage(result, this.params.config.type, generate, this.params.config.ignoreBody);
         } catch (error) {
             throw error as any;
         }

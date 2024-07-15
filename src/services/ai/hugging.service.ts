@@ -83,7 +83,7 @@ export class HuggingService extends AIService {
             throw new Error(`Cannot parse finalAnswer`);
         }
         this.params.config.logging && createLogResponse('HuggingFace', this.params.stagedDiff.diff, prompt, finalAnswerObj['text']);
-        return this.sanitizeMessage(finalAnswerObj['text'], type, maxCount);
+        return this.sanitizeMessage(finalAnswerObj['text'], type, maxCount, this.params.config.ignoreBody);
     }
 
     private async prepareNewConversation() {

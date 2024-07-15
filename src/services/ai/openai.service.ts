@@ -81,6 +81,6 @@ export class OpenAIService extends AIService {
             this.params.config.proxy
         );
 
-        return this.sanitizeMessage(fullText, this.params.config.type, generate);
+        return this.sanitizeMessage(fullText, this.params.config.type, generate, this.params.config.ignoreBody);
     }
 }

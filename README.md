@@ -320,7 +320,6 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 | `OLLAMA_MODEL`    | N/A                                    | The Ollama Model. It should be downloaded your local                                                                               |
 | `OLLAMA_HOST`     | `http://localhost:11434`               | The Ollama Host                                                                                                                    |
 | `OLLAMA_TIMEOUT`  | `100_000` ms                           | Request timeout for the Ollama                                                                                                     |
-| `OLLAMA_STREAM`   | N/A                                    | Whether to make stream requests (**experimental feature**)                                                                         |
 | `locale`          | `en`                                   | Locale for the generated commit messages                                                                                           |
 | `generate`        | `1`                                    | Number of commit messages to generate                                                                                              |
 | `type`            | `conventional`                         | Type of commit message to generate                                                                                                 |
@@ -448,10 +447,24 @@ The log files will be stored in the `~/.aicommit2_log` directory(user's home).
 
 ![log-path](https://github.com/tak-bro/aicommit2/blob/main/img/log_path.png?raw=true)
 
+```sh
+aicommit2 config set logging="true"
+```
+
 - You can remove all logs below comamnd.
  
 ```sh
 aicommit2 log removeAll 
+```
+
+##### ignoreBody
+
+Default: `false`
+
+This option determines whether or not the commit message includes body. If you don't want to include body, you can set it to true.
+
+```sh
+aicommit2 config set ignoreBody="true"
 ```
 
 ### Ollama
@@ -484,16 +497,6 @@ Request timeout for the Ollama. Default OLLAMA_TIMEOUT is **100 seconds** becaus
 ```sh
 aicommit2 config set OLLAMA_TIMEOUT=<timout>
 ```
-
-##### OLLAMA_STREAM
-
-<img src="https://github.com/tak-bro/aicommit2/blob/main/img/ollama_stream-min.gif?raw=true" alt="OLLAMA_STREAM" />
-
-Default: `false`
-
-Determines whether the application will make stream requests to Ollama. **Allow this option only when using Ollama alone.**
-
-> This feature is experimental and may not be fully stable.
 
 ### OPEN AI
 
