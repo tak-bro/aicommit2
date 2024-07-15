@@ -4,7 +4,11 @@ const MAX_COMMIT_LENGTH = 80;
 
 const commitTypeFormats: Record<CommitType, string> = {
     '': '<commit message>',
-    conventional: `<type>(<optional scope>): <description>`,
+    conventional: `<type>(<optional scope>): <description>
+
+[optional body]
+
+[optional footer(s)]`,
     gitmoji: `:<emoji>: <description>`,
 };
 
@@ -18,7 +22,7 @@ const specifyCommitFormat = (type: CommitType = 'conventional') => {
     if (type === '') {
         return '';
     }
-    return `The commit message must be in format:\n${commitTypeFormats[type]}\n${exampleCommitByType[type]}`;
+    return `The commit message must be in format:\n${commitTypeFormats[type]}`;
 };
 
 const commitTypes: Record<CommitType, string> = {

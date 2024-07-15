@@ -28,9 +28,11 @@ export class ReactivePromptManager {
             name: 'aicommit2Prompt',
             message: 'Pick a commit message to use: ',
             emptyMessage: `⚠ ${emptyCommitMessage}`,
+            loop: false,
+            showDescription: true,
+            descPageSize: 10,
             choices$: this.choices$,
             loader$: this.loader$,
-            loop: false,
         });
     }
 
@@ -103,9 +105,7 @@ export class ReactivePromptManager {
             });
             if (findOriginChoice) {
                 this.choices$.next(
-                    [...this.currentChoices.filter(origin => origin.id !== findOriginChoice.id), choice].sort(
-                        sortByDisabled
-                    )
+                    [...this.currentChoices.filter(origin => origin.id !== findOriginChoice.id), choice].sort(sortByDisabled)
                 );
                 return;
             }
@@ -116,9 +116,7 @@ export class ReactivePromptManager {
         // isUndone
         const origin = this.currentChoices.find(origin => origin?.id === choice.id);
         if (origin) {
-            this.choices$.next(
-                this.currentChoices.map(origin => (origin?.id === choice.id ? choice : origin)).sort(sortByDisabled)
-            );
+            this.choices$.next(this.currentChoices.map(origin => (origin?.id === choice.id ? choice : origin)).sort(sortByDisabled));
             return;
         }
         this.choices$.next([...this.currentChoices, choice].sort(sortByDisabled));
