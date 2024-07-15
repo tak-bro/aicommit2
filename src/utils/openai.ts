@@ -1,17 +1,12 @@
 import http from 'http';
 import https from 'https';
 
-import {
-    type TiktokenModel,
-    encoding_for_model,
-    // encoding_for_model,
-} from '@dqbd/tiktoken';
+import { type TiktokenModel } from '@dqbd/tiktoken';
 import createHttpsProxyAgent from 'https-proxy-agent';
 
 import { KnownError } from './error.js';
 import { createLogResponse } from './log.js';
-import { generateDefaultPrompt, isValidConventionalMessage, isValidGitmojiMessage } from './prompt.js';
-import { CommitMessage, ParsedMessage } from '../services/ai/ai.service.js';
+import { generateDefaultPrompt } from './prompt.js';
 
 import type { CommitType } from './config.js';
 import type { ClientRequest, IncomingMessage } from 'http';
@@ -151,25 +146,6 @@ const sanitizeMessage = (message: string) =>
         .replace(/[\n\r]/g, '')
         .replace(/(\w)\.$/, '$1');
 
-export const deduplicateMessages = (array: CommitMessage[]) => Array.from(new Set(array));
-
-const generateStringFromLength = (length: number) => {
-    let result = '';
-    const highestTokenChar = 'z';
-    for (let i = 0; i < length; i += 1) {
-        result += highestTokenChar;
-    }
-    return result;
-};
-
-const getTokens = (prompt: string, model: TiktokenModel) => {
-    const encoder = encoding_for_model(model);
-    const tokens = encoder.encode(prompt).length;
-    // Free the encoder to avoid possible memory leaks.
-    encoder.free();
-    return tokens;
-};
-
 export const generateCommitMessage = async (
     url: string,
     path: string,
@@ -223,51 +199,12 @@ export const generateCommitMessage = async (
             .map(choice => sanitizeMessage(choice.message!.content as string))
             .join();
         logging && createLogResponse('OPEN AI', diff, systemPrompt, fullText);
-        return parseCommitMessage(fullText, type, completions);
+        return fullText;
     } catch (error) {
         const errorAsAny = error as any;
         if (errorAsAny.code === 'ENOTFOUND') {
             throw new KnownError(`Error connecting to ${errorAsAny.hostname} (${errorAsAny.syscall})`);
         }
         throw errorAsAny;
-    }
-};
-
-const parseCommitMessage = (generatedText: string, type: CommitType, maxCount: number): CommitMessage[] => {
-    const jsonPattern = /\[[\s\S]*?\]/;
-
-    try {
-        const jsonMatch = generatedText.match(jsonPattern);
-        if (!jsonMatch) {
-            // No valid JSON array found in the response
-            return [];
-        }
-        const jsonStr = jsonMatch[0];
-        const commitMessages: ParsedMessage[] = JSON.parse(jsonStr);
-        const filtedMessages = commitMessages
-            .filter(data => {
-                switch (type) {
-                    case 'conventional':
-                        return isValidConventionalMessage(data.message);
-                    case 'gitmoji':
-                        return isValidGitmojiMessage(data.message);
-                    default:
-                        return true;
-                }
-            })
-            .map((data: ParsedMessage) => {
-                return {
-                    title: `${data.message}`,
-                    value: data.body ? `${data.message}\n\n${data.body}` : `${data.message}`,
-                };
-            });
-
-        if (filtedMessages.length > maxCount) {
-            return filtedMessages.slice(0, maxCount);
-        }
-        return filtedMessages;
-    } catch (e) {
-        // Error parsing JSON
-        return [];
     }
 };

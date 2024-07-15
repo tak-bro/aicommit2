@@ -12,7 +12,6 @@ import { extraPrompt, generateDefaultPrompt } from '../../utils/prompt.js';
 import { capitalizeFirstLetter } from '../../utils/utils.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
 
-
 export interface OllamaServiceError extends AIServiceError {}
 
 export class OllamaService extends AIService {
@@ -130,6 +129,6 @@ export class OllamaService extends AIService {
             this.params.config.type,
             this.params.config.prompt
         );
-        return `${defaultPrompt}\n${extraPrompt(this.params.config.generate)}`;
+        return `${defaultPrompt}\n${extraPrompt(this.params.config.generate, this.params.config.type)}`;
     }
 }

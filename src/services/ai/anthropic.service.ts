@@ -51,7 +51,7 @@ export class AnthropicService extends AIService {
             const maxLength = this.params.config['max-length'];
 
             const defaultPrompt = generateDefaultPrompt(locale, maxLength, type, userPrompt);
-            const systemPrompt = `${defaultPrompt}\n${extraPrompt(generate)}`;
+            const systemPrompt = `${defaultPrompt}\n${extraPrompt(generate, type)}`;
 
             const params: Anthropic.MessageCreateParams = {
                 max_tokens: this.params.config['max-tokens'],

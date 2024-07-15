@@ -3,7 +3,7 @@ import { Observable, of } from 'rxjs';
 
 import { CommitType, ValidConfig } from '../../utils/config.js';
 import { StagedDiff } from '../../utils/git.js';
-import { extraPrompt, generateDefaultPrompt, isValidConventionalMessage, isValidGitmojiMessage } from '../../utils/prompt.js';
+import { extraPrompt, generateDefaultPrompt } from '../../utils/prompt.js';
 
 // NOTE: get AI Type from key names
 export const AIType = {
@@ -26,7 +26,7 @@ export interface CommitMessage {
     value: string;
 }
 
-export interface ParsedMessage {
+export interface RawCommitMessage {
     message: string;
     body: string;
 }
@@ -63,7 +63,7 @@ export abstract class AIService {
 
     protected buildPrompt(locale: string, diff: string, completions: number, maxLength: number, type: CommitType, prompt: string) {
         const defaultPrompt = generateDefaultPrompt(locale, maxLength, type, prompt);
-        return `${defaultPrompt}\n${extraPrompt(completions)}\nHere are diff: \n${diff}`;
+        return `${defaultPrompt}\n${extraPrompt(completions, type)}\nHere are diff: \n${diff}`;
     }
 
     protected handleError$ = (error: AIServiceError): Observable<ReactiveListChoice> => {
@@ -79,7 +79,7 @@ export abstract class AIService {
         });
     };
 
-    protected sanitizeMessage(generatedText: string, type: CommitType, maxCount: number) {
+    protected sanitizeMessage(generatedText: string, type: CommitType, maxCount: number): CommitMessage[] {
         const jsonPattern = /\[[\s\S]*?\]/;
 
         try {
@@ -89,19 +89,10 @@ export abstract class AIService {
                 return [];
             }
             const jsonStr = jsonMatch[0];
-            const commitMessages: ParsedMessage[] = JSON.parse(jsonStr);
+            const commitMessages: RawCommitMessage[] = JSON.parse(jsonStr);
             const filtedMessages = commitMessages
-                .filter(data => {
-                    switch (type) {
-                        case 'conventional':
-                            return isValidConventionalMessage(data.message);
-                        case 'gitmoji':
-                            return isValidGitmojiMessage(data.message);
-                        default:
-                            return true;
-                    }
-                })
-                .map((data: ParsedMessage) => {
+                .map(data => this.extractMessageAsType(data, type))
+                .map((data: RawCommitMessage) => {
                     return {
                         title: `${data.message}`,
                         value: data.body ? `${data.message}\n\n${data.body}` : `${data.message}`,
@@ -116,5 +107,41 @@ export abstract class AIService {
             // Error parsing JSON
             return [];
         }
+    }
+
+    private extractMessageAsType(data: RawCommitMessage, type: CommitType): RawCommitMessage {
+        switch (type) {
+            case 'conventional':
+                const conventionalPattern = /(\w+)(?:\(.*?\))?:\s*(.*)/;
+                const conventionalMatch = data.message.match(conventionalPattern);
+                const message = conventionalMatch ? conventionalMatch[0] : data.message;
+                return {
+                    ...data,
+                    message: this.normalizeCommitMessage(message),
+                };
+            case 'gitmoji':
+                const gitmojiTypePattern = /:\w*:\s*(.*)/;
+                const gitmojiMatch = data.message.match(gitmojiTypePattern);
+                return {
+                    ...data,
+                    message: gitmojiMatch ? gitmojiMatch[0].toLowerCase() : data.message,
+                };
+            default:
+                return data;
+        }
+    }
+
+    private normalizeCommitMessage(message: string): string {
+        const messagePattern = /^(\w+)(\(.*?\))?:\s(.*)$/;
+        const match = message.match(messagePattern);
+
+        if (match) {
+            const [, type, scope, description] = match;
+            const normalizedType = type.toLowerCase();
+            const normalizedDescription = description.charAt(0).toLowerCase() + description.slice(1);
+            message = `${normalizedType}${scope || ''}: ${normalizedDescription}`;
+        }
+
+        return message;
     }
 }

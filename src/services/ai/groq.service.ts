@@ -42,7 +42,7 @@ export class GroqService extends AIService {
             const { locale, generate, type, prompt: userPrompt, logging } = this.params.config;
             const maxLength = this.params.config['max-length'];
             const defaultPrompt = generateDefaultPrompt(locale, maxLength, type, userPrompt);
-            const systemPrompt = `${defaultPrompt}\n${extraPrompt(generate)}`;
+            const systemPrompt = `${defaultPrompt}\n${extraPrompt(generate, type)}`;
 
             const chatCompletion = await this.groq.chat.completions.create(
                 {

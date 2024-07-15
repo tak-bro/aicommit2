@@ -3,7 +3,7 @@ import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Observable, catchError, concatMap, from, map, of } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
-import { AIService, AIServiceError, AIServiceParams } from './ai.service.js';
+import { AIService, AIServiceError, AIServiceParams, CommitMessage } from './ai.service.js';
 import { generateCommitMessage } from '../../utils/openai.js';
 
 export class OpenAIService extends AIService {
@@ -18,26 +18,8 @@ export class OpenAIService extends AIService {
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
-        return fromPromise(
-            generateCommitMessage(
-                this.params.config.OPENAI_URL,
-                this.params.config.OPENAI_PATH,
-                this.params.config.OPENAI_KEY,
-                this.params.config.OPENAI_MODEL,
-                this.params.config.locale,
-                this.params.stagedDiff.diff,
-                this.params.config.generate,
-                this.params.config['max-length'],
-                this.params.config.type,
-                this.params.config.timeout,
-                this.params.config['max-tokens'],
-                this.params.config.temperature,
-                this.params.config.prompt,
-                this.params.config.logging,
-                this.params.config.proxy
-            )
-        ).pipe(
-            concatMap(messages => from(messages)), // flat messages
+        return fromPromise(this.generateMessage()).pipe(
+            concatMap(messages => from(messages)),
             map(data => ({
                 name: `${this.serviceName} ${data.title}`,
                 value: data.value,
@@ -74,5 +56,31 @@ export class OpenAIService extends AIService {
                 message: 'Unknown error',
             },
         };
+    }
+
+    private async generateMessage(): Promise<CommitMessage[]> {
+        const diff = this.params.stagedDiff.diff;
+        const { locale, generate, type } = this.params.config;
+        const maxLength = this.params.config['max-length'];
+
+        const fullText = await generateCommitMessage(
+            this.params.config.OPENAI_URL,
+            this.params.config.OPENAI_PATH,
+            this.params.config.OPENAI_KEY,
+            this.params.config.OPENAI_MODEL,
+            locale,
+            diff,
+            generate,
+            maxLength,
+            type,
+            this.params.config.timeout,
+            this.params.config['max-tokens'],
+            this.params.config.temperature,
+            this.params.config.prompt,
+            this.params.config.logging,
+            this.params.config.proxy
+        );
+
+        return this.sanitizeMessage(fullText, this.params.config.type, generate);
     }
 }
