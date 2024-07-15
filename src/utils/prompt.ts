@@ -5,11 +5,11 @@ const MAX_COMMIT_LENGTH = 80;
 const commitTypeFormats: Record<CommitType, string> = {
     '': '<commit message>',
     conventional: `<type>(<optional scope>): <description>
-
 [optional body]
-
 [optional footer(s)]`,
-    gitmoji: `:<emoji>: <description>`,
+    gitmoji: `:<emoji>: <description>
+[optional body]
+[optional footer(s)`,
 };
 
 const exampleCommitByType: Record<CommitType, string> = {
@@ -27,7 +27,7 @@ const specifyCommitFormat = (type: CommitType = 'conventional') => {
 
 const commitTypes: Record<CommitType, string> = {
     '': '',
-    gitmoji: `Choose a emoji from the emoji-to-description JSON below that best describes the git diff:\n${JSON.stringify(
+    gitmoji: `\n${JSON.stringify(
         {
             ':tada:': 'Initial commit',
             ':sparkles:': 'Introduce new features',
@@ -54,7 +54,7 @@ const commitTypes: Record<CommitType, string> = {
      * Conventional Changelog:
      * https://github.com/conventional-changelog/conventional-changelog/blob/d0e5d5926c8addba74bc962553dd8bcfba90e228/packages/conventional-changelog-conventionalcommits/writer-opts.js#L182-L193
      */
-    conventional: `Choose a type from the type-to-description JSON below that best describes the git diff.\n${JSON.stringify(
+    conventional: `\n${JSON.stringify(
         {
             docs: 'Documentation only changes',
             style: 'Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)',
@@ -75,19 +75,43 @@ const commitTypes: Record<CommitType, string> = {
 
 export const generateDefaultPrompt = (locale: string, maxLength: number, type: CommitType, additionalPrompts: string = '') =>
     [
-        'You are the expert programmer, trained to write commit messages. You are going to provide a professional git commit message.',
-        'Generate a concise git commit message written in present tense with the given specifications below:',
-        `Message language: ${locale}`,
-        `Commit message must be a maximum of ${Math.min(Math.max(maxLength, 0), MAX_COMMIT_LENGTH)} characters.`,
+        `You are an expert programmer trained to write professional git commit messages following the ${type} Commits specification. Generate concise and meaningful git commit messages based on the following guidelines:`,
+        `1. Message language: ${locale}`,
+        `2. Format: ${commitTypeFormats[type]}`,
+        `3. Subject line (first line):
+     - Maximum ${maxLength} characters
+     - Written in imperative mood, present tense
+     - First letter capitalized
+     - No period at the end`,
+        `4. Body (if needed):
+     - Separated from subject by a blank line
+     - Explain what and why, not how
+     - Wrap at 72 characters
+     - Use bullet points for multiple changes`,
+        `5. Type: Choose the most appropriate type from the following list: ${commitTypes[type]}`,
+        `6. Scope: Optional, can be anything specifying the place of the commit change`,
+        `7. Description: A short summary of the code changes`,
+        `8. Body: Optional, providing additional contextual information about the code changes`,
+        `9. Footer: Optional, for indicating breaking changes or referencing issues`,
         `${additionalPrompts}`,
-        'Exclude anything unnecessary such as explanation or translation. Your entire response will be passed directly into git commit.',
-        commitTypes[type],
-        specifyCommitFormat(type),
+        `Avoid unnecessary explanations or translations. Your response will be used directly in git commit messages, so ensure it follows the specified format precisely.`,
     ]
         .filter(Boolean)
         .join('\n');
 
-export const extraPrompt = (generate: number) => `THE RESULT MUST BE ${generate} COMMIT MESSAGES AND MUST BE IN NUMBERED LIST FORMAT.`;
+export const extraPrompt = (generate: number) => `Provide ${generate} commit messages in the following JSON array format:
+ [
+  {
+    "message": "<type>[optional scope]: <description>",
+    "body": "Detailed explanation if necessary"
+  },
+  {
+    "message": "Another commit message",
+    "body": "Another detailed explanation if necessary"
+  }
+]
+
+Note: Your task is to create well-formatted, conventional commit messages for each requested commit.`;
 
 export const isValidConventionalMessage = (message: string): boolean => {
     // TODO: check loosely for issue that message is not coming out

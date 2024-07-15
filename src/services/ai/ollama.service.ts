@@ -1,19 +1,17 @@
 import chalk from 'chalk';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Ollama } from 'ollama';
-import { Observable, catchError, concatMap, from, map, of, scan, switchMap, tap } from 'rxjs';
+import { Observable, catchError, concatMap, from, map, of } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
-import { AIService, AIServiceError, AIServiceParams } from './ai.service.js';
+import { AIService, AIServiceError, AIServiceParams, CommitMessage } from './ai.service.js';
 import { DEFAULT_OLLMA_HOST } from '../../utils/config.js';
 import { KnownError } from '../../utils/error.js';
 import { createLogResponse } from '../../utils/log.js';
-import { deduplicateMessages } from '../../utils/openai.js';
 import { extraPrompt, generateDefaultPrompt } from '../../utils/prompt.js';
-import { DONE, UNDONE, capitalizeFirstLetter, toObservable } from '../../utils/utils.js';
+import { capitalizeFirstLetter } from '../../utils/utils.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
 
-import type { ChatResponse } from 'ollama/src/interfaces.js';
 
 export interface OllamaServiceError extends AIServiceError {}
 
@@ -39,15 +37,12 @@ export class OllamaService extends AIService {
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
-        if (this.params.config.OLLAMA_STREAM) {
-            return this.generateStreamCommitMessage$();
-        }
-
         return fromPromise(this.generateMessage()).pipe(
             concatMap(messages => from(messages)),
-            map(message => ({
-                name: `${this.serviceName} ${message}`,
-                value: message,
+            map(data => ({
+                name: `${this.serviceName} ${data.title}`,
+                value: data.value,
+                description: data.value,
                 isError: false,
             })),
             catchError(this.handleError$)
@@ -72,106 +67,14 @@ export class OllamaService extends AIService {
         });
     };
 
-    generateStreamChoice$ = (): Observable<ReactiveListChoice> => {
-        const defaultPrompt = generateDefaultPrompt(
-            this.params.config.locale,
-            this.params.config['max-length'],
-            this.params.config.type,
-            this.params.config.prompt
-        );
-        const systemContent = `${defaultPrompt}\n${extraPrompt(this.params.config.generate)}`;
-
-        const promiseAsyncGenerator: Promise<AsyncGenerator<ChatResponse>> = this.ollama.chat({
-            model: this.model,
-            messages: [
-                {
-                    role: 'system',
-                    content: systemContent,
-                },
-                {
-                    role: 'user',
-                    content: `${this.params.stagedDiff.diff}`,
-                },
-            ],
-            stream: true,
-            options: {
-                temperature: this.params.config.temperature,
-            },
-        });
-
-        let allValue = '';
-        return from(toObservable(promiseAsyncGenerator)).pipe(
-            tap((part: ChatResponse) => (allValue += part.message.content)),
-            map((part: ChatResponse) => {
-                return {
-                    id: `Ollama_${this.model}`,
-                    name: `${this.serviceName} ${allValue}`,
-                    value: `${allValue}`,
-                    isError: false,
-                    description: part.done ? DONE : UNDONE,
-                    disabled: !part.done,
-                };
-            })
-        );
-    };
-
-    generateStreamCommitMessage$(): Observable<ReactiveListChoice> {
-        return fromPromise(this.checkIsAvailableOllama()).pipe(
-            switchMap(() => this.generateStreamChoice$()),
-            scan((acc: ReactiveListChoice[], data: ReactiveListChoice) => {
-                const isDone = data.description === DONE;
-                if (isDone) {
-                    const { type, generate, logging } = this.params.config;
-                    if (logging) {
-                        const systemPrompt = this.createSystemPrompt();
-                        createLogResponse('Ollama', this.params.stagedDiff.diff, systemPrompt, data.value);
-                    }
-                    const messages = deduplicateMessages(this.sanitizeMessage(data.value, type, generate));
-                    const isFailedExtract = !messages || messages.length === 0;
-                    if (isFailedExtract) {
-                        return [
-                            {
-                                id: `Ollama_${this.model}_${DONE}_0`,
-                                name: `${this.serviceName} Failed to extract messages from response`,
-                                value: `Failed to extract messages from response`,
-                                isError: true,
-                                description: DONE,
-                                disabled: true,
-                            },
-                        ];
-                    }
-                    return messages.map((message, index) => {
-                        return {
-                            id: `Ollama_${this.model}_${DONE}_${index}`,
-                            name: `${this.serviceName} ${message}`,
-                            value: `${message}`,
-                            isError: false,
-                            description: DONE,
-                            disabled: false,
-                        };
-                    });
-                }
-                // if has origin data
-                const originData = acc.find((origin: ReactiveListChoice) => origin.id === data.id);
-                if (originData) {
-                    return [...acc.map((origin: ReactiveListChoice) => (data.id === origin.id ? data : origin))];
-                }
-                // init
-                return [{ ...data }];
-            }, []),
-            concatMap(messages => messages), // flat messages
-            catchError(this.handleError$)
-        );
-    }
-
-    private async generateMessage(): Promise<string[]> {
+    private async generateMessage(): Promise<CommitMessage[]> {
         try {
             await this.checkIsAvailableOllama();
             const chatResponse = await this.createChatCompletions();
             const { type, generate, logging } = this.params.config;
             const systemPrompt = this.createSystemPrompt();
             logging && createLogResponse(`Ollama_${this.model}`, this.params.stagedDiff.diff, systemPrompt, chatResponse);
-            return deduplicateMessages(this.sanitizeMessage(chatResponse, type, generate));
+            return this.sanitizeMessage(chatResponse, type, generate);
         } catch (error) {
             const errorAsAny = error as any;
             if (errorAsAny.code === 'ENOTFOUND') {

@@ -21,6 +21,16 @@ export const AIType = {
 export type ApiKeyName = (typeof AIType)[keyof typeof AIType];
 export const ApiKeyNames: ApiKeyName[] = Object.values(AIType).map(value => value);
 
+export interface CommitMessage {
+    title: string;
+    value: string;
+}
+
+export interface ParsedMessage {
+    message: string;
+    body: string;
+}
+
 export interface AIServiceParams {
     config: ValidConfig;
     stagedDiff: StagedDiff;
@@ -70,32 +80,41 @@ export abstract class AIService {
     };
 
     protected sanitizeMessage(generatedText: string, type: CommitType, maxCount: number) {
-        const messages = generatedText
-            .split('\n')
-            .map((message: string) => message.trim().replace(/^\d+\.\s/, ''))
-            .map((message: string) => message.replace(/[`'"*]/g, ''))
-            .filter((message: string) => {
-                switch (type) {
-                    case 'conventional':
-                        return isValidConventionalMessage(message);
-                    case 'gitmoji':
-                        return isValidGitmojiMessage(message);
-                    default:
-                        return true;
-                }
-            })
-            .map(message => {
-                if (type === 'conventional') {
-                    const regex = /: (\w)/;
-                    return message.replace(regex, (_: any, firstLetter: string) => `: ${firstLetter.toLowerCase()}`);
-                }
-                return message;
-            })
-            .filter((message: string) => !!message);
+        const jsonPattern = /\[[\s\S]*?\]/;
 
-        if (messages.length > maxCount) {
-            return messages.slice(0, maxCount);
+        try {
+            const jsonMatch = generatedText.match(jsonPattern);
+            if (!jsonMatch) {
+                // No valid JSON array found in the response
+                return [];
+            }
+            const jsonStr = jsonMatch[0];
+            const commitMessages: ParsedMessage[] = JSON.parse(jsonStr);
+            const filtedMessages = commitMessages
+                .filter(data => {
+                    switch (type) {
+                        case 'conventional':
+                            return isValidConventionalMessage(data.message);
+                        case 'gitmoji':
+                            return isValidGitmojiMessage(data.message);
+                        default:
+                            return true;
+                    }
+                })
+                .map((data: ParsedMessage) => {
+                    return {
+                        title: `${data.message}`,
+                        value: data.body ? `${data.message}\n\n${data.body}` : `${data.message}`,
+                    };
+                });
+
+            if (filtedMessages.length > maxCount) {
+                return filtedMessages.slice(0, maxCount);
+            }
+            return filtedMessages;
+        } catch (e) {
+            // Error parsing JSON
+            return [];
         }
-        return messages;
     }
 }

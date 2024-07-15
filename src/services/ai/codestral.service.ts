@@ -4,11 +4,10 @@ import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Observable, catchError, concatMap, from, map, of } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
-import { AIService, AIServiceError, AIServiceParams } from './ai.service.js';
+import { AIService, AIServiceError, AIServiceParams, CommitMessage } from './ai.service.js';
 import { CreateChatCompletionsResponse } from './mistral.service.js';
 import { KnownError } from '../../utils/error.js';
 import { createLogResponse } from '../../utils/log.js';
-import { deduplicateMessages } from '../../utils/openai.js';
 import { getRandomNumber } from '../../utils/utils.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
 export interface CodestralServiceError extends AIServiceError {}
@@ -29,15 +28,16 @@ export class CodestralService extends AIService {
     generateCommitMessage$(): Observable<ReactiveListChoice> {
         return fromPromise(this.generateMessage()).pipe(
             concatMap(messages => from(messages)),
-            map(message => ({
-                name: `${this.serviceName} ${message}`,
-                value: message,
+            map(data => ({
+                name: `${this.serviceName} ${data.title}`,
+                value: data.value,
+                description: data.value,
                 isError: false,
             })),
             catchError(this.handleError$)
         );
     }
-    private async generateMessage(): Promise<string[]> {
+    private async generateMessage(): Promise<CommitMessage[]> {
         try {
             const diff = this.params.stagedDiff.diff;
             const { locale, generate, type, prompt: userPrompt, logging } = this.params.config;
@@ -46,7 +46,7 @@ export class CodestralService extends AIService {
             this.checkAvailableModels();
             const chatResponse = await this.createChatCompletions(prompt);
             logging && createLogResponse('Codestral', diff, prompt, chatResponse);
-            return deduplicateMessages(this.sanitizeMessage(chatResponse, this.params.config.type, generate));
+            return this.sanitizeMessage(chatResponse, this.params.config.type, generate);
         } catch (error) {
             const errorAsAny = error as any;
             if (errorAsAny.code === 'ENOTFOUND') {

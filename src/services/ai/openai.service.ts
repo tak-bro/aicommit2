@@ -38,9 +38,10 @@ export class OpenAIService extends AIService {
             )
         ).pipe(
             concatMap(messages => from(messages)), // flat messages
-            map(message => ({
-                name: `${this.serviceName} ${message}`,
-                value: message,
+            map(data => ({
+                name: `${this.serviceName} ${data.title}`,
+                value: data.value,
+                description: data.value,
                 isError: false,
             })),
             catchError(this.handleError$)

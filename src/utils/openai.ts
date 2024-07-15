@@ -11,6 +11,7 @@ import createHttpsProxyAgent from 'https-proxy-agent';
 import { KnownError } from './error.js';
 import { createLogResponse } from './log.js';
 import { generateDefaultPrompt, isValidConventionalMessage, isValidGitmojiMessage } from './prompt.js';
+import { CommitMessage, ParsedMessage } from '../services/ai/ai.service.js';
 
 import type { CommitType } from './config.js';
 import type { ClientRequest, IncomingMessage } from 'http';
@@ -150,7 +151,7 @@ const sanitizeMessage = (message: string) =>
         .replace(/[\n\r]/g, '')
         .replace(/(\w)\.$/, '$1');
 
-export const deduplicateMessages = (array: string[]) => Array.from(new Set(array));
+export const deduplicateMessages = (array: CommitMessage[]) => Array.from(new Set(array));
 
 const generateStringFromLength = (length: number) => {
     let result = '';
@@ -217,41 +218,56 @@ export const generateCommitMessage = async (
             proxy
         );
 
-        const resultMessages = deduplicateMessages(
-            completion.choices
-                .filter(choice => choice.message?.content)
-                .map(choice => sanitizeMessage(choice.message!.content))
-                .map(message => {
-                    if (type === 'conventional') {
-                        const regex = /: (\w)/;
-                        return message.replace(regex, (_: any, firstLetter: string) => `: ${firstLetter.toLowerCase()}`);
-                    }
-                    return message;
-                })
-                .filter((message: string) => {
-                    switch (type) {
-                        case 'gitmoji':
-                            return isValidGitmojiMessage(message);
-                        case 'conventional':
-                            return isValidConventionalMessage(message);
-                        case '':
-                        default:
-                            return true;
-                    }
-                })
-        );
-
         const fullText = completion.choices
             .filter(choice => choice.message?.content)
-            .map(choice => sanitizeMessage(choice.message!.content))
+            .map(choice => sanitizeMessage(choice.message!.content as string))
             .join();
         logging && createLogResponse('OPEN AI', diff, systemPrompt, fullText);
-        return resultMessages;
+        return parseCommitMessage(fullText, type, completions);
     } catch (error) {
         const errorAsAny = error as any;
         if (errorAsAny.code === 'ENOTFOUND') {
             throw new KnownError(`Error connecting to ${errorAsAny.hostname} (${errorAsAny.syscall})`);
         }
         throw errorAsAny;
+    }
+};
+
+const parseCommitMessage = (generatedText: string, type: CommitType, maxCount: number): CommitMessage[] => {
+    const jsonPattern = /\[[\s\S]*?\]/;
+
+    try {
+        const jsonMatch = generatedText.match(jsonPattern);
+        if (!jsonMatch) {
+            // No valid JSON array found in the response
+            return [];
+        }
+        const jsonStr = jsonMatch[0];
+        const commitMessages: ParsedMessage[] = JSON.parse(jsonStr);
+        const filtedMessages = commitMessages
+            .filter(data => {
+                switch (type) {
+                    case 'conventional':
+                        return isValidConventionalMessage(data.message);
+                    case 'gitmoji':
+                        return isValidGitmojiMessage(data.message);
+                    default:
+                        return true;
+                }
+            })
+            .map((data: ParsedMessage) => {
+                return {
+                    title: `${data.message}`,
+                    value: data.body ? `${data.message}\n\n${data.body}` : `${data.message}`,
+                };
+            });
+
+        if (filtedMessages.length > maxCount) {
+            return filtedMessages.slice(0, maxCount);
+        }
+        return filtedMessages;
+    } catch (e) {
+        // Error parsing JSON
+        return [];
     }
 };

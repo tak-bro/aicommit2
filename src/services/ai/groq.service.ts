@@ -5,9 +5,8 @@ import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Observable, catchError, concatMap, from, map, of } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
-import { AIService, AIServiceParams } from './ai.service.js';
+import { AIService, AIServiceParams, CommitMessage } from './ai.service.js';
 import { createLogResponse } from '../../utils/log.js';
-import { deduplicateMessages } from '../../utils/openai.js';
 import { extraPrompt, generateDefaultPrompt } from '../../utils/prompt.js';
 
 export class GroqService extends AIService {
@@ -27,16 +26,17 @@ export class GroqService extends AIService {
     generateCommitMessage$(): Observable<ReactiveListChoice> {
         return fromPromise(this.generateMessage()).pipe(
             concatMap(messages => from(messages)),
-            map(message => ({
-                name: `${this.serviceName} ${message}`,
-                value: message,
+            map(data => ({
+                name: `${this.serviceName} ${data.title}`,
+                value: data.value,
+                description: data.value,
                 isError: false,
             })),
             catchError(this.handleError$)
         );
     }
 
-    private async generateMessage(): Promise<string[]> {
+    private async generateMessage(): Promise<CommitMessage[]> {
         try {
             const diff = this.params.stagedDiff.diff;
             const { locale, generate, type, prompt: userPrompt, logging } = this.params.config;
@@ -62,7 +62,7 @@ export class GroqService extends AIService {
 
             const result = chatCompletion.choices[0].message.content || '';
             logging && createLogResponse('Groq', diff, systemPrompt, result);
-            return deduplicateMessages(this.sanitizeMessage(result, this.params.config.type, generate));
+            return this.sanitizeMessage(result, this.params.config.type, generate);
         } catch (error) {
             throw error as any;
         }

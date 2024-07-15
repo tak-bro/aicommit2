@@ -4,10 +4,9 @@ import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Observable, catchError, concatMap, from, map, of } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
-import { AIService, AIServiceError, AIServiceParams } from './ai.service.js';
+import { AIService, AIServiceError, AIServiceParams, CommitMessage } from './ai.service.js';
 import { KnownError } from '../../utils/error.js';
 import { createLogResponse } from '../../utils/log.js';
-import { deduplicateMessages } from '../../utils/openai.js';
 
 export class GeminiService extends AIService {
     private genAI: GoogleGenerativeAI;
@@ -26,16 +25,17 @@ export class GeminiService extends AIService {
     generateCommitMessage$(): Observable<ReactiveListChoice> {
         return fromPromise(this.generateMessage()).pipe(
             concatMap(messages => from(messages)),
-            map(message => ({
-                name: `${this.serviceName} ${message}`,
-                value: message,
+            map(data => ({
+                name: `${this.serviceName} ${data.title}`,
+                value: data.value,
+                description: data.value,
                 isError: false,
             })),
             catchError(this.handleError$)
         );
     }
 
-    private async generateMessage(): Promise<string[]> {
+    private async generateMessage(): Promise<CommitMessage[]> {
         try {
             const diff = this.params.stagedDiff.diff;
             const { locale, generate, type, prompt: userPrompt, logging } = this.params.config;
@@ -55,7 +55,7 @@ export class GeminiService extends AIService {
             const completion = response.text();
 
             logging && createLogResponse('Gemini', diff, prompt, completion);
-            return deduplicateMessages(this.sanitizeMessage(completion, this.params.config.type, generate));
+            return this.sanitizeMessage(completion, this.params.config.type, generate);
         } catch (error) {
             const errorAsAny = error as any;
             if (errorAsAny.code === 'ENOTFOUND') {
