@@ -16,7 +16,7 @@ const commitTypeFormats: Record<CommitType, string> = {
 [optional footer(s)`,
 };
 
-const exampleCommitByType: Record<CommitType, string> = {
+export const exampleCommitByType: Record<CommitType, string> = {
     '': '',
     conventional: `<type>(<optional scope>): <description>`,
     gitmoji: `:<emoji>: <description>`,
@@ -151,15 +151,14 @@ export const generateDefaultPrompt = (locale: string, maxLength: number, type: C
         `2. Format: ${commitTypeFormats[type]}`,
         `3. Type: Choose the most appropriate type from the following list: ${commitTypes[type]}`,
         `4. Subject line(first line):
-     - Maximum ${maxLength} characters
-     - Written in imperative mood, present tense
-     - No capitalization of first letter
-     - No period at the end`,
+   - Maximum ${maxLength} characters
+   - Written in imperative mood, present tense
+   - No capitalization of first letter
+   - No period at the end`,
         `5. Body(if needed):
-     - Separated from subject by a blank line
-     - Explain what and why, not how
-     - Wrap at 72 characters
-     - Use bullet points for multiple changes`,
+   - Separated from subject by a blank line
+   - Use BULLET POINTS for multiple changes
+   - Explain what and why, not how`,
         `6. Footer: Optional, for indicating breaking changes or referencing issues`,
         `7. Scope: Optional, can be anything specifying the place of the commit change`,
         `8. Description: A short summary of the code changes`,

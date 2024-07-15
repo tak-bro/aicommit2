@@ -6,7 +6,7 @@ import createHttpsProxyAgent from 'https-proxy-agent';
 
 import { KnownError } from './error.js';
 import { createLogResponse } from './log.js';
-import { generateDefaultPrompt } from './prompt.js';
+import { extraPrompt, generateDefaultPrompt } from './prompt.js';
 
 import type { CommitType } from './config.js';
 import type { ClientRequest, IncomingMessage } from 'http';
@@ -165,7 +165,6 @@ export const generateCommitMessage = async (
 ) => {
     try {
         const systemPrompt = generateDefaultPrompt(locale, maxLength, type, prompt);
-
         const completion = await createChatCompletion(
             url,
             path,
@@ -175,7 +174,7 @@ export const generateCommitMessage = async (
                 messages: [
                     {
                         role: 'system',
-                        content: systemPrompt,
+                        content: `${systemPrompt}\n${extraPrompt(completions, type)}`,
                     },
                     {
                         role: 'user',
@@ -188,7 +187,6 @@ export const generateCommitMessage = async (
                 presence_penalty: 0,
                 max_tokens: maxTokens,
                 stream: false,
-                n: completions,
             },
             timeout,
             proxy
