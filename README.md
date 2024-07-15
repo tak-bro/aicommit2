@@ -35,7 +35,6 @@ _aicommit2_ streamlines interactions with various AI, enabling users to request 
 - [Cohere](https://cohere.com/)
 - [Groq](https://groq.com/)
 - [Huggingface **(Unofficial)**](https://huggingface.co/chat/)
-- [Clova X **(Unofficial)**](https://clova-x.naver.com/)
 
 ### Local
 
@@ -94,12 +93,6 @@ aicommit2 config set GROQ_KEY=<your key>
 ```shell
 # Please be cautious of Escape characters(\", \') in browser cookie string 
 aicommit2 config set HUGGING_COOKIE="<your browser cookie>"
-```
-
-- [Clova X **(Unofficial)**](https://github.com/tak-bro/aicommit2?tab=readme-ov-file#how-to-get-cookieunofficial-api)
-```shell
-# Please be cautious of Escape characters(\", \') in browser cookie string 
-aicommit2 config set CLOVAX_COOKIE="<your browser cookie>"
 ```
 
 This will create a `.aicommit2` file in your home directory.
@@ -324,7 +317,6 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 | `GROQ_MODEL`      | `gemma-7b-it`                          | The Groq model name to use                                                                                                         |
 | `HUGGING_COOKIE`  | N/A                                    | The HuggingFace Cookie string                                                                                                      |
 | `HUGGING_MODEL`   | `mistralai/Mixtral-8x7B-Instruct-v0.1` | The HuggingFace Model to use                                                                                                       |
-| `CLOVAX_COOKIE`   | N/A                                    | The Clova X Cookie string                                                                                                          |
 | `OLLAMA_MODEL`    | N/A                                    | The Ollama Model. It should be downloaded your local                                                                               |
 | `OLLAMA_HOST`     | `http://localhost:11434`               | The Ollama Host                                                                                                                    |
 | `OLLAMA_TIMEOUT`  | `100_000` ms                           | Request timeout for the Ollama                                                                                                     |
@@ -353,7 +345,6 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 |      **Cohere**      |   ✓    |    ✓     |   ✓   |       |                        |      ✓      |     ✓      |      ✓      |   ✓    |
 |       **Groq**       |   ✓    |    ✓     |   ✓   |       |           ✓            |      ✓      |            |             |   ✓    |
 |   **Huggingface**    |   ✓    |    ✓     |   ✓   |       |           ✓            |      ✓      |            |             |   ✓    |
-|     **Clova X**      |   ✓    |    ✓     |   ✓   |       |           ✓            |      ✓      |            |             |   ✓    |
 |      **Ollama**      |   ✓    |    ✓     |   ✓   |       | ⚠<br/>(OLLAMA_TIMEOUT) |      ✓      |            |      ✓      |   ✓    |
 
 
@@ -674,12 +665,6 @@ Supported:
 
 > The models mentioned above are subject to change.
 
-### Clova X
-
-##### CLOVAX_COOKIE
-
-The [Clova X](https://clova-x.naver.com/) Cookie. Please check [how to get cookie](https://github.com/tak-bro/aicommit2?tab=readme-ov-file#how-to-get-cookieunofficial-api)
-
 ## Upgrading
 
 Check the installed version with:
@@ -746,8 +731,6 @@ aicommit2
 > - For single quotes ('), use \\'
 
 ![how-to-get-cookie](https://github.com/tak-bro/aicommit2/assets/7614353/66f2994d-23d9-4c88-a113-f2d3dc5c0669)
-
-![how-to-get-clova-x-cookie](https://github.com/tak-bro/aicommit2/assets/7614353/dd2202d6-ca1a-4a8a-ba2f-b5703a19c71d)
 
 ## Disclaimer
 

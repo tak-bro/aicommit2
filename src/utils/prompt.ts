@@ -158,6 +158,7 @@ export const generateDefaultPrompt = (locale: string, maxLength: number, type: C
         `5. Body(if needed):
      - Separated from subject by a blank line
      - Explain what and why, not how
+     - Wrap at 72 characters
      - Use bullet points for multiple changes`,
         `6. Footer: Optional, for indicating breaking changes or referencing issues`,
         `7. Scope: Optional, can be anything specifying the place of the commit change`,
