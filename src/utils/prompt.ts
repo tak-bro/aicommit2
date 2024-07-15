@@ -5,10 +5,14 @@ const MAX_COMMIT_LENGTH = 80;
 const commitTypeFormats: Record<CommitType, string> = {
     '': '<commit message>',
     conventional: `<type>(<optional scope>): <description>
+
 [optional body]
+
 [optional footer(s)]`,
     gitmoji: `:<emoji>:(<optional scope>): <description>
+
 [optional body]
+
 [optional footer(s)`,
 };
 
@@ -142,22 +146,22 @@ const commitTypes: Record<CommitType, string> = {
 
 export const generateDefaultPrompt = (locale: string, maxLength: number, type: CommitType, additionalPrompts: string = '') =>
     [
-        `You are an expert programmer trained to write professional git commit messages following the ${type} Commits specification. Generate concise and meaningful git commit messages based on the following guidelines:`,
+        `You are an expert programmer trained to write professional git commit messages following the ${type} Commits specification. Generate concise and meaningful git commit messages based on the guidelines below:`,
         `1. Message language: ${locale}`,
         `2. Format: ${commitTypeFormats[type]}`,
-        `3. Subject line (first line):
+        `3. Type: Choose the most appropriate type from the following list: ${commitTypes[type]}`,
+        `4. Subject line(first line):
      - Maximum ${maxLength} characters
      - Written in imperative mood, present tense
+     - No capitalization of first letter
      - No period at the end`,
-        `4. Body (if needed):
+        `5. Body(if needed):
      - Separated from subject by a blank line
      - Explain what and why, not how
      - Use bullet points for multiple changes`,
-        `5. Type: Choose the most appropriate type from the following list: ${commitTypes[type]}`,
-        `6. Scope: Optional, can be anything specifying the place of the commit change`,
-        `7. Description: A short summary of the code changes`,
-        `8. Body: Optional, providing additional contextual information about the code changes`,
-        `9. Footer: Optional, for indicating breaking changes or referencing issues`,
+        `6. Footer: Optional, for indicating breaking changes or referencing issues`,
+        `7. Scope: Optional, can be anything specifying the place of the commit change`,
+        `8. Description: A short summary of the code changes`,
         `${additionalPrompts}`,
         `Avoid unnecessary explanations or translations. Your response will be used directly in git commit messages, so ensure it follows the specified format precisely.`,
     ]
@@ -176,7 +180,7 @@ export const extraPrompt = (generate: number, type: CommitType) => `Provide ${ge
   }
 ]
 
-Note: Your task is to create well-formatted, conventional commit messages for each requested commit.`;
+Note: Your task is to create well-formatted, conventional commit messages for each requested commit. Ensure that the messages are diverse and showcase different types and formats.`;
 
 export const isValidConventionalMessage = (message: string): boolean => {
     // TODO: check loosely for issue that message is not coming out
