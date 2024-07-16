@@ -10,7 +10,7 @@ export const AIType = {
     OPEN_AI: 'OPENAI_KEY',
     GEMINI: 'GEMINI_KEY',
     ANTHROPIC: 'ANTHROPIC_KEY',
-    HUGGING: 'HUGGING_COOKIE',
+    HUGGINGFACE: 'HUGGINGFACE_COOKIE',
     MISTRAL: 'MISTRAL_KEY',
     CODESTRAL: 'CODESTRAL_KEY',
     OLLAMA: 'OLLAMA_MODEL',
@@ -79,16 +79,8 @@ export abstract class AIService {
     };
 
     protected sanitizeMessage(generatedText: string, type: CommitType, maxCount: number, ignoreBody: boolean): CommitMessage[] {
-        const jsonPattern = /\[[\s\S]*?\]/;
-
         try {
-            const jsonMatch = generatedText.match(jsonPattern);
-            if (!jsonMatch) {
-                // No valid JSON array found in the response
-                return [];
-            }
-            const jsonStr = jsonMatch[0];
-            const commitMessages: RawCommitMessage[] = JSON.parse(jsonStr);
+            const commitMessages: RawCommitMessage[] = JSON.parse(generatedText);
             const filtedMessages = commitMessages
                 .map(data => this.extractMessageAsType(data, type))
                 .map((data: RawCommitMessage) => {
@@ -108,9 +100,39 @@ export abstract class AIService {
                 return filtedMessages.slice(0, maxCount);
             }
             return filtedMessages;
-        } catch (e) {
-            // Error parsing JSON
-            return [];
+        } catch (error) {
+            const jsonPattern = /\[[\s\S]*?\]/;
+            try {
+                const jsonMatch = generatedText.match(jsonPattern);
+                if (!jsonMatch) {
+                    // No valid JSON array found in the response
+                    return [];
+                }
+                const jsonStr = jsonMatch[0];
+                const commitMessages: RawCommitMessage[] = JSON.parse(jsonStr);
+                const filtedMessages = commitMessages
+                    .map(data => this.extractMessageAsType(data, type))
+                    .map((data: RawCommitMessage) => {
+                        if (ignoreBody) {
+                            return {
+                                title: `${data.message}`,
+                                value: `${data.message}`,
+                            };
+                        }
+                        return {
+                            title: `${data.message}`,
+                            value: data.body ? `${data.message}\n\n${data.body}` : `${data.message}`,
+                        };
+                    });
+
+                if (filtedMessages.length > maxCount) {
+                    return filtedMessages.slice(0, maxCount);
+                }
+                return filtedMessages;
+            } catch (e) {
+                // Error parsing JSON
+                return [];
+            }
         }
     }
 

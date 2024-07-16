@@ -673,7 +673,7 @@ Supported:
 - `HuggingFaceH4/zephyr-orpo-141b-A35b-v0.1`
 - `mistralai/Mixtral-8x7B-Instruct-v0.1`
 - `NousResearch/Nous-Hermes-2-Mixtral-8x7B-DPO`
-- `google/gemma-1.1-7b-it`
+- `01-ai/Yi-1.5-34B-Chat`
 - `mistralai/Mistral-7B-Instruct-v0.2`
 - `microsoft/Phi-3-mini-4k-instruct`
 

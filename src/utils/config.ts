@@ -182,13 +182,13 @@ const configParsers = {
         }
         return path;
     },
-    HUGGING_COOKIE(cookie?: string) {
+    HUGGINGFACE_COOKIE(cookie?: string) {
         if (!cookie) {
             return '';
         }
         return cookie;
     },
-    HUGGING_MODEL(model?: string) {
+    HUGGINGFACE_MODEL(model?: string) {
         if (!model || model.length === 0) {
             return `mistralai/Mixtral-8x7B-Instruct-v0.1`;
         }
@@ -199,12 +199,12 @@ const configParsers = {
             `HuggingFaceH4/zephyr-orpo-141b-A35b-v0.1`,
             `mistralai/Mixtral-8x7B-Instruct-v0.1`,
             `NousResearch/Nous-Hermes-2-Mixtral-8x7B-DPO`,
-            `google/gemma-1.1-7b-it`,
+            `01-ai/Yi-1.5-34B-Chat`,
             `mistralai/Mistral-7B-Instruct-v0.2`,
             `microsoft/Phi-3-mini-4k-instruct`,
         ];
 
-        parseAssert('HUGGING_MODEL', supportModels.includes(model), 'Invalid model type of HuggingFace chat');
+        parseAssert('HUGGINGFACE_MODEL', supportModels.includes(model), 'Invalid model type of HuggingFace chat');
         return model;
     },
     GEMINI_KEY(key?: string) {
