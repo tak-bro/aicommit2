@@ -35,7 +35,7 @@ get from gitmoji.dev
     const key = data.querySelector("button").innerText;
     return { [`${key}`]: `${data.lastElementChild.textContent}` };
 })
- */
+*/
 const commitTypes: Record<CommitType, string> = {
     '': '',
     gitmoji: `\n${JSON.stringify(
@@ -151,14 +151,14 @@ export const generateDefaultPrompt = (locale: string, maxLength: number, type: C
         `2. Format: ${commitTypeFormats[type]}`,
         `3. Type: Choose the most appropriate type from the following list: ${commitTypes[type]}`,
         `4. Subject line(first line):
-   - Maximum ${maxLength} characters
-   - Written in imperative mood, present tense
+   - Start with a short sentence in imperative mood, present tense
+   - Maximum ${Math.min(Math.max(maxLength, 0), MAX_COMMIT_LENGTH)} characters
    - No capitalization of first letter
    - No period at the end`,
         `5. Body(if needed):
-   - Separated from subject by a blank line
-   - Use BULLET POINTS for multiple changes
-   - Explain what and why, not how`,
+   - Write 2~5 sentences at most for the detailed explanation
+   - Separate from Subject by a blank line
+   - Use bullet points for multiple changes`,
         `6. Footer: Optional, for indicating breaking changes or referencing issues`,
         `7. Scope: Optional, can be anything specifying the place of the commit change`,
         `8. Description: A short summary of the code changes`,
