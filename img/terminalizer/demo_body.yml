@@ -1,0 +1,381 @@
+# The configurations that used for the recording, feel free to edit them
+config:
+
+  # Specify a command to be executed
+  # like `/bin/bash -l`, `ls`, or any other commands
+  # the default is bash for Linux
+  # or powershell.exe for Windows
+  command: zsh
+
+  # Specify the current working directory path
+  # the default is the current working directory path
+  cwd: /Users/tak/workspace/tak-bro/aicommit2
+
+  # Export additional ENV variables
+  env:
+    recording: true
+
+  # Explicitly set the number of columns
+  # or use `auto` to take the current
+  # number of columns of your shell
+  cols: 105
+
+  # Explicitly set the number of rows
+  # or use `auto` to take the current
+  # number of rows of your shell
+  rows: 20
+
+  # Amount of times to repeat GIF
+  # If value is -1, play once
+  # If value is 0, loop indefinitely
+  # If value is a positive number, loop n times
+  repeat: 0
+
+  # Quality
+  # 1 - 100
+  quality: 100
+
+  # Delay between frames in ms
+  # If the value is `auto` use the actual recording delays
+  frameDelay: auto
+
+  # Maximum delay between frames in ms
+  # Ignored if the `frameDelay` isn't set to `auto`
+  # Set to `auto` to prevent limiting the max idle time
+  maxIdleTime: 2000
+
+  # The surrounding frame box
+  # The `type` can be null, window, floating, or solid`
+  # To hide the title use the value null
+  # Don't forget to add a backgroundColor style with a null as type
+  frameBox:
+    type: floating
+    title: AICommit2
+    style:
+      border: 0px black solid
+      # boxShadow: none
+      # margin: 0px
+
+  # Add a watermark image to the rendered gif
+  # You need to specify an absolute path for
+  # the image on your machine or a URL, and you can also
+  # add your own CSS styles
+  watermark:
+    imagePath: null
+    style:
+      position: absolute
+      right: 15px
+      bottom: 15px
+      width: 100px
+      opacity: 0.9
+
+  # Cursor style can be one of
+  # `block`, `underline`, or `bar`
+  cursorStyle: block
+
+  # Font family
+  # You can use any font that is installed on your machine
+  # in CSS-like syntax
+  fontFamily: "Monaco, Lucida Console, Ubuntu Mono, Monospace"
+
+  # The size of the font
+  fontSize: 12
+
+  # The height of lines
+  lineHeight: 1
+
+  # The spacing between letters
+  letterSpacing: 0
+
+  # Theme
+  theme:
+    background: "transparent"
+    foreground: "#afafaf"
+    cursor: "#c7c7c7"
+    black: "#232628"
+    red: "#fc4384"
+    green: "#b3e33b"
+    yellow: "#ffa727"
+    blue: "#75dff2"
+    magenta: "#ae89fe"
+    cyan: "#708387"
+    white: "#d5d5d0"
+    brightBlack: "#626566"
+    brightRed: "#ff7fac"
+    brightGreen: "#c8ed71"
+    brightYellow: "#ebdf86"
+    brightBlue: "#75dff2"
+    brightMagenta: "#ae89fe"
+    brightCyan: "#b1c6ca"
+    brightWhite: "#f9f9f4"
+
+# Records, feel free to edit them
+records:
+  - delay: 253
+    content: "\e[?25l\e8\e[0m\e[49m\e[39m\e[27m\e[24m\e[J\e]2;tak@louis-lemon:~/workspace/tak-bro/aicommit2\a\e]1;..bro/aicommit2\a\e]7;file://louis-lemon/Users/tak/workspace/tak-bro/aicommit2\e\\\e]697;OSCUnlock=609598b4f0704e3085c3ad8e81bab4df\a\e]697;Dir=/Users/tak/workspace/tak-bro/aicommit2\a\e]697;Shell=zsh\a\e]697;ShellPath=/opt/homebrew/Cellar/zsh/5.9/bin/zsh\a\e]697;PID=60893\a\e]697;ExitCode=0\a\e]697;TTY=/dev/ttys041\a\e]697;Log=\a\e]697;ZshAutosuggestionColor=fg=245\a\e]697;FigAutosuggestionColor=\a\e]697;User=tak\a\e[0m\e[38;5;31m\e[49m\e[39m\e[27m\e[24m\e[1m\e[7m%\e[27m\e[1m\e[0m                                                                                                        \r\e[0m\e[49m\e[39m\e[27m\e[24m\e[K\r\e[0m\e[27m\e[24m\e[J\e]697;StartPrompt\a\e[0m\e[49m\e[39m\r\n\e[A\e[0m\e[49m\e[39m\e[0m\e[49m\e[39m\e[0m\e[49m \e[0m\e[49m\e[38;5;31m \e[1m\e[38;5;31m\e[38;5;39m~\e[0m\e[38;5;39m\e[49m\e[38;5;31m/workspace/tak-bro/\e[1m\e[38;5;31m\e[38;5;39maicommit2\e[0m\e[38;5;39m\e[49m\e[38;5;31m\e[0m\e[38;5;31m\e[49m\e[38;5;31m\e[0m\e[38;5;31m\e[49m \e[0m\e[38;5;31m\e[49m\e[38;5;178m\e[0m\e[38;5;178m\e[49m\e[38;5;76m\e[0m\e[38;5;76m\e[49m\e[38;5;178m \e[38;5;76m feature/support-multiline \e[38;5;76m*23 \e[38;5;178m+1\e[0m\e[38;5;178m\e[49m\e[38;5;178m\e[0m\e[38;5;178m\e[49m\e[30m \e[0m\e[30m\e[49m\e[39m\e[38;5;238m············\e[0m\e[38;5;238m\e[49m\e[30m \e[0m\e[30m\e[49m\e[38;5;70m 20.10.0\e[0m\e[38;5;70m\e[49m\e[38;5;70m\e[0m\e[38;5;70m\e[49m\e[38;5;70m\e[0m\e[38;5;70m\e[49m\e[38;5;66m  17:40:50\e[0m\e[38;5;66m\e[49m\e[38;5;66m\e[0m\e[38;5;66m\e[49m\e[38;5;66m\e[0m\e[38;5;66m\e[49m\e[39m\r\n\e[0m\e[49m\e[39m\e[0m\e[49m\e[38;5;76m❯\e[0m\e[38;5;76m\e[49m\e[38;5;76m\e[0m\e[38;5;76m\e[49m\e[30m\e[0m\e[30m\e[49m\e[39m \e[0m\e[49m\e[39m\e]697;EndPrompt\a\e]697;NewCmd=609598b4f0704e3085c3ad8e81bab4df\a\e[K\e[102C\e]697;StartPrompt\a\e]697;EndPrompt\a\e[102D\e[?1h\e=\e[?25h\e[?2004h"
+  - delay: 219
+    content: "a\b\e[1m\e[31ma\e[0m\e[39m\b\e[1m\e[31ma\e[0m\e[39m\e[38;5;245micommit2\e[39m\e[8D"
+  - delay: 138
+    content: "\b\e[1m\e[31ma\e[1m\e[31mi\e[0m\e[39m"
+  - delay: 283
+    content: "\b\b\e[1m\e[31ma\e[1m\e[31mi\e[1m\e[31mc\e[0m\e[39m"
+  - delay: 213
+    content: "\b\e[1m\e[31mc\e[1m\e[31m2\e[0m\e[39m\e[39m \e[39m \e[39m \e[39m \e[39m \b\b\b\b\b\b\b\b\b\e[0m\e[32ma\e[0m\e[32mi\e[0m\e[32mc\e[0m\e[32m2\e[39m\e[38;5;245m -a -c \e[39m\b\b\b\b\b\b\b"
+  - delay: 313
+    content: "\e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \b\b\b\b\b\b\b\e[?1l\e>\e[?2004l\e[?25l\r\r\e[A\e[0m\e[27m\e[24m\e[J\e[0m\e[49m\e[27m\e[24m\e[38;5;76m❯\e[0m\e[38;5;76m\e[49m\e[39m\e[27m\e[24m \e[32maic2\e[39m\e[K\e[?25h\r\r\n\e]697;OSCLock=609598b4f0704e3085c3ad8e81bab4df\a\e]697;PreExec\a\e]2;./dist/cli.mjs\a\e]1;aic2\a"
+  - delay: 465
+    content: "       _                    _ _   ___ \r\n  __ _(_)__ ___ _ __  _ __ (_) |_|_  )\r\n / _` | / _/ _ \\ '  \\| '  \\| |  _|/ / \r\n \\__,_|_\\__\\___/_|_|_|_|_|_|_|\\__/___|\r\n                                      \r\n"
+  - delay: 11
+    content: "\e[?25l\e[1G\e[1G\e[36m⠋\e[39m Detecting staged files"
+  - delay: 15
+    content: "\e[1G\e[0K\e[?25h\e[1m\e[32m✔ \e[39m\e[22m\e[1mDetected 1 staged file:\e[22m\r\n     src/services/ai/clova-x.service.ts\r\n\r\n"
+  - delay: 5
+    content: "\e[?25l\e[33m⚠ No commit messages were generated\e[39m\e[35D\e[35C\e[?25l\e[1G\e[1G\e[36m⠋\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠙\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠹\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠸\e[39m AI is analyzing your changes"
+  - delay: 82
+    content: "\e[1G\e[0K\e[36m⠼\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠴\e[39m AI is analyzing your changes"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠦\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠧\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠇\e[39m AI is analyzing your changes"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠏\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠋\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠙\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠹\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠸\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠼\e[39m AI is analyzing your changes"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠴\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠦\e[39m AI is analyzing your changes"
+  - delay: 35
+    content: "\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[1m\e[0m \e[0m\e[22m\e[2m  (Use ↑↓ arrows to move)\e[22m\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;116;170;156m\e[38;2;255;255;255m\e[1m[ChatGPT]\e[22m\e[1m\e[39m\e[36m\e[49m feat(ai): add ClovaXService class for AI service integration\e[39m\e[22m\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2mfeat(ai): add ClovaXService class for AI service integration\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2mThe ClovaXService class is added to handle integration with the Clova X AI service. It includes methods \e[22m\r\n\e[2mfor generating commit messages, sending messages, parsing message results, getting conversation IDs, and \e[22m\r\n\e[2mdeleting conversations.\e[22m\e[2m\e[22m\r\n\r\n\e[0D"
+  - delay: 45
+    content: "\e[1G\e[0K\e[36m⠧\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠇\e[39m AI is analyzing your changes"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠏\e[39m AI is analyzing your changes\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[1m\e[0m \e[0m\e[22m\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;116;170;156m\e[38;2;255;255;255m\e[1m[ChatGPT]\e[22m\e[1m\e[39m\e[36m\e[49m feat(ai): add ClovaXService class for AI service integration\e[39m\e[22m\r\n    \e[48;2;226;140;88m\e[38;2;255;255;255m\e[1m[Codestral]\e[22m\e[39m\e[49m refactor(ai): remove clova-x service\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2mfeat(ai): add ClovaXService class for AI service integration\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2mThe ClovaXService class is added to handle integration with the Clova X AI service. It includes methods \e[22m\r\n\e[2mfor generating commit messages, sending messages, parsing message results, getting conversation IDs, and \e[22m\r\n\e[2mdeleting conversations.\e[22m\e[2m\e[22m\r\n\r\n\e[0D"
+  - delay: 77
+    content: "\e[1G\e[0K\e[36m⠋\e[39m AI is analyzing your changes"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠙\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠹\e[39m AI is analyzing your changes"
+  - delay: 64
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[1m\e[0m \e[0m\e[22m\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;116;170;156m\e[38;2;255;255;255m\e[1m[ChatGPT]\e[22m\e[1m\e[39m\e[36m\e[49m feat(ai): add ClovaXService class for AI service integration\e[39m\e[22m\r\n    \e[48;2;226;140;88m\e[38;2;255;255;255m\e[1m[Codestral]\e[22m\e[39m\e[49m refactor(ai): remove clova-x service\r\n    \e[48;2;174;86;48m\e[38;2;255;255;255m\e[1m[Anthropic]\e[22m\e[39m\e[49m docs: remove unused ClovaX service\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2mfeat(ai): add ClovaXService class for AI service integration\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2mThe ClovaXService class is added to handle integration with the Clova X AI service. It includes methods \e[22m\r\n\e[2mfor generating commit messages, sending messages, parsing message results, getting conversation IDs, and \e[22m\r\n\e[2mdeleting conversations.\e[22m\e[2m\e[22m\r\n\r\n\e[0D"
+  - delay: 16
+    content: "\e[1G\e[0K\e[36m⠸\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠼\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠴\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠦\e[39m AI is analyzing your changes"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠧\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠇\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠏\e[39m AI is analyzing your changes"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠋\e[39m AI is analyzing your changes"
+  - delay: 78
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[1m\e[0m \e[0m\e[22m\r\n    \e[48;2;116;170;156m\e[38;2;255;255;255m\e[1m[ChatGPT]\e[22m\e[39m\e[49m feat(ai): add ClovaXService class for AI service integration\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;226;140;88m\e[38;2;255;255;255m\e[1m[Codestral]\e[22m\e[1m\e[39m\e[36m\e[49m refactor(ai): remove clova-x service\e[39m\e[22m\r\n    \e[48;2;174;86;48m\e[38;2;255;255;255m\e[1m[Anthropic]\e[22m\e[39m\e[49m docs: remove unused ClovaX service\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2mrefactor(ai): remove clova-x service\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2mThe clova-x service is no longer needed, so it has been removed.\e[22m\e[2m\e[22m\r\n\r\n\e[0D\e[1G\e[0K\e[36m⠙\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠹\e[39m AI is analyzing your changes"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠸\e[39m AI is analyzing your changes"
+  - delay: 82
+    content: "\e[1G\e[0K\e[36m⠼\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠴\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠦\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠧\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠇\e[39m AI is analyzing your changes"
+  - delay: 9
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[1m\e[0m \e[0m\e[22m\r\n    \e[48;2;116;170;156m\e[38;2;255;255;255m\e[1m[ChatGPT]\e[22m\e[39m\e[49m feat(ai): add ClovaXService class for AI service integration\r\n    \e[48;2;226;140;88m\e[38;2;255;255;255m\e[1m[Codestral]\e[22m\e[39m\e[49m refactor(ai): remove clova-x service\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;174;86;48m\e[38;2;255;255;255m\e[1m[Anthropic]\e[22m\e[1m\e[39m\e[36m\e[49m docs: remove unused ClovaX service\e[39m\e[22m\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2mdocs: remove unused ClovaX service\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2m- The ClovaX service is no longer needed, as it was a part of an experimental feature that has been \e[22m\r\n\e[2mremoved from the codebase.\e[22m\e[2m\e[22m\r\n\e[2m\e[2m- Deleting the `clova-x.service.ts` file to clean up the project.\e[22m\e[2m\e[22m\r\n\r\n\e[0D"
+  - delay: 71
+    content: "\e[1G\e[0K\e[36m⠏\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠋\e[39m AI is analyzing your changes"
+  - delay: 44
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[1m\e[0m \e[0m\e[22m\r\n    \e[48;2;116;170;156m\e[38;2;255;255;255m\e[1m[ChatGPT]\e[22m\e[39m\e[49m feat(ai): add ClovaXService class for AI service integration\r\n    \e[48;2;226;140;88m\e[38;2;255;255;255m\e[1m[Codestral]\e[22m\e[39m\e[49m refactor(ai): remove clova-x service\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;174;86;48m\e[38;2;255;255;255m\e[1m[Anthropic]\e[22m\e[1m\e[39m\e[36m\e[49m docs: remove unused ClovaX service\e[39m\e[22m\r\n    \e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[39m\e[49m feat(ai): add clova x service\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2mdocs: remove unused ClovaX service\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2m- The ClovaX service is no longer needed, as it was a part of an experimental feature that has been \e[22m\r\n\e[2mremoved from the codebase.\e[22m\e[2m\e[22m\r\n\e[2m\e[2m- Deleting the `clova-x.service.ts` file to clean up the project.\e[22m\e[2m\e[22m\r\n\r\n\e[0D"
+  - delay: 21
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[1m\e[0m \e[0m\e[22m\r\n    \e[48;2;116;170;156m\e[38;2;255;255;255m\e[1m[ChatGPT]\e[22m\e[39m\e[49m feat(ai): add ClovaXService class for AI service integration\r\n    \e[48;2;226;140;88m\e[38;2;255;255;255m\e[1m[Codestral]\e[22m\e[39m\e[49m refactor(ai): remove clova-x service\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;174;86;48m\e[38;2;255;255;255m\e[1m[Anthropic]\e[22m\e[1m\e[39m\e[36m\e[49m docs: remove unused ClovaX service\e[39m\e[22m\r\n    \e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[39m\e[49m feat(ai): add clova x service\r\n    \e[48;2;245;80;54m\e[38;2;255;255;255m\e[1m[Groq]\e[22m\e[39m\e[49m fix(ai): fix issue where generateCommitMessage$ hangs when response is empty\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2mdocs: remove unused ClovaX service\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2m- The ClovaX service is no longer needed, as it was a part of an experimental feature that has been \e[22m\r\n\e[2mremoved from the codebase.\e[22m\e[2m\e[22m\r\n\e[2m\e[2m- Deleting the `clova-x.service.ts` file to clean up the project.\e[22m\e[2m\e[22m\r\n\r\n\e[0D"
+  - delay: 13
+    content: "\e[1G\e[0K\e[36m⠙\e[39m AI is analyzing your changes"
+  - delay: 82
+    content: "\e[1G\e[0K\e[36m⠹\e[39m AI is analyzing your changes"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠸\e[39m AI is analyzing your changes"
+  - delay: 48
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[1m\e[0m \e[0m\e[22m\r\n    \e[48;2;116;170;156m\e[38;2;255;255;255m\e[1m[ChatGPT]\e[22m\e[39m\e[49m feat(ai): add ClovaXService class for AI service integration\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;226;140;88m\e[38;2;255;255;255m\e[1m[Codestral]\e[22m\e[1m\e[39m\e[36m\e[49m refactor(ai): remove clova-x service\e[39m\e[22m\r\n    \e[48;2;174;86;48m\e[38;2;255;255;255m\e[1m[Anthropic]\e[22m\e[39m\e[49m docs: remove unused ClovaX service\r\n    \e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[39m\e[49m feat(ai): add clova x service\r\n    \e[48;2;245;80;54m\e[38;2;255;255;255m\e[1m[Groq]\e[22m\e[39m\e[49m fix(ai): fix issue where generateCommitMessage$ hangs when response is empty\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2mrefactor(ai): remove clova-x service\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2mThe clova-x service is no longer needed, so it has been removed.\e[22m\e[2m\e[22m\r\n\r\n\e[0D"
+  - delay: 33
+    content: "\e[1G\e[0K\e[36m⠼\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠴\e[39m AI is analyzing your changes"
+  - delay: 82
+    content: "\e[1G\e[0K\e[36m⠦\e[39m AI is analyzing your changes"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠧\e[39m AI is analyzing your changes"
+  - delay: 82
+    content: "\e[1G\e[0K\e[36m⠇\e[39m AI is analyzing your changes\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[1m\e[0m \e[0m\e[22m\r\n    \e[48;2;116;170;156m\e[38;2;255;255;255m\e[1m[ChatGPT]\e[22m\e[39m\e[49m feat(ai): add ClovaXService class for AI service integration\r\n    \e[48;2;226;140;88m\e[38;2;255;255;255m\e[1m[Codestral]\e[22m\e[39m\e[49m refactor(ai): remove clova-x service\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;174;86;48m\e[38;2;255;255;255m\e[1m[Anthropic]\e[22m\e[1m\e[39m\e[36m\e[49m docs: remove unused ClovaX service\e[39m\e[22m\r\n    \e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[39m\e[49m feat(ai): add clova x service\r\n    \e[48;2;245;80;54m\e[38;2;255;255;255m\e[1m[Groq]\e[22m\e[39m\e[49m fix(ai): fix issue where generateCommitMessage$ hangs when response is empty\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2mdocs: remove unused ClovaX service\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2m- The ClovaX service is no longer needed, as it was a part of an experimental feature that has been \e[22m\r\n\e[2mremoved from the codebase.\e[22m\e[2m\e[22m\r\n\e[2m\e[2m- Deleting the `clova-x.service.ts` file to clean up the project.\e[22m\e[2m\e[22m\r\n\r\n\e[0D"
+  - delay: 78
+    content: "\e[1G\e[0K\e[36m⠏\e[39m AI is analyzing your changes"
+  - delay: 75
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[1m\e[0m \e[0m\e[22m\r\n    \e[48;2;116;170;156m\e[38;2;255;255;255m\e[1m[ChatGPT]\e[22m\e[39m\e[49m feat(ai): add ClovaXService class for AI service integration\r\n    \e[48;2;226;140;88m\e[38;2;255;255;255m\e[1m[Codestral]\e[22m\e[39m\e[49m refactor(ai): remove clova-x service\r\n    \e[48;2;174;86;48m\e[38;2;255;255;255m\e[1m[Anthropic]\e[22m\e[39m\e[49m docs: remove unused ClovaX service\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[1m\e[39m\e[36m\e[49m feat(ai): add clova x service\e[39m\e[22m\r\n    \e[48;2;245;80;54m\e[38;2;255;255;255m\e[1m[Groq]\e[22m\e[39m\e[49m fix(ai): fix issue where generateCommitMessage$ hangs when response is empty\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2mfeat(ai): add clova x service\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2mAdd a new AI service for generating commit messages using Clova X.\e[22m\e[2m\e[22m\r\n\r\n\e[0D\e[1G\e[0K\e[36m⠋\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠙\e[39m AI is analyzing your changes"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠹\e[39m AI is analyzing your changes"
+  - delay: 27
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[1m\e[0m \e[0m\e[22m\r\n    \e[48;2;116;170;156m\e[38;2;255;255;255m\e[1m[ChatGPT]\e[22m\e[39m\e[49m feat(ai): add ClovaXService class for AI service integration\r\n    \e[48;2;226;140;88m\e[38;2;255;255;255m\e[1m[Codestral]\e[22m\e[39m\e[49m refactor(ai): remove clova-x service\r\n    \e[48;2;174;86;48m\e[38;2;255;255;255m\e[1m[Anthropic]\e[22m\e[39m\e[49m docs: remove unused ClovaX service\r\n    \e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[39m\e[49m feat(ai): add clova x service\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;245;80;54m\e[38;2;255;255;255m\e[1m[Groq]\e[22m\e[1m\e[39m\e[36m\e[49m fix(ai): fix issue where generateCommitMessage$ hangs when response is empty\e[39m\e[22m\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2mfix(ai): fix issue where generateCommitMessage$ hangs when response is empty\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2mCorrected a bug where `generateCommitMessage$` would hang when the API response did not contain any data.\e[22m\r\n\e[2m This involved handling the empty case gracefully.\e[22m\e[2m\e[22m\r\n\r\n\e[0D"
+  - delay: 53
+    content: "\e[1G\e[0K\e[36m⠸\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠼\e[39m AI is analyzing your changes"
+  - delay: 71
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[1m\e[0m \e[0m\e[22m\r\n    \e[48;2;116;170;156m\e[38;2;255;255;255m\e[1m[ChatGPT]\e[22m\e[39m\e[49m feat(ai): add ClovaXService class for AI service integration\r\n    \e[48;2;226;140;88m\e[38;2;255;255;255m\e[1m[Codestral]\e[22m\e[39m\e[49m refactor(ai): remove clova-x service\r\n    \e[48;2;174;86;48m\e[38;2;255;255;255m\e[1m[Anthropic]\e[22m\e[39m\e[49m docs: remove unused ClovaX service\r\n    \e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[39m\e[49m feat(ai): add clova x service\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;245;80;54m\e[38;2;255;255;255m\e[1m[Groq]\e[22m\e[1m\e[39m\e[36m\e[49m fix(ai): fix issue where generateCommitMessage$ hangs when response is empty\e[39m\e[22m\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2mfix(ai): fix issue where generateCommitMessage$ hangs when response is empty\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2mCorrected a bug where `generateCommitMessage$` would hang when the API response did not contain any data.\e[22m\r\n\e[2m This involved handling the empty case gracefully.\e[22m\e[2m\e[22m\r\n\r\n\e[0D"
+  - delay: 10
+    content: "\e[1G\e[0K\e[36m⠴\e[39m AI is analyzing your changes"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠦\e[39m AI is analyzing your changes"
+  - delay: 82
+    content: "\e[1G\e[0K\e[36m⠧\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠇\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠏\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠋\e[39m AI is analyzing your changes"
+  - delay: 10
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[1m\e[0m \e[0m\e[22m\r\n    \e[48;2;116;170;156m\e[38;2;255;255;255m\e[1m[ChatGPT]\e[22m\e[39m\e[49m feat(ai): add ClovaXService class for AI service integration\r\n    \e[48;2;226;140;88m\e[38;2;255;255;255m\e[1m[Codestral]\e[22m\e[39m\e[49m refactor(ai): remove clova-x service\r\n    \e[48;2;174;86;48m\e[38;2;255;255;255m\e[1m[Anthropic]\e[22m\e[39m\e[49m docs: remove unused ClovaX service\r\n    \e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[39m\e[49m feat(ai): add clova x service\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;245;80;54m\e[38;2;255;255;255m\e[1m[Groq]\e[22m\e[1m\e[39m\e[36m\e[49m fix(ai): fix issue where generateCommitMessage$ hangs when response is empty\e[39m\e[22m\r\n    \e[48;2;209;142;226m\e[38;2;255;255;255m\e[1m[Cohere]\e[22m\e[39m\e[49m feat: add clova-x service for ai commit message generation\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2mfix(ai): fix issue where generateCommitMessage$ hangs when response is empty\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2mCorrected a bug where `generateCommitMessage$` would hang when the API response did not contain any data.\e[22m\r\n\e[2m This involved handling the empty case gracefully.\e[22m\e[2m\e[22m\r\n\r\n\e[0D"
+  - delay: 70
+    content: "\e[1G\e[0K\e[36m⠙\e[39m AI is analyzing your changes"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠹\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠸\e[39m AI is analyzing your changes"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠦\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠧\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠇\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[1m\e[0m \e[0m\e[22m\r\n    \e[48;2;116;170;156m\e[38;2;255;255;255m\e[1m[ChatGPT]\e[22m\e[39m\e[49m feat(ai): add ClovaXService class for AI service integration\r\n    \e[48;2;226;140;88m\e[38;2;255;255;255m\e[1m[Codestral]\e[22m\e[39m\e[49m refactor(ai): remove clova-x service\r\n    \e[48;2;174;86;48m\e[38;2;255;255;255m\e[1m[Anthropic]\e[22m\e[39m\e[49m docs: remove unused ClovaX service\r\n    \e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[39m\e[49m feat(ai): add clova x service\r\n    \e[48;2;245;80;54m\e[38;2;255;255;255m\e[1m[Groq]\e[22m\e[39m\e[49m fix(ai): fix issue where generateCommitMessage$ hangs when response is empty\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;209;142;226m\e[38;2;255;255;255m\e[1m[Cohere]\e[22m\e[1m\e[39m\e[36m\e[49m feat: add clova-x service for ai commit message generation\e[39m\e[22m\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2mfeat: add clova-x service for ai commit message generation\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2mAdd Clova-X service for AI-powered commit message generation, including sending messages, parsing \e[22m\r\n\e[2mresponses, and deleting conversations. Update AI service params and config to include Clova-X specific \e[22m\r\n\e[2mdetails. Handle potential errors and logging.\e[22m\e[2m\e[22m\r\n\r\n\e[0D\e[1G\e[0K\e[36m⠏\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠋\e[39m AI is analyzing your changes"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠙\e[39m AI is analyzing your changes"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠋\e[39m AI is analyzing your changes"
+  - delay: 9
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[1m\e[0m \e[0m\e[22m\r\n    \e[48;2;116;170;156m\e[38;2;255;255;255m\e[1m[ChatGPT]\e[22m\e[39m\e[49m feat(ai): add ClovaXService class for AI service integration\r\n    \e[48;2;226;140;88m\e[38;2;255;255;255m\e[1m[Codestral]\e[22m\e[39m\e[49m refactor(ai): remove clova-x service\r\n    \e[48;2;174;86;48m\e[38;2;255;255;255m\e[1m[Anthropic]\e[22m\e[39m\e[49m docs: remove unused ClovaX service\r\n    \e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[39m\e[49m feat(ai): add clova x service\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;245;80;54m\e[38;2;255;255;255m\e[1m[Groq]\e[22m\e[1m\e[39m\e[36m\e[49m fix(ai): fix issue where generateCommitMessage$ hangs when response is empty\e[39m\e[22m\r\n    \e[48;2;209;142;226m\e[38;2;255;255;255m\e[1m[Cohere]\e[22m\e[39m\e[49m feat: add clova-x service for ai commit message generation\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2mfix(ai): fix issue where generateCommitMessage$ hangs when response is empty\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2mCorrected a bug where `generateCommitMessage$` would hang when the API response did not contain any data.\e[22m\r\n\e[2m This involved handling the empty case gracefully.\e[22m\e[2m\e[22m\r\n\r\n\e[0D"
+  - delay: 69
+    content: "\e[1G\e[0K\e[36m⠙\e[39m AI is analyzing your changes"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠹\e[39m AI is analyzing your changes"
+  - delay: 37
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[1m\e[0m \e[0m\e[22m\r\n    \e[48;2;116;170;156m\e[38;2;255;255;255m\e[1m[ChatGPT]\e[22m\e[39m\e[49m feat(ai): add ClovaXService class for AI service integration\r\n    \e[48;2;226;140;88m\e[38;2;255;255;255m\e[1m[Codestral]\e[22m\e[39m\e[49m refactor(ai): remove clova-x service\r\n    \e[48;2;174;86;48m\e[38;2;255;255;255m\e[1m[Anthropic]\e[22m\e[39m\e[49m docs: remove unused ClovaX service\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[1m\e[39m\e[36m\e[49m feat(ai): add clova x service\e[39m\e[22m\r\n    \e[48;2;245;80;54m\e[38;2;255;255;255m\e[1m[Groq]\e[22m\e[39m\e[49m fix(ai): fix issue where generateCommitMessage$ hangs when response is empty\r\n    \e[48;2;209;142;226m\e[38;2;255;255;255m\e[1m[Cohere]\e[22m\e[39m\e[49m feat: add clova-x service for ai commit message generation\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2mfeat(ai): add clova x service\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2mAdd a new AI service for generating commit messages using Clova X.\e[22m\e[2m\e[22m\r\n\r\n\e[0D"
+  - delay: 43
+    content: "\e[1G\e[0K\e[36m⠸\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠼\e[39m AI is analyzing your changes"
+  - delay: 54
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[1m\e[0m \e[0m\e[22m\r\n    \e[48;2;116;170;156m\e[38;2;255;255;255m\e[1m[ChatGPT]\e[22m\e[39m\e[49m feat(ai): add ClovaXService class for AI service integration\r\n    \e[48;2;226;140;88m\e[38;2;255;255;255m\e[1m[Codestral]\e[22m\e[39m\e[49m refactor(ai): remove clova-x service\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;174;86;48m\e[38;2;255;255;255m\e[1m[Anthropic]\e[22m\e[1m\e[39m\e[36m\e[49m docs: remove unused ClovaX service\e[39m\e[22m\r\n    \e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[39m\e[49m feat(ai): add clova x service\r\n    \e[48;2;245;80;54m\e[38;2;255;255;255m\e[1m[Groq]\e[22m\e[39m\e[49m fix(ai): fix issue where generateCommitMessage$ hangs when response is empty\r\n    \e[48;2;209;142;226m\e[38;2;255;255;255m\e[1m[Cohere]\e[22m\e[39m\e[49m feat: add clova-x service for ai commit message generation\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2mdocs: remove unused ClovaX service\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2m- The ClovaX service is no longer needed, as it was a part of an experimental feature that has been \e[22m\r\n\e[2mremoved from the codebase.\e[22m\e[2m\e[22m\r\n\e[2m\e[2m- Deleting the `clova-x.service.ts` file to clean up the project.\e[22m\e[2m\e[22m\r\n\r\n\e[0D"
+  - delay: 26
+    content: "\e[1G\e[0K\e[36m⠴\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠦\e[39m AI is analyzing your changes"
+  - delay: 61
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[1m\e[0m \e[0m\e[22m\r\n    \e[48;2;116;170;156m\e[38;2;255;255;255m\e[1m[ChatGPT]\e[22m\e[39m\e[49m feat(ai): add ClovaXService class for AI service integration\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;226;140;88m\e[38;2;255;255;255m\e[1m[Codestral]\e[22m\e[1m\e[39m\e[36m\e[49m refactor(ai): remove clova-x service\e[39m\e[22m\r\n    \e[48;2;174;86;48m\e[38;2;255;255;255m\e[1m[Anthropic]\e[22m\e[39m\e[49m docs: remove unused ClovaX service\r\n    \e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[39m\e[49m feat(ai): add clova x service\r\n    \e[48;2;245;80;54m\e[38;2;255;255;255m\e[1m[Groq]\e[22m\e[39m\e[49m fix(ai): fix issue where generateCommitMessage$ hangs when response is empty\r\n    \e[48;2;209;142;226m\e[38;2;255;255;255m\e[1m[Cohere]\e[22m\e[39m\e[49m feat: add clova-x service for ai commit message generation\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2mrefactor(ai): remove clova-x service\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2mThe clova-x service is no longer needed, so it has been removed.\e[22m\e[2m\e[22m\r\n\r\n\e[0D"
+  - delay: 19
+    content: "\e[1G\e[0K\e[36m⠧\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠇\e[39m AI is analyzing your changes"
+  - delay: 79
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[1m\e[0m \e[0m\e[22m\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;116;170;156m\e[38;2;255;255;255m\e[1m[ChatGPT]\e[22m\e[1m\e[39m\e[36m\e[49m feat(ai): add ClovaXService class for AI service integration\e[39m\e[22m\r\n    \e[48;2;226;140;88m\e[38;2;255;255;255m\e[1m[Codestral]\e[22m\e[39m\e[49m refactor(ai): remove clova-x service\r\n    \e[48;2;174;86;48m\e[38;2;255;255;255m\e[1m[Anthropic]\e[22m\e[39m\e[49m docs: remove unused ClovaX service\r\n    \e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[39m\e[49m feat(ai): add clova x service\r\n    \e[48;2;245;80;54m\e[38;2;255;255;255m\e[1m[Groq]\e[22m\e[39m\e[49m fix(ai): fix issue where generateCommitMessage$ hangs when response is empty\r\n    \e[48;2;209;142;226m\e[38;2;255;255;255m\e[1m[Cohere]\e[22m\e[39m\e[49m feat: add clova-x service for ai commit message generation\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2mfeat(ai): add ClovaXService class for AI service integration\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2mThe ClovaXService class is added to handle integration with the Clova X AI service. It includes methods \e[22m\r\n\e[2mfor generating commit messages, sending messages, parsing message results, getting conversation IDs, and \e[22m\r\n\e[2mdeleting conversations.\e[22m\e[2m\e[22m\r\n\r\n\e[0D\e[1G\e[0K\e[36m⠏\e[39m AI is analyzing your changes"
+  - delay: 82
+    content: "\e[1G\e[0K\e[36m⠋\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠙\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠹\e[39m AI is analyzing your changes"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠸\e[39m AI is analyzing your changes"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠼\e[39m AI is analyzing your changes"
+  - delay: 62
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[1m\e[0m \e[0m\e[22m\r\n    \e[48;2;116;170;156m\e[38;2;255;255;255m\e[1m[ChatGPT]\e[22m\e[39m\e[49m feat(ai): add ClovaXService class for AI service integration\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;226;140;88m\e[38;2;255;255;255m\e[1m[Codestral]\e[22m\e[1m\e[39m\e[36m\e[49m refactor(ai): remove clova-x service\e[39m\e[22m\r\n    \e[48;2;174;86;48m\e[38;2;255;255;255m\e[1m[Anthropic]\e[22m\e[39m\e[49m docs: remove unused ClovaX service\r\n    \e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[39m\e[49m feat(ai): add clova x service\r\n    \e[48;2;245;80;54m\e[38;2;255;255;255m\e[1m[Groq]\e[22m\e[39m\e[49m fix(ai): fix issue where generateCommitMessage$ hangs when response is empty\r\n    \e[48;2;209;142;226m\e[38;2;255;255;255m\e[1m[Cohere]\e[22m\e[39m\e[49m feat: add clova-x service for ai commit message generation\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2mrefactor(ai): remove clova-x service\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2mThe clova-x service is no longer needed, so it has been removed.\e[22m\e[2m\e[22m\r\n\r\n\e[0D"
+  - delay: 19
+    content: "\e[1G\e[0K\e[36m⠴\e[39m AI is analyzing your changes"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠦\e[39m AI is analyzing your changes"
+  - delay: 82
+    content: "\e[1G\e[0K\e[36m⠧\e[39m AI is analyzing your changes"
+  - delay: 29
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[1m\e[0m \e[0m\e[22m\r\n    \e[48;2;116;170;156m\e[38;2;255;255;255m\e[1m[ChatGPT]\e[22m\e[39m\e[49m feat(ai): add ClovaXService class for AI service integration\r\n    \e[48;2;226;140;88m\e[38;2;255;255;255m\e[1m[Codestral]\e[22m\e[39m\e[49m refactor(ai): remove clova-x service\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;174;86;48m\e[38;2;255;255;255m\e[1m[Anthropic]\e[22m\e[1m\e[39m\e[36m\e[49m docs: remove unused ClovaX service\e[39m\e[22m\r\n    \e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[39m\e[49m feat(ai): add clova x service\r\n    \e[48;2;245;80;54m\e[38;2;255;255;255m\e[1m[Groq]\e[22m\e[39m\e[49m fix(ai): fix issue where generateCommitMessage$ hangs when response is empty\r\n    \e[48;2;209;142;226m\e[38;2;255;255;255m\e[1m[Cohere]\e[22m\e[39m\e[49m feat: add clova-x service for ai commit message generation\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2mdocs: remove unused ClovaX service\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2m- The ClovaX service is no longer needed, as it was a part of an experimental feature that has been \e[22m\r\n\e[2mremoved from the codebase.\e[22m\e[2m\e[22m\r\n\e[2m\e[2m- Deleting the `clova-x.service.ts` file to clean up the project.\e[22m\e[2m\e[22m\r\n\r\n\e[0D"
+  - delay: 51
+    content: "\e[1G\e[0K\e[36m⠇\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠏\e[39m AI is analyzing your changes"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠋\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠙\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠹\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠸\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠼\e[39m AI is analyzing your changes"
+  - delay: 52
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[1m\e[0m \e[0m\e[22m\r\n    \e[48;2;116;170;156m\e[38;2;255;255;255m\e[1m[ChatGPT]\e[22m\e[39m\e[49m feat(ai): add ClovaXService class for AI service integration\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;226;140;88m\e[38;2;255;255;255m\e[1m[Codestral]\e[22m\e[1m\e[39m\e[36m\e[49m refactor(ai): remove clova-x service\e[39m\e[22m\r\n    \e[48;2;174;86;48m\e[38;2;255;255;255m\e[1m[Anthropic]\e[22m\e[39m\e[49m docs: remove unused ClovaX service\r\n    \e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[39m\e[49m feat(ai): add clova x service\r\n    \e[48;2;245;80;54m\e[38;2;255;255;255m\e[1m[Groq]\e[22m\e[39m\e[49m fix(ai): fix issue where generateCommitMessage$ hangs when response is empty\r\n    \e[48;2;209;142;226m\e[38;2;255;255;255m\e[1m[Cohere]\e[22m\e[39m\e[49m feat: add clova-x service for ai commit message generation\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2mrefactor(ai): remove clova-x service\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2mThe clova-x service is no longer needed, so it has been removed.\e[22m\e[2m\e[22m\r\n\r\n\e[0D"
+  - delay: 28
+    content: "\e[1G\e[0K\e[36m⠴\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠦\e[39m AI is analyzing your changes"
+  - delay: 32
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[1m\e[0m \e[0m\e[22m\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;116;170;156m\e[38;2;255;255;255m\e[1m[ChatGPT]\e[22m\e[1m\e[39m\e[36m\e[49m feat(ai): add ClovaXService class for AI service integration\e[39m\e[22m\r\n    \e[48;2;226;140;88m\e[38;2;255;255;255m\e[1m[Codestral]\e[22m\e[39m\e[49m refactor(ai): remove clova-x service\r\n    \e[48;2;174;86;48m\e[38;2;255;255;255m\e[1m[Anthropic]\e[22m\e[39m\e[49m docs: remove unused ClovaX service\r\n    \e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[39m\e[49m feat(ai): add clova x service\r\n    \e[48;2;245;80;54m\e[38;2;255;255;255m\e[1m[Groq]\e[22m\e[39m\e[49m fix(ai): fix issue where generateCommitMessage$ hangs when response is empty\r\n    \e[48;2;209;142;226m\e[38;2;255;255;255m\e[1m[Cohere]\e[22m\e[39m\e[49m feat: add clova-x service for ai commit message generation\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2mfeat(ai): add ClovaXService class for AI service integration\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2mThe ClovaXService class is added to handle integration with the Clova X AI service. It includes methods \e[22m\r\n\e[2mfor generating commit messages, sending messages, parsing message results, getting conversation IDs, and \e[22m\r\n\e[2mdeleting conversations.\e[22m\e[2m\e[22m\r\n\r\n\e[0D"
+  - delay: 47
+    content: "\e[1G\e[0K\e[36m⠧\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠇\e[39m AI is analyzing your changes"
+  - delay: 63
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[1m\e[0m \e[0m\e[22m\e[36mfeat(ai): add ClovaXService class for AI service integration\e[39m\r\n\e[36m\e[39m\r\n\e[36mThe ClovaXService class is added to handle integration with the Clova X AI service. It includes methods \e[39m\r\n\e[36mfor generating commit messages, sending messages, parsing message results, getting conversation IDs, and \e[39m\r\n\e[36mdeleting conversations.\e[39m\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;116;170;156m\e[38;2;255;255;255m\e[1m[ChatGPT]\e[22m\e[1m\e[39m\e[36m\e[49m feat(ai): add ClovaXService class for AI service integration\e[39m\e[22m\r\n    \e[48;2;226;140;88m\e[38;2;255;255;255m\e[1m[Codestral]\e[22m\e[39m\e[49m refactor(ai): remove clova-x service\r\n    \e[48;2;174;86;48m\e[38;2;255;255;255m\e[1m[Anthropic]\e[22m\e[39m\e[49m docs: remove unused ClovaX service\r\n    \e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[39m\e[49m feat(ai): add clova x service\r\n    \e[48;2;245;80;54m\e[38;2;255;255;255m\e[1m[Groq]\e[22m\e[39m\e[49m fix(ai): fix issue where generateCommitMessage$ hangs when response is empty\r\n    \e[48;2;209;142;226m\e[38;2;255;255;255m\e[1m[Cohere]\e[22m\e[39m\e[49m feat: add clova-x service for ai commit message generation\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2mfeat(ai): add ClovaXService class for AI service integration\e[22m\e[2m\e[22m\r\n\e[2m\e[2m\e[22m\e[2m\e[22m\r\n\e[2m\e[2mThe ClovaXService class is added to handle integration with the Clova X AI service. It includes methods \e[22m\r\n\e[2mfor generating commit messages, sending messages, parsing message results, getting conversation IDs, and \e[22m\r\n\e[2mdeleting conversations.\e[22m\e[2m\e[22m\r\n\r\n\e[0D\e[1G\e[0K\e[?25h\e[1G\r\n\e[?25h\e[1A\e[32m?\e[39m \e[1mUse selected message?\e[22m\e[0m \e[0m\e[2m(Y/n) \e[22m\e[30D\e[30C"
+  - delay: 1257
+    content: "\e[2K\e[G\e[32m?\e[39m \e[1mUse selected message?\e[22m\e[0m \e[0m\e[36mYes\e[39m\e[27D\e[27C\r\n\e[?25l\e[1G\e[1G\e[36m⠋\e[39m Committing with the generated message"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠙\e[39m Committing with the generated message"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠹\e[39m Committing with the generated message"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠸\e[39m Committing with the generated message"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠼\e[39m Committing with the generated message"
+  - delay: 56
+    content: "\e[1G\e[0K\e[?25h\e[1G\r\n\e[1m\e[32m✔\e[39m\e[22m \e[1mSuccessfully committed!\e[22m\r\n\e[?25h\e[1m\e[7m%\e[27m\e[1m\e[0m                                                                                                        \r \r\e]2;tak@louis-lemon:~/workspace/tak-bro/aicommit2\a\e]1;..bro/aicommit2\a\e]7;file://louis-lemon/Users/tak/workspace/tak-bro/aicommit2\e\\"
+  - delay: 49
+    content: "\e]697;OSCUnlock=609598b4f0704e3085c3ad8e81bab4df\a\e]697;Dir=/Users/tak/workspace/tak-bro/aicommit2\a\e]697;Shell=zsh\a\e]697;ShellPath=/opt/homebrew/Cellar/zsh/5.9/bin/zsh\a\e]697;PID=60893\a\e]697;ExitCode=0\a\e]697;TTY=/dev/ttys041\a\e]697;Log=\a\e]697;ZshAutosuggestionColor=fg=245\a\e]697;FigAutosuggestionColor=\a\e]697;User=tak\a\r\e[0m\e[27m\e[24m\e[J\e]697;StartPrompt\a\e[0m\e[49m\e[39m\r\n\r\n\e[A\e[0m\e[49m\e[39m\e[0m\e[49m\e[39m\e[0m\e[49m \e[0m\e[49m\e[38;5;31m \e[1m\e[38;5;31m\e[38;5;39m~\e[0m\e[38;5;39m\e[49m\e[38;5;31m/workspace/tak-bro/\e[1m\e[38;5;31m\e[38;5;39maicommit2\e[0m\e[38;5;39m\e[49m\e[38;5;31m\e[0m\e[38;5;31m\e[49m\e[38;5;31m\e[0m\e[38;5;31m\e[49m \e[0m\e[38;5;31m\e[49m\e[38;5;76m \e[38;5;76m feature/support-multiline \e[38;5;76m*23\e[0m\e[38;5;76m\e[49m\e[38;5;76m\e[0m\e[38;5;76m\e[49m\e[30m \e[0m\e[30m\e[49m\e[39m\e[38;5;238m·········\e[0m\e[38;5;238m\e[49m\e[30m \e[0m\e[30m\e[49m\e[38;5;101m 14s\e[0m\e[38;5;101m\e[49m\e[38;5;101m\e[0m\e[38;5;101m\e[49m\e[38;5;101m\e[0m\e[38;5;101m\e[49m\e[38;5;70m  20.10.0\e[0m\e[38;5;70m\e[49m\e[38;5;70m\e[0m\e[38;5;70m\e[49m\e[38;5;70m\e[0m\e[38;5;70m\e[49m\e[38;5;66m  17:41:07\e[0m\e[38;5;66m\e[49m\e[38;5;66m\e[0m\e[38;5;66m\e[49m\e[38;5;66m\e[0m\e[38;5;66m\e[49m\e[39m\r\n\e[0m\e[49m\e[39m\e[0m\e[49m\e[38;5;76m❯\e[0m\e[38;5;76m\e[49m\e[38;5;76m\e[0m\e[38;5;76m\e[49m\e[30m\e[0m\e[30m\e[49m\e[39m \e[0m\e[49m\e[39m\e]697;EndPrompt\a\e]697;NewCmd=609598b4f0704e3085c3ad8e81bab4df\a\e[K\e[102C\e]697;StartPrompt\a\e]697;EndPrompt\a\e[102D\e[?1h\e=\e[?2004h"
+  - delay: 919
+    content: "\e[?2004l\r\r\n"

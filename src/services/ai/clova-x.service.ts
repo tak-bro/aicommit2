@@ -39,9 +39,8 @@ export class ClovaXService extends AIService {
         };
         this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold('[CLOVA X]');
         this.errorPrefix = chalk.red.bold(`[CLOVA X]`);
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-expect-error
-        this.cookie = this.params.config['CLOVAX_COOKIE'];
+        // TODO:
+        this.cookie = '';
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
@@ -63,7 +62,7 @@ export class ClovaXService extends AIService {
             const maxLength = this.params.config['max-length'];
             const diff = this.params.stagedDiff.diff;
             const prompt = this.buildPrompt(locale, diff, generate, maxLength, type, userPrompt);
-            // await this.getAllConversationIds();
+            await this.getAllConversationIds();
             const result = await this.sendMessage(prompt);
             const { conversationId, allText } = this.parseSendMessageResult(result);
             await this.deleteConversation(conversationId);

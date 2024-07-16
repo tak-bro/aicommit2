@@ -1,6 +1,6 @@
 <div align="center">
   <div>
-    <img src="https://github.com/tak-bro/aicommit2/blob/main/img/demo-min.gif?raw=true" alt="AICommit2"/>
+    <img src="https://github.com/tak-bro/aicommit2/blob/main/img/demo_body_min.gif?raw=true" alt="AICommit2"/>
     <h1 align="center">AICommit2</h1>
   </div>
   <p>
@@ -137,7 +137,7 @@ aicommit2
 
 This CLI tool runs `git diff` to grab all your latest code changes, sends them to configured AI, then returns the AI generated commit message.
 
-> If the diff becomes too large, AI will not function properly. If you encounter an error saying the message is too long or it's not a valid commit message, try reducing the commit unit.
+> If the diff becomes too large, AI will not function properly. If you encounter an error saying the message is too long or it's not a valid commit message, **try reducing the commit unit**.
 
 ## Usage
 
@@ -330,7 +330,7 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 | `temperature`     | `0.7`                                  | The temperature (0.0-2.0) is used to control the randomness of the output (for **Open AI, Anthropic, Gemini, Mistral, Codestral**) |
 | `prompt`          | N/A                                    | Additional prompt to let users fine-tune provided prompt                                                                           |
 | `logging`         | `false`                                | Whether to log AI responses for debugging (true or false)                                                                          |
-| `ignoreBody`      | `false`                                | Whether or not the commit message includes body (true or false)                                                                    |
+| `ignoreBody`      | `false`                                | Whether the commit message includes body (true or false)                                                                           |
 
 > **Currently, options are set universally. However, there are plans to develop the ability to set individual options in the future.**
 
@@ -462,11 +462,21 @@ aicommit2 log removeAll
 
 Default: `false`
 
-This option determines whether or not the commit message includes body. If you don't want to include body in message, you can set it to true.
+This option determines whether the commit message includes body. If you don't want to include body in message, you can set it to `true`.
 
 ```sh
 aicommit2 config set ignoreBody="true"
 ```
+
+![ignore_body_true](https://github.com/tak-bro/aicommit2/blob/main/img/ignore_body_true.png?raw=true)
+
+
+```sh
+aicommit2 config set ignoreBody="false"
+```
+
+![ignore_body_false](https://github.com/tak-bro/aicommit2/blob/main/img/ignore_body_false.png?raw=true)
+
 
 ### Ollama
 
