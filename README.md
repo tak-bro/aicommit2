@@ -330,6 +330,7 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 | `temperature`     | `0.7`                                  | The temperature (0.0-2.0) is used to control the randomness of the output (for **Open AI, Anthropic, Gemini, Mistral, Codestral**) |
 | `prompt`          | N/A                                    | Additional prompt to let users fine-tune provided prompt                                                                           |
 | `logging`         | `false`                                | Whether to log AI responses for debugging (true or false)                                                                          |
+| `ignoreBody`      | `false`                                | Whether or not the commit message includes body (true or false)                                                                    |
 
 > **Currently, options are set universally. However, there are plans to develop the ability to set individual options in the future.**
 
@@ -461,7 +462,7 @@ aicommit2 log removeAll
 
 Default: `false`
 
-This option determines whether or not the commit message includes body. If you don't want to include body, you can set it to true.
+This option determines whether or not the commit message includes body. If you don't want to include body in message, you can set it to true.
 
 ```sh
 aicommit2 config set ignoreBody="true"
