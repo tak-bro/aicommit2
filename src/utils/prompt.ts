@@ -13,7 +13,7 @@ const commitTypeFormats: Record<CommitType, string> = {
 
 [optional body]
 
-[optional footer(s)`,
+[optional footer(s)]`,
 };
 
 export const exampleCommitByType: Record<CommitType, string> = {
@@ -150,18 +150,18 @@ export const generateDefaultPrompt = (locale: string, maxLength: number, type: C
         `1. Message language: ${locale}`,
         `2. Format: ${commitTypeFormats[type]}`,
         `3. Type: Choose the most appropriate type from the following list: ${commitTypes[type]}`,
-        `4. Subject line(first line):
+        `4. Scope: Optional, can be anything specifying the place of the commit change`,
+        `5. Description: A short summary of the code changes`,
+        `6. Subject line(first line):
    - Start with a short sentence in imperative mood, present tense
    - Maximum ${Math.min(Math.max(maxLength, 0), MAX_COMMIT_LENGTH)} characters
    - No capitalization of first letter
    - No period at the end`,
-        `5. Body(if needed):
+        `7. Body(if needed):
    - Write 2~5 sentences at most for the detailed explanation
    - Separate from Subject by a blank line
    - Use bullet points for multiple changes`,
-        `6. Footer: Optional, for indicating breaking changes or referencing issues`,
-        `7. Scope: Optional, can be anything specifying the place of the commit change`,
-        `8. Description: A short summary of the code changes`,
+        `8. Footer: Optional, for indicating breaking changes or referencing issues`,
         `${additionalPrompts}`,
         `Avoid unnecessary explanations or translations. Your response will be used directly in git commit messages, so ensure it follows the specified format precisely.`,
     ]
@@ -180,7 +180,7 @@ export const extraPrompt = (generate: number, type: CommitType) => `Provide ${ge
   }
 ]
 
-Note: Your task is to create well-formatted, conventional commit messages for each requested commit. Ensure that the messages are diverse and showcase different types and formats.`;
+Note: Your task is to create well-formatted, ${type} commit messages for each requested commit. Ensure that the messages are diverse and showcase different types and formats.`;
 
 export const isValidConventionalMessage = (message: string): boolean => {
     // TODO: check loosely for issue that message is not coming out
