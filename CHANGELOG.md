@@ -1,3 +1,19 @@
+# [1.11.0](https://github.com/tak-bro/aicommit2/compare/v1.10.1...v1.11.0) (2024-07-16)
+
+
+### Bug Fixes
+
+* **package:** upgrade inquirer-reactive-list-prompt version ([99d12be](https://github.com/tak-bro/aicommit2/commit/99d12be73049f3aea38ce1af8dd85df5d650780e))
+
+
+### Features
+
+* add ignoreBody configuration option ([825dafb](https://github.com/tak-bro/aicommit2/commit/825dafb3b64a7acc7e17529170b7fd6c53a9db68))
+* add ignoreBody option ([b25c452](https://github.com/tak-bro/aicommit2/commit/b25c452dad9351f0b56eed049d91f0936bb4e474))
+* improve message sanitization ([14b1ef5](https://github.com/tak-bro/aicommit2/commit/14b1ef5231660f8e364ac6fddaa91db008aa631d))
+* remove clova x support ([af839bd](https://github.com/tak-bro/aicommit2/commit/af839bd2be473c6ceb1be95b4a425096450cd248))
+* update prompt message for clarity ([b74a8c4](https://github.com/tak-bro/aicommit2/commit/b74a8c4cf54f13e0e143f44207f7f2d79d146cf5))
+
 ## [1.10.1](https://github.com/tak-bro/aicommit2/compare/v1.10.0...v1.10.1) (2024-07-01)
 
 
