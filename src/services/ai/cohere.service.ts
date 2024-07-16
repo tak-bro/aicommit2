@@ -4,10 +4,9 @@ import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Observable, catchError, concatMap, from, map, of } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
-import { AIService, AIServiceParams } from './ai.service.js';
+import { AIService, AIServiceParams, CommitMessage } from './ai.service.js';
 import { KnownError } from '../../utils/error.js';
 import { createLogResponse } from '../../utils/log.js';
-import { deduplicateMessages } from '../../utils/openai.js';
 
 export class CohereService extends AIService {
     private cohere: CohereClient;
@@ -28,16 +27,17 @@ export class CohereService extends AIService {
     generateCommitMessage$(): Observable<ReactiveListChoice> {
         return fromPromise(this.generateMessage()).pipe(
             concatMap(messages => from(messages)),
-            map(message => ({
-                name: `${this.serviceName} ${message}`,
-                value: message,
+            map(data => ({
+                name: `${this.serviceName} ${data.title}`,
+                value: data.value,
+                description: data.value,
                 isError: false,
             })),
             catchError(this.handleError$)
         );
     }
 
-    private async generateMessage(): Promise<string[]> {
+    private async generateMessage(): Promise<CommitMessage[]> {
         try {
             const diff = this.params.stagedDiff.diff;
             const { locale, generate, type, prompt: userPrompt, logging } = this.params.config;
@@ -55,7 +55,7 @@ export class CohereService extends AIService {
 
             const result = prediction.generations.map(data => data.text).join('');
             logging && createLogResponse('Cohere', diff, prompt, result);
-            return deduplicateMessages(this.sanitizeMessage(result, this.params.config.type, generate));
+            return this.sanitizeMessage(result, this.params.config.type, generate, this.params.config.ignoreBody);
         } catch (error) {
             const errorAsAny = error as any;
             if (errorAsAny instanceof CohereTimeoutError) {

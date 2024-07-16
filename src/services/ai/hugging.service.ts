@@ -4,11 +4,10 @@ import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Observable, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
-import { AIService, AIServiceParams } from './ai.service.js';
+import { AIService, AIServiceParams, CommitMessage } from './ai.service.js';
 import { CommitType, hasOwn } from '../../utils/config.js';
 import { KnownError } from '../../utils/error.js';
 import { createLogResponse } from '../../utils/log.js';
-import { deduplicateMessages } from '../../utils/openai.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
 
 export class HuggingService extends AIService {
@@ -29,16 +28,17 @@ export class HuggingService extends AIService {
     generateCommitMessage$(): Observable<ReactiveListChoice> {
         return fromPromise(this.generateMessage()).pipe(
             concatMap(messages => from(messages)),
-            map((message, index) => ({
-                name: `${this.serviceName} ${message}`,
-                value: message,
+            map(data => ({
+                name: `${this.serviceName} ${data.title}`,
+                value: data.value,
+                description: data.value,
                 isError: false,
             })),
             catchError(this.handleError$)
         );
     }
 
-    private async generateMessage(): Promise<string[]> {
+    private async generateMessage(): Promise<CommitMessage[]> {
         try {
             const prompt = this.getFullPrompt();
 
@@ -50,7 +50,7 @@ export class HuggingService extends AIService {
             await this.deleteConversation(conversationId);
 
             const { generate } = this.params.config;
-            return deduplicateMessages(this.sanitizeHuggingMessage(generatedText, this.params.config.type, generate));
+            return this.sanitizeHuggingMessage(generatedText, this.params.config.type, generate);
         } catch (error) {
             const errorAsAny = error as any;
             if (errorAsAny.code === 'ENOTFOUND') {
@@ -83,7 +83,7 @@ export class HuggingService extends AIService {
             throw new Error(`Cannot parse finalAnswer`);
         }
         this.params.config.logging && createLogResponse('HuggingFace', this.params.stagedDiff.diff, prompt, finalAnswerObj['text']);
-        return this.sanitizeMessage(finalAnswerObj['text'], type, maxCount);
+        return this.sanitizeMessage(finalAnswerObj['text'], type, maxCount, this.params.config.ignoreBody);
     }
 
     private async prepareNewConversation() {

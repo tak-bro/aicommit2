@@ -3,7 +3,7 @@ import { Observable, of } from 'rxjs';
 
 import { CommitType, ValidConfig } from '../../utils/config.js';
 import { StagedDiff } from '../../utils/git.js';
-import { extraPrompt, generateDefaultPrompt, isValidConventionalMessage, isValidGitmojiMessage } from '../../utils/prompt.js';
+import { extraPrompt, generateDefaultPrompt } from '../../utils/prompt.js';
 
 // NOTE: get AI Type from key names
 export const AIType = {
@@ -11,7 +11,6 @@ export const AIType = {
     GEMINI: 'GEMINI_KEY',
     ANTHROPIC: 'ANTHROPIC_KEY',
     HUGGING: 'HUGGING_COOKIE',
-    CLOVA_X: 'CLOVAX_COOKIE',
     MISTRAL: 'MISTRAL_KEY',
     CODESTRAL: 'CODESTRAL_KEY',
     OLLAMA: 'OLLAMA_MODEL',
@@ -20,6 +19,16 @@ export const AIType = {
 } as const;
 export type ApiKeyName = (typeof AIType)[keyof typeof AIType];
 export const ApiKeyNames: ApiKeyName[] = Object.values(AIType).map(value => value);
+
+export interface CommitMessage {
+    title: string;
+    value: string;
+}
+
+export interface RawCommitMessage {
+    message: string;
+    body: string;
+}
 
 export interface AIServiceParams {
     config: ValidConfig;
@@ -53,7 +62,7 @@ export abstract class AIService {
 
     protected buildPrompt(locale: string, diff: string, completions: number, maxLength: number, type: CommitType, prompt: string) {
         const defaultPrompt = generateDefaultPrompt(locale, maxLength, type, prompt);
-        return `${defaultPrompt}\n${extraPrompt(completions)}\nHere are diff: \n${diff}`;
+        return `${defaultPrompt}\n${extraPrompt(completions, type)}\nHere are diff: \n${diff}`;
     }
 
     protected handleError$ = (error: AIServiceError): Observable<ReactiveListChoice> => {
@@ -69,33 +78,75 @@ export abstract class AIService {
         });
     };
 
-    protected sanitizeMessage(generatedText: string, type: CommitType, maxCount: number) {
-        const messages = generatedText
-            .split('\n')
-            .map((message: string) => message.trim().replace(/^\d+\.\s/, ''))
-            .map((message: string) => message.replace(/[`'"*]/g, ''))
-            .filter((message: string) => {
-                switch (type) {
-                    case 'conventional':
-                        return isValidConventionalMessage(message);
-                    case 'gitmoji':
-                        return isValidGitmojiMessage(message);
-                    default:
-                        return true;
-                }
-            })
-            .map(message => {
-                if (type === 'conventional') {
-                    const regex = /: (\w)/;
-                    return message.replace(regex, (_: any, firstLetter: string) => `: ${firstLetter.toLowerCase()}`);
-                }
-                return message;
-            })
-            .filter((message: string) => !!message);
+    protected sanitizeMessage(generatedText: string, type: CommitType, maxCount: number, ignoreBody: boolean): CommitMessage[] {
+        const jsonPattern = /\[[\s\S]*?\]/;
 
-        if (messages.length > maxCount) {
-            return messages.slice(0, maxCount);
+        try {
+            const jsonMatch = generatedText.match(jsonPattern);
+            if (!jsonMatch) {
+                // No valid JSON array found in the response
+                return [];
+            }
+            const jsonStr = jsonMatch[0];
+            const commitMessages: RawCommitMessage[] = JSON.parse(jsonStr);
+            const filtedMessages = commitMessages
+                .map(data => this.extractMessageAsType(data, type))
+                .map((data: RawCommitMessage) => {
+                    if (ignoreBody) {
+                        return {
+                            title: `${data.message}`,
+                            value: `${data.message}`,
+                        };
+                    }
+                    return {
+                        title: `${data.message}`,
+                        value: data.body ? `${data.message}\n\n${data.body}` : `${data.message}`,
+                    };
+                });
+
+            if (filtedMessages.length > maxCount) {
+                return filtedMessages.slice(0, maxCount);
+            }
+            return filtedMessages;
+        } catch (e) {
+            // Error parsing JSON
+            return [];
         }
-        return messages;
+    }
+
+    private extractMessageAsType(data: RawCommitMessage, type: CommitType): RawCommitMessage {
+        switch (type) {
+            case 'conventional':
+                const conventionalPattern = /(\w+)(?:\(.*?\))?:\s*(.*)/;
+                const conventionalMatch = data.message.match(conventionalPattern);
+                const message = conventionalMatch ? conventionalMatch[0] : data.message;
+                return {
+                    ...data,
+                    message: this.normalizeCommitMessage(message),
+                };
+            case 'gitmoji':
+                const gitmojiTypePattern = /:\w*:\s*(.*)/;
+                const gitmojiMatch = data.message.match(gitmojiTypePattern);
+                return {
+                    ...data,
+                    message: gitmojiMatch ? gitmojiMatch[0].toLowerCase() : data.message,
+                };
+            default:
+                return data;
+        }
+    }
+
+    private normalizeCommitMessage(message: string): string {
+        const messagePattern = /^(\w+)(\(.*?\))?:\s(.*)$/;
+        const match = message.match(messagePattern);
+
+        if (match) {
+            const [, type, scope, description] = match;
+            const normalizedType = type.toLowerCase();
+            const normalizedDescription = description.charAt(0).toLowerCase() + description.slice(1);
+            message = `${normalizedType}${scope || ''}: ${normalizedDescription}`;
+        }
+
+        return message;
     }
 }

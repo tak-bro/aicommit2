@@ -142,6 +142,17 @@ const generalConfigParsers = {
         parseAssert('logging', /^(?:true|false)$/.test(enable), 'Must be a boolean(true or false)');
         return enable === 'true';
     },
+    ignoreBody(ignore?: string | boolean) {
+        if (!ignore) {
+            return false;
+        }
+        if (typeof ignore === 'boolean') {
+            return ignore;
+        }
+
+        parseAssert('ignoreBody', /^(?:true|false)$/.test(ignore), 'Must be a boolean(true or false)');
+        return ignore === 'true';
+    },
 } as const;
 
 const configParsers = {
@@ -195,12 +206,6 @@ const configParsers = {
 
         parseAssert('HUGGING_MODEL', supportModels.includes(model), 'Invalid model type of HuggingFace chat');
         return model;
-    },
-    CLOVAX_COOKIE(cookie?: string) {
-        if (!cookie) {
-            return '';
-        }
-        return cookie;
     },
     GEMINI_KEY(key?: string) {
         if (!key) {

@@ -44,7 +44,6 @@ cli(
                 type: String,
                 description: 'Type of commit message to generate',
                 alias: 't',
-                default: 'conventional',
             },
             confirm: {
                 type: Boolean,

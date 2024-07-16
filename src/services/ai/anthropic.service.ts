@@ -1,15 +1,13 @@
 import Anthropic from '@anthropic-ai/sdk';
 import chalk from 'chalk';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
-import { Observable, catchError, concatMap, filter, from, map, of, scan, tap } from 'rxjs';
+import { Observable, catchError, concatMap, from, map, of } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
-import { AIService, AIServiceError, AIServiceParams } from './ai.service.js';
+import { AIService, AIServiceError, AIServiceParams, CommitMessage } from './ai.service.js';
 import { KnownError } from '../../utils/error.js';
 import { createLogResponse } from '../../utils/log.js';
-import { deduplicateMessages } from '../../utils/openai.js';
 import { extraPrompt, generateDefaultPrompt } from '../../utils/prompt.js';
-import { DONE, UNDONE, toObservable } from '../../utils/utils.js';
 
 export interface AnthropicServiceError extends AIServiceError {
     error?: {
@@ -34,30 +32,26 @@ export class AnthropicService extends AIService {
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
-        // TODO: add below
-        // if (isStream) {
-        //     return this.generateStreamCommitMessage$();
-        // }
-
         return fromPromise(this.generateMessage()).pipe(
             concatMap(messages => from(messages)),
-            map(message => ({
-                name: `${this.serviceName} ${message}`,
-                value: message,
+            map(data => ({
+                name: `${this.serviceName} ${data.title}`,
+                value: data.value,
+                description: data.value,
                 isError: false,
             })),
             catchError(this.handleError$)
         );
     }
 
-    private async generateMessage(): Promise<string[]> {
+    private async generateMessage(): Promise<CommitMessage[]> {
         try {
             const diff = this.params.stagedDiff.diff;
             const { locale, generate, type, prompt: userPrompt, logging } = this.params.config;
             const maxLength = this.params.config['max-length'];
 
             const defaultPrompt = generateDefaultPrompt(locale, maxLength, type, userPrompt);
-            const systemPrompt = `${defaultPrompt}\n${extraPrompt(generate)}`;
+            const systemPrompt = `${defaultPrompt}\n${extraPrompt(generate, type)}`;
 
             const params: Anthropic.MessageCreateParams = {
                 max_tokens: this.params.config['max-tokens'],
@@ -74,7 +68,7 @@ export class AnthropicService extends AIService {
             const result: Anthropic.Message = await this.anthropic.messages.create(params);
             const completion = result.content.map(({ text }) => text).join('');
             logging && createLogResponse('Anthropic', diff, systemPrompt, completion);
-            return deduplicateMessages(this.sanitizeMessage(completion, this.params.config.type, generate));
+            return this.sanitizeMessage(completion, this.params.config.type, generate, this.params.config.ignoreBody);
         } catch (error) {
             const errorAsAny = error as any;
             if (errorAsAny.code === 'ENOTFOUND') {
@@ -92,109 +86,5 @@ export class AnthropicService extends AIService {
             isError: true,
             disabled: true,
         });
-    };
-
-    generateStreamCommitMessage$(): Observable<ReactiveListChoice> {
-        return this.generateStreamChoice$().pipe(
-            scan((acc: ReactiveListChoice[], data: ReactiveListChoice) => {
-                const isDone = data.description === DONE;
-                if (isDone) {
-                    const messages = deduplicateMessages(
-                        this.sanitizeMessage(data.value, this.params.config.type, this.params.config.generate)
-                    );
-
-                    // TODO: refactor below
-                    const diff = this.params.stagedDiff.diff;
-                    const { locale, generate, type, prompt: userPrompt, logging } = this.params.config;
-                    const maxLength = this.params.config['max-length'];
-                    const defaultPrompt = generateDefaultPrompt(locale, maxLength, type, userPrompt);
-                    const systemPrompt = `${defaultPrompt}\n${extraPrompt(generate)}`;
-                    logging && createLogResponse('Anthropic', diff, systemPrompt, data.value);
-
-                    const isFailedExtract = !messages || messages.length === 0;
-                    if (isFailedExtract) {
-                        return [
-                            {
-                                id: `${this.params.keyName}_${DONE}_0`,
-                                name: `${this.serviceName} Failed to extract messages from response`,
-                                value: `Failed to extract messages from response`,
-                                isError: true,
-                                description: DONE,
-                                disabled: true,
-                            },
-                        ];
-                    }
-                    return messages.map((message, index) => {
-                        return {
-                            id: `${this.params.keyName}_${DONE}_${index}`,
-                            name: `${this.serviceName} ${message}`,
-                            value: `${message}`,
-                            isError: false,
-                            description: DONE,
-                            disabled: false,
-                        };
-                    });
-                }
-                // if has origin data
-                const originData = acc.find((origin: ReactiveListChoice) => origin.id === data.id);
-                if (originData) {
-                    return [...acc.map((origin: ReactiveListChoice) => (data.id === origin.id ? data : origin))];
-                }
-                // init
-                return [{ ...data }];
-            }, []),
-            concatMap(messages => messages), // flat messages
-            catchError(this.handleError$)
-        );
-    }
-
-    generateStreamChoice$ = (): Observable<ReactiveListChoice> => {
-        const diff = this.params.stagedDiff.diff;
-        const { locale, generate, type, prompt: userPrompt } = this.params.config;
-        const maxLength = this.params.config['max-length'];
-
-        const defaultPrompt = generateDefaultPrompt(locale, maxLength, type, userPrompt);
-        const systemPrompt = `${defaultPrompt}\n${extraPrompt(generate)}`;
-
-        const params: Anthropic.MessageCreateParams = {
-            max_tokens: this.params.config['max-tokens'],
-            temperature: this.params.config.temperature,
-            system: systemPrompt,
-            messages: [
-                {
-                    role: 'user',
-                    content: diff,
-                },
-            ],
-            model: this.params.config.ANTHROPIC_MODEL,
-            stream: true,
-        };
-
-        // NOTE: refer https://docs.anthropic.com/claude/reference/messages-streaming
-        const anthropicStream = this.anthropic.messages.create(params) as any as Promise<AsyncGenerator<Anthropic.MessageStreamEvent>>;
-
-        let allValue = '';
-        return from(toObservable(anthropicStream)).pipe(
-            filter((streamEvent: Anthropic.MessageStreamEvent) => ['content_block_delta', 'message_stop'].includes(streamEvent.type)),
-            map(
-                (streamEvent: Anthropic.MessageStreamEvent) => streamEvent as Anthropic.ContentBlockDeltaEvent | Anthropic.MessageStopEvent
-            ),
-            tap(streamEvent => {
-                if (streamEvent.type === 'content_block_delta') {
-                    allValue += streamEvent.delta.text;
-                }
-            }),
-            map((streamEvent: Anthropic.ContentBlockDeltaEvent | Anthropic.MessageStopEvent) => {
-                const isDone = streamEvent.type === 'message_stop';
-                return {
-                    id: this.params.keyName,
-                    name: `${this.serviceName} ${allValue}`,
-                    value: `${allValue}`,
-                    isError: false,
-                    description: isDone ? DONE : UNDONE,
-                    disabled: !isDone,
-                };
-            })
-        );
     };
 }

@@ -5,11 +5,10 @@ import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Observable, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
-import { AIService, AIServiceParams } from './ai.service.js';
+import { AIService, AIServiceParams, CommitMessage } from './ai.service.js';
 import { hasOwn } from '../../utils/config.js';
 import { KnownError } from '../../utils/error.js';
 import { createLogResponse } from '../../utils/log.js';
-import { deduplicateMessages } from '../../utils/openai.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
 
 export interface ClovaXConversationContent {
@@ -40,22 +39,24 @@ export class ClovaXService extends AIService {
         };
         this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold('[CLOVA X]');
         this.errorPrefix = chalk.red.bold(`[CLOVA X]`);
-        this.cookie = this.params.config.CLOVAX_COOKIE;
+        // TODO:
+        this.cookie = '';
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
         return fromPromise(this.generateMessage()).pipe(
             concatMap(messages => from(messages)),
-            map((message, index) => ({
-                name: `${this.serviceName} ${message}`,
-                value: message,
+            map(data => ({
+                name: `${this.serviceName} ${data.title}`,
+                value: data.value,
+                description: data.value,
                 isError: false,
             })),
             catchError(this.handleError$)
         );
     }
 
-    private async generateMessage(): Promise<string[]> {
+    private async generateMessage(): Promise<CommitMessage[]> {
         try {
             const { locale, generate, type, prompt: userPrompt, logging } = this.params.config;
             const maxLength = this.params.config['max-length'];
@@ -67,7 +68,7 @@ export class ClovaXService extends AIService {
             await this.deleteConversation(conversationId);
 
             logging && createLogResponse('CLOVA X', diff, prompt, allText);
-            return deduplicateMessages(this.sanitizeMessage(allText, this.params.config.type, generate));
+            return this.sanitizeMessage(allText, this.params.config.type, generate, this.params.config.ignoreBody);
         } catch (error) {
             const errorAsAny = error as any;
             if (errorAsAny.code === 'ENOTFOUND') {

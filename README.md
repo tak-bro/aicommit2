@@ -1,6 +1,6 @@
 <div align="center">
   <div>
-    <img src="https://github.com/tak-bro/aicommit2/blob/main/img/demo-min.gif?raw=true" alt="AICommit2"/>
+    <img src="https://github.com/tak-bro/aicommit2/blob/main/img/demo_body_min.gif?raw=true" alt="AICommit2"/>
     <h1 align="center">AICommit2</h1>
   </div>
   <p>
@@ -35,7 +35,6 @@ _aicommit2_ streamlines interactions with various AI, enabling users to request 
 - [Cohere](https://cohere.com/)
 - [Groq](https://groq.com/)
 - [Huggingface **(Unofficial)**](https://huggingface.co/chat/)
-- [Clova X **(Unofficial)**](https://clova-x.naver.com/)
 
 ### Local
 
@@ -96,12 +95,6 @@ aicommit2 config set GROQ_KEY=<your key>
 aicommit2 config set HUGGING_COOKIE="<your browser cookie>"
 ```
 
-- [Clova X **(Unofficial)**](https://github.com/tak-bro/aicommit2?tab=readme-ov-file#how-to-get-cookieunofficial-api)
-```shell
-# Please be cautious of Escape characters(\", \') in browser cookie string 
-aicommit2 config set CLOVAX_COOKIE="<your browser cookie>"
-```
-
 This will create a `.aicommit2` file in your home directory.
 
 > You may need to create an account and set up billing.
@@ -144,7 +137,7 @@ aicommit2
 
 This CLI tool runs `git diff` to grab all your latest code changes, sends them to configured AI, then returns the AI generated commit message.
 
-> If the diff becomes too large, AI will not function properly. If you encounter an error saying the message is too long or it's not a valid commit message, try reducing the commit unit.
+> If the diff becomes too large, AI will not function properly. If you encounter an error saying the message is too long or it's not a valid commit message, **try reducing the commit unit**.
 
 ## Usage
 
@@ -324,11 +317,9 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 | `GROQ_MODEL`      | `gemma-7b-it`                          | The Groq model name to use                                                                                                         |
 | `HUGGING_COOKIE`  | N/A                                    | The HuggingFace Cookie string                                                                                                      |
 | `HUGGING_MODEL`   | `mistralai/Mixtral-8x7B-Instruct-v0.1` | The HuggingFace Model to use                                                                                                       |
-| `CLOVAX_COOKIE`   | N/A                                    | The Clova X Cookie string                                                                                                          |
 | `OLLAMA_MODEL`    | N/A                                    | The Ollama Model. It should be downloaded your local                                                                               |
 | `OLLAMA_HOST`     | `http://localhost:11434`               | The Ollama Host                                                                                                                    |
 | `OLLAMA_TIMEOUT`  | `100_000` ms                           | Request timeout for the Ollama                                                                                                     |
-| `OLLAMA_STREAM`   | N/A                                    | Whether to make stream requests (**experimental feature**)                                                                         |
 | `locale`          | `en`                                   | Locale for the generated commit messages                                                                                           |
 | `generate`        | `1`                                    | Number of commit messages to generate                                                                                              |
 | `type`            | `conventional`                         | Type of commit message to generate                                                                                                 |
@@ -339,6 +330,7 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 | `temperature`     | `0.7`                                  | The temperature (0.0-2.0) is used to control the randomness of the output (for **Open AI, Anthropic, Gemini, Mistral, Codestral**) |
 | `prompt`          | N/A                                    | Additional prompt to let users fine-tune provided prompt                                                                           |
 | `logging`         | `false`                                | Whether to log AI responses for debugging (true or false)                                                                          |
+| `ignoreBody`      | `false`                                | Whether the commit message includes body (true or false)                                                                           |
 
 > **Currently, options are set universally. However, there are plans to develop the ability to set individual options in the future.**
 
@@ -353,7 +345,6 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 |      **Cohere**      |   ✓    |    ✓     |   ✓   |       |                        |      ✓      |     ✓      |      ✓      |   ✓    |
 |       **Groq**       |   ✓    |    ✓     |   ✓   |       |           ✓            |      ✓      |            |             |   ✓    |
 |   **Huggingface**    |   ✓    |    ✓     |   ✓   |       |           ✓            |      ✓      |            |             |   ✓    |
-|     **Clova X**      |   ✓    |    ✓     |   ✓   |       |           ✓            |      ✓      |            |             |   ✓    |
 |      **Ollama**      |   ✓    |    ✓     |   ✓   |       | ⚠<br/>(OLLAMA_TIMEOUT) |      ✓      |            |      ✓      |   ✓    |
 
 
@@ -457,11 +448,35 @@ The log files will be stored in the `~/.aicommit2_log` directory(user's home).
 
 ![log-path](https://github.com/tak-bro/aicommit2/blob/main/img/log_path.png?raw=true)
 
+```sh
+aicommit2 config set logging="true"
+```
+
 - You can remove all logs below comamnd.
  
 ```sh
 aicommit2 log removeAll 
 ```
+
+##### ignoreBody
+
+Default: `false`
+
+This option determines whether the commit message includes body. If you don't want to include body in message, you can set it to `true`.
+
+```sh
+aicommit2 config set ignoreBody="true"
+```
+
+![ignore_body_true](https://github.com/tak-bro/aicommit2/blob/main/img/ignore_body_true.png?raw=true)
+
+
+```sh
+aicommit2 config set ignoreBody="false"
+```
+
+![ignore_body_false](https://github.com/tak-bro/aicommit2/blob/main/img/ignore_body_false.png?raw=true)
+
 
 ### Ollama
 
@@ -493,16 +508,6 @@ Request timeout for the Ollama. Default OLLAMA_TIMEOUT is **100 seconds** becaus
 ```sh
 aicommit2 config set OLLAMA_TIMEOUT=<timout>
 ```
-
-##### OLLAMA_STREAM
-
-<img src="https://github.com/tak-bro/aicommit2/blob/main/img/ollama_stream-min.gif?raw=true" alt="OLLAMA_STREAM" />
-
-Default: `false`
-
-Determines whether the application will make stream requests to Ollama. **Allow this option only when using Ollama alone.**
-
-> This feature is experimental and may not be fully stable.
 
 ### OPEN AI
 
@@ -674,12 +679,6 @@ Supported:
 
 > The models mentioned above are subject to change.
 
-### Clova X
-
-##### CLOVAX_COOKIE
-
-The [Clova X](https://clova-x.naver.com/) Cookie. Please check [how to get cookie](https://github.com/tak-bro/aicommit2?tab=readme-ov-file#how-to-get-cookieunofficial-api)
-
 ## Upgrading
 
 Check the installed version with:
@@ -746,8 +745,6 @@ aicommit2
 > - For single quotes ('), use \\'
 
 ![how-to-get-cookie](https://github.com/tak-bro/aicommit2/assets/7614353/66f2994d-23d9-4c88-a113-f2d3dc5c0669)
-
-![how-to-get-clova-x-cookie](https://github.com/tak-bro/aicommit2/assets/7614353/dd2202d6-ca1a-4a8a-ba2f-b5703a19c71d)
 
 ## Disclaimer
 
