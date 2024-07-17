@@ -1,3 +1,10 @@
+## [1.11.1](https://github.com/tak-bro/aicommit2/compare/v1.11.0...v1.11.1) (2024-07-17)
+
+
+### Features
+
+* update hugging face service ([e3bebb7](https://github.com/tak-bro/aicommit2/commit/e3bebb738df4e8c6b003be1b9bf30d85c1437d53))
+
 # [1.11.0](https://github.com/tak-bro/aicommit2/compare/v1.10.1...v1.11.0) (2024-07-16)
 
 
