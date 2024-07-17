@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
-import { Observable, from, mergeMap, of } from 'rxjs';
+import { Observable, catchError, from, mergeMap, of } from 'rxjs';
 
 import { AIServiceFactory } from '../services/ai/ai-service.factory.js';
 import { AIServiceParams, AIType, ApiKeyName } from '../services/ai/ai.service.js';
@@ -9,7 +9,7 @@ import { CodestralService } from '../services/ai/codestral.service.js';
 import { CohereService } from '../services/ai/cohere.service.js';
 import { GeminiService } from '../services/ai/gemini.service.js';
 import { GroqService } from '../services/ai/groq.service.js';
-import { HuggingService } from '../services/ai/hugging.service.js';
+import { HuggingFaceService } from '../services/ai/hugging-face.service.js';
 import { MistralService } from '../services/ai/mistral.service.js';
 import { OllamaService } from '../services/ai/ollama.service.js';
 import { OpenAIService } from '../services/ai/openai.service.js';
@@ -37,8 +37,8 @@ export class AIRequestManager {
                         return AIServiceFactory.create(GeminiService, params).generateCommitMessage$();
                     case AIType.ANTHROPIC:
                         return AIServiceFactory.create(AnthropicService, params).generateCommitMessage$();
-                    case AIType.HUGGING:
-                        return AIServiceFactory.create(HuggingService, params).generateCommitMessage$();
+                    case AIType.HUGGINGFACE:
+                        return AIServiceFactory.create(HuggingFaceService, params).generateCommitMessage$();
                     case AIType.MISTRAL:
                         return AIServiceFactory.create(MistralService, params).generateCommitMessage$();
                     case AIType.CODESTRAL:
@@ -66,6 +66,15 @@ export class AIRequestManager {
                             disabled: true,
                         });
                 }
+            }),
+            catchError(err => {
+                const prefixError = chalk.red.bold(`[UNKNOWN]`);
+                return of({
+                    name: prefixError + ` ${err.message || ''}`,
+                    value: 'Unknown error',
+                    isError: true,
+                    disabled: true,
+                });
             })
         );
     }
