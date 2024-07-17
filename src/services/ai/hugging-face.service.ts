@@ -38,21 +38,14 @@ interface Model {
     parameters: { [key: string]: any };
 }
 
-interface Sesson {
-    id: string;
-    title: string;
-    model: string;
-}
-
 interface ChatResponse {
     id: string | undefined;
     stream: ReadableStream | undefined;
     completeResponsePromise: () => Promise<string>;
 }
 
+// refer: https://github.com/rahulsushilsharma/huggingface-chat
 export class HuggingFaceService extends AIService {
-    private host = `https://huggingface.co`;
-    private cookie = '';
     private headers = {
         accept: '*/*',
         'accept-language': 'en-US,en;q=0.9',
@@ -66,11 +59,11 @@ export class HuggingFaceService extends AIService {
         'Referrer-Policy': 'strict-origin-when-cross-origin',
     };
     private models: Model[] = [];
-
     private currentModel: Model | undefined;
     private currentModelId: string | null = null;
     private currentConversation: Conversation | undefined = undefined;
     private currentConversionID: string | undefined = undefined;
+    private cookie = '';
 
     constructor(private readonly params: AIServiceParams) {
         super(params);
@@ -243,7 +236,7 @@ export class HuggingFaceService extends AIService {
                 this.currentConversionID = conversationId;
                 break;
             } else {
-                console.error(`Failed to create new conversation error ${response.statusText}, retrying...`);
+                // console.error(`Failed to create new conversation error ${response.statusText}, retrying...`);
                 retry++;
             }
         }
@@ -415,7 +408,7 @@ export class HuggingFaceService extends AIService {
             // eslint-disable-next-line no-async-promise-executor
             return new Promise<string>(async resolve => {
                 if (!modifiedStream) {
-                    console.error('modifiedStream undefined');
+                    // console.error('modifiedStream undefined');
                 } else {
                     const reader = modifiedStream.getReader();
 
@@ -440,7 +433,7 @@ export class HuggingFaceService extends AIService {
     }
 
     private async deleteConversation(conversationId: string): Promise<any> {
-        const response = await fetch(`${this.host}/chat/conversation/${conversationId}`, {
+        const response = await fetch(`https://huggingface.co/chat/conversation/${conversationId}`, {
             headers: {
                 ...this.headers,
                 cookie: this.cookie,
@@ -449,21 +442,6 @@ export class HuggingFaceService extends AIService {
             body: null,
             method: 'DELETE',
         });
-        //
-        // const updateChat = await new HttpRequestBuilder({
-        //     method: 'GET',
-        //     baseURL: `${this.host}/chat/__data.json`,
-        //     timeout: this.params.config.timeout,
-        // })
-        //     .setParams({ 'x-sveltekit-trailing-slash': '1', 'x-sveltekit-invalidated': '10' })
-        //     .setHeaders({
-        //         'Content-Type': 'application/json',
-        //         Cookie: this.cookie,
-        //         Accept: '*/*',
-        //         Connection: 'keep-alive',
-        //         Referer: 'https://huggingface.co/chat/',
-        //     })
-        //     .execute();
 
         return response.json();
     }

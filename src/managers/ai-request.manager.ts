@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
-import { Observable, from, mergeMap, of } from 'rxjs';
+import { Observable, catchError, from, mergeMap, of } from 'rxjs';
 
 import { AIServiceFactory } from '../services/ai/ai-service.factory.js';
 import { AIServiceParams, AIType, ApiKeyName } from '../services/ai/ai.service.js';
@@ -66,6 +66,15 @@ export class AIRequestManager {
                             disabled: true,
                         });
                 }
+            }),
+            catchError(err => {
+                const prefixError = chalk.red.bold(`[UNKNOWN]`);
+                return of({
+                    name: prefixError + ` ${err.message || ''}`,
+                    value: 'Unknown error',
+                    isError: true,
+                    disabled: true,
+                });
             })
         );
     }

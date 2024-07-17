@@ -125,7 +125,7 @@ const generalConfigParsers = {
     },
     'max-tokens'(maxTokens?: string) {
         if (!maxTokens) {
-            return 200;
+            return 1024;
         }
 
         parseAssert('max-tokens', /^\d+$/.test(maxTokens), 'Must be an integer');
@@ -190,7 +190,7 @@ const configParsers = {
     },
     HUGGINGFACE_MODEL(model?: string) {
         if (!model || model.length === 0) {
-            return `mistralai/Mixtral-8x7B-Instruct-v0.1`;
+            return `CohereForAI/c4ai-command-r-plus`;
         }
 
         const supportModels = [

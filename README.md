@@ -325,8 +325,8 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 | `type`            | `conventional`                         | Type of commit message to generate                                                                                                 |
 | `proxy`           | N/A                                    | Set a HTTP/HTTPS proxy to use for requests(only **OpenAI**)                                                                        |
 | `timeout`         | `10_000` ms                            | Network request timeout                                                                                                            |
-| `max-length`      | `50`                                   | Maximum character length of the generated commit message                                                                           |
-| `max-tokens`      | `200`                                  | The maximum number of tokens that the AI models can generate (for **Open AI, Anthropic, Gemini, Mistral, Codestral**)              |
+| `max-length`      | `50`                                   | Maximum character length of the generated commit message(Subject)                                                                  |
+| `max-tokens`      | `1024`                                 | The maximum number of tokens that the AI models can generate (for **Open AI, Anthropic, Gemini, Mistral, Codestral**)              |
 | `temperature`     | `0.7`                                  | The temperature (0.0-2.0) is used to control the randomness of the output (for **Open AI, Anthropic, Gemini, Mistral, Codestral**) |
 | `prompt`          | N/A                                    | Additional prompt to let users fine-tune provided prompt                                                                           |
 | `logging`         | `false`                                | Whether to log AI responses for debugging (true or false)                                                                          |
@@ -344,7 +344,7 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 |    **Codestral**     |   ✓    |    ✓     |   ✓   |       |           ✓            |      ✓      |     ✓      |      ✓      |   ✓    |
 |      **Cohere**      |   ✓    |    ✓     |   ✓   |       |                        |      ✓      |     ✓      |      ✓      |   ✓    |
 |       **Groq**       |   ✓    |    ✓     |   ✓   |       |           ✓            |      ✓      |            |             |   ✓    |
-|   **Huggingface**    |   ✓    |    ✓     |   ✓   |       |           ✓            |      ✓      |            |             |   ✓    |
+|   **Huggingface**    |   ✓    |    ✓     |   ✓   |       |                        |      ✓      |            |             |   ✓    |
 |      **Ollama**      |   ✓    |    ✓     |   ✓   |       | ⚠<br/>(OLLAMA_TIMEOUT) |      ✓      |            |      ✓      |   ✓    |
 
 
@@ -659,13 +659,13 @@ Supported:
 
 ### HuggingFace Chat
 
-##### HUGGING_COOKIE
+##### HUGGINGFACE_COOKIE
 
 The [Huggingface Chat](https://huggingface.co/chat/) Cookie. Please check [how to get cookie](https://github.com/tak-bro/aicommit2?tab=readme-ov-file#how-to-get-cookieunofficial-api)
 
-##### HUGGING_MODEL
+##### HUGGINGFACE_MODEL
 
-Default: `mistralai/Mixtral-8x7B-Instruct-v0.1`
+Default: `CohereForAI/c4ai-command-r-plus`
 
 Supported:
 - `CohereForAI/c4ai-command-r-plus`
