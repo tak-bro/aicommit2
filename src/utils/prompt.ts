@@ -216,14 +216,14 @@ Example response format:
 export const generatePrompt = (promptOptions: PromptOptions) => {
     const { type, generate, promptPath } = promptOptions;
     if (!promptPath) {
-        return `${defaultPrompt(promptOptions)}\n${finalPrompt(generate, type)}`;
+        return `${defaultPrompt(promptOptions)}\n${finalPrompt(type)}`;
     }
 
     try {
         const userTemplate = fs.readFileSync(path.resolve(promptPath), 'utf-8');
-        return `${parseTemplate(userTemplate, promptOptions)}\n${finalPrompt(generate, type)}`;
+        return `${parseTemplate(userTemplate, promptOptions)}\n${finalPrompt(type)}`;
     } catch (error) {
-        return `${defaultPrompt(promptOptions)}\n${finalPrompt(generate, type)}`;
+        return `${defaultPrompt(promptOptions)}\n${finalPrompt(type)}`;
     }
 };
 
