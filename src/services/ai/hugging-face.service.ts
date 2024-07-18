@@ -406,21 +406,25 @@ export class HuggingFaceService extends AIService {
 
         async function completeResponsePromise() {
             // eslint-disable-next-line no-async-promise-executor
-            return new Promise<string>(async resolve => {
-                if (!modifiedStream) {
-                    throw new Error(`ModifiedStream undefined`);
-                } else {
-                    const reader = modifiedStream.getReader();
+            return new Promise<string>(async (resolve, reject) => {
+                try {
+                    if (!modifiedStream) {
+                        reject(`ModifiedStream undefined`);
+                    } else {
+                        const reader = modifiedStream.getReader();
 
-                    // eslint-disable-next-line no-constant-condition
-                    while (true) {
-                        const { done, value } = await reader.read();
+                        // eslint-disable-next-line no-constant-condition
+                        while (true) {
+                            const { done, value } = await reader.read();
 
-                        if (done) {
-                            resolve(completeResponse);
-                            break; // The streaming has ended.
+                            if (done) {
+                                resolve(completeResponse);
+                                break; // The streaming has ended.
+                            }
                         }
                     }
+                } catch (error) {
+                    reject(error); // Reject the promise with the caught error
                 }
             });
         }
