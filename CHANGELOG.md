@@ -1,3 +1,10 @@
+## [1.12.3](https://github.com/tak-bro/aicommit2/compare/v1.12.2...v1.12.3) (2024-07-18)
+
+
+### Bug Fixes
+
+* remove unnecessary parameters from finalPrompt function ([fb1b652](https://github.com/tak-bro/aicommit2/commit/fb1b65247013fe41b7d51eb7afe0398d38888028))
+
 ## [1.12.2](https://github.com/tak-bro/aicommit2/compare/v1.12.1...v1.12.2) (2024-07-18)
 
 
