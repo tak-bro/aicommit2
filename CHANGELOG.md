@@ -1,3 +1,10 @@
+## [1.12.2](https://github.com/tak-bro/aicommit2/compare/v1.12.1...v1.12.2) (2024-07-18)
+
+
+### Features
+
+* add language option to prompt generator ([0b3d110](https://github.com/tak-bro/aicommit2/commit/0b3d1100ef72fedd8565eed7b57f569b8b814a06))
+
 ## [1.12.1](https://github.com/tak-bro/aicommit2/compare/v1.12.0...v1.12.1) (2024-07-18)
 
 # [1.12.0](https://github.com/tak-bro/aicommit2/compare/v1.11.1...v1.12.0) (2024-07-18)
