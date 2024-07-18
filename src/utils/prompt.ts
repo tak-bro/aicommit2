@@ -1,4 +1,23 @@
+import fs from 'fs';
+import path from 'path';
+
 import type { CommitType } from './config.js';
+
+export interface PromptOptions {
+    locale: string;
+    maxLength: number;
+    type: CommitType;
+    generate: number;
+    promptPath?: string;
+}
+
+export const DEFAULT_PROMPT_OPTIONS: PromptOptions = {
+    locale: 'en',
+    maxLength: 50,
+    type: 'conventional',
+    generate: 1,
+    promptPath: '',
+};
 
 const MAX_COMMIT_LENGTH = 80;
 
@@ -144,43 +163,57 @@ const commitTypes: Record<CommitType, string> = {
     )}`,
 };
 
-export const generateDefaultPrompt = (locale: string, maxLength: number, type: CommitType, additionalPrompts: string = '') =>
-    [
-        `You are an expert programmer trained to write professional git commit messages following the ${type} Commits specification. Generate concise and meaningful git commit messages based on the guidelines below:`,
-        `1. Message language: ${locale}`,
-        `2. Format: ${commitTypeFormats[type]}`,
-        `3. Type: Choose the most appropriate type from the following list: ${commitTypes[type]}`,
-        `4. Scope: Optional, can be anything specifying the place of the commit change`,
-        `5. Description: A short summary of the code changes`,
-        `6. Subject line(first line):
-   - Start with a short sentence in imperative mood, present tense
-   - Maximum ${Math.min(Math.max(maxLength, 0), MAX_COMMIT_LENGTH)} characters
-   - No capitalization of first letter
-   - No period at the end`,
-        `7. Body(if needed):
-   - Write 2~5 sentences at most for the detailed explanation
-   - Separate from Subject by a blank line
-   - Use bullet points for multiple changes`,
-        `8. Footer: Optional, for indicating breaking changes or referencing issues`,
-        `${additionalPrompts}`,
-        `Avoid unnecessary explanations or translations. Your response will be used directly in git commit messages, so ensure it follows the specified format precisely.`,
+const parseTemplate = (template: string, options: PromptOptions): string => {
+    return template.replace(/{(\w+)}/g, (_, key) => {
+        return (
+            options[key as keyof PromptOptions]?.toString() || (DEFAULT_PROMPT_OPTIONS[key as keyof PromptOptions]?.toString() as string)
+        );
+    });
+};
+
+const defaultPrompt = (promptOptions: PromptOptions) => {
+    const { type, maxLength, locale } = promptOptions;
+
+    return [
+        `Generate a ${type} commit message in ${locale}.`,
+        `The message should not exceed ${Math.min(Math.max(maxLength, 0), MAX_COMMIT_LENGTH)} characters.`,
+        `Remember to follow these guidelines:`,
+        `1. Format: ${commitTypeFormats[type]}`,
+        `2. Use the imperative mood`,
+        `3. Be concise and clear`,
+        `4. Explain the 'why' behind the change`,
+        `5. Avoid overly verbose descriptions or unnecessary details.`,
     ]
         .filter(Boolean)
         .join('\n');
+};
 
-export const extraPrompt = (generate: number, type: CommitType) => `Provide ${generate} commit messages in the following JSON array format:
- [
-  {
-    "message": "${exampleCommitByType[type]}",
-    "body": "Detailed explanation if necessary"
-  },
-  {
-    "message": "Another ${type} commit message",
-    "body": "Another detailed explanation if necessary"
-  }
-]
+const finalPrompt = (generate: number, type: CommitType) => {
+    return `Provide ${generate} commit messages in the following JSON array format:
+   [
+      {
+          "message": "${exampleCommitByType[type]}",
+          "body": "Detailed explanation if necessary"
+      },
+      {
+          "message": "Another ${type} commit message",
+          "body": "Another detailed explanation if necessary"
+      }
+   ]`;
+};
 
-Note: Your task is to create well-formatted, ${type} commit messages for each requested commit. Ensure that the messages are diverse and showcase different types and formats.`;
+export const generateDefaultPrompt = (promptOptions: PromptOptions) => {
+    const { type, generate, promptPath } = promptOptions;
+    if (promptPath) {
+        try {
+            const userTemplate = fs.readFileSync(path.resolve(promptPath), 'utf-8');
+            return `${parseTemplate(userTemplate, promptOptions)}\n${finalPrompt(generate, type)}`;
+        } catch (error) {
+            return `${defaultPrompt(promptOptions)}\n${finalPrompt(generate, type)}`;
+        }
+    }
+    return `${defaultPrompt(promptOptions)}\n${finalPrompt(generate, type)}`;
+};
 
 export const isValidConventionalMessage = (message: string): boolean => {
     // TODO: check loosely for issue that message is not coming out
@@ -194,79 +227,3 @@ export const isValidGitmojiMessage = (message: string): boolean => {
     const gitmojiCommitMessageRegex = /:\w*:/;
     return gitmojiCommitMessageRegex.test(message);
 };
-
-export const gitmojiTypes = [
-    ':art:',
-    ':zap:',
-    ':fire:',
-    ':bug:',
-    ':ambulance:',
-    ':sparkles:',
-    ':memo:',
-    ':rocket:',
-    ':lipstick:',
-    ':tada:',
-    ':white_check_mark:',
-    ':lock:',
-    ':closed_lock_with_key:',
-    ':bookmark:',
-    ':rotating_light:',
-    ':construction:',
-    ':green_heart:',
-    ':arrow_down:',
-    ':arrow_up:',
-    ':pushpin:',
-    ':construction_worker:',
-    ':chart_with_upwards_trend:',
-    ':recycle:',
-    ':heavy_plus_sign:',
-    ':heavy_minus_sign:',
-    ':wrench:',
-    ':hammer:',
-    ':globe_with_meridians:',
-    ':pencil2:',
-    ':poop:',
-    ':rewind:',
-    ':twisted_rightwards_arrows:',
-    ':package:',
-    ':alien:',
-    ':truck:',
-    ':page_facing_up:',
-    ':boom:',
-    ':bento:',
-    ':wheelchair:',
-    ':bulb:',
-    ':beers:',
-    ':speech_balloon:',
-    ':card_file_box:',
-    ':loud_sound:',
-    ':mute:',
-    ':busts_in_silhouette:',
-    ':children_crossing:',
-    ':building_construction:',
-    ':iphone:',
-    ':clown_face:',
-    ':egg:',
-    ':see_no_evil:',
-    ':camera_flash:',
-    ':alembic:',
-    ':mag:',
-    ':label:',
-    ':seedling:',
-    ':triangular_flag_on_post:',
-    ':goal_net:',
-    ':dizzy:',
-    ':wastebasket:',
-    ':passport_control:',
-    ':adhesive_bandage:',
-    ':monocle_face:',
-    ':coffin:',
-    ':test_tube:',
-    ':necktie:',
-    ':stethoscope:',
-    ':bricks:',
-    ':technologist:',
-    ':money_with_wings:',
-    ':thread:',
-    ':safety_vest:',
-];

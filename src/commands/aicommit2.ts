@@ -1,3 +1,6 @@
+import fs from 'fs';
+import path from 'path';
+
 import { execa } from 'execa';
 import inquirer from 'inquirer';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
@@ -11,6 +14,7 @@ import { getConfig } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
 import { assertGitRepo, getStagedDiff } from '../utils/git.js';
 
+
 const consoleManager = new ConsoleManager();
 
 export default async (
@@ -21,7 +25,7 @@ export default async (
     commitType: string | undefined,
     confirm: boolean,
     useClipboard: boolean,
-    prompt: string | undefined,
+    promptPath: string | undefined,
     rawArgv: string[]
 ) =>
     (async () => {
@@ -60,8 +64,16 @@ export default async (
             generate: generate?.toString() || env.generate,
             type: commitType?.toString() || env.type,
             locale: locale?.toString() || env.locale,
-            prompt: prompt?.toString() || env.prompt,
+            promptPath: promptPath?.toString() || env.promptPath,
         });
+
+        if (config.promptPath) {
+            try {
+                fs.readFileSync(path.resolve(config.promptPath), 'utf-8');
+            } catch (error) {
+                throw new KnownError(`Error reading user prompt file: ${config.promptPath}`);
+            }
+        }
 
         const availableAPIKeyNames: ApiKeyName[] = Object.entries(config)
             .filter(([key]) => ApiKeyNames.includes(key as ApiKeyName))

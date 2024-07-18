@@ -6,7 +6,7 @@ import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 import { AIService, AIServiceParams, CommitMessage } from './ai.service.js';
 import { KnownError } from '../../utils/error.js';
 import { createLogResponse } from '../../utils/log.js';
-import { extraPrompt, generateDefaultPrompt } from '../../utils/prompt.js';
+import { DEFAULT_PROMPT_OPTIONS, PromptOptions, generateDefaultPrompt } from '../../utils/prompt.js';
 
 interface Conversation {
     id: string;
@@ -406,21 +406,25 @@ export class HuggingFaceService extends AIService {
 
         async function completeResponsePromise() {
             // eslint-disable-next-line no-async-promise-executor
-            return new Promise<string>(async resolve => {
-                if (!modifiedStream) {
-                    // console.error('modifiedStream undefined');
-                } else {
-                    const reader = modifiedStream.getReader();
+            return new Promise<string>(async (resolve, reject) => {
+                try {
+                    if (!modifiedStream) {
+                        reject(`ModifiedStream undefined`);
+                    } else {
+                        const reader = modifiedStream.getReader();
 
-                    // eslint-disable-next-line no-constant-condition
-                    while (true) {
-                        const { done, value } = await reader.read();
+                        // eslint-disable-next-line no-constant-condition
+                        while (true) {
+                            const { done, value } = await reader.read();
 
-                        if (done) {
-                            resolve(completeResponse);
-                            break; // The streaming has ended.
+                            if (done) {
+                                resolve(completeResponse);
+                                break; // The streaming has ended.
+                            }
                         }
                     }
+                } catch (error) {
+                    reject(error); // Reject the promise with the caught error
                 }
             });
         }
@@ -447,9 +451,17 @@ export class HuggingFaceService extends AIService {
     }
 
     private getSystemPrompt() {
-        const { locale, generate, type, prompt: userPrompt } = this.params.config;
+        const { locale, generate, type, promptPath } = this.params.config;
         const maxLength = this.params.config['max-length'];
-        const defaultPrompt = generateDefaultPrompt(locale, maxLength, type, userPrompt);
-        return `${defaultPrompt}\n${extraPrompt(generate, type)}`;
+        const promptOption: PromptOptions = {
+            ...DEFAULT_PROMPT_OPTIONS,
+            locale,
+            maxLength,
+            type,
+            generate,
+            promptPath,
+        };
+        const defaultPrompt = generateDefaultPrompt(promptOption);
+        return `${defaultPrompt}`;
     }
 }

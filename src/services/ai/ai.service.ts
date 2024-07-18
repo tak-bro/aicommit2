@@ -3,7 +3,7 @@ import { Observable, of } from 'rxjs';
 
 import { CommitType, ValidConfig } from '../../utils/config.js';
 import { StagedDiff } from '../../utils/git.js';
-import { extraPrompt, generateDefaultPrompt } from '../../utils/prompt.js';
+import { DEFAULT_PROMPT_OPTIONS, PromptOptions, generateDefaultPrompt } from '../../utils/prompt.js';
 
 // NOTE: get AI Type from key names
 export const AIType = {
@@ -60,9 +60,17 @@ export abstract class AIService {
 
     abstract generateCommitMessage$(): Observable<ReactiveListChoice>;
 
-    protected buildPrompt(locale: string, diff: string, completions: number, maxLength: number, type: CommitType, prompt: string) {
-        const defaultPrompt = generateDefaultPrompt(locale, maxLength, type, prompt);
-        return `${defaultPrompt}\n${extraPrompt(completions, type)}\nHere are diff: \n${diff}`;
+    protected buildPrompt(locale: string, diff: string, generate: number, maxLength: number, type: CommitType, promptPath: string) {
+        const promptOption: PromptOptions = {
+            ...DEFAULT_PROMPT_OPTIONS,
+            locale,
+            maxLength,
+            type,
+            generate,
+            promptPath,
+        };
+        const defaultPrompt = generateDefaultPrompt(promptOption);
+        return `${defaultPrompt}}\nHere are diff: \n${diff}`;
     }
 
     protected handleError$ = (error: AIServiceError): Observable<ReactiveListChoice> => {
