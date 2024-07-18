@@ -6,7 +6,7 @@ import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 import { AIService, AIServiceParams, CommitMessage } from './ai.service.js';
 import { KnownError } from '../../utils/error.js';
 import { createLogResponse } from '../../utils/log.js';
-import { DEFAULT_PROMPT_OPTIONS, PromptOptions, generateDefaultPrompt } from '../../utils/prompt.js';
+import { DEFAULT_PROMPT_OPTIONS, PromptOptions, generatePrompt } from '../../utils/prompt.js';
 
 interface Conversation {
     id: string;
@@ -461,7 +461,7 @@ export class HuggingFaceService extends AIService {
             generate,
             promptPath,
         };
-        const defaultPrompt = generateDefaultPrompt(promptOption);
+        const defaultPrompt = generatePrompt(promptOption);
         return `${defaultPrompt}`;
     }
 }

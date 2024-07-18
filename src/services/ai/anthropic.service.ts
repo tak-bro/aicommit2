@@ -7,7 +7,7 @@ import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 import { AIService, AIServiceError, AIServiceParams, CommitMessage } from './ai.service.js';
 import { KnownError } from '../../utils/error.js';
 import { createLogResponse } from '../../utils/log.js';
-import { DEFAULT_PROMPT_OPTIONS, PromptOptions, generateDefaultPrompt } from '../../utils/prompt.js';
+import { DEFAULT_PROMPT_OPTIONS, PromptOptions, generatePrompt } from '../../utils/prompt.js';
 
 export interface AnthropicServiceError extends AIServiceError {
     error?: {
@@ -58,7 +58,7 @@ export class AnthropicService extends AIService {
                 generate,
                 promptPath: promptPath,
             };
-            const defaultPrompt = generateDefaultPrompt(promptOptions);
+            const defaultPrompt = generatePrompt(promptOptions);
             const systemPrompt = `${defaultPrompt}`;
 
             const params: Anthropic.MessageCreateParams = {

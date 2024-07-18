@@ -8,7 +8,7 @@ import { AIService, AIServiceError, AIServiceParams, CommitMessage } from './ai.
 import { DEFAULT_OLLMA_HOST } from '../../utils/config.js';
 import { KnownError } from '../../utils/error.js';
 import { createLogResponse } from '../../utils/log.js';
-import { DEFAULT_PROMPT_OPTIONS, PromptOptions, generateDefaultPrompt } from '../../utils/prompt.js';
+import { DEFAULT_PROMPT_OPTIONS, PromptOptions, generatePrompt } from '../../utils/prompt.js';
 import { capitalizeFirstLetter } from '../../utils/utils.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
 
@@ -131,7 +131,7 @@ export class OllamaService extends AIService {
             generate: this.params.config.generate,
             promptPath: this.params.config.promptPath,
         };
-        const defaultPrompt = generateDefaultPrompt(promptOption);
+        const defaultPrompt = generatePrompt(promptOption);
         return `${defaultPrompt}`;
     }
 }

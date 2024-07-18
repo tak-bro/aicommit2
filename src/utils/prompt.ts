@@ -172,16 +172,16 @@ const parseTemplate = (template: string, options: PromptOptions): string => {
 };
 
 const defaultPrompt = (promptOptions: PromptOptions) => {
-    const { type, maxLength, locale } = promptOptions;
+    const { type, maxLength, generate, locale } = promptOptions;
 
     return [
-        `Generate a ${type} commit message in ${locale}.`,
-        `The message should not exceed ${Math.min(Math.max(maxLength, 0), MAX_COMMIT_LENGTH)} characters.`,
+        `Generate ${generate} commit messages in ${type} type.`,
+        `The first line should not exceed ${Math.min(Math.max(maxLength, 0), MAX_COMMIT_LENGTH)} characters.`,
         `Remember to follow these guidelines:`,
-        `1. Format: ${commitTypeFormats[type]}`,
-        `2. Use the imperative mood`,
-        `3. Be concise and clear`,
-        `4. Explain the 'why' behind the change`,
+        `1. Language: ${locale}`,
+        `2. Format: ${commitTypeFormats[type]}`,
+        `3. Use the imperative mood`,
+        `4. Be concise and clear`,
         `5. Avoid overly verbose descriptions or unnecessary details.`,
     ]
         .filter(Boolean)
@@ -192,27 +192,30 @@ const finalPrompt = (generate: number, type: CommitType) => {
     return `Provide ${generate} commit messages in the following JSON array format:
    [
       {
-          "message": "${exampleCommitByType[type]}",
-          "body": "Detailed explanation if necessary"
+          "subject": "string",
+          "body": "string",
+          "footer": "string"
       },
       {
-          "message": "Another ${type} commit message",
-          "body": "Another detailed explanation if necessary"
-      }
+          "subject": "Other ${type} commit messages",
+          "body": "detailed explanation if necessary"
+          "footer": ""
+      },
    ]`;
 };
 
-export const generateDefaultPrompt = (promptOptions: PromptOptions) => {
+export const generatePrompt = (promptOptions: PromptOptions) => {
     const { type, generate, promptPath } = promptOptions;
-    if (promptPath) {
-        try {
-            const userTemplate = fs.readFileSync(path.resolve(promptPath), 'utf-8');
-            return `${parseTemplate(userTemplate, promptOptions)}\n${finalPrompt(generate, type)}`;
-        } catch (error) {
-            return `${defaultPrompt(promptOptions)}\n${finalPrompt(generate, type)}`;
-        }
+    if (!promptPath) {
+        return `${defaultPrompt(promptOptions)}\n${finalPrompt(generate, type)}`;
     }
-    return `${defaultPrompt(promptOptions)}\n${finalPrompt(generate, type)}`;
+
+    try {
+        const userTemplate = fs.readFileSync(path.resolve(promptPath), 'utf-8');
+        return `${parseTemplate(userTemplate, promptOptions)}\n${finalPrompt(generate, type)}`;
+    } catch (error) {
+        return `${defaultPrompt(promptOptions)}\n${finalPrompt(generate, type)}`;
+    }
 };
 
 export const isValidConventionalMessage = (message: string): boolean => {
