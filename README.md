@@ -737,13 +737,15 @@ Remember to follow these guidelines:
 Please note that the following text will always be appended to the end of your custom prompt:
 
 ```
-Provide {generate} commit messages in the following JSON array format:
+Provide your response as a JSON array where each element is an object with "subject", "body", and "footer" keys.
+The "subject" should include the type, optional scope, and description . If there's no body or footer, use an empty string for those fields.
+Example response format:
 [
-   {
-       "message": "{type}",
-       "body": "Detailed explanation if necessary"
-   },
-   ...
+  {
+    "subject": "string",
+    "body": "string",
+    "footer": "string"
+  },
 ]
 ```
 

@@ -194,15 +194,15 @@ const defaultPrompt = (promptOptions: PromptOptions) => {
         `  - Separate subject from body with a blank line`,
         `  - Use the body to explain what and why vs. how`,
         `Generate ${generate} commit messages based on these guidelines.`,
-        `Provide your response as a JSON array where each element is an object with "subject", "body", and "footer" keys.`,
-        `The "subject" should include the type, optional scope, and description. If there's no body or footer, use an empty string for those fields.`,
     ]
         .filter(Boolean)
         .join('\n');
 };
 
 const finalPrompt = (generate: number, type: CommitType) => {
-    return `Example response format:
+    return `Provide your response as a JSON array where each element is an object with "subject", "body", and "footer" keys.
+The "subject" should include the ${type === 'conventional' ? `type` : `emoji`}, optional scope, and description . If there's no body or footer, use an empty string for those fields.
+Example response format:
 [
   {
     "subject": "string",
