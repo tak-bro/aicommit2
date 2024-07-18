@@ -57,85 +57,84 @@ get from gitmoji.dev
 */
 const commitTypes: Record<CommitType, string> = {
     '': '',
-    gitmoji: `\n${JSON.stringify(
-        {
-            ':art:': 'Improve structure / format of the code.',
-            ':zap:': 'Improve performance.',
-            ':fire:': 'Remove code or files.',
-            ':bug:': 'Fix a bug.',
-            ':ambulance:': 'Critical hotfix.',
-            ':sparkles:': 'Introduce new features.',
-            ':memo:': 'Add or update documentation.',
-            ':rocket:': 'Deploy stuff.',
-            ':lipstick:': 'Add or update the UI and style files.',
-            ':tada:': 'Begin a project.',
-            ':white_check_mark:': 'Add, update, or pass tests.',
-            ':lock:': 'Fix security or privacy issues.',
-            ':closed_lock_with_key:': 'Add or update secrets.',
-            ':bookmark:': 'Release / Version tags.',
-            ':rotating_light:': 'Fix compiler / linter warnings.',
-            ':construction:': 'Work in progress.',
-            ':green_heart:': 'Fix CI Build.',
-            ':arrow_down:': 'Downgrade dependencies.',
-            ':arrow_up:': 'Upgrade dependencies.',
-            ':pushpin:': 'Pin dependencies to specific versions.',
-            ':construction_worker:': 'Add or update CI build system.',
-            ':chart_with_upwards_trend:': 'Add or update analytics or track code.',
-            ':recycle:': 'Refactor code.',
-            ':heavy_plus_sign:': 'Add a dependency.',
-            ':heavy_minus_sign:': 'Remove a dependency.',
-            ':wrench:': 'Add or update configuration files.',
-            ':hammer:': 'Add or update development scripts.',
-            ':globe_with_meridians:': 'Internationalization and localization.',
-            ':pencil2:': 'Fix typos.',
-            ':poop:': 'Write bad code that needs to be improved.',
-            ':rewind:': 'Revert changes.',
-            ':twisted_rightwards_arrows:': 'Merge branches.',
-            ':package:': 'Add or update compiled files or packages.',
-            ':alien:': 'Update code due to external API changes.',
-            ':truck:': 'Move or rename resources (e.g.: files, paths, routes).',
-            ':page_facing_up:': 'Add or update license.',
-            ':boom:': 'Introduce breaking changes.',
-            ':bento:': 'Add or update assets.',
-            ':wheelchair:': 'Improve accessibility.',
-            ':bulb:': 'Add or update comments in source code.',
-            ':beers:': 'Write code drunkenly.',
-            ':speech_balloon:': 'Add or update text and literals.',
-            ':card_file_box:': 'Perform database related changes.',
-            ':loud_sound:': 'Add or update logs.',
-            ':mute:': 'Remove logs.',
-            ':busts_in_silhouette:': 'Add or update contributor(s).',
-            ':children_crossing:': 'Improve user experience / usability.',
-            ':building_construction:': 'Make architectural changes.',
-            ':iphone:': 'Work on responsive design.',
-            ':clown_face:': 'Mock things.',
-            ':egg:': 'Add or update an easter egg.',
-            ':see_no_evil:': 'Add or update a .gitignore file.',
-            ':camera_flash:': 'Add or update snapshots.',
-            ':alembic:': 'Perform experiments.',
-            ':mag:': 'Improve SEO.',
-            ':label:': 'Add or update types.',
-            ':seedling:': 'Add or update seed files.',
-            ':triangular_flag_on_post:': 'Add, update, or remove feature flags.',
-            ':goal_net:': 'Catch errors.',
-            ':dizzy:': 'Add or update animations and transitions.',
-            ':wastebasket:': 'Deprecate code that needs to be cleaned up.',
-            ':passport_control:': 'Work on code related to authorization, roles and permissions.',
-            ':adhesive_bandage:': 'Simple fix for a non-critical issue.',
-            ':monocle_face:': 'Data exploration/inspection.',
-            ':coffin:': 'Remove dead code.',
-            ':test_tube:': 'Add a failing test.',
-            ':necktie:': 'Add or update business logic.',
-            ':stethoscope:': 'Add or update healthcheck.',
-            ':bricks:': 'Infrastructure related changes.',
-            ':technologist:': 'Improve developer experience.',
-            ':money_with_wings:': 'Add sponsorships or money related infrastructure.',
-            ':thread:': 'Add or update code related to multithreading or concurrency.',
-            ':safety_vest:': 'Add or update code related to validation.',
-        },
-        null,
-        2
-    )}`,
+    gitmoji: `\n${Object.entries({
+        ':sparkles:': 'Introduce new features.',
+        ':bug:': 'Fix a bug.',
+        ':memo:': 'Add or update documentation.',
+        ':art:': 'Improve structure / format of the code.',
+        ':zap:': 'Improve performance.',
+        ':fire:': 'Remove code or files.',
+        ':ambulance:': 'Critical hotfix.',
+        ':white_check_mark:': 'Add, update, or pass tests.',
+        ':lock:': 'Fix security or privacy issues.',
+        ':rocket:': 'Deploy stuff.',
+        ':lipstick:': 'Add or update the UI and style files.',
+        ':tada:': 'Begin a project.',
+        ':recycle:': 'Refactor code.',
+        ':wrench:': 'Add or update configuration files.',
+        ':bulb:': 'Add or update comments in source code.',
+        ':twisted_rightwards_arrows:': 'Merge branches.',
+        // TODO:
+        // ':closed_lock_with_key:': 'Add or update secrets.',
+        // ':bookmark:': 'Release / Version tags.',
+        // ':rotating_light:': 'Fix compiler / linter warnings.',
+        // ':construction:': 'Work in progress.',
+        // ':green_heart:': 'Fix CI Build.',
+        // ':arrow_down:': 'Downgrade dependencies.',
+        // ':arrow_up:': 'Upgrade dependencies.',
+        // ':pushpin:': 'Pin dependencies to specific versions.',
+        // ':construction_worker:': 'Add or update CI build system.',
+        // ':chart_with_upwards_trend:': 'Add or update analytics or track code.',
+        // ':heavy_plus_sign:': 'Add a dependency.',
+        // ':heavy_minus_sign:': 'Remove a dependency.',
+        // ':hammer:': 'Add or update development scripts.',
+        // ':globe_with_meridians:': 'Internationalization and localization.',
+        // ':pencil2:': 'Fix typos.',
+        // ':poop:': 'Write bad code that needs to be improved.',
+        // ':rewind:': 'Revert changes.',
+        // ':package:': 'Add or update compiled files or packages.',
+        // ':alien:': 'Update code due to external API changes.',
+        // ':truck:': 'Move or rename resources (e.g.: files, paths, routes).',
+        // ':page_facing_up:': 'Add or update license.',
+        // ':boom:': 'Introduce breaking changes.',
+        // ':bento:': 'Add or update assets.',
+        // ':wheelchair:': 'Improve accessibility.',
+        // ':beers:': 'Write code drunkenly.',
+        // ':speech_balloon:': 'Add or update text and literals.',
+        // ':card_file_box:': 'Perform database related changes.',
+        // ':loud_sound:': 'Add or update logs.',
+        // ':mute:': 'Remove logs.',
+        // ':busts_in_silhouette:': 'Add or update contributor(s).',
+        // ':children_crossing:': 'Improve user experience / usability.',
+        // ':building_construction:': 'Make architectural changes.',
+        // ':iphone:': 'Work on responsive design.',
+        // ':clown_face:': 'Mock things.',
+        // ':egg:': 'Add or update an easter egg.',
+        // ':see_no_evil:': 'Add or update a .gitignore file.',
+        // ':camera_flash:': 'Add or update snapshots.',
+        // ':alembic:': 'Perform experiments.',
+        // ':mag:': 'Improve SEO.',
+        // ':label:': 'Add or update types.',
+        // ':seedling:': 'Add or update seed files.',
+        // ':triangular_flag_on_post:': 'Add, update, or remove feature flags.',
+        // ':goal_net:': 'Catch errors.',
+        // ':dizzy:': 'Add or update animations and transitions.',
+        // ':wastebasket:': 'Deprecate code that needs to be cleaned up.',
+        // ':passport_control:': 'Work on code related to authorization, roles and permissions.',
+        // ':adhesive_bandage:': 'Simple fix for a non-critical issue.',
+        // ':monocle_face:': 'Data exploration/inspection.',
+        // ':coffin:': 'Remove dead code.',
+        // ':test_tube:': 'Add a failing test.',
+        // ':necktie:': 'Add or update business logic.',
+        // ':stethoscope:': 'Add or update healthcheck.',
+        // ':bricks:': 'Infrastructure related changes.',
+        // ':technologist:': 'Improve developer experience.',
+        // ':money_with_wings:': 'Add sponsorships or money related infrastructure.',
+        // ':thread:': 'Add or update code related to multithreading or concurrency.',
+        // ':safety_vest:': 'Add or update code related to validation.',
+    })
+        .map(([key, value]) => `  - ${key}: ${value}`)
+        .join('\n')}`,
     /**
      * References:
      * Commitlint:
@@ -144,23 +143,21 @@ const commitTypes: Record<CommitType, string> = {
      * Conventional Changelog:
      * https://github.com/conventional-changelog/conventional-changelog/blob/d0e5d5926c8addba74bc962553dd8bcfba90e228/packages/conventional-changelog-conventionalcommits/writer-opts.js#L182-L193
      */
-    conventional: `\n${JSON.stringify(
-        {
-            docs: 'Documentation only changes',
-            style: 'Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)',
-            refactor: 'A code change that neither fixes a bug nor adds a feature',
-            perf: 'A code change that improves performance',
-            test: 'Adding missing tests or correcting existing tests',
-            build: 'Changes that affect the build system or external dependencies',
-            ci: 'Changes to CI configuration files, scripts',
-            chore: "Other changes that don't modify src or test files",
-            revert: 'Reverts a previous commit',
-            feat: 'A new feature',
-            fix: 'A bug fix',
-        },
-        null,
-        2
-    )}`,
+    conventional: `\n${Object.entries({
+        docs: 'Documentation only changes',
+        style: 'Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)',
+        refactor: 'A code change that neither fixes a bug nor adds a feature',
+        perf: 'A code change that improves performance',
+        test: 'Adding missing tests or correcting existing tests',
+        build: 'Changes that affect the build system or external dependencies',
+        ci: 'Changes to CI configuration files, scripts',
+        chore: "Other changes that don't modify src or test files",
+        revert: 'Reverts a previous commit',
+        feat: 'A new feature',
+        fix: 'A bug fix',
+    })
+        .map(([key, value]) => `  - ${key}: ${value}`)
+        .join('\n')}`,
 };
 
 const parseTemplate = (template: string, options: PromptOptions): string => {
@@ -172,47 +169,61 @@ const parseTemplate = (template: string, options: PromptOptions): string => {
 };
 
 const defaultPrompt = (promptOptions: PromptOptions) => {
-    const { type, maxLength, locale } = promptOptions;
+    const { type, maxLength, generate, locale } = promptOptions;
 
     return [
-        `Generate a ${type} commit message in ${locale}.`,
-        `The message should not exceed ${Math.min(Math.max(maxLength, 0), MAX_COMMIT_LENGTH)} characters.`,
-        `Remember to follow these guidelines:`,
-        `1. Format: ${commitTypeFormats[type]}`,
-        `2. Use the imperative mood`,
-        `3. Be concise and clear`,
-        `4. Explain the 'why' behind the change`,
-        `5. Avoid overly verbose descriptions or unnecessary details.`,
+        `You are an AI assistant specialized in generating high-quality git commit messages following the Conventional Commits specification.`,
+        `Your task is to create commit messages based on the following guidelines`,
+        `1. Format: follow the ${type} Commits format:`,
+        `${commitTypeFormats[type]}`,
+        `2. Types: use one of the following types:${commitTypes[type]}`,
+        `3. Scope: optional, can be anything specifying the place of the commit change (e.g., component name, file name, module name)`,
+        `4. Description: `,
+        `  - Use imperative, present tense: "change" not "changed" nor "changes"`,
+        `  - Don't capitalize the first letter`,
+        `  - No period (.) at the end`,
+        `5. Body: Optional`,
+        `  - Use imperative, present tense`,
+        `  - Wrap lines at 72 characters`,
+        `6. Footer: Optional`,
+        `  - Mention any breaking changes, starting with "BREAKING CHANGE:"`,
+        `  - Reference any related issues or pull requests (e.g., "Fixes #123", "Closes #456")`,
+        `7. General Rules:`,
+        `  - Be concise but descriptive`,
+        `  - Focus on the "why" behind the change, not just the "what"`,
+        `  - Separate subject from body with a blank line`,
+        `  - Use the body to explain what and why vs. how`,
+        `Generate ${generate} commit messages based on these guidelines.`,
     ]
         .filter(Boolean)
         .join('\n');
 };
 
 const finalPrompt = (generate: number, type: CommitType) => {
-    return `Provide ${generate} commit messages in the following JSON array format:
-   [
-      {
-          "message": "${exampleCommitByType[type]}",
-          "body": "Detailed explanation if necessary"
-      },
-      {
-          "message": "Another ${type} commit message",
-          "body": "Another detailed explanation if necessary"
-      }
-   ]`;
+    return `Provide your response as a JSON array where each element is an object with "subject", "body", and "footer" keys.
+The "subject" should include the ${type === 'conventional' ? `type` : `emoji`}, optional scope, and description . If there's no body or footer, use an empty string for those fields.
+Example response format:
+[
+  {
+    "subject": "string",
+    "body": "string",
+    "footer": "string"
+  },
+]`;
 };
 
-export const generateDefaultPrompt = (promptOptions: PromptOptions) => {
+export const generatePrompt = (promptOptions: PromptOptions) => {
     const { type, generate, promptPath } = promptOptions;
-    if (promptPath) {
-        try {
-            const userTemplate = fs.readFileSync(path.resolve(promptPath), 'utf-8');
-            return `${parseTemplate(userTemplate, promptOptions)}\n${finalPrompt(generate, type)}`;
-        } catch (error) {
-            return `${defaultPrompt(promptOptions)}\n${finalPrompt(generate, type)}`;
-        }
+    if (!promptPath) {
+        return `${defaultPrompt(promptOptions)}\n${finalPrompt(generate, type)}`;
     }
-    return `${defaultPrompt(promptOptions)}\n${finalPrompt(generate, type)}`;
+
+    try {
+        const userTemplate = fs.readFileSync(path.resolve(promptPath), 'utf-8');
+        return `${parseTemplate(userTemplate, promptOptions)}\n${finalPrompt(generate, type)}`;
+    } catch (error) {
+        return `${defaultPrompt(promptOptions)}\n${finalPrompt(generate, type)}`;
+    }
 };
 
 export const isValidConventionalMessage = (message: string): boolean => {

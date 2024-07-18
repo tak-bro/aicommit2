@@ -710,12 +710,12 @@ aicommit2 config set promptPath="/path/to/user/prompt.txt"
 ### Template Format
 
 Your custom template can include placeholders for various commit options.
-Use curly braces `{}` to denote these placeholders. The following placeholders are supported:
+Use curly braces `{}` to denote these placeholders for options. The following placeholders are supported:
 
-- {locale}: The language for the commit message (string)
-- {maxLength}: The maximum length for the commit message (number)
-- {type}: The type of the commit (CommitType)
-- {generate}: The number of commit messages to generate (number)
+- [{locale}](#locale): The language for the commit message (string)
+- [{maxLength}](#max-length): The maximum length for the commit message (number)
+- [{type}](#type): The type of the commit (conventional or gitmoji)
+- [{generate}](#generate): The number of commit messages to generate (number)
 
 ### Example Template
 
@@ -737,16 +737,15 @@ Remember to follow these guidelines:
 Please note that the following text will always be appended to the end of your custom prompt:
 
 ```
-Provide {generate} commit messages in the following JSON array format:
+Provide your response as a JSON array where each element is an object with "subject", "body", and "footer" keys.
+The "subject" should include the type, optional scope, and description . If there's no body or footer, use an empty string for those fields.
+Example response format:
 [
-   {
-       "message": "{type}",
-       "body": "Detailed explanation if necessary"
-   },
-   {
-       "message": "Another {type} commit message",
-       "body": "Another detailed explanation if necessary"
-   }
+  {
+    "subject": "string",
+    "body": "string",
+    "footer": "string"
+  },
 ]
 ```
 

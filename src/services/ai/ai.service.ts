@@ -3,7 +3,7 @@ import { Observable, of } from 'rxjs';
 
 import { CommitType, ValidConfig } from '../../utils/config.js';
 import { StagedDiff } from '../../utils/git.js';
-import { DEFAULT_PROMPT_OPTIONS, PromptOptions, generateDefaultPrompt } from '../../utils/prompt.js';
+import { DEFAULT_PROMPT_OPTIONS, PromptOptions, generatePrompt } from '../../utils/prompt.js';
 
 // NOTE: get AI Type from key names
 export const AIType = {
@@ -26,8 +26,9 @@ export interface CommitMessage {
 }
 
 export interface RawCommitMessage {
-    message: string;
-    body: string;
+    subject: string;
+    body?: string;
+    footer?: string;
 }
 
 export interface AIServiceParams {
@@ -69,7 +70,7 @@ export abstract class AIService {
             generate,
             promptPath,
         };
-        const defaultPrompt = generateDefaultPrompt(promptOption);
+        const defaultPrompt = generatePrompt(promptOption);
         return `${defaultPrompt}}\nHere are diff: \n${diff}`;
     }
 
@@ -94,13 +95,13 @@ export abstract class AIService {
                 .map((data: RawCommitMessage) => {
                     if (ignoreBody) {
                         return {
-                            title: `${data.message}`,
-                            value: `${data.message}`,
+                            title: `${data.subject}`,
+                            value: `${data.subject}`,
                         };
                     }
                     return {
-                        title: `${data.message}`,
-                        value: data.body ? `${data.message}\n\n${data.body}` : `${data.message}`,
+                        title: `${data.subject}`,
+                        value: `${data.subject}${data.body ? `\n\n${data.body}` : ''}${data.footer ? `\n\n${data.footer}` : ''}`,
                     };
                 });
 
@@ -123,13 +124,13 @@ export abstract class AIService {
                     .map((data: RawCommitMessage) => {
                         if (ignoreBody) {
                             return {
-                                title: `${data.message}`,
-                                value: `${data.message}`,
+                                title: `${data.subject}`,
+                                value: `${data.subject}`,
                             };
                         }
                         return {
-                            title: `${data.message}`,
-                            value: data.body ? `${data.message}\n\n${data.body}` : `${data.message}`,
+                            title: `${data.subject}`,
+                            value: `${data.subject}${data.body ? `\n\n${data.body}` : ''}${data.footer ? `\n\n${data.footer}` : ''}`,
                         };
                     });
 
@@ -148,18 +149,18 @@ export abstract class AIService {
         switch (type) {
             case 'conventional':
                 const conventionalPattern = /(\w+)(?:\(.*?\))?:\s*(.*)/;
-                const conventionalMatch = data.message.match(conventionalPattern);
-                const message = conventionalMatch ? conventionalMatch[0] : data.message;
+                const conventionalMatch = data.subject.match(conventionalPattern);
+                const message = conventionalMatch ? conventionalMatch[0] : data.subject;
                 return {
                     ...data,
-                    message: this.normalizeCommitMessage(message),
+                    subject: this.normalizeCommitMessage(message),
                 };
             case 'gitmoji':
                 const gitmojiTypePattern = /:\w*:\s*(.*)/;
-                const gitmojiMatch = data.message.match(gitmojiTypePattern);
+                const gitmojiMatch = data.subject.match(gitmojiTypePattern);
                 return {
                     ...data,
-                    message: gitmojiMatch ? gitmojiMatch[0].toLowerCase() : data.message,
+                    subject: gitmojiMatch ? gitmojiMatch[0].toLowerCase() : data.subject,
                 };
             default:
                 return data;
