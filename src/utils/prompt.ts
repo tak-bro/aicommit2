@@ -189,7 +189,7 @@ const defaultPrompt = (promptOptions: PromptOptions) => {
 };
 
 const finalPrompt = (generate: number, type: CommitType) => {
-    return `And please provide ${generate} commit messages in the following JSON array format:
+    return `Provide ${generate} commit messages in the following JSON array format:
    [
       {
           "message": "${exampleCommitByType[type]}",
