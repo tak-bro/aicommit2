@@ -174,21 +174,22 @@ const defaultPrompt = (promptOptions: PromptOptions) => {
     return [
         `You are an AI assistant specialized in generating high-quality git commit messages following the Conventional Commits specification.`,
         `Your task is to create commit messages based on the following guidelines`,
-        `1. Format: follow the ${type} Commits format:`,
+        `1. Language: ${locale}`,
+        `2. Format: follow the ${type} Commits format:`,
         `${commitTypeFormats[type]}`,
-        `2. Types: use one of the following types:${commitTypes[type]}`,
-        `3. Scope: optional, can be anything specifying the place of the commit change (e.g., component name, file name, module name)`,
-        `4. Description: `,
+        `3. Types: use one of the following types:${commitTypes[type]}`,
+        `4. Scope: optional, can be anything specifying the place of the commit change (e.g., component name, file name, module name)`,
+        `5. Description: `,
         `  - Use imperative, present tense: "change" not "changed" nor "changes"`,
         `  - Don't capitalize the first letter`,
         `  - No period (.) at the end`,
-        `5. Body: Optional`,
+        `6. Body: Optional`,
         `  - Use imperative, present tense`,
         `  - Wrap lines at 72 characters`,
-        `6. Footer: Optional`,
+        `7. Footer: Optional`,
         `  - Mention any breaking changes, starting with "BREAKING CHANGE:"`,
         `  - Reference any related issues or pull requests (e.g., "Fixes #123", "Closes #456")`,
-        `7. General Rules:`,
+        `8. General Rules:`,
         `  - Be concise but descriptive`,
         `  - Focus on the "why" behind the change, not just the "what"`,
         `  - Separate subject from body with a blank line`,
@@ -199,7 +200,7 @@ const defaultPrompt = (promptOptions: PromptOptions) => {
         .join('\n');
 };
 
-const finalPrompt = (generate: number, type: CommitType) => {
+const finalPrompt = (type: CommitType) => {
     return `Provide your response as a JSON array where each element is an object with "subject", "body", and "footer" keys.
 The "subject" should include the ${type === 'conventional' ? `type` : `emoji`}, optional scope, and description . If there's no body or footer, use an empty string for those fields.
 Example response format:
