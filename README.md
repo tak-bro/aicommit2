@@ -419,10 +419,10 @@ aicommit2 config set type=
 ##### max-tokens
 The maximum number of tokens that the AI models can generate.
 
-Default: `200`
+Default: `1024`
 
 ```sh
-aicommit2 config set max-tokens=1000
+aicommit2 config set max-tokens=3000
 ```
 
 ##### temperature
