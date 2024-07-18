@@ -214,6 +214,7 @@ aicommit2 --clipboard # or -c
 ##### `--promptPath` or `-p`
 - Allow users to specify a custom file path for their own prompt template
 - Enable users to define and use their own prompts instead of relying solely on the default prompt
+- Please see [Custom Prompt Template](#custom-prompt-template)
 
 ```sh
 aicommit2 --promptPath <s> # or -p <s>
@@ -436,6 +437,7 @@ aicommit2 config set temperature=0
 ##### promptPath
 - Allow users to specify a custom file path for their own prompt template
 - Enable users to define and use their own prompts instead of relying solely on the default prompt
+- Please see [Custom Prompt Template](#custom-prompt-template)
 
 ```sh
 aicommit2 config set promptPath="/path/to/user/prompt.txt"
@@ -694,6 +696,71 @@ If it's not the [latest version](https://github.com/tak-bro/aicommit2/releases/l
 ```sh
 npm update -g aicommit2
 ```
+
+## Custom Prompt Template
+
+_aicommit2_ supports custom prompt templates through the `promptPath` option. This feature allows you to define your own prompt structure, giving you more control over the commit message generation process.
+
+### Using the promptPath Option
+To use a custom prompt template, specify the path to your template file when running the tool:
+```
+aicommit2 config set promptPath="/path/to/user/prompt.txt"
+```
+
+### Template Format
+
+Your custom template can include placeholders for various commit options.
+Use curly braces `{}` to denote these placeholders. The following placeholders are supported:
+
+- {locale}: The language for the commit message (string)
+- {maxLength}: The maximum length for the commit message (number)
+- {type}: The type of the commit (CommitType)
+- {generate}: The number of commit messages to generate (number)
+
+### Example Template
+
+Here's an example of how your custom template might look:
+
+```
+Generate a {type} commit message in {locale}.
+The message should not exceed {maxLength} characters.
+Please provide {generate} messages.
+
+Remember to follow these guidelines:
+1. Use the imperative mood
+2. Be concise and clear
+3. Explain the 'why' behind the change
+```
+
+#### Appended Text
+
+Please note that the following text will always be appended to the end of your custom prompt:
+
+```
+Provide {generate} commit messages in the following JSON array format:
+[
+   {
+       "message": "{type}",
+       "body": "Detailed explanation if necessary"
+   },
+   {
+       "message": "Another {type} commit message",
+       "body": "Another detailed explanation if necessary"
+   }
+]
+```
+
+This ensures that the output is consistently formatted as a JSON array, regardless of the custom template used.
+
+### Notes
+
+If the specified file cannot be read or parsed, _aicommit2_ will fall back to using the default prompt generation logic.
+Ensure your template includes all necessary instructions for generating appropriate commit messages.
+You can still use all other command-line options in conjunction with `promptPath`.
+
+By using custom templates, you can tailor the commit message generation to your team's specific needs or coding standards.
+
+> NOTE: For the `promptPath` option, set the **template path**, not the template content
 
 ## Loading Multiple Ollama Models
 

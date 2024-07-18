@@ -408,7 +408,7 @@ export class HuggingFaceService extends AIService {
             // eslint-disable-next-line no-async-promise-executor
             return new Promise<string>(async resolve => {
                 if (!modifiedStream) {
-                    // console.error('modifiedStream undefined');
+                    throw new Error(`ModifiedStream undefined`);
                 } else {
                     const reader = modifiedStream.getReader();
 

@@ -73,9 +73,9 @@ export class MistralService extends AIService {
     private async generateMessage(): Promise<CommitMessage[]> {
         try {
             const diff = this.params.stagedDiff.diff;
-            const { locale, generate, type, prompt: userPrompt, logging } = this.params.config;
+            const { locale, generate, type, promptPath, logging } = this.params.config;
             const maxLength = this.params.config['max-length'];
-            const prompt = this.buildPrompt(locale, diff, generate, maxLength, type, userPrompt);
+            const prompt = this.buildPrompt(locale, diff, generate, maxLength, type, promptPath);
             await this.checkAvailableModels();
             const chatResponse = await this.createChatCompletions(prompt);
             logging && createLogResponse('MistralAI', diff, prompt, chatResponse);
