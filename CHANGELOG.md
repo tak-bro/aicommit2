@@ -1,3 +1,16 @@
+# [1.12.0](https://github.com/tak-bro/aicommit2/compare/v1.11.1...v1.12.0) (2024-07-18)
+
+
+### Bug Fixes
+
+* handle stream errors ([0826464](https://github.com/tak-bro/aicommit2/commit/082646469bde184531528f10eeba8bcd83757d02))
+* **prompt:** handle error reading user prompt file ([4173fad](https://github.com/tak-bro/aicommit2/commit/4173fadfb27da264d91dabbeeae730a7ab34e091))
+
+
+### Features
+
+* allow users to specify custom prompt templates ([3d68cfe](https://github.com/tak-bro/aicommit2/commit/3d68cfededa85a194f2e71b6c414c54baf8eb89f))
+
 ## [1.11.1](https://github.com/tak-bro/aicommit2/compare/v1.11.0...v1.11.1) (2024-07-17)
 
 
