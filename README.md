@@ -211,11 +211,12 @@ aicommit2 --confirm # or -y
 aicommit2 --clipboard # or -c
 ```
 
-##### `--prompt` or `-p`
-- Additional prompt to let users fine-tune provided prompt
+##### `--promptPath` or `-p`
+- Allow users to specify a custom file path for their own prompt template
+- Enable users to define and use their own prompts instead of relying solely on the default prompt
 
 ```sh
-aicommit2 --prompt <s> # or -p <s>
+aicommit2 --promptPath <s> # or -p <s>
 ```
 
 ### Git hook
@@ -328,7 +329,7 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 | `max-length`         | `50`                                   | Maximum character length of the generated commit message(Subject)                                                                  |
 | `max-tokens`         | `1024`                                 | The maximum number of tokens that the AI models can generate (for **Open AI, Anthropic, Gemini, Mistral, Codestral**)              |
 | `temperature`        | `0.7`                                  | The temperature (0.0-2.0) is used to control the randomness of the output (for **Open AI, Anthropic, Gemini, Mistral, Codestral**) |
-| `prompt`             | N/A                                    | Additional prompt to let users fine-tune provided prompt                                                                           |
+| `promptPath`         | N/A                                    | Allow users to specify a custom file path for their own prompt template                                                            |
 | `logging`            | `false`                                | Whether to log AI responses for debugging (true or false)                                                                          |
 | `ignoreBody`         | `false`                                | Whether the commit message includes body (true or false)                                                                           |
 
@@ -432,11 +433,12 @@ Default: `0.7`
 aicommit2 config set temperature=0
 ```
 
-##### prompt
-Additional prompt to let users fine-tune provided prompt. Users provide extra instructions to AI and can guide how commit messages should look like.
+##### promptPath
+- Allow users to specify a custom file path for their own prompt template
+- Enable users to define and use their own prompts instead of relying solely on the default prompt
 
 ```sh
-aicommit2 config set prompt="Do not mention config changes"
+aicommit2 config set promptPath="/path/to/user/prompt.txt"
 ```
 
 ##### logging

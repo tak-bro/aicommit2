@@ -7,7 +7,7 @@ import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIService, AIServiceParams, CommitMessage } from './ai.service.js';
 import { createLogResponse } from '../../utils/log.js';
-import { extraPrompt, generateDefaultPrompt } from '../../utils/prompt.js';
+import { DEFAULT_PROMPT_OPTIONS, PromptOptions, generateDefaultPrompt } from '../../utils/prompt.js';
 
 export class GroqService extends AIService {
     private groq: Groq;
@@ -39,10 +39,18 @@ export class GroqService extends AIService {
     private async generateMessage(): Promise<CommitMessage[]> {
         try {
             const diff = this.params.stagedDiff.diff;
-            const { locale, generate, type, prompt: userPrompt, logging } = this.params.config;
+            const { locale, generate, type, promptPath, logging } = this.params.config;
             const maxLength = this.params.config['max-length'];
-            const defaultPrompt = generateDefaultPrompt(locale, maxLength, type, userPrompt);
-            const systemPrompt = `${defaultPrompt}\n${extraPrompt(generate, type)}`;
+            const promptOptions: PromptOptions = {
+                ...DEFAULT_PROMPT_OPTIONS,
+                locale,
+                maxLength,
+                type,
+                generate,
+                promptPath: promptPath,
+            };
+            const defaultPrompt = generateDefaultPrompt(promptOptions);
+            const systemPrompt = `${defaultPrompt}`;
 
             const chatCompletion = await this.groq.chat.completions.create(
                 {

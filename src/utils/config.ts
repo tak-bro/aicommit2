@@ -36,11 +36,11 @@ const generalConfigParsers = {
         parseAssert('confirm', /^(?:true|false)$/.test(confirm), 'Must be a boolean');
         return confirm === 'true';
     },
-    prompt(prompt?: string) {
-        if (!prompt) {
+    promptPath(promptPath?: string) {
+        if (!promptPath) {
             return '';
         }
-        return prompt;
+        return promptPath;
     },
     locale(locale?: string) {
         if (!locale) {

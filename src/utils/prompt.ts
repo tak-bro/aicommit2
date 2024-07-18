@@ -1,4 +1,23 @@
+import fs from 'fs';
+import path from 'path';
+
 import type { CommitType } from './config.js';
+
+export interface PromptOptions {
+    locale: string;
+    maxLength: number;
+    type: CommitType;
+    generate: number;
+    promptPath?: string;
+}
+
+export const DEFAULT_PROMPT_OPTIONS: PromptOptions = {
+    locale: 'en',
+    maxLength: 50,
+    type: 'conventional',
+    generate: 1,
+    promptPath: '',
+};
 
 const MAX_COMMIT_LENGTH = 80;
 
@@ -144,8 +163,61 @@ const commitTypes: Record<CommitType, string> = {
     )}`,
 };
 
-export const generateDefaultPrompt = (locale: string, maxLength: number, type: CommitType, additionalPrompts: string = '') =>
-    [
+const parseTemplate = (template: string, options: PromptOptions): string => {
+    return template.replace(/{(\w+)}/g, (_, key) => {
+        return (
+            options[key as keyof PromptOptions]?.toString() || (DEFAULT_PROMPT_OPTIONS[key as keyof PromptOptions]?.toString() as string)
+        );
+    });
+};
+
+export const generateDefaultPrompt = (promptOptions: PromptOptions) => {
+    const { locale, maxLength, type, generate, promptPath } = promptOptions;
+
+    if (promptPath) {
+        try {
+            const userTemplate = fs.readFileSync(path.resolve(promptPath), 'utf-8');
+            return parseTemplate(userTemplate, promptOptions);
+        } catch (error) {
+            console.error(`Error reading user prompt file: ${error}`);
+            return [
+                `You are an expert programmer trained to write professional git commit messages following the ${type} Commits specification. Generate concise and meaningful git commit messages based on the guidelines below:`,
+                `1. Message language: ${locale}`,
+                `2. Format: ${commitTypeFormats[type]}`,
+                `3. Type: Choose the most appropriate type from the following list: ${commitTypes[type]}`,
+                `4. Scope: Optional, can be anything specifying the place of the commit change`,
+                `5. Description: A short summary of the code changes`,
+                `6. Subject line(first line):
+   - Start with a short sentence in imperative mood, present tense
+   - Maximum ${Math.min(Math.max(maxLength, 0), MAX_COMMIT_LENGTH)} characters
+   - No capitalization of first letter
+   - No period at the end`,
+                `7. Body(if needed):
+   - Write 2~5 sentences at most for the detailed explanation
+   - Separate from Subject by a blank line
+   - Use bullet points for multiple changes`,
+                `8. Footer: Optional, for indicating breaking changes or referencing issues`,
+                `Provide ${generate} commit messages in the following JSON array format:
+   [
+      {
+          "message": "${exampleCommitByType[type]}",
+          "body": "Detailed explanation if necessary"
+      },
+      {
+          "message": "Another ${type} commit message",
+          "body": "Another detailed explanation if necessary"
+      }
+   ]`,
+                `Note: Your task is to create well-formatted, ${type} commit messages for each requested commit.`,
+                `Ensure that the messages are diverse and showcase different types and formats.`,
+                `Avoid unnecessary explanations or translations.`,
+                `Your response will be used directly in git commit messages, so ensure it follows the specified format precisely.`,
+            ]
+                .filter(Boolean)
+                .join('\n');
+        }
+    }
+    return [
         `You are an expert programmer trained to write professional git commit messages following the ${type} Commits specification. Generate concise and meaningful git commit messages based on the guidelines below:`,
         `1. Message language: ${locale}`,
         `2. Format: ${commitTypeFormats[type]}`,
@@ -162,25 +234,25 @@ export const generateDefaultPrompt = (locale: string, maxLength: number, type: C
    - Separate from Subject by a blank line
    - Use bullet points for multiple changes`,
         `8. Footer: Optional, for indicating breaking changes or referencing issues`,
-        `${additionalPrompts}`,
-        `Avoid unnecessary explanations or translations. Your response will be used directly in git commit messages, so ensure it follows the specified format precisely.`,
+        `Provide ${generate} commit messages in the following JSON array format:
+   [
+      {
+          "message": "${exampleCommitByType[type]}",
+          "body": "Detailed explanation if necessary"
+      },
+      {
+          "message": "Another ${type} commit message",
+          "body": "Another detailed explanation if necessary"
+      }
+   ]`,
+        `Note: Your task is to create well-formatted, ${type} commit messages for each requested commit.`,
+        `Ensure that the messages are diverse and showcase different types and formats.`,
+        `Avoid unnecessary explanations or translations.`,
+        `Your response will be used directly in git commit messages, so ensure it follows the specified format precisely.`,
     ]
         .filter(Boolean)
         .join('\n');
-
-export const extraPrompt = (generate: number, type: CommitType) => `Provide ${generate} commit messages in the following JSON array format:
- [
-  {
-    "message": "${exampleCommitByType[type]}",
-    "body": "Detailed explanation if necessary"
-  },
-  {
-    "message": "Another ${type} commit message",
-    "body": "Another detailed explanation if necessary"
-  }
-]
-
-Note: Your task is to create well-formatted, ${type} commit messages for each requested commit. Ensure that the messages are diverse and showcase different types and formats.`;
+};
 
 export const isValidConventionalMessage = (message: string): boolean => {
     // TODO: check loosely for issue that message is not coming out
