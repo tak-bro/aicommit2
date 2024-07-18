@@ -1,3 +1,5 @@
+## [1.12.1](https://github.com/tak-bro/aicommit2/compare/v1.12.0...v1.12.1) (2024-07-18)
+
 # [1.12.0](https://github.com/tak-bro/aicommit2/compare/v1.11.1...v1.12.0) (2024-07-18)
 
 
