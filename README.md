@@ -21,7 +21,15 @@
 
 ## Introduction
 
-_aicommit2_ streamlines interactions with various AI, enabling users to request multiple AI simultaneously and select the most suitable commit message without waiting for all AI responses. The core functionalities and architecture of this project are inspired by [AICommits](https://github.com/Nutlope/aicommits).
+_aicommit2_ is a reactive CLI tool that automatically generates Git commit messages using various AI models. It supports simultaneous requests to multiple AI providers, allowing users to select the most suitable commit message. The core functionalities and architecture of this project are inspired by [AICommits](https://github.com/Nutlope/aicommits).
+
+## Key Features
+
+- **Multi-AI Support**: Integrates with OpenAI, Anthropic Claude, Google Gemini, Mistral AI, Cohere, Groq, Huggingface, and Ollama for local models.
+- **Local Model Support**: Use local AI models via Ollama.
+- **Reactive CLI**: Enables simultaneous requests to multiple AIs and selection of the best commit message.
+- **Git Hook Integration**: Can be used as a prepare-commit-msg hook.
+- **Custom Prompts**: Supports user-defined prompt templates.
 
 ## Supported Providers
 
