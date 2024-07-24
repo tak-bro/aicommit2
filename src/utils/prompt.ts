@@ -210,6 +210,7 @@ Example response format:
     "body": "string",
     "footer": "string"
   },
+  ...
 ]`;
 };
 

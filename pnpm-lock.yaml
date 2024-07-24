@@ -48,8 +48,8 @@ dependencies:
     specifier: ^1.0.8
     version: 1.0.8(inquirer@9.2.8)
   ollama:
-    specifier: ^0.5.0
-    version: 0.5.2
+    specifier: ^0.5.6
+    version: 0.5.6
   ora:
     specifier: ^8.0.1
     version: 8.0.1
@@ -6021,8 +6021,8 @@ packages:
       es-object-atoms: 1.0.0
     dev: true
 
-  /ollama@0.5.2:
-    resolution: {integrity: sha512-nH9WEU8lGxX2RhTH9TukjwrQBlyoprIh8wIGMfFlprgzzJgAr+MFFmHzCt7BZt4SMFMXVwM2xnKrfshfHkBLyQ==}
+  /ollama@0.5.6:
+    resolution: {integrity: sha512-4BySAMt96+OCt4emL6DE78UBCGqC7GvteM9LRCd6WwJyefn0x9w2BrcUcLm9nJ9bYpRsmkhf0Au18Q5MhsA14w==}
     dependencies:
       whatwg-fetch: 3.6.20
     dev: false

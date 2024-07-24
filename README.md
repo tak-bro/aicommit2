@@ -25,7 +25,7 @@ _aicommit2_ is a reactive CLI tool that automatically generates Git commit messa
 
 ## Key Features
 
-- **Multi-AI Support**: Integrates with OpenAI, Anthropic Claude, Google Gemini, Mistral AI, Cohere, Groq, Huggingface, and Ollama for local models.
+- **Multi-AI Support**: Integrates with OpenAI, Anthropic Claude, Google Gemini, Mistral AI, Cohere, Groq, Huggingface.
 - **Local Model Support**: Use local AI models via Ollama.
 - **Reactive CLI**: Enables simultaneous requests to multiple AIs and selection of the best commit message.
 - **Git Hook Integration**: Can be used as a prepare-commit-msg hook.
@@ -754,6 +754,7 @@ Example response format:
     "body": "string",
     "footer": "string"
   },
+  ...
 ]
 ```
 
