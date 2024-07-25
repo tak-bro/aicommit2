@@ -388,7 +388,7 @@ aicommit2 config set proxy=
 
 ##### timeout
 
-The timeout for network requests to the OpenAI API in milliseconds.
+The timeout for network requests to AI in milliseconds.
 
 Default: `10_000` (10 seconds)
 
@@ -518,7 +518,7 @@ Default: `100_000` (100 seconds)
 Request timeout for the Ollama. Default OLLAMA_TIMEOUT is **100 seconds** because it can take a long time to run locally.
 
 ```sh
-aicommit2 config set OLLAMA_TIMEOUT=<timout>
+aicommit2 config set OLLAMA_TIMEOUT=<timeout>
 ```
 
 ### OPEN AI
@@ -663,7 +663,7 @@ Default: `gemma-7b-it`
 
 Supported:
 - `llama3-8b-8192`
-- 'llama3-70b-8192'
+- `llama3-70b-8192`
 - `mixtral-8x7b-32768`
 - `gemma-7b-it`
 
