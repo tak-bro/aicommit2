@@ -10,6 +10,7 @@
         "git-commit",
         "command-line",
         "commandline",
+        "aipick",
         "aicommit",
         "aicommits",
         "aicommit2",
@@ -26,10 +27,12 @@
         "mistral",
         "ollama",
         "llama3",
+        "llama3.1",
         "llm",
         "chatgpt",
         "cohere",
-        "groq"
+        "groq",
+        "codestral"
     ],
     "license": "MIT",
     "repository": "tak-bro/aicommit2",
