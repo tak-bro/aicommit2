@@ -340,7 +340,7 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 | `temperature`        | `0.7`                                  | The temperature (0.0-2.0) is used to control the randomness of the output (for **Open AI, Anthropic, Gemini, Mistral, Codestral**) |
 | `promptPath`         | N/A                                    | Allow users to specify a custom file path for their own prompt template                                                            |
 | `logging`            | `false`                                | Whether to log AI responses for debugging (true or false)                                                                          |
-| `ignoreBody`         | `false`                                | Whether the commit message includes body (true or false)                                                                           |
+| `ignoreBody`         | `true`                                 | Whether the commit message includes body (true or false)                                                                           |
 
 > **Currently, options are set universally. However, there are plans to develop the ability to set individual options in the future.**
 
@@ -472,16 +472,9 @@ aicommit2 log removeAll
 
 ##### ignoreBody
 
-Default: `false`
+Default: `true`
 
-This option determines whether the commit message includes body. If you don't want to include body in message, you can set it to `true`.
-
-```sh
-aicommit2 config set ignoreBody="true"
-```
-
-![ignore_body_true](https://github.com/tak-bro/aicommit2/blob/main/img/ignore_body_true.png?raw=true)
-
+This option determines whether the commit message includes body. If you want to include body in message, you can set it to `false`.
 
 ```sh
 aicommit2 config set ignoreBody="false"
@@ -489,6 +482,12 @@ aicommit2 config set ignoreBody="false"
 
 ![ignore_body_false](https://github.com/tak-bro/aicommit2/blob/main/img/ignore_body_false.png?raw=true)
 
+
+```sh
+aicommit2 config set ignoreBody="true"
+```
+
+![ignore_body_true](https://github.com/tak-bro/aicommit2/blob/main/img/ignore_body_true.png?raw=true)
 
 ### Ollama
 
