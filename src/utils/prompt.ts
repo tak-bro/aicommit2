@@ -194,36 +194,48 @@ const defaultPrompt = (promptOptions: PromptOptions) => {
         `  - Focus on the "why" behind the change, not just the "what"`,
         `  - Separate subject from body with a blank line`,
         `  - Use the body to explain what and why vs. how`,
-        `Generate ${generate} commit messages based on these guidelines.`,
     ]
         .filter(Boolean)
         .join('\n');
 };
 
-const finalPrompt = (type: CommitType) => {
-    return `Provide your response as a JSON array where each element is an object with "subject", "body", and "footer" keys.
-The "subject" should include the ${type === 'conventional' ? `type` : `emoji`}, optional scope, and description . If there's no body or footer, use an empty string for those fields.
-Example response format:
-[
-  {
-    "subject": "string",
-    "body": "string",
-    "footer": "string"
-  },
-]`;
+const finalPrompt = (type: CommitType, generate: number) => {
+    return [
+        `Generate exactly ${generate} ${type} commit message${generate !== 1 ? 's' : ''}.`,
+        `Provide your response as a JSON array containing exactly ${generate} object${generate !== 1 ? 's' : ''}, each with the following keys:`,
+        `- "subject": The main commit message. It should be a concise summary of the changes.`,
+        `- "body": An optional detailed explanation of the changes. If not needed, use an empty string.`,
+        `- "footer": An optional footer for metadata like issue tracker IDs. If not needed, use an empty string.`,
+        `The array must always contain ${generate} element${generate !== 1 ? 's' : ''}, no more and no less.`,
+        `Example response format:
+    [
+      ${Array(generate)
+          .fill(null)
+          .map(
+              (_, index) => `{
+        "subject": "fix: fix bug in user authentication process",
+        "body": "- Updated login function to handle edge cases\\n- Added additional error logging for debugging\\n- Refactored password hashing method for better security",
+        "footer": ""
+      }`
+          )
+          .join(',\n      ')}
+    ]`,
+    ]
+        .filter(Boolean)
+        .join('\n');
 };
 
 export const generatePrompt = (promptOptions: PromptOptions) => {
     const { type, generate, promptPath } = promptOptions;
     if (!promptPath) {
-        return `${defaultPrompt(promptOptions)}\n${finalPrompt(type)}`;
+        return `${defaultPrompt(promptOptions)}\n${finalPrompt(type, generate)}`;
     }
 
     try {
         const userTemplate = fs.readFileSync(path.resolve(promptPath), 'utf-8');
-        return `${parseTemplate(userTemplate, promptOptions)}\n${finalPrompt(type)}`;
+        return `${parseTemplate(userTemplate, promptOptions)}\n${finalPrompt(type, generate)}`;
     } catch (error) {
-        return `${defaultPrompt(promptOptions)}\n${finalPrompt(type)}`;
+        return `${defaultPrompt(promptOptions)}\n${finalPrompt(type, generate)}`;
     }
 };
 

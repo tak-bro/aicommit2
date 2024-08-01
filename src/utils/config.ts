@@ -144,7 +144,7 @@ const generalConfigParsers = {
     },
     ignoreBody(ignore?: string | boolean) {
         if (!ignore) {
-            return false;
+            return true;
         }
         if (typeof ignore === 'boolean') {
             return ignore;

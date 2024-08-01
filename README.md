@@ -25,7 +25,7 @@ _aicommit2_ is a reactive CLI tool that automatically generates Git commit messa
 
 ## Key Features
 
-- **Multi-AI Support**: Integrates with OpenAI, Anthropic Claude, Google Gemini, Mistral AI, Cohere, Groq, Huggingface, and Ollama for local models.
+- **Multi-AI Support**: Integrates with OpenAI, Anthropic Claude, Google Gemini, Mistral AI, Cohere, Groq, Huggingface.
 - **Local Model Support**: Use local AI models via Ollama.
 - **Reactive CLI**: Enables simultaneous requests to multiple AIs and selection of the best commit message.
 - **Git Hook Integration**: Can be used as a prepare-commit-msg hook.
@@ -340,7 +340,7 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 | `temperature`        | `0.7`                                  | The temperature (0.0-2.0) is used to control the randomness of the output (for **Open AI, Anthropic, Gemini, Mistral, Codestral**) |
 | `promptPath`         | N/A                                    | Allow users to specify a custom file path for their own prompt template                                                            |
 | `logging`            | `false`                                | Whether to log AI responses for debugging (true or false)                                                                          |
-| `ignoreBody`         | `false`                                | Whether the commit message includes body (true or false)                                                                           |
+| `ignoreBody`         | `true`                                 | Whether the commit message includes body (true or false)                                                                           |
 
 > **Currently, options are set universally. However, there are plans to develop the ability to set individual options in the future.**
 
@@ -388,7 +388,7 @@ aicommit2 config set proxy=
 
 ##### timeout
 
-The timeout for network requests to the OpenAI API in milliseconds.
+The timeout for network requests to AI in milliseconds.
 
 Default: `10_000` (10 seconds)
 
@@ -472,16 +472,9 @@ aicommit2 log removeAll
 
 ##### ignoreBody
 
-Default: `false`
+Default: `true`
 
-This option determines whether the commit message includes body. If you don't want to include body in message, you can set it to `true`.
-
-```sh
-aicommit2 config set ignoreBody="true"
-```
-
-![ignore_body_true](https://github.com/tak-bro/aicommit2/blob/main/img/ignore_body_true.png?raw=true)
-
+This option determines whether the commit message includes body. If you want to include body in message, you can set it to `false`.
 
 ```sh
 aicommit2 config set ignoreBody="false"
@@ -489,6 +482,12 @@ aicommit2 config set ignoreBody="false"
 
 ![ignore_body_false](https://github.com/tak-bro/aicommit2/blob/main/img/ignore_body_false.png?raw=true)
 
+
+```sh
+aicommit2 config set ignoreBody="true"
+```
+
+![ignore_body_true](https://github.com/tak-bro/aicommit2/blob/main/img/ignore_body_true.png?raw=true)
 
 ### Ollama
 
@@ -518,7 +517,7 @@ Default: `100_000` (100 seconds)
 Request timeout for the Ollama. Default OLLAMA_TIMEOUT is **100 seconds** because it can take a long time to run locally.
 
 ```sh
-aicommit2 config set OLLAMA_TIMEOUT=<timout>
+aicommit2 config set OLLAMA_TIMEOUT=<timeout>
 ```
 
 ### OPEN AI
@@ -663,7 +662,7 @@ Default: `gemma-7b-it`
 
 Supported:
 - `llama3-8b-8192`
-- 'llama3-70b-8192'
+- `llama3-70b-8192`
 - `mixtral-8x7b-32768`
 - `gemma-7b-it`
 
@@ -754,6 +753,7 @@ Example response format:
     "body": "string",
     "footer": "string"
   },
+  ...
 ]
 ```
 
