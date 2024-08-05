@@ -215,9 +215,9 @@ const configParsers = {
     },
     GEMINI_MODEL(model?: string) {
         if (!model || model.length === 0) {
-            return 'gemini-1.5-pro-latest';
+            return 'gemini-1.5-pro';
         }
-        const supportModels = ['gemini-1.5-flash-latest', 'gemini-1.5-pro-latest'];
+        const supportModels = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-1.5-pro-exp-0801'];
         parseAssert('GEMINI_MODEL', supportModels.includes(model), 'Invalid model type of Gemini');
         return model;
     },
@@ -226,12 +226,10 @@ const configParsers = {
             return 'claude-3-haiku-20240307';
         }
         const supportModels = [
-            'claude-2.1',
-            'claude-2.0',
-            'claude-instant-1.2',
             'claude-3-haiku-20240307',
             'claude-3-sonnet-20240229',
             'claude-3-opus-20240229',
+            'claude-3-5-sonnet-20240620'
         ];
         parseAssert('ANTHROPIC_MODEL', supportModels.includes(model), 'Invalid model type of Anthropic');
         return model;
@@ -347,9 +345,9 @@ const configParsers = {
     },
     GROQ_MODEL(model?: string) {
         if (!model || model.length === 0) {
-            return 'gemma-7b-it';
+            return 'gemma2-9b-it';
         }
-        const supportModels = [`llama3-8b-8192`, 'llama3-70b-8192', `mixtral-8x7b-32768`, `gemma-7b-it`];
+        const supportModels = [`gemma2-9b-it`, `gemma-7b-it`, `llama-3.1-70b-versatile`, `llama-3.1-8b-instant`, `llama3-70b-8192`, `llama3-8b-8192`, `llama3-groq-70b-8192-tool-use-preview`, `llama3-groq-8b-8192-tool-use-preview`];
         parseAssert('GROQ_MODEL', supportModels.includes(model), 'Invalid model type of Groq');
         return model;
     },
