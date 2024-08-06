@@ -13,6 +13,7 @@ import { HuggingFaceService } from '../services/ai/hugging-face.service.js';
 import { MistralService } from '../services/ai/mistral.service.js';
 import { OllamaService } from '../services/ai/ollama.service.js';
 import { OpenAIService } from '../services/ai/openai.service.js';
+import { PerplexityService } from '../services/ai/perplexity.js';
 import { ValidConfig } from '../utils/config.js';
 import { StagedDiff } from '../utils/git.js';
 
@@ -57,6 +58,8 @@ export class AIRequestManager {
                         return AIServiceFactory.create(CohereService, params).generateCommitMessage$();
                     case AIType.GROQ:
                         return AIServiceFactory.create(GroqService, params).generateCommitMessage$();
+                    case AIType.PERPLEXITY:
+                        return AIServiceFactory.create(PerplexityService, params).generateCommitMessage$();
                     default:
                         const prefixError = chalk.red.bold(`[${ai}]`);
                         return of({
