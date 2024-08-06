@@ -1,3 +1,10 @@
+## [1.12.5](https://github.com/tak-bro/aicommit2/compare/v1.12.4...v1.12.5) (2024-08-06)
+
+
+### Bug Fixes
+
+* **config:** update major models ([eabf16e](https://github.com/tak-bro/aicommit2/commit/eabf16ede721f8db2cc674bb5f29b56085f5e1a3))
+
 ## [1.12.4](https://github.com/tak-bro/aicommit2/compare/v1.12.3...v1.12.4) (2024-08-01)
 
 ## [1.12.3](https://github.com/tak-bro/aicommit2/compare/v1.12.2...v1.12.3) (2024-07-18)
