@@ -25,8 +25,8 @@ export class OpenAIService extends AIService {
             map(data => ({
                 name: `${this.serviceName} ${data.title}`,
                 short: data.title,
-                value: data.value,
-                description: data.value,
+                value: this.params.config.ignoreBody ? data.title : data.value,
+                description: this.params.config.ignoreBody ? '' : data.value,
                 isError: false,
             })),
             catchError(this.handleError$)
@@ -93,6 +93,6 @@ export class OpenAIService extends AIService {
             proxy
         );
 
-        return flattenDeep(results.map(value => this.parseMessage(value, type, generate, this.params.config.ignoreBody)));
+        return flattenDeep(results.map(value => this.parseMessage(value, type, generate)));
     }
 }

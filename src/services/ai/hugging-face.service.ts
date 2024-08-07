@@ -80,10 +80,10 @@ export class HuggingFaceService extends AIService {
         return fromPromise(this.generateMessage()).pipe(
             concatMap(messages => from(messages)),
             map(data => ({
-                name: `${this.serviceName} ${data.title}`,
+                name: `${this.serviceName} ${this.params.config.ignoreBody} ${data.title}`,
                 short: data.title,
-                value: data.value,
-                description: data.value,
+                value: this.params.config.ignoreBody ? data.title : data.value,
+                description: this.params.config.ignoreBody ? '' : data.value,
                 isError: false,
             })),
             catchError(this.handleError$)
@@ -113,7 +113,7 @@ export class HuggingFaceService extends AIService {
             // await this.deleteConversation(conversation.id);
 
             logging && createLogResponse('HuggingFace', diff, generatedSystemPrompt, response);
-            return this.parseMessage(response, type, generate, this.params.config.ignoreBody);
+            return this.parseMessage(response, type, generate);
         } catch (error) {
             const errorAsAny = error as any;
             if (errorAsAny.code === 'ENOTFOUND') {
@@ -130,7 +130,7 @@ export class HuggingFaceService extends AIService {
      */
     private async intialize(): Promise<void> {
         const models = await this.getRemoteLlms();
-        const model = models.find(model => model.name?.toLowerCase() === this.params.config.HUGGINGFACE_MODEL.toLowerCase())!;
+        const model = models.find(model => model.name?.toLowerCase() === this.params.config.model.toLowerCase())!;
         if (model) {
             this.currentModel = model;
             this.currentModelId = model.id;

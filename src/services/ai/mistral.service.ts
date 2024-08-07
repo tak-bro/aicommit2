@@ -64,8 +64,8 @@ export class MistralService extends AIService {
             map(data => ({
                 name: `${this.serviceName} ${data.title}`,
                 short: data.title,
-                value: data.value,
-                description: data.value,
+                value: this.params.config.ignoreBody ? data.title : data.value,
+                description: this.params.config.ignoreBody ? '' : data.value,
                 isError: false,
             })),
             catchError(this.handleError$)
@@ -90,7 +90,7 @@ export class MistralService extends AIService {
             await this.checkAvailableModels();
             const chatResponse = await this.createChatCompletions(generatedSystemPrompt, `Here are diff: ${diff}`);
             logging && createLogResponse('MistralAI', diff, generatedSystemPrompt, chatResponse);
-            return this.parseMessage(chatResponse, this.params.config.type, generate, this.params.config.ignoreBody);
+            return this.parseMessage(chatResponse, this.params.config.type, generate);
         } catch (error) {
             const errorAsAny = error as any;
             if (errorAsAny.code === 'ENOTFOUND') {
