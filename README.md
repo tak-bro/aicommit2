@@ -132,11 +132,11 @@ aicommit2 --all # or -a
 - `--type` or `-t`: Git commit message format (default: **conventional**). It supports [`conventional`](https://conventionalcommits.org/) and [`gitmoji`](https://gitmoji.dev/)
 - `--confirm` or `-y`: Skip confirmation when committing after message generation (default: **false**)
 - `--clipboard` or `-c`: Copy the selected message to the clipboard (default: **false**).
-  - > If you give this option, **_aicommit2_ will not commit**.
+  - If you give this option, **_aicommit2_ will not commit**.
 - `--generate` or `-g`: Number of messages to generate (Warning: generating multiple costs more) (default: **1**)
-  - > Warning: This uses more tokens, meaning it costs more.
+  - **Warning**: This uses more tokens, meaning it costs more.
 - `--prompt` or `-p`: System prompt for fine-tuning
-  - > Warning: This option is **not recommended**. Please use `systemPrompt` or `systemPromptPath` for each model.
+  - **Warning**: This option is **not recommended**. Please use `systemPrompt` or `systemPromptPath` for each model.
 
 Example:
 ```sh
@@ -245,7 +245,7 @@ Please check the documentation for each specific model to confirm which settings
 aicommit2 config set systemPrompt="Generate git commit message."
 ```
 
-> `systemPrompt` takes precedence over `SystemPromptPath` and does not apply at the same time.
+> `systemPrompt` takes precedence over `systemPromptPath` and does not apply at the same time.
 
 ##### systemPromptPath
 - Allow users to specify a custom file path for their own system prompt template
@@ -723,14 +723,17 @@ npm update -g aicommit2
 
 ## Custom Prompt Template
 
-_aicommit2_ supports custom prompt templates through the `promptPath` option. This feature allows you to define your own prompt structure, giving you more control over the commit message generation process.
+_aicommit2_ supports custom prompt templates through the `systemPromptPath` option. This feature allows you to define your own prompt structure, giving you more control over the commit message generation process.
 
-### Using the promptPath Option
+### Using the systemPromptPath Option
 To use a custom prompt template, specify the path to your template file when running the tool:
+
 ```
 aicommit2 config set systemPromptPath="/path/to/user/prompt.txt"
 aicommit2 config set OPENAI.systemPromptPath="/path/to/another-prompt.txt"
 ```
+
+> For the above command, OpenAI uses the prompt in the `another-prompt.txt` file, and the rest of the model uses `prompt.txt`.
 
 ### Template Format
 
@@ -759,7 +762,7 @@ Remember to follow these guidelines:
 
 #### Appended Text
 
-Please note that the following text will always be appended to the end of your custom prompt:
+Please note that the following text will **always** be appended to the end of your custom prompt:
 
 ```
 Provide your response as a JSON array containing exactly {generate} objects, each with the following keys:
@@ -805,10 +808,10 @@ OLLAMA_MAX_LOADED_MODELS=3 ollama serve
 
 ##### 2. Configuring _aicommit2_
 
-Next, set up _aicommit2_ to specify multiple models. You can assign a list of models, separated by **commas(`,`)**, to the OLLAMA_MODEL environment variable. Here's how you do it:
+Next, set up _aicommit2_ to specify multiple models. You can assign a list of models, separated by **commas(`,`)**, to the OLLAMA.model environment variable. Here's how you do it:
 
 ```shell
-aicommit2 config set OLLAMA_MODEL="mistral,dolphin-llama3"
+aicommit2 config set OLLAMA.model="mistral,dolphin-llama3"
 ```
 
 With this command, _aicommit2_ is instructed to utilize both the "mistral" and "dolphin-llama3" models when making requests to the Ollama server.
