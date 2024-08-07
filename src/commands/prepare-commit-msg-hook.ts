@@ -1,11 +1,11 @@
 import fs from 'fs/promises';
+import path from 'path';
 
 import { filter, lastValueFrom, map, toArray } from 'rxjs';
 
 import { AIRequestManager } from '../managers/ai-request.manager.js';
 import { ConsoleManager } from '../managers/console.manager.js';
-import { AIType, ApiKeyName, ApiKeyNames } from '../services/ai/ai.service.js';
-import { getConfig } from '../utils/config.js';
+import { ModelName, RawConfig, getConfig, modelNames } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
 import { getStagedDiff } from '../utils/git.js';
 
@@ -31,24 +31,33 @@ export default () =>
         const consoleManager = new ConsoleManager();
         consoleManager.printTitle();
 
-        const { env } = process;
-        const config = await getConfig({
-            proxy: env.https_proxy || env.HTTPS_PROXY || env.http_proxy || env.HTTP_PROXY,
-        });
+        const config = await getConfig({});
+        if (config.systemPromptPath) {
+            try {
+                await fs.readFile(path.resolve(config.systemPromptPath), 'utf-8');
+            } catch (error) {
+                throw new KnownError(`Error reading system prompt file: ${config.systemPromptPath}`);
+            }
+        }
 
-        const availableAPIKeyNames: ApiKeyName[] = Object.entries(config)
-            .filter(([key]) => ApiKeyNames.includes(key as ApiKeyName))
+        const availableAIs: ModelName[] = Object.entries(config)
+            .filter(([key]) => modelNames.includes(key as ModelName))
+            .map(([key, value]) => [key, value] as [ModelName, RawConfig])
             .filter(([key, value]) => {
-                if (key === AIType.OLLAMA) {
-                    return !!value && (value as string[]).length > 0;
+                if (key === 'OLLAMA') {
+                    return !!value && !!value.model && (value.model as string[]).length > 0;
                 }
-                return !!value;
+                if (key === 'HUGGINGFACE') {
+                    return !!value && !!value.cookie;
+                }
+                // @ts-ignore ignore
+                return !!value.key && value.key.length > 0;
             })
-            .map(([key]) => key as ApiKeyName);
+            .map(([key]) => key);
 
-        const hasNoAvailableAIs = availableAPIKeyNames.length === 0;
+        const hasNoAvailableAIs = availableAIs.length === 0;
         if (hasNoAvailableAIs) {
-            throw new KnownError('Please set at least one API key via `aicommit2 config set OPENAI_KEY=<your token>`');
+            throw new KnownError('Please set at least one API key via the `aicommit2 config set` command');
         }
 
         const aiRequestManager = new AIRequestManager(config, staged);
@@ -56,7 +65,7 @@ export default () =>
         let messages: string[];
         try {
             messages = await lastValueFrom(
-                aiRequestManager.createAIRequests$(availableAPIKeyNames).pipe(
+                aiRequestManager.createAIRequests$(availableAIs).pipe(
                     filter(data => !data.isError),
                     map(data => data.value),
                     toArray()

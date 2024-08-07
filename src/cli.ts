@@ -59,7 +59,7 @@ cli(
             },
             prompt: {
                 type: String,
-                description: 'Additional prompt to let users fine-tune provided prompt',
+                description: 'Custom prompt to let users fine-tune provided prompt',
                 alias: 'p',
             },
         },
