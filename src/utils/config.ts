@@ -6,6 +6,7 @@ import ini from 'ini';
 
 import { KnownError } from './error.js';
 import { fileExists } from './fs.js';
+import { flattenDeep } from './utils.js';
 
 import type { TiktokenModel } from '@dqbd/tiktoken';
 
@@ -74,26 +75,15 @@ const generalConfigParsers = {
         return Number(maxTokens);
     },
     logging(enable?: string | boolean) {
-        if (!enable) {
-            return true;
-        }
         if (typeof enable === 'boolean') {
             return enable;
         }
+        if (enable === undefined || enable === null) {
+            return true;
+        }
+
         parseAssert('logging', /^(?:true|false)$/.test(enable), 'Must be a boolean(true or false)');
         return enable === 'true';
-    },
-    confirm(confirm?: string | boolean) {
-        if (!confirm) {
-            return false;
-        }
-
-        if (typeof confirm === 'boolean') {
-            return confirm;
-        }
-
-        parseAssert('confirm', /^(?:true|false)$/.test(confirm), 'Must be a boolean');
-        return confirm === 'true';
     },
     locale(locale?: string) {
         if (!locale) {
@@ -222,7 +212,6 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         },
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
-        timeout: generalConfigParsers.timeout,
         temperature: generalConfigParsers.temperature,
         maxTokens: generalConfigParsers.maxTokens,
         logging: generalConfigParsers.logging,
@@ -251,7 +240,6 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         },
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
-        timeout: generalConfigParsers.timeout,
         temperature: generalConfigParsers.temperature,
         maxTokens: generalConfigParsers.maxTokens,
         logging: generalConfigParsers.logging,
@@ -337,8 +325,6 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
             parseAssert('OLLAMA.host', /^https?:\/\//.test(host), 'Must be a valid URL');
             return host;
         },
-        systemPrompt: generalConfigParsers.systemPrompt,
-        systemPromptPath: generalConfigParsers.systemPromptPath,
         timeout: (timeout?: string) => {
             if (!timeout) {
                 return 100_000;
@@ -350,8 +336,9 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
             parseAssert('OLLAMA.timeout', parsed >= 500, 'Must be greater than 500ms');
             return parsed;
         },
+        systemPrompt: generalConfigParsers.systemPrompt,
+        systemPromptPath: generalConfigParsers.systemPromptPath,
         temperature: generalConfigParsers.temperature,
-        maxTokens: generalConfigParsers.maxTokens,
         logging: generalConfigParsers.logging,
         locale: generalConfigParsers.locale,
         generate: generalConfigParsers.generate,
@@ -371,7 +358,6 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         },
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
-        timeout: generalConfigParsers.timeout,
         temperature: generalConfigParsers.temperature,
         maxTokens: generalConfigParsers.maxTokens,
         logging: generalConfigParsers.logging,
@@ -555,6 +541,31 @@ export const setConfigs = async (keyValues: [key: string, value: any][]) => {
             }
             // @ts-ignore ignore
             config[key] = parser(value);
+        }
+    }
+
+    await fs.writeFile(configPath, ini.stringify(config), 'utf8');
+};
+
+export const addConfigs = async (keyValues: [key: string, value: any][]) => {
+    const config = await readConfigFile();
+
+    for (const [key, value] of keyValues) {
+        const [modelName, modelKey] = key.split('.');
+
+        if (modelName in modelConfigParsers) {
+            if (!config[modelName]) {
+                config[modelName] = {};
+            }
+            const isOllamaModel = modelName === 'OLLAMA' && modelKey === 'model';
+            const parser = modelConfigParsers[modelName as ModelName][modelKey];
+            if (!parser || !isOllamaModel) {
+                throw new KnownError(`Invalid config property: ${key}. Only supports OLLAMA.model`);
+            }
+            const originModels = (config[modelName] as Record<string, any>)[modelKey] || [];
+            (config[modelName] as Record<string, any>)[modelKey] = flattenDeep([...originModels, parser(value)]);
+        } else {
+            throw new KnownError(`Invalid config property: ${key}. Only supports OLLAMA.model`);
         }
     }
 

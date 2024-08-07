@@ -62,7 +62,7 @@ export class GeminiService extends AIService {
                 },
             });
             const result = await model.generateContent(`Here are diff: ${diff}`);
-            const response = await result.response;
+            const response = result.response;
             const completion = response.text();
 
             logging && createLogResponse('Gemini', diff, generatedSystemPrompt, completion);

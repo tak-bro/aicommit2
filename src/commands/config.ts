@@ -1,7 +1,7 @@
 import { command } from 'cleye';
 
 import { ConsoleManager } from '../managers/console.manager.js';
-import { ModelName, getConfig, hasOwn, modelNames, setConfigs } from '../utils/config.js';
+import { ModelName, addConfigs, getConfig, hasOwn, modelNames, setConfigs } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
 
 export default command(
@@ -31,6 +31,11 @@ export default command(
 
             if (mode === 'set') {
                 await setConfigs(keyValues.map(keyValue => keyValue.split('=') as [string, string]));
+                return;
+            }
+
+            if (mode === 'add') {
+                await addConfigs(keyValues.map(keyValue => keyValue.split('=') as [string, string]));
                 return;
             }
 

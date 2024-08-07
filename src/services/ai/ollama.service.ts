@@ -100,7 +100,7 @@ export class OllamaService extends AIService {
             const response = await new HttpRequestBuilder({
                 method: 'GET',
                 baseURL: `${this.host}`,
-                timeout: this.params.config.OLLAMA_TIMEOUT,
+                timeout: this.params.config.timeout,
             }).execute();
 
             return response.data;
