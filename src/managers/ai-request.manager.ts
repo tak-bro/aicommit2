@@ -3,7 +3,6 @@ import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Observable, catchError, from, mergeMap, of } from 'rxjs';
 
 import { AIServiceFactory } from '../services/ai/ai-service.factory.js';
-import { AIServiceParams, AIType, ApiKeyName } from '../services/ai/ai.service.js';
 import { AnthropicService } from '../services/ai/anthropic.service.js';
 import { CodestralService } from '../services/ai/codestral.service.js';
 import { CohereService } from '../services/ai/cohere.service.js';
@@ -14,7 +13,7 @@ import { MistralService } from '../services/ai/mistral.service.js';
 import { OllamaService } from '../services/ai/ollama.service.js';
 import { OpenAIService } from '../services/ai/openai.service.js';
 import { PerplexityService } from '../services/ai/perplexity.js';
-import { ValidConfig } from '../utils/config.js';
+import { ModelName, ValidConfig } from '../utils/config.js';
 import { StagedDiff } from '../utils/git.js';
 
 export class AIRequestManager {
@@ -23,43 +22,74 @@ export class AIRequestManager {
         private readonly stagedDiff: StagedDiff
     ) {}
 
-    createAIRequests$(availableKeyNames: ApiKeyName[]): Observable<ReactiveListChoice> {
-        return from(availableKeyNames).pipe(
+    createAIRequests$(modelNames: ModelName[]): Observable<ReactiveListChoice> {
+        return from(modelNames).pipe(
             mergeMap(ai => {
-                const params: AIServiceParams = {
-                    config: this.config,
-                    stagedDiff: this.stagedDiff,
-                    keyName: ai,
-                };
                 switch (ai) {
-                    case AIType.OPEN_AI:
-                        return AIServiceFactory.create(OpenAIService, params).generateCommitMessage$();
-                    case AIType.GEMINI:
-                        return AIServiceFactory.create(GeminiService, params).generateCommitMessage$();
-                    case AIType.ANTHROPIC:
-                        return AIServiceFactory.create(AnthropicService, params).generateCommitMessage$();
-                    case AIType.HUGGINGFACE:
-                        return AIServiceFactory.create(HuggingFaceService, params).generateCommitMessage$();
-                    case AIType.MISTRAL:
-                        return AIServiceFactory.create(MistralService, params).generateCommitMessage$();
-                    case AIType.CODESTRAL:
-                        return AIServiceFactory.create(CodestralService, params).generateCommitMessage$();
-                    case AIType.OLLAMA:
-                        return from(this.config.OLLAMA_MODEL).pipe(
+                    case 'OPENAI':
+                        return AIServiceFactory.create(OpenAIService, {
+                            config: this.config.OPENAI,
+                            stagedDiff: this.stagedDiff,
+                            keyName: ai,
+                        }).generateCommitMessage$();
+                    case 'GEMINI':
+                        return AIServiceFactory.create(GeminiService, {
+                            config: this.config.GEMINI,
+                            stagedDiff: this.stagedDiff,
+                            keyName: ai,
+                        }).generateCommitMessage$();
+                    case 'ANTHROPIC':
+                        return AIServiceFactory.create(AnthropicService, {
+                            config: this.config.ANTHROPIC,
+                            stagedDiff: this.stagedDiff,
+                            keyName: ai,
+                        }).generateCommitMessage$();
+                    case 'HUGGINGFACE':
+                        return AIServiceFactory.create(HuggingFaceService, {
+                            config: this.config.HUGGINGFACE,
+                            stagedDiff: this.stagedDiff,
+                            keyName: ai,
+                        }).generateCommitMessage$();
+                    case 'MISTRAL':
+                        return AIServiceFactory.create(MistralService, {
+                            config: this.config.MISTRAL,
+                            stagedDiff: this.stagedDiff,
+                            keyName: ai,
+                        }).generateCommitMessage$();
+                    case 'CODESTRAL':
+                        return AIServiceFactory.create(CodestralService, {
+                            config: this.config.CODESTRAL,
+                            stagedDiff: this.stagedDiff,
+                            keyName: ai,
+                        }).generateCommitMessage$();
+                    case 'OLLAMA':
+                        return from(this.config.OLLAMA.model).pipe(
                             mergeMap(model => {
-                                const ollamaParams = {
-                                    ...params,
-                                    keyName: model,
-                                } as AIServiceParams;
-                                return AIServiceFactory.create(OllamaService, ollamaParams).generateCommitMessage$();
+                                return AIServiceFactory.create(OllamaService, {
+                                    config: this.config.OLLAMA,
+                                    keyName: model as ModelName,
+                                    stagedDiff: this.stagedDiff,
+                                }).generateCommitMessage$();
                             })
                         );
-                    case AIType.COHERE:
-                        return AIServiceFactory.create(CohereService, params).generateCommitMessage$();
-                    case AIType.GROQ:
-                        return AIServiceFactory.create(GroqService, params).generateCommitMessage$();
-                    case AIType.PERPLEXITY:
-                        return AIServiceFactory.create(PerplexityService, params).generateCommitMessage$();
+                    case 'COHERE':
+                        return AIServiceFactory.create(CohereService, {
+                            config: this.config.COHERE,
+                            stagedDiff: this.stagedDiff,
+                            keyName: ai,
+                        }).generateCommitMessage$();
+                    case 'GROQ':
+                        return AIServiceFactory.create(GroqService, {
+                            config: this.config.GROQ,
+                            stagedDiff: this.stagedDiff,
+                            keyName: ai,
+                        }).generateCommitMessage$();
+                    case 'PERPLEXITY':
+                        return AIServiceFactory.create(PerplexityService, {
+                            config: this.config.PERPLEXITY,
+                            stagedDiff: this.stagedDiff,
+                            keyName: ai,
+                        }).generateCommitMessage$();
                     default:
                         const prefixError = chalk.red.bold(`[${ai}]`);
                         return of({

@@ -5,6 +5,8 @@ import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIService, AIServiceError, AIServiceParams, CommitMessage } from './ai.service.js';
 import { generateCommitMessage } from '../../utils/openai.js';
+import { DEFAULT_PROMPT_OPTIONS, PromptOptions, generatePrompt } from '../../utils/prompt.js';
+import { flattenDeep } from '../../utils/utils.js';
 
 export class OpenAIService extends AIService {
     constructor(private readonly params: AIServiceParams) {
@@ -22,6 +24,7 @@ export class OpenAIService extends AIService {
             concatMap(messages => from(messages)),
             map(data => ({
                 name: `${this.serviceName} ${data.title}`,
+                short: data.title,
                 value: data.value,
                 description: data.value,
                 isError: false,
@@ -60,27 +63,36 @@ export class OpenAIService extends AIService {
 
     private async generateMessage(): Promise<CommitMessage[]> {
         const diff = this.params.stagedDiff.diff;
-        const { locale, generate, type } = this.params.config;
-        const maxLength = this.params.config['max-length'];
-
-        const fullText = await generateCommitMessage(
-            this.params.config.OPENAI_URL,
-            this.params.config.OPENAI_PATH,
-            this.params.config.OPENAI_KEY,
-            this.params.config.OPENAI_MODEL,
+        const { systemPrompt, systemPromptPath, temperature, logging, locale, generate, type, maxLength, proxy, maxTokens, timeout } =
+            this.params.config;
+        const promptOptions: PromptOptions = {
+            ...DEFAULT_PROMPT_OPTIONS,
             locale,
-            diff,
-            generate,
             maxLength,
             type,
-            this.params.config.timeout,
-            this.params.config['max-tokens'],
-            this.params.config.temperature,
-            this.params.config.prompt,
-            this.params.config.logging,
-            this.params.config.proxy
+            generate,
+            systemPrompt,
+            systemPromptPath,
+        };
+        const generatedSystemPrompt = generatePrompt(promptOptions);
+
+        const results = await generateCommitMessage(
+            this.params.config.url,
+            this.params.config.path,
+            this.params.config.key,
+            this.params.config.model,
+            locale,
+            `Here are diff: ${diff}`,
+            generate,
+            type,
+            timeout,
+            maxTokens,
+            temperature,
+            generatedSystemPrompt,
+            logging,
+            proxy
         );
 
-        return this.sanitizeMessage(fullText, this.params.config.type, generate, this.params.config.ignoreBody);
+        return flattenDeep(results.map(value => this.parseMessage(value, type, generate, this.params.config.ignoreBody)));
     }
 }

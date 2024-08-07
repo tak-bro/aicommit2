@@ -28,7 +28,7 @@ export class AnthropicService extends AIService {
         };
         this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold('[Anthropic]');
         this.errorPrefix = chalk.red.bold(`[Anthropic]`);
-        this.anthropic = new Anthropic({ apiKey: this.params.config.ANTHROPIC_KEY });
+        this.anthropic = new Anthropic({ apiKey: this.params.config.key });
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
@@ -36,6 +36,7 @@ export class AnthropicService extends AIService {
             concatMap(messages => from(messages)),
             map(data => ({
                 name: `${this.serviceName} ${data.title}`,
+                short: data.title,
                 value: data.value,
                 description: data.value,
                 isError: false,
@@ -47,8 +48,7 @@ export class AnthropicService extends AIService {
     private async generateMessage(): Promise<CommitMessage[]> {
         try {
             const diff = this.params.stagedDiff.diff;
-            const { locale, generate, type, promptPath, logging } = this.params.config;
-            const maxLength = this.params.config['max-length'];
+            const { systemPrompt, systemPromptPath, logging, temperature, locale, generate, type, maxLength } = this.params.config;
 
             const promptOptions: PromptOptions = {
                 ...DEFAULT_PROMPT_OPTIONS,
@@ -56,27 +56,27 @@ export class AnthropicService extends AIService {
                 maxLength,
                 type,
                 generate,
-                promptPath: promptPath,
+                systemPrompt,
+                systemPromptPath,
             };
-            const defaultPrompt = generatePrompt(promptOptions);
-            const systemPrompt = `${defaultPrompt}`;
+            const generatedSystemPrompt = generatePrompt(promptOptions);
 
             const params: Anthropic.MessageCreateParams = {
-                max_tokens: this.params.config['max-tokens'],
-                temperature: this.params.config.temperature,
-                system: systemPrompt,
+                max_tokens: this.params.config.maxTokens,
+                temperature: temperature,
+                system: generatedSystemPrompt,
                 messages: [
                     {
                         role: 'user',
                         content: `Here are diff: ${diff}`,
                     },
                 ],
-                model: this.params.config.ANTHROPIC_MODEL,
+                model: this.params.config.model,
             };
             const result: Anthropic.Message = await this.anthropic.messages.create(params);
             const completion = result.content.map(({ text }) => text).join('');
-            logging && createLogResponse('Anthropic', diff, systemPrompt, completion);
-            return this.sanitizeMessage(completion, this.params.config.type, generate, this.params.config.ignoreBody);
+            logging && createLogResponse('Anthropic', diff, generatedSystemPrompt, completion);
+            return this.parseMessage(completion, type, generate, this.params.config.ignoreBody);
         } catch (error) {
             const errorAsAny = error as any;
             if (errorAsAny.code === 'ENOTFOUND') {

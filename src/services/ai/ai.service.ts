@@ -1,9 +1,8 @@
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Observable, of } from 'rxjs';
 
-import { CommitType, ValidConfig } from '../../utils/config.js';
+import { CommitType, ModelConfig, ModelName } from '../../utils/config.js';
 import { StagedDiff } from '../../utils/git.js';
-import { DEFAULT_PROMPT_OPTIONS, PromptOptions, generatePrompt } from '../../utils/prompt.js';
 
 // NOTE: get AI Type from key names
 export const AIType = {
@@ -33,9 +32,9 @@ export interface RawCommitMessage {
 }
 
 export interface AIServiceParams {
-    config: ValidConfig;
+    config: ModelConfig<ModelName>;
     stagedDiff: StagedDiff;
-    keyName: ApiKeyName;
+    keyName: ModelName;
 }
 
 export interface AIServiceError extends Error {
@@ -62,19 +61,6 @@ export abstract class AIService {
 
     abstract generateCommitMessage$(): Observable<ReactiveListChoice>;
 
-    protected buildPrompt(locale: string, diff: string, generate: number, maxLength: number, type: CommitType, promptPath: string) {
-        const promptOption: PromptOptions = {
-            ...DEFAULT_PROMPT_OPTIONS,
-            locale,
-            maxLength,
-            type,
-            generate,
-            promptPath,
-        };
-        const defaultPrompt = generatePrompt(promptOption);
-        return `${defaultPrompt}}\nHere are diff: \n${diff}`;
-    }
-
     protected handleError$ = (error: AIServiceError): Observable<ReactiveListChoice> => {
         let simpleMessage = 'An error occurred';
         if (error.message) {
@@ -88,10 +74,10 @@ export abstract class AIService {
         });
     };
 
-    protected sanitizeMessage(generatedText: string, type: CommitType, maxCount: number, ignoreBody: boolean): CommitMessage[] {
+    protected parseMessage(generatedText: string, type: CommitType, maxCount: number, ignoreBody: boolean): CommitMessage[] {
         try {
             const commitMessages: RawCommitMessage[] = JSON.parse(generatedText);
-            const filtedMessages = commitMessages
+            const filteredMessages = commitMessages
                 .map(data => this.extractMessageAsType(data, type))
                 .map((data: RawCommitMessage) => {
                     if (ignoreBody) {
@@ -106,10 +92,10 @@ export abstract class AIService {
                     };
                 });
 
-            if (filtedMessages.length > maxCount) {
-                return filtedMessages.slice(0, maxCount);
+            if (filteredMessages.length > maxCount) {
+                return filteredMessages.slice(0, maxCount);
             }
-            return filtedMessages;
+            return filteredMessages;
         } catch (error) {
             const jsonPattern = /\[[\s\S]*?\]/;
             try {
@@ -120,7 +106,7 @@ export abstract class AIService {
                 }
                 const jsonStr = jsonMatch[0];
                 const commitMessages: RawCommitMessage[] = JSON.parse(jsonStr);
-                const filtedMessages = commitMessages
+                const filteredessages = commitMessages
                     .map(data => this.extractMessageAsType(data, type))
                     .map((data: RawCommitMessage) => {
                         if (ignoreBody) {
@@ -135,10 +121,10 @@ export abstract class AIService {
                         };
                     });
 
-                if (filtedMessages.length > maxCount) {
-                    return filtedMessages.slice(0, maxCount);
+                if (filteredessages.length > maxCount) {
+                    return filteredessages.slice(0, maxCount);
                 }
-                return filtedMessages;
+                return filteredessages;
             } catch (e) {
                 // Error parsing JSON
                 return [];

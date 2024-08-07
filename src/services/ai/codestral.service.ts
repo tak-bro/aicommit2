@@ -8,6 +8,7 @@ import { AIService, AIServiceError, AIServiceParams, CommitMessage } from './ai.
 import { CreateChatCompletionsResponse } from './mistral.service.js';
 import { KnownError } from '../../utils/error.js';
 import { createLogResponse } from '../../utils/log.js';
+import { DEFAULT_PROMPT_OPTIONS, PromptOptions, generatePrompt } from '../../utils/prompt.js';
 import { getRandomNumber } from '../../utils/utils.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
 export interface CodestralServiceError extends AIServiceError {}
@@ -15,6 +16,7 @@ export interface CodestralServiceError extends AIServiceError {}
 export class CodestralService extends AIService {
     private host = 'https://codestral.mistral.ai';
     private apiKey = '';
+
     constructor(private readonly params: AIServiceParams) {
         super(params);
         this.colors = {
@@ -23,13 +25,15 @@ export class CodestralService extends AIService {
         };
         this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold(`[Codestral]`);
         this.errorPrefix = chalk.red.bold(`[Codestral]`);
-        this.apiKey = this.params.config.CODESTRAL_KEY;
+        this.apiKey = this.params.config.key;
     }
+
     generateCommitMessage$(): Observable<ReactiveListChoice> {
         return fromPromise(this.generateMessage()).pipe(
             concatMap(messages => from(messages)),
             map(data => ({
                 name: `${this.serviceName} ${data.title}`,
+                short: data.title,
                 value: data.value,
                 description: data.value,
                 isError: false,
@@ -40,13 +44,21 @@ export class CodestralService extends AIService {
     private async generateMessage(): Promise<CommitMessage[]> {
         try {
             const diff = this.params.stagedDiff.diff;
-            const { locale, generate, type, promptPath, logging } = this.params.config;
-            const maxLength = this.params.config['max-length'];
-            const prompt = this.buildPrompt(locale, diff, generate, maxLength, type, promptPath);
+            const { systemPrompt, systemPromptPath, logging, locale, generate, type, maxLength } = this.params.config;
+            const promptOptions: PromptOptions = {
+                ...DEFAULT_PROMPT_OPTIONS,
+                locale,
+                maxLength,
+                type,
+                generate,
+                systemPrompt,
+                systemPromptPath,
+            };
+            const generatedSystemPrompt = generatePrompt(promptOptions);
             this.checkAvailableModels();
-            const chatResponse = await this.createChatCompletions(prompt);
-            logging && createLogResponse('Codestral', diff, prompt, chatResponse);
-            return this.sanitizeMessage(chatResponse, this.params.config.type, generate, this.params.config.ignoreBody);
+            const chatResponse = await this.createChatCompletions(generatedSystemPrompt);
+            logging && createLogResponse('Codestral', diff, generatedSystemPrompt, chatResponse);
+            return this.parseMessage(chatResponse, type, generate, this.params.config.ignoreBody);
         } catch (error) {
             const errorAsAny = error as any;
             if (errorAsAny.code === 'ENOTFOUND') {
@@ -55,6 +67,7 @@ export class CodestralService extends AIService {
             throw errorAsAny;
         }
     }
+
     handleError$ = (error: CodestralServiceError) => {
         const simpleMessage = error.message?.replace(/(\r\n|\n|\r)/gm, '') || 'An error occurred';
         return of({
@@ -64,15 +77,17 @@ export class CodestralService extends AIService {
             disabled: true,
         });
     };
+
     private checkAvailableModels() {
         const supportModels = ['codestral-latest', 'codestral-2405'];
 
-        if (supportModels.includes(this.params.config.CODESTRAL_MODEL)) {
+        if (supportModels.includes(this.params.config.model)) {
             return true;
         }
         throw new Error(`Invalid model type of Codestral AI`);
     }
-    private async createChatCompletions(prompt: string) {
+
+    private async createChatCompletions(systemPrompt: string) {
         const response: AxiosResponse<CreateChatCompletionsResponse> = await new HttpRequestBuilder({
             method: 'POST',
             baseURL: `${this.host}/v1/chat/completions`,
@@ -83,16 +98,20 @@ export class CodestralService extends AIService {
                 'content-type': 'application/json',
             })
             .setBody({
-                model: this.params.config.CODESTRAL_MODEL,
+                model: this.params.config.model,
                 messages: [
                     {
+                        role: 'system',
+                        content: systemPrompt,
+                    },
+                    {
                         role: 'user',
-                        content: prompt,
+                        content: `Here are diff: ${this.params.stagedDiff.diff}`,
                     },
                 ],
                 temperature: this.params.config.temperature,
                 top_p: 1,
-                max_tokens: this.params.config['max-tokens'],
+                max_tokens: this.params.config.maxTokens,
                 stream: false,
                 safe_prompt: false,
                 random_seed: getRandomNumber(10, 1000),

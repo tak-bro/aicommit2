@@ -8,7 +8,8 @@ export interface PromptOptions {
     maxLength: number;
     type: CommitType;
     generate: number;
-    promptPath?: string;
+    systemPromptPath?: string;
+    systemPrompt?: string;
 }
 
 export const DEFAULT_PROMPT_OPTIONS: PromptOptions = {
@@ -16,7 +17,8 @@ export const DEFAULT_PROMPT_OPTIONS: PromptOptions = {
     maxLength: 50,
     type: 'conventional',
     generate: 1,
-    promptPath: '',
+    systemPrompt: '',
+    systemPromptPath: '',
 };
 
 const MAX_COMMIT_LENGTH = 80;
@@ -226,14 +228,18 @@ const finalPrompt = (type: CommitType, generate: number) => {
 };
 
 export const generatePrompt = (promptOptions: PromptOptions) => {
-    const { type, generate, promptPath } = promptOptions;
-    if (!promptPath) {
+    const { systemPrompt, systemPromptPath, type, generate } = promptOptions;
+    if (systemPrompt) {
+        return `${systemPrompt}\n${finalPrompt(type, generate)}`;
+    }
+
+    if (!systemPromptPath) {
         return `${defaultPrompt(promptOptions)}\n${finalPrompt(type, generate)}`;
     }
 
     try {
-        const userTemplate = fs.readFileSync(path.resolve(promptPath), 'utf-8');
-        return `${parseTemplate(userTemplate, promptOptions)}\n${finalPrompt(type, generate)}`;
+        const systemPromptTemplate = fs.readFileSync(path.resolve(systemPromptPath), 'utf-8');
+        return `${parseTemplate(systemPromptTemplate, promptOptions)}\n${finalPrompt(type, generate)}`;
     } catch (error) {
         return `${defaultPrompt(promptOptions)}\n${finalPrompt(type, generate)}`;
     }
