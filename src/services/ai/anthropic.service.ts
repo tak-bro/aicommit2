@@ -37,8 +37,8 @@ export class AnthropicService extends AIService {
             map(data => ({
                 name: `${this.serviceName} ${data.title}`,
                 short: data.title,
-                value: data.value,
-                description: data.value,
+                value: this.params.config.ignoreBody ? data.title : data.value,
+                description: this.params.config.ignoreBody ? '' : data.value,
                 isError: false,
             })),
             catchError(this.handleError$)
@@ -76,7 +76,7 @@ export class AnthropicService extends AIService {
             const result: Anthropic.Message = await this.anthropic.messages.create(params);
             const completion = result.content.map(({ text }) => text).join('');
             logging && createLogResponse('Anthropic', diff, generatedSystemPrompt, completion);
-            return this.parseMessage(completion, type, generate, this.params.config.ignoreBody);
+            return this.parseMessage(completion, type, generate);
         } catch (error) {
             const errorAsAny = error as any;
             if (errorAsAny.code === 'ENOTFOUND') {

@@ -4,22 +4,6 @@ import { Observable, of } from 'rxjs';
 import { CommitType, ModelConfig, ModelName } from '../../utils/config.js';
 import { StagedDiff } from '../../utils/git.js';
 
-// NOTE: get AI Type from key names
-export const AIType = {
-    OPEN_AI: 'OPENAI_KEY',
-    GEMINI: 'GEMINI_KEY',
-    ANTHROPIC: 'ANTHROPIC_KEY',
-    HUGGINGFACE: 'HUGGINGFACE_COOKIE',
-    MISTRAL: 'MISTRAL_KEY',
-    CODESTRAL: 'CODESTRAL_KEY',
-    OLLAMA: 'OLLAMA_MODEL',
-    COHERE: 'COHERE_KEY',
-    GROQ: 'GROQ_KEY',
-    PERPLEXITY: 'PERPLEXITY_KEY',
-} as const;
-export type ApiKeyName = (typeof AIType)[keyof typeof AIType];
-export const ApiKeyNames: ApiKeyName[] = Object.values(AIType).map(value => value);
-
 export interface CommitMessage {
     title: string;
     value: string;
@@ -74,18 +58,12 @@ export abstract class AIService {
         });
     };
 
-    protected parseMessage(generatedText: string, type: CommitType, maxCount: number, ignoreBody: boolean): CommitMessage[] {
+    protected parseMessage(generatedText: string, type: CommitType, maxCount: number): CommitMessage[] {
         try {
             const commitMessages: RawCommitMessage[] = JSON.parse(generatedText);
             const filteredMessages = commitMessages
                 .map(data => this.extractMessageAsType(data, type))
                 .map((data: RawCommitMessage) => {
-                    if (ignoreBody) {
-                        return {
-                            title: `${data.subject}`,
-                            value: `${data.subject}`,
-                        };
-                    }
                     return {
                         title: `${data.subject}`,
                         value: `${data.subject}${data.body ? `\n\n${data.body}` : ''}${data.footer ? `\n\n${data.footer}` : ''}`,
@@ -109,12 +87,6 @@ export abstract class AIService {
                 const filteredessages = commitMessages
                     .map(data => this.extractMessageAsType(data, type))
                     .map((data: RawCommitMessage) => {
-                        if (ignoreBody) {
-                            return {
-                                title: `${data.subject}`,
-                                value: `${data.subject}`,
-                            };
-                        }
                         return {
                             title: `${data.subject}`,
                             value: `${data.subject}${data.body ? `\n\n${data.body}` : ''}${data.footer ? `\n\n${data.footer}` : ''}`,

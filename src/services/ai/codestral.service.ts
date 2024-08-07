@@ -32,10 +32,10 @@ export class CodestralService extends AIService {
         return fromPromise(this.generateMessage()).pipe(
             concatMap(messages => from(messages)),
             map(data => ({
-                name: `${this.serviceName} ${data.title}`,
+                name: `${this.serviceName} ${this.params.config.ignoreBody} ${data.title}`,
                 short: data.title,
-                value: data.value,
-                description: data.value,
+                value: this.params.config.ignoreBody ? data.title : data.value,
+                description: this.params.config.ignoreBody ? '' : data.value,
                 isError: false,
             })),
             catchError(this.handleError$)
@@ -58,7 +58,7 @@ export class CodestralService extends AIService {
             this.checkAvailableModels();
             const chatResponse = await this.createChatCompletions(generatedSystemPrompt);
             logging && createLogResponse('Codestral', diff, generatedSystemPrompt, chatResponse);
-            return this.parseMessage(chatResponse, type, generate, this.params.config.ignoreBody);
+            return this.parseMessage(chatResponse, type, generate);
         } catch (error) {
             const errorAsAny = error as any;
             if (errorAsAny.code === 'ENOTFOUND') {

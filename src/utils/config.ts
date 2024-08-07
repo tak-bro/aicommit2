@@ -143,11 +143,12 @@ const generalConfigParsers = {
         return parsed;
     },
     ignoreBody(ignore?: string | boolean) {
-        if (!ignore) {
-            return true;
-        }
         if (typeof ignore === 'boolean') {
             return ignore;
+        }
+
+        if (ignore === undefined || ignore === null) {
+            return true;
         }
 
         parseAssert('ignoreBody', /^(?:true|false)$/.test(ignore), 'Must be a boolean(true or false)');
