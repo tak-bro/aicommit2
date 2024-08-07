@@ -112,10 +112,10 @@ export class MistralService extends AIService {
 
     private async checkAvailableModels() {
         const availableModels = await this.getAvailableModels();
-        if (availableModels.includes(this.params.config.MISTRAL_MODEL)) {
+        if (availableModels.includes(this.params.config.model)) {
             return true;
         }
-        throw new Error(`Invalid model type of Mistral AI`);
+        throw new Error(`Invalid model type of Mistral AI: ${this.params.config.model}`);
     }
 
     private async getAvailableModels() {

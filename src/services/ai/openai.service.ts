@@ -82,7 +82,7 @@ export class OpenAIService extends AIService {
             this.params.config.key,
             this.params.config.model,
             locale,
-            `Here are diff: ${diff}`,
+            diff,
             generate,
             type,
             timeout,

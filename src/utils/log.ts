@@ -4,23 +4,23 @@ import path from 'path';
 
 import { xxh64 } from '@pacote/xxhash';
 
-import { removeTextAfterPhrase } from './utils.js';
-
 export const logPath = path.join(os.homedir(), '.aicommit2_log');
 
 const now = new Date();
 
 export const createLogResponse = (aiName: string, diff: string, prompt: string, response: string) => {
-    const title = `[${aiName} Response]`;
+    const title = `[${aiName}]`;
     const fileName = generateLogFileName(now, diff);
     const fullPath = `${logPath}/${fileName}`;
+    const systemPrompt = `- System Prompt\n${prompt}`;
+    const aiResponse = `- Response\n${response}`;
+    const diffContent = `[Git Diff]\n${diff}`;
     if (fs.existsSync(fullPath)) {
         const originData = fs.readFileSync(fullPath, 'utf-8');
-        writeFileSyncRecursive(fullPath, `${title}\n${response}\n\n${originData}`);
+        writeFileSyncRecursive(fullPath, `${title}\n${aiResponse}\n\n${systemPrompt}\n\n${originData}`);
         return;
     }
-    const removedPrompt = removeTextAfterPhrase(prompt, 'Here are diff');
-    writeFileSyncRecursive(fullPath, `${title}\n${response}\n\n\n[AICommit2 Prompt]\n${removedPrompt}\n\n\n[Git Diff]\n${diff}`);
+    writeFileSyncRecursive(fullPath, `${title}\n${aiResponse}\n\n${systemPrompt}\n\n${diffContent}`);
 };
 
 export const generateLogFileName = (date: Date, diff: string) => {
