@@ -1,6 +1,6 @@
 <div align="center">
   <div>
-    <img src="https://github.com/tak-bro/aicommit2/blob/main/img/demo_body_min.gif?raw=true" alt="AICommit2"/>
+    <img src="https://github.com/tak-bro/aicommit2/blob/main/img/demo-min.gif?raw=true" alt="AICommit2"/>
     <h1 align="center">AICommit2</h1>
   </div>
   <p>
@@ -132,7 +132,7 @@ aicommit2 --all # or -a
 - `--confirm` or `-y`: Skip confirmation when committing after message generation (default: **false**)
 - `--clipboard` or `-c`: Copy the selected message to the clipboard (default: **false**).
   - If you give this option, **_aicommit2_ will not commit**.
-- `--generate` or `-g`: Number of messages to generate (Warning: generating multiple costs more) (default: **1**)
+- `--generate` or `-g`: Number of messages to generate (default: **1**)
   - **Warning**: This uses more tokens, meaning it costs more.
 - `--prompt` or `-p`: System prompt for fine-tuning
   - **Warning**: This option is **not recommended**. Please use `systemPrompt` or `systemPromptPath` for each model.
@@ -353,7 +353,7 @@ This option determines whether the commit message includes body. If you want to 
 aicommit2 config set ignoreBody="false"
 ```
 
-![ignore_body_false](https://github.com/tak-bro/aicommit2/blob/main/img/ignore_body_false.png?raw=true)
+![ignore_body_false](https://github.com/tak-bro/aicommit2/blob/main/img/demo_body_min.gif?raw=true)
 
 
 ```sh
@@ -402,6 +402,10 @@ Default: `https://api.openai.com`
 
 The OpenAI URL. Both https and http protocols supported. It allows to run local OpenAI-compatible server.
 
+```sh
+aicommit2 config set OPENAI.url="<your-host>"
+```
+
 ##### OPENAI.path
 
 Default: `/v1/chat/completions`
@@ -449,8 +453,11 @@ Request timeout for the Ollama.
 aicommit2 config set OLLAMA.timeout=<timeout>
 ```
 
-> Ollama does not support the following options in General Settings.
-> - maxTokens
+##### Unsupported Options
+
+Ollama does not support the following options in General Settings.
+ 
+- maxTokens
 
 ### HuggingFace
 
@@ -486,8 +493,13 @@ Supported:
 aicommit2 config set HUGGINGFACE.model="mistralai/Mistral-7B-Instruct-v0.2"
 ```
 
-> Huggingface does not support the following options in General Settings.
-> - tiemout, temperature, maxTokens
+##### Unsupported Options
+
+Huggingface does not support the following options in General Settings.
+
+- maxTokens
+- timeout
+- temperature
 
 ### Gemini
 
@@ -516,8 +528,11 @@ Supported:
 aicommit2 config set GEMINI.model="gemini-1.5-flash-latest"
 ```
 
-> Gemini does not support the following options in General Settings.
-> - tiemout
+##### Unsupported Options
+
+Gemini does not support the following options in General Settings.
+
+- timeout
 
 ### Anthropic
 
@@ -546,8 +561,11 @@ Supported:
 aicommit2 config set ANTHROPIC.model=claude-instant-1.2
 ```
 
-> Anthropic does not support the following options in General Settings.
-> - tiemout
+##### Unsupported Options
+
+Anthropic does not support the following options in General Settings.
+
+- timeout
 
 ### Mistral
 
@@ -628,8 +646,11 @@ Supported models:
 aicommit2 config set COHERE.model="command-r"
 ```
 
-> Cohere does not support the following options in General Settings.
-> - tiemout
+##### Unsupported Options
+
+Cohere does not support the following options in General Settings.
+
+- timeout
 
 ### Groq
 
