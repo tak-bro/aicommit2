@@ -54,9 +54,6 @@ export default async (
             rawArgv
         );
 
-        console.log(config);
-        // throw new KnownError('Please set at least one API key via the `aicommit2 config set` command');
-
         if (config.systemPromptPath) {
             try {
                 fs.readFileSync(path.resolve(config.systemPromptPath), 'utf-8');
