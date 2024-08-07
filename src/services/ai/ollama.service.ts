@@ -39,7 +39,7 @@ export class OllamaService extends AIService {
         return fromPromise(this.generateMessage()).pipe(
             concatMap(messages => from(messages)),
             map(data => ({
-                name: `${this.serviceName} ${this.params.config.ignoreBody} ${data.title}`,
+                name: `${this.serviceName} ${data.title}`,
                 short: data.title,
                 value: this.params.config.ignoreBody ? data.title : data.value,
                 description: this.params.config.ignoreBody ? '' : data.value,
