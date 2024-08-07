@@ -84,7 +84,7 @@ export abstract class AIService {
                 }
                 const jsonStr = jsonMatch[0];
                 const commitMessages: RawCommitMessage[] = JSON.parse(jsonStr);
-                const filteredessages = commitMessages
+                const filteredMessages = commitMessages
                     .map(data => this.extractMessageAsType(data, type))
                     .map((data: RawCommitMessage) => {
                         return {
@@ -93,10 +93,10 @@ export abstract class AIService {
                         };
                     });
 
-                if (filteredessages.length > maxCount) {
-                    return filteredessages.slice(0, maxCount);
+                if (filteredMessages.length > maxCount) {
+                    return filteredMessages.slice(0, maxCount);
                 }
-                return filteredessages;
+                return filteredMessages;
             } catch (e) {
                 // Error parsing JSON
                 return [];
