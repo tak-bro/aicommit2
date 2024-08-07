@@ -180,8 +180,9 @@ const defaultPrompt = (promptOptions: PromptOptions) => {
         `2. Format: follow the ${type} Commits format:`,
         `${commitTypeFormats[type]}`,
         `3. Types: use one of the following types:${commitTypes[type]}`,
-        `4. Scope: optional, can be anything specifying the place of the commit change (e.g., component name, file name, module name)`,
+        `4. Scope: Optional, can be anything specifying the place of the commit change (e.g., component name, file name, module name)`,
         `5. Description: `,
+        `  - Wrap lines at ${maxLength} characters`,
         `  - Use imperative, present tense: "change" not "changed" nor "changes"`,
         `  - Don't capitalize the first letter`,
         `  - No period (.) at the end`,
@@ -190,7 +191,6 @@ const defaultPrompt = (promptOptions: PromptOptions) => {
         `  - Wrap lines at 72 characters`,
         `7. Footer: Optional`,
         `  - Mention any breaking changes, starting with "BREAKING CHANGE:"`,
-        `  - Reference any related issues or pull requests (e.g., "Fixes #123", "Closes #456")`,
         `8. General Rules:`,
         `  - Be concise but descriptive`,
         `  - Focus on the "why" behind the change, not just the "what"`,
@@ -207,7 +207,7 @@ const finalPrompt = (type: CommitType, generate: number) => {
         `Provide your response as a JSON array containing exactly ${generate} object${generate !== 1 ? 's' : ''}, each with the following keys:`,
         `- "subject": The main commit message. It should be a concise summary of the changes.`,
         `- "body": An optional detailed explanation of the changes. If not needed, use an empty string.`,
-        `- "footer": An optional footer for metadata like issue tracker IDs. If not needed, use an empty string.`,
+        `- "footer": An optional footer for metadata like BREAKING CHANGES. If not needed, use an empty string.`,
         `The array must always contain ${generate} element${generate !== 1 ? 's' : ''}, no more and no less.`,
         `Example response format:
     [
@@ -216,7 +216,7 @@ const finalPrompt = (type: CommitType, generate: number) => {
           .map(
               (_, index) => `{
         "subject": "fix: fix bug in user authentication process",
-        "body": "- Updated login function to handle edge cases\\n- Added additional error logging for debugging\\n- Refactored password hashing method for better security",
+        "body": "- Updated login function to handle edge cases\\n- Added additional error logging for debugging",
         "footer": ""
       }`
           )

@@ -151,7 +151,7 @@ export const generateCommitMessage = async (
     apiKey: string,
     model: TiktokenModel,
     locale: string,
-    userMessage: string,
+    diff: string,
     generate: number,
     type: CommitType,
     timeout: number,
@@ -175,7 +175,7 @@ export const generateCommitMessage = async (
                     },
                     {
                         role: 'user',
-                        content: userMessage,
+                        content: `Here are diff: ${diff}`,
                     },
                 ],
                 temperature,
@@ -184,7 +184,7 @@ export const generateCommitMessage = async (
                 presence_penalty: 0,
                 max_tokens: maxTokens,
                 stream: false,
-                n: generate,
+                n: 1,
             },
             timeout,
             proxy
@@ -194,7 +194,7 @@ export const generateCommitMessage = async (
             .filter(choice => choice.message?.content)
             .map(choice => sanitizeMessage(choice.message!.content as string))
             .join();
-        logging && createLogResponse('OPEN AI', userMessage, systemPrompt, fullText);
+        logging && createLogResponse('OPEN AI', diff, systemPrompt, fullText);
 
         return completion.choices
             .filter(choice => choice.message?.content)
