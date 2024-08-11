@@ -504,10 +504,10 @@ Huggingface does not support the following options in General Settings.
 
 ### Gemini
 
-| Setting            | Description                                                                                                      | Default                 |
-|--------------------|------------------------------------------------------------------------------------------------------------------|-------------------------|
-| `key`              | API key                                                                                                          | -                       |
-| `model`            | Model to use                                                                                                     | `gemini-1.5-pro-latest` |
+| Setting            | Description                                                                                                      | Default           |
+|--------------------|------------------------------------------------------------------------------------------------------------------|-------------------|
+| `key`              | API key                                                                                                          | -                 |
+| `model`            | Model to use                                                                                                     | `gemini-1.5-pro`  |
 
 ##### GEMINI.key
 
@@ -519,14 +519,15 @@ aicommit2 config set GEMINI.key="your api key"
 
 ##### GEMINI.model
 
-Default: `gemini-1.5-pro-latest`
+Default: `gemini-1.5-pro`
 
 Supported:
-- `gemini-1.5-pro-latest`
-- `gemini-1.5-flash-latest`
+- `gemini-1.5-pro`
+- `gemini-1.5-flash`
+- `gemini-1.5-pro-exp-0801`
 
 ```sh
-aicommit2 config set GEMINI.model="gemini-1.5-flash-latest"
+aicommit2 config set GEMINI.model="gemini-1.5-pro-exp-0801"
 ```
 
 ##### Unsupported Options
@@ -537,10 +538,10 @@ Gemini does not support the following options in General Settings.
 
 ### Anthropic
 
-| Setting            | Description                                                                                                      | Default                   |
-|--------------------|------------------------------------------------------------------------------------------------------------------|---------------------------|
-| `key`              | API key                                                                                                          | -                         |
-| `model`            | Model to use                                                                                                     | `claude-3-haiku-20240307` |
+| Setting     | Description    | Default                   |
+|-------------|----------------|---------------------------|
+| `key`       | API key        | -                         |
+| `model`     | Model to use   | `claude-3-haiku-20240307` |
 
 ##### ANTHROPIC.key
 
@@ -554,12 +555,10 @@ Supported:
 - `claude-3-haiku-20240307`
 - `claude-3-sonnet-20240229`
 - `claude-3-opus-20240229`
-- `claude-2.1`
-- `claude-2.0`
-- `claude-instant-1.2`
+- `claude-3-5-sonnet-20240620`
 
 ```sh
-aicommit2 config set ANTHROPIC.model=claude-instant-1.2
+aicommit2 config set ANTHROPIC.model="claude-3-5-sonnet-20240620"
 ```
 
 ##### Unsupported Options
@@ -655,10 +654,10 @@ Cohere does not support the following options in General Settings.
 
 ### Groq
 
-| Setting            | Description                                                                                                      | Default       |
-|--------------------|------------------------------------------------------------------------------------------------------------------|---------------|
-| `key`              | API key                                                                                                          | -             |
-| `model`            | Model to use                                                                                                     | `gemma-7b-it` |
+| Setting            | Description            | Default        |
+|--------------------|------------------------|----------------|
+| `key`              | API key                | -              |
+| `model`            | Model to use           | `gemma2-9b-it` |
 
 ##### GROQ.key
 
