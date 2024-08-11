@@ -1,3 +1,10 @@
+## [1.12.6](https://github.com/tak-bro/aicommit2/compare/v1.12.5...v1.12.6) (2024-08-11)
+
+
+### Features
+
+* add support for Perplexity AI service ([cf76e77](https://github.com/tak-bro/aicommit2/commit/cf76e774f6d84755164386b0567a12d99bc3ec38))
+
 ## [1.12.5](https://github.com/tak-bro/aicommit2/compare/v1.12.4...v1.12.5) (2024-08-06)
 
 
