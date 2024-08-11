@@ -351,6 +351,30 @@ const configParsers = {
         parseAssert('GROQ_MODEL', supportModels.includes(model), 'Invalid model type of Groq');
         return model;
     },
+    PERPLEXITY_KEY(key?: string) {
+        if (!key) {
+            return '';
+        }
+        return key;
+    },
+    PERPLEXITY_MODEL(model?: string) {
+        if (!model || model.length === 0) {
+            return 'llama-3.1-sonar-small-128k-chat';
+        }
+
+        // https://docs.perplexity.ai/docs/model-cards
+        const supportModels = [
+            'llama-3.1-sonar-small-128k-online',
+            'llama-3.1-sonar-small-128k-chat',
+            'llama-3.1-sonar-large-128k-online',
+            'llama-3.1-sonar-large-128k-chat',
+            'llama-3.1-8b-instruct',
+            'llama-3.1-70b-instruct',
+        ];
+
+        parseAssert('PERPLEXITY_MODEL', supportModels.includes(model), 'Invalid model type of Perplexity');
+        return model;
+    },
 } as const;
 
 type ConfigKeys = keyof typeof generalConfigParsers | keyof typeof configParsers;
