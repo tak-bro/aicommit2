@@ -42,8 +42,8 @@ _aicommit2_ is a reactive CLI tool that automatically generates Git commit messa
     - [Codestral **(Free till August 1, 2024)**](https://mistral.ai/news/codestral/)
 - [Cohere](https://cohere.com/)
 - [Groq](https://groq.com/)
-- [Huggingface **(Unofficial)**](https://huggingface.co/chat/)
 - [Perplexity](https://docs.perplexity.ai/)
+- [Huggingface **(Unofficial)**](https://huggingface.co/chat/)
 
 ### Local
 
@@ -98,15 +98,15 @@ aicommit2 config set COHERE_KEY=<your key>
 aicommit2 config set GROQ_KEY=<your key>
 ```
 
+- [Perplexity](https://docs.perplexity.ai/)
+```sh
+aicommit2 config set PERPLEXITY_KEY=<your key>
+```
+
 - [Huggingface **(Unofficial)**](https://github.com/tak-bro/aicommit2?tab=readme-ov-file#how-to-get-cookieunofficial-api)
 ```shell
 # Please be cautious of Escape characters(\", \') in browser cookie string 
 aicommit2 config set HUGGINGFACE_COOKIE="<your browser cookie>"
-```
-
-- [Perplexity](https://docs.perplexity.ai/)
-```sh
-aicommit2 config set PERPLEXITY_KEY=<your key>
 ```
 
 This will create a `.aicommit2` file in your home directory.
@@ -331,10 +331,10 @@ aicommit2 config set OPENAI_KEY=<your-api-key> generate=3 locale=en
 | `COHERE_MODEL`       | `command`                              | The identifier of the Cohere model                                                                                                 |
 | `GROQ_KEY`           | N/A                                    | The Groq API Key                                                                                                                   |
 | `GROQ_MODEL`         | `gemma-7b-it`                          | The Groq model name to use                                                                                                         |
-| `HUGGINGFACE_COOKIE` | N/A                                    | The HuggingFace Cookie string                                                                                                      |
-| `HUGGINGFACE_MODEL`  | `mistralai/Mixtral-8x7B-Instruct-v0.1` | The HuggingFace Model to use                                                                                                       |
 | `PERPLEXITY_KEY`     | N/A                                    | The Perplexity API key                                                                                                             |
 | `PERPLEXITY_MODEL`   | `llama-3.1-sonar-small-128k-chat`      | The Perplexity Model to use                                                                                                        |
+| `HUGGINGFACE_COOKIE` | N/A                                    | The HuggingFace Cookie string                                                                                                      |
+| `HUGGINGFACE_MODEL`  | `mistralai/Mixtral-8x7B-Instruct-v0.1` | The HuggingFace Model to use                                                                                                       |
 | `OLLAMA_MODEL`       | N/A                                    | The Ollama Model. It should be downloaded your local                                                                               |
 | `OLLAMA_HOST`        | `http://localhost:11434`               | The Ollama Host                                                                                                                    |
 | `OLLAMA_TIMEOUT`     | `100_000` ms                           | Request timeout for the Ollama                                                                                                     |
@@ -677,6 +677,28 @@ Supported:
 
 > The models mentioned above are subject to change.
 
+### Perplexity
+
+##### PERPLEXITY_KEY
+
+The Perplexity API key. If you don't have one, please sign up and subscribe in [Perplexity](https://www.perplexity.ai/).
+
+##### PERPLEXITY_MODEL
+
+Default: `llama-3.1-sonar-small-128k-chat`
+
+Supported:
+- `llama-3.1-sonar-small-128k-chat`
+- `llama-3.1-sonar-large-128k-chat`
+- `llama-3.1-sonar-large-128k-online`
+- `llama-3.1-sonar-small-128k-online`
+- `llama-3.1-8b-instruct`
+- `llama-3.1-70b-instruct`
+- `llama-3.1-8b`
+- `llama-3.1-70b`
+
+> The models mentioned above are subject to change.
+
 ### HuggingFace Chat
 
 ##### HUGGINGFACE_COOKIE
@@ -696,22 +718,6 @@ Supported:
 - `01-ai/Yi-1.5-34B-Chat`
 - `mistralai/Mistral-7B-Instruct-v0.2`
 - `microsoft/Phi-3-mini-4k-instruct`
-
-> The models mentioned above are subject to change.
-
-##### PERPLEXITY_MODEL
-
-Default: `llama-3.1-sonar-small-128k-chat`
-
-Supported:
-- `llama-3.1-sonar-small-128k-chat`
-- `llama-3.1-sonar-large-128k-chat`
-- `llama-3.1-sonar-large-128k-online`
-- `llama-3.1-sonar-small-128k-online`
-- `llama-3.1-8b-instruct`
-- `llama-3.1-70b-instruct`
-- `llama-3.1-8b`
-- `llama-3.1-70b`
 
 > The models mentioned above are subject to change.
 
@@ -880,6 +886,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/eltociear"><img src="https://avatars.githubusercontent.com/eltociear" width="100px;" alt=""/><br /><sub><b>@eltociear</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=eltociear" title="Documentation">📖</a></td>
     <td align="center"><a href="https://github.com/ubranch"><img src="https://avatars.githubusercontent.com/ubranch" width="100px;" alt=""/><br /><sub><b>@ubranch</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=ubranch" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/bhodrolok"><img src="https://avatars.githubusercontent.com/bhodrolok" width="100px;" alt=""/><br /><sub><b>@bhodrolok</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=bhodrolok" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/ryicoh"><img src="https://avatars.githubusercontent.com/ryicoh" width="100px;" alt=""/><br /><sub><b>@ryicoh</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=ryicoh" title="Code">💻</a></td>
   </tr>
 </table>
 <!-- markdownlint-restore -->

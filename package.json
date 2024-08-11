@@ -32,7 +32,8 @@
         "chatgpt",
         "cohere",
         "groq",
-        "codestral"
+        "codestral",
+        "perplexity"
     ],
     "license": "MIT",
     "repository": "tak-bro/aicommit2",
