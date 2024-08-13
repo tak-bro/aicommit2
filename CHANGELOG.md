@@ -1,3 +1,20 @@
+# [2.0.0](https://github.com/tak-bro/aicommit2/compare/v1.13.0...v2.0.0) (2024-08-13)
+
+
+### Bug Fixes
+
+* add model name check to config command ([23a11df](https://github.com/tak-bro/aicommit2/commit/23a11df3045e2e2bca86d826137d4c65668f9fbc))
+* fix ignoreBody config ([1faf9bd](https://github.com/tak-bro/aicommit2/commit/1faf9bdd6754a6390c294849e280f71f04a41057))
+* fix typo ([e911583](https://github.com/tak-bro/aicommit2/commit/e9115835906e11bc7bae7dd5c6ecfc60483fbc6d))
+* **mistral:** update model type check and error message ([2ea3c84](https://github.com/tak-bro/aicommit2/commit/2ea3c84237ab92d5cedc1772d57f1c44d7643abf))
+
+
+### Features
+
+* update configuration ([3ff61b8](https://github.com/tak-bro/aicommit2/commit/3ff61b8df8cbbc14c2e8e7d2aabdaa46db9578f9))
+* update perplexity service ([ef423b3](https://github.com/tak-bro/aicommit2/commit/ef423b3e729593d31cf144ac59f83d98f33eae78))
+* update template ([db1c82d](https://github.com/tak-bro/aicommit2/commit/db1c82d53305e1015800e69661bfd71934dc7df5))
+
 # [1.13.0](https://github.com/tak-bro/aicommit2/compare/v1.12.6...v1.13.0) (2024-08-11)
 
 ## [1.12.6](https://github.com/tak-bro/aicommit2/compare/v1.12.5...v1.12.6) (2024-08-11)
