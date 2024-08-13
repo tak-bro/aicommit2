@@ -7,7 +7,9 @@ import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIService, AIServiceParams, CommitMessage } from './ai.service.js';
 import { createLogResponse } from '../../utils/log.js';
+import { sanitizeMessage } from '../../utils/openai.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, generatePrompt } from '../../utils/prompt.js';
+import { flattenDeep } from '../../utils/utils.js';
 
 export class GroqService extends AIService {
     private groq: Groq;
@@ -20,7 +22,7 @@ export class GroqService extends AIService {
         };
         this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold('[Groq]');
         this.errorPrefix = chalk.red.bold(`[Groq]`);
-        this.groq = new Groq({ apiKey: this.params.config.GROQ_KEY });
+        this.groq = new Groq({ apiKey: this.params.config.key });
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
@@ -28,8 +30,9 @@ export class GroqService extends AIService {
             concatMap(messages => from(messages)),
             map(data => ({
                 name: `${this.serviceName} ${data.title}`,
-                value: data.value,
-                description: data.value,
+                short: data.title,
+                value: this.params.config.ignoreBody ? data.title : data.value,
+                description: this.params.config.ignoreBody ? '' : data.value,
                 isError: false,
             })),
             catchError(this.handleError$)
@@ -39,38 +42,50 @@ export class GroqService extends AIService {
     private async generateMessage(): Promise<CommitMessage[]> {
         try {
             const diff = this.params.stagedDiff.diff;
-            const { locale, generate, type, promptPath, logging } = this.params.config;
-            const maxLength = this.params.config['max-length'];
+            const { systemPrompt, systemPromptPath, logging, locale, temperature, generate, type, maxLength } = this.params.config;
+            const maxTokens = this.params.config.maxTokens;
             const promptOptions: PromptOptions = {
                 ...DEFAULT_PROMPT_OPTIONS,
                 locale,
                 maxLength,
                 type,
                 generate,
-                promptPath: promptPath,
+                systemPrompt,
+                systemPromptPath,
             };
-            const defaultPrompt = generatePrompt(promptOptions);
-            const systemPrompt = `${defaultPrompt}`;
+            const generatedSystemPrompt = generatePrompt(promptOptions);
 
             const chatCompletion = await this.groq.chat.completions.create(
                 {
                     messages: [
-                        { role: 'system', content: systemPrompt },
+                        {
+                            role: 'system',
+                            content: generatedSystemPrompt,
+                        },
                         {
                             role: 'user',
                             content: `Here are diff: ${diff}`,
                         },
                     ],
-                    model: this.params.config.GROQ_MODEL,
+                    model: this.params.config.model,
+                    max_tokens: maxTokens,
+                    temperature,
                 },
                 {
                     timeout: this.params.config.timeout,
                 }
             );
 
-            const result = chatCompletion.choices[0].message.content || '';
-            logging && createLogResponse('Groq', diff, systemPrompt, result);
-            return this.sanitizeMessage(result, this.params.config.type, generate, this.params.config.ignoreBody);
+            const fullText = chatCompletion.choices
+                .filter(choice => choice.message?.content)
+                .map(choice => sanitizeMessage(choice.message!.content as string))
+                .join();
+            logging && createLogResponse('Groq', diff, generatedSystemPrompt, fullText);
+
+            const results = chatCompletion.choices
+                .filter(choice => choice.message?.content)
+                .map(choice => sanitizeMessage(choice.message!.content as string));
+            return flattenDeep(results.map(value => this.parseMessage(value, type, generate)));
         } catch (error) {
             throw error as any;
         }

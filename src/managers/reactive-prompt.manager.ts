@@ -3,7 +3,7 @@ import inquirer from 'inquirer';
 import ReactiveListPrompt, { ChoiceItem, ReactiveListChoice, ReactiveListLoader } from 'inquirer-reactive-list-prompt';
 import { BehaviorSubject, ReplaySubject } from 'rxjs';
 
-import { DONE, sortByDisabled } from '../utils/utils.js';
+import { sortByDisabled } from '../utils/utils.js';
 
 const defaultLoader = {
     isLoading: false,
@@ -21,7 +21,7 @@ export class ReactivePromptManager {
 
     constructor() {}
 
-    initPrompt(showDescription: boolean) {
+    initPrompt(showDescription = true) {
         inquirer.registerPrompt('reactiveListPrompt', ReactiveListPrompt);
         return inquirer.prompt({
             type: 'reactiveListPrompt',
@@ -30,9 +30,11 @@ export class ReactivePromptManager {
             emptyMessage: `⚠ ${emptyCommitMessage}`,
             loop: false,
             showDescription,
-            descPageSize: 10,
+            descPageSize: 15,
             choices$: this.choices$,
             loader$: this.loader$,
+            // @ts-ignore ignore
+            pickKey: 'short',
         });
     }
 
@@ -45,13 +47,7 @@ export class ReactivePromptManager {
         if (!choice || !value) {
             return;
         }
-        const isNotStream = !choice.id;
-        if (isNotStream) {
-            this.choices$.next([...this.currentChoices, choice].sort(sortByDisabled));
-            return;
-        }
-
-        this.checkStreamChoice(choice);
+        this.choices$.next([...this.currentChoices, choice].sort(sortByDisabled));
     }
 
     checkErrorOnChoices() {
@@ -93,33 +89,6 @@ export class ReactivePromptManager {
 
     private logEmptyCommitMessage() {
         console.log(`${chalk.bold.yellow('⚠')} ${chalk.yellow(`${emptyCommitMessage}`)}`);
-    }
-
-    private checkStreamChoice(choice: ReactiveListChoice) {
-        const isDone = choice.description === DONE;
-        if (isDone) {
-            const findOriginChoice = this.currentChoices.find(origin => {
-                const originId = origin.id || '';
-                const hasNumber = /\d/.test(originId);
-                return choice.id?.includes(originId) && !hasNumber;
-            });
-            if (findOriginChoice) {
-                this.choices$.next(
-                    [...this.currentChoices.filter(origin => origin.id !== findOriginChoice.id), choice].sort(sortByDisabled)
-                );
-                return;
-            }
-            this.choices$.next([...this.currentChoices, choice].sort(sortByDisabled));
-            return;
-        }
-
-        // isUndone
-        const origin = this.currentChoices.find(origin => origin?.id === choice.id);
-        if (origin) {
-            this.choices$.next(this.currentChoices.map(origin => (origin?.id === choice.id ? choice : origin)).sort(sortByDisabled));
-            return;
-        }
-        this.choices$.next([...this.currentChoices, choice].sort(sortByDisabled));
     }
 
     private get currentChoices(): ReactiveListChoice[] {

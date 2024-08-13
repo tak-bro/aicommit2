@@ -73,7 +73,7 @@ export class HuggingFaceService extends AIService {
         };
         this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold('[HuggingFace]');
         this.errorPrefix = chalk.red.bold(`[HuggingFace]`);
-        this.cookie = this.params.config.HUGGINGFACE_COOKIE;
+        this.cookie = this.params.config.cookie;
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
@@ -81,8 +81,9 @@ export class HuggingFaceService extends AIService {
             concatMap(messages => from(messages)),
             map(data => ({
                 name: `${this.serviceName} ${data.title}`,
-                value: data.value,
-                description: data.value,
+                short: data.title,
+                value: this.params.config.ignoreBody ? data.title : data.value,
+                description: this.params.config.ignoreBody ? '' : data.value,
                 isError: false,
             })),
             catchError(this.handleError$)
@@ -92,16 +93,27 @@ export class HuggingFaceService extends AIService {
     private async generateMessage(): Promise<CommitMessage[]> {
         try {
             await this.intialize();
-            const systemPrompt = this.getSystemPrompt();
-            const conversation = await this.getNewChat(systemPrompt);
-            const message = `Here are diff: ${this.params.stagedDiff.diff}`;
-            const data = await this.sendMessage(message, conversation.id);
+
+            const diff = this.params.stagedDiff.diff;
+            const { systemPrompt, systemPromptPath, logging, locale, generate, type, maxLength } = this.params.config;
+            const promptOptions: PromptOptions = {
+                ...DEFAULT_PROMPT_OPTIONS,
+                locale,
+                maxLength,
+                type,
+                generate,
+                systemPrompt,
+                systemPromptPath,
+            };
+            const generatedSystemPrompt = generatePrompt(promptOptions);
+
+            const conversation = await this.getNewChat(generatedSystemPrompt);
+            const data = await this.sendMessage(`Here are diff: ${diff}`, conversation.id);
             const response = await data.completeResponsePromise();
             // await this.deleteConversation(conversation.id);
 
-            const { generate, logging } = this.params.config;
-            logging && createLogResponse('HuggingFace', this.params.stagedDiff.diff, systemPrompt, response);
-            return this.sanitizeMessage(response, this.params.config.type, generate, this.params.config.ignoreBody);
+            logging && createLogResponse('HuggingFace', diff, generatedSystemPrompt, response);
+            return this.parseMessage(response, type, generate);
         } catch (error) {
             const errorAsAny = error as any;
             if (errorAsAny.code === 'ENOTFOUND') {
@@ -118,7 +130,7 @@ export class HuggingFaceService extends AIService {
      */
     private async intialize(): Promise<void> {
         const models = await this.getRemoteLlms();
-        const model = models.find(model => model.name?.toLowerCase() === this.params.config.HUGGINGFACE_MODEL.toLowerCase())!;
+        const model = models.find(model => model.name?.toLowerCase() === this.params.config.model.toLowerCase())!;
         if (model) {
             this.currentModel = model;
             this.currentModelId = model.id;
@@ -448,20 +460,5 @@ export class HuggingFaceService extends AIService {
         });
 
         return response.json();
-    }
-
-    private getSystemPrompt() {
-        const { locale, generate, type, promptPath } = this.params.config;
-        const maxLength = this.params.config['max-length'];
-        const promptOption: PromptOptions = {
-            ...DEFAULT_PROMPT_OPTIONS,
-            locale,
-            maxLength,
-            type,
-            generate,
-            promptPath,
-        };
-        const defaultPrompt = generatePrompt(promptOption);
-        return `${defaultPrompt}`;
     }
 }

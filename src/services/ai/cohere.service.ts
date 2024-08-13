@@ -7,6 +7,8 @@ import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 import { AIService, AIServiceParams, CommitMessage } from './ai.service.js';
 import { KnownError } from '../../utils/error.js';
 import { createLogResponse } from '../../utils/log.js';
+import { DEFAULT_PROMPT_OPTIONS, PromptOptions, generatePrompt } from '../../utils/prompt.js';
+import { getRandomNumber } from '../../utils/utils.js';
 
 export class CohereService extends AIService {
     private cohere: CohereClient;
@@ -20,7 +22,7 @@ export class CohereService extends AIService {
         this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold('[Cohere]');
         this.errorPrefix = chalk.red.bold(`[Cohere]`);
         this.cohere = new CohereClient({
-            token: this.params.config.COHERE_KEY,
+            token: this.params.config.key,
         });
     }
 
@@ -29,8 +31,9 @@ export class CohereService extends AIService {
             concatMap(messages => from(messages)),
             map(data => ({
                 name: `${this.serviceName} ${data.title}`,
-                value: data.value,
-                description: data.value,
+                short: data.title,
+                value: this.params.config.ignoreBody ? data.title : data.value,
+                description: this.params.config.ignoreBody ? '' : data.value,
                 isError: false,
             })),
             catchError(this.handleError$)
@@ -40,22 +43,31 @@ export class CohereService extends AIService {
     private async generateMessage(): Promise<CommitMessage[]> {
         try {
             const diff = this.params.stagedDiff.diff;
-            const { locale, generate, type, promptPath, logging } = this.params.config;
-            const maxLength = this.params.config['max-length'];
-            const prompt = this.buildPrompt(locale, diff, generate, maxLength, type, promptPath);
+            const { systemPrompt, systemPromptPath, logging, locale, temperature, generate, type, maxLength } = this.params.config;
+            const promptOptions: PromptOptions = {
+                ...DEFAULT_PROMPT_OPTIONS,
+                locale,
+                maxLength,
+                type,
+                generate,
+                systemPrompt,
+                systemPromptPath,
+            };
+            const generatedSystemPrompt = generatePrompt(promptOptions);
+            const maxTokens = this.params.config.maxTokens;
 
-            const maxTokens = this.params.config['max-tokens'];
-
-            const prediction = await this.cohere.generate({
-                prompt,
+            const prediction = await this.cohere.chat({
+                chatHistory: generatedSystemPrompt ? [{ role: 'SYSTEM', message: generatedSystemPrompt }] : [],
+                message: `Here are diff: ${diff}`,
+                connectors: [{ id: 'web-search' }],
                 maxTokens,
-                temperature: this.params.config.temperature,
-                model: this.params.config.COHERE_MODEL,
+                temperature,
+                model: this.params.config.model,
+                seed: getRandomNumber(10, 1000),
             });
 
-            const result = prediction.generations.map(data => data.text).join('');
-            logging && createLogResponse('Cohere', diff, prompt, result);
-            return this.sanitizeMessage(result, this.params.config.type, generate, this.params.config.ignoreBody);
+            logging && createLogResponse('Cohere', diff, generatedSystemPrompt, prediction.text);
+            return this.parseMessage(prediction.text, type, generate);
         } catch (error) {
             const errorAsAny = error as any;
             if (errorAsAny instanceof CohereTimeoutError) {

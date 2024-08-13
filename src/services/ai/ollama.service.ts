@@ -9,7 +9,7 @@ import { DEFAULT_OLLMA_HOST } from '../../utils/config.js';
 import { KnownError } from '../../utils/error.js';
 import { createLogResponse } from '../../utils/log.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, generatePrompt } from '../../utils/prompt.js';
-import { capitalizeFirstLetter } from '../../utils/utils.js';
+import { capitalizeFirstLetter, getRandomNumber } from '../../utils/utils.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
 
 export interface OllamaServiceError extends AIServiceError {}
@@ -31,7 +31,7 @@ export class OllamaService extends AIService {
             .hex(this.colors.secondary)
             .bold(`[${capitalizeFirstLetter(this.model)}]`);
         this.errorPrefix = chalk.red.bold(`[${capitalizeFirstLetter(this.model)}]`);
-        this.host = this.params.config.OLLAMA_HOST || DEFAULT_OLLMA_HOST;
+        this.host = this.params.config.host || DEFAULT_OLLMA_HOST;
         this.ollama = new Ollama({ host: this.host });
     }
 
@@ -40,8 +40,9 @@ export class OllamaService extends AIService {
             concatMap(messages => from(messages)),
             map(data => ({
                 name: `${this.serviceName} ${data.title}`,
-                value: data.value,
-                description: data.value,
+                short: data.title,
+                value: this.params.config.ignoreBody ? data.title : data.value,
+                description: this.params.config.ignoreBody ? '' : data.value,
                 isError: false,
             })),
             catchError(this.handleError$)
@@ -68,12 +69,23 @@ export class OllamaService extends AIService {
 
     private async generateMessage(): Promise<CommitMessage[]> {
         try {
+            const diff = this.params.stagedDiff.diff;
+            const { systemPrompt, systemPromptPath, logging, locale, generate, type, maxLength } = this.params.config;
+            const promptOptions: PromptOptions = {
+                ...DEFAULT_PROMPT_OPTIONS,
+                locale,
+                maxLength,
+                type,
+                generate,
+                systemPrompt,
+                systemPromptPath,
+            };
+            const generatedSystemPrompt = generatePrompt(promptOptions);
+
             await this.checkIsAvailableOllama();
-            const chatResponse = await this.createChatCompletions();
-            const { type, generate, logging } = this.params.config;
-            const systemPrompt = this.createSystemPrompt();
-            logging && createLogResponse(`Ollama_${this.model}`, this.params.stagedDiff.diff, systemPrompt, chatResponse);
-            return this.sanitizeMessage(chatResponse, type, generate, this.params.config.ignoreBody);
+            const chatResponse = await this.createChatCompletions(generatedSystemPrompt, `Here are diff: ${diff}`);
+            logging && createLogResponse(`Ollama_${this.model}`, diff, generatedSystemPrompt, chatResponse);
+            return this.parseMessage(chatResponse, type, generate);
         } catch (error) {
             const errorAsAny = error as any;
             if (errorAsAny.code === 'ENOTFOUND') {
@@ -88,7 +100,7 @@ export class OllamaService extends AIService {
             const response = await new HttpRequestBuilder({
                 method: 'GET',
                 baseURL: `${this.host}`,
-                timeout: this.params.config.OLLAMA_TIMEOUT,
+                timeout: this.params.config.timeout,
             }).execute();
 
             return response.data;
@@ -100,8 +112,7 @@ export class OllamaService extends AIService {
         }
     }
 
-    private async createChatCompletions() {
-        const systemPrompt = this.createSystemPrompt();
+    private async createChatCompletions(systemPrompt: string, userMessage: string) {
         const response = await this.ollama.chat({
             model: this.model,
             messages: [
@@ -111,27 +122,15 @@ export class OllamaService extends AIService {
                 },
                 {
                     role: 'user',
-                    content: `Here are diff: ${this.params.stagedDiff.diff}`,
+                    content: userMessage,
                 },
             ],
             stream: false,
             options: {
                 temperature: this.params.config.temperature,
+                seed: getRandomNumber(10, 1000),
             },
         });
         return response.message.content;
-    }
-
-    private createSystemPrompt() {
-        const promptOption: PromptOptions = {
-            ...DEFAULT_PROMPT_OPTIONS,
-            locale: this.params.config.locale,
-            maxLength: this.params.config['max-length'],
-            type: this.params.config.type,
-            generate: this.params.config.generate,
-            promptPath: this.params.config.promptPath,
-        };
-        const defaultPrompt = generatePrompt(promptOption);
-        return `${defaultPrompt}`;
     }
 }

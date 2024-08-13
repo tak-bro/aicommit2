@@ -1,7 +1,7 @@
 import { command } from 'cleye';
 
 import { ConsoleManager } from '../managers/console.manager.js';
-import { getConfig, hasOwn, setConfigs } from '../utils/config.js';
+import { ModelName, addConfigs, getConfig, hasOwn, modelNames, setConfigs } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
 
 export default command(
@@ -14,9 +14,15 @@ export default command(
             const { mode, keyValue: keyValues } = argv._;
 
             if (mode === 'get') {
-                const config = await getConfig({}, true);
+                const config = await getConfig({}, []);
                 for (const key of keyValues) {
                     if (hasOwn(config, key)) {
+                        const isModel = modelNames.includes(key as ModelName);
+                        if (isModel) {
+                            // @ts-ignore ignore
+                            console.log(key, config[key]);
+                            return;
+                        }
                         console.log(`${key}=${config[key as keyof typeof config]}`);
                     }
                 }
@@ -25,6 +31,11 @@ export default command(
 
             if (mode === 'set') {
                 await setConfigs(keyValues.map(keyValue => keyValue.split('=') as [string, string]));
+                return;
+            }
+
+            if (mode === 'add') {
+                await addConfigs(keyValues.map(keyValue => keyValue.split('=') as [string, string]));
                 return;
             }
 

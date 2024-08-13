@@ -12,8 +12,8 @@ dependencies:
     specifier: ^1.0.2
     version: 1.0.15
   '@google/generative-ai':
-    specifier: ^0.11.4
-    version: 0.11.5
+    specifier: ^0.15.0
+    version: 0.15.0
   '@inquirer/prompts':
     specifier: ^3.0.0
     version: 3.3.2
@@ -27,8 +27,8 @@ dependencies:
     specifier: ^5.3.0
     version: 5.3.0
   cohere-ai:
-    specifier: ^7.10.2
-    version: 7.10.6(@aws-sdk/client-sso-oidc@3.606.0)
+    specifier: ^7.11.0
+    version: 7.11.2(@aws-sdk/client-sso-oidc@3.606.0)
   copy-paste:
     specifier: ^1.5.3
     version: 1.5.3
@@ -45,8 +45,8 @@ dependencies:
     specifier: 9.2.8
     version: 9.2.8
   inquirer-reactive-list-prompt:
-    specifier: ^1.0.8
-    version: 1.0.8(inquirer@9.2.8)
+    specifier: ^1.0.9
+    version: 1.0.9(inquirer@9.2.8)
   ollama:
     specifier: ^0.5.6
     version: 0.5.6
@@ -1066,8 +1066,8 @@ packages:
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dev: true
 
-  /@google/generative-ai@0.11.5:
-    resolution: {integrity: sha512-DviMgrnljEKh6qkDT2pVFW+NEuVhggqBUoEnyy2PNL7l4ewxXRJubk3PctC9yPl1AdRIlhqP7E076QQt+IWuTg==}
+  /@google/generative-ai@0.15.0:
+    resolution: {integrity: sha512-zs37judcTYFJf1U7tnuqnh7gdzF6dcWj9pNRxjA5JTONRoiQ0htrRdbefRFiewOIfXwhun5t9hbd2ray7812eQ==}
     engines: {node: '>=18.0.0'}
     dev: false
 
@@ -3067,8 +3067,8 @@ packages:
     engines: {node: '>=0.8'}
     dev: false
 
-  /cohere-ai@7.10.6(@aws-sdk/client-sso-oidc@3.606.0):
-    resolution: {integrity: sha512-J9y5wenl6IMqQUjklseocgusXcym0wnmuSoEdWyaNEQSYrNsHqWrpjeOYbQZ3A8/5edpPkR5Qsdwcc4FOJ5DOA==}
+  /cohere-ai@7.11.2(@aws-sdk/client-sso-oidc@3.606.0):
+    resolution: {integrity: sha512-IImDbZLg+kApTH9KswRAEGd0dRuZiChnsqC8gf6RepuklLuSxEkqto4uwSQQSUTj50Ns4uN7yaxzVyS6OmLpIg==}
     dependencies:
       '@aws-sdk/client-sagemaker': 3.606.0
       '@aws-sdk/credential-providers': 3.606.0(@aws-sdk/client-sso-oidc@3.606.0)
@@ -4900,8 +4900,8 @@ packages:
     engines: {node: ^12.13.0 || ^14.15.0 || >=16.0.0}
     dev: true
 
-  /inquirer-reactive-list-prompt@1.0.8(inquirer@9.2.8):
-    resolution: {integrity: sha512-4lOxr5uJiZVQ7aMNJhcrnExFrNxb16FlPcuysKYJBR4xYGihNHzn34P3YfAqZ1HFF78elH6tBWGJ7IbUIMHC2A==}
+  /inquirer-reactive-list-prompt@1.0.9(inquirer@9.2.8):
+    resolution: {integrity: sha512-+mgpjugb3uFSDRRdGl60VMFBskYYoI4nRVDlaspNEqbAxHrkjy4dfnAT0Z5rWeSqWXqYhC1yeuyajGg+F1SqaQ==}
     peerDependencies:
       inquirer: 9.2.8
     dependencies:

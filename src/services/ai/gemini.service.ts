@@ -7,6 +7,7 @@ import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 import { AIService, AIServiceError, AIServiceParams, CommitMessage } from './ai.service.js';
 import { KnownError } from '../../utils/error.js';
 import { createLogResponse } from '../../utils/log.js';
+import { DEFAULT_PROMPT_OPTIONS, PromptOptions, generatePrompt } from '../../utils/prompt.js';
 
 export class GeminiService extends AIService {
     private genAI: GoogleGenerativeAI;
@@ -19,7 +20,7 @@ export class GeminiService extends AIService {
         };
         this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold('[Gemini]');
         this.errorPrefix = chalk.red.bold(`[Gemini]`);
-        this.genAI = new GoogleGenerativeAI(this.params.config.GEMINI_KEY);
+        this.genAI = new GoogleGenerativeAI(this.params.config.key);
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
@@ -27,8 +28,9 @@ export class GeminiService extends AIService {
             concatMap(messages => from(messages)),
             map(data => ({
                 name: `${this.serviceName} ${data.title}`,
-                value: data.value,
-                description: data.value,
+                short: data.title,
+                value: this.params.config.ignoreBody ? data.title : data.value,
+                description: this.params.config.ignoreBody ? '' : data.value,
                 isError: false,
             })),
             catchError(this.handleError$)
@@ -38,24 +40,33 @@ export class GeminiService extends AIService {
     private async generateMessage(): Promise<CommitMessage[]> {
         try {
             const diff = this.params.stagedDiff.diff;
-            const { locale, generate, type, promptPath, logging } = this.params.config;
-            const maxLength = this.params.config['max-length'];
-            const prompt = this.buildPrompt(locale, diff, generate, maxLength, type, promptPath);
+            const { systemPrompt, systemPromptPath, logging, locale, temperature, generate, type, maxLength } = this.params.config;
+            const maxTokens = this.params.config.maxTokens;
+            const promptOptions: PromptOptions = {
+                ...DEFAULT_PROMPT_OPTIONS,
+                locale,
+                maxLength,
+                type,
+                generate,
+                systemPrompt,
+                systemPromptPath,
+            };
+            const generatedSystemPrompt = generatePrompt(promptOptions);
 
-            const maxTokens = this.params.config['max-tokens'];
             const model = this.genAI.getGenerativeModel({
-                model: this.params.config.GEMINI_MODEL,
+                model: this.params.config.model,
+                systemInstruction: generatedSystemPrompt,
                 generationConfig: {
                     maxOutputTokens: maxTokens,
                     temperature: this.params.config.temperature,
                 },
             });
-            const result = await model.generateContent(prompt);
-            const response = await result.response;
+            const result = await model.generateContent(`Here are diff: ${diff}`);
+            const response = result.response;
             const completion = response.text();
 
-            logging && createLogResponse('Gemini', diff, prompt, completion);
-            return this.sanitizeMessage(completion, this.params.config.type, generate, this.params.config.ignoreBody);
+            logging && createLogResponse('Gemini', diff, generatedSystemPrompt, completion);
+            return this.parseMessage(completion, type, generate);
         } catch (error) {
             const errorAsAny = error as any;
             if (errorAsAny.code === 'ENOTFOUND') {

@@ -8,7 +8,8 @@ export interface PromptOptions {
     maxLength: number;
     type: CommitType;
     generate: number;
-    promptPath?: string;
+    systemPromptPath?: string;
+    systemPrompt?: string;
 }
 
 export const DEFAULT_PROMPT_OPTIONS: PromptOptions = {
@@ -16,7 +17,8 @@ export const DEFAULT_PROMPT_OPTIONS: PromptOptions = {
     maxLength: 50,
     type: 'conventional',
     generate: 1,
-    promptPath: '',
+    systemPrompt: '',
+    systemPromptPath: '',
 };
 
 const MAX_COMMIT_LENGTH = 80;
@@ -172,68 +174,73 @@ const defaultPrompt = (promptOptions: PromptOptions) => {
     const { type, maxLength, generate, locale } = promptOptions;
 
     return [
-        `You are an AI assistant specialized in generating high-quality git commit messages following the Conventional Commits specification.`,
-        `Your task is to create commit messages based on the following guidelines`,
-        `1. Language: ${locale}`,
+        `You are a helpful assistant specializing in writing clear and informative Git commit messages using the ${type} style`,
+        `Based on the given code changes or context, generate exactly ${generate} ${type} Git commit message${generate !== 1 ? 's' : ''} based on the following guidelines.`,
+        `1. Message Language: ${locale}`,
         `2. Format: follow the ${type} Commits format:`,
         `${commitTypeFormats[type]}`,
         `3. Types: use one of the following types:${commitTypes[type]}`,
-        `4. Scope: optional, can be anything specifying the place of the commit change (e.g., component name, file name, module name)`,
-        `5. Description: `,
-        `  - Use imperative, present tense: "change" not "changed" nor "changes"`,
-        `  - Don't capitalize the first letter`,
-        `  - No period (.) at the end`,
-        `6. Body: Optional`,
-        `  - Use imperative, present tense`,
-        `  - Wrap lines at 72 characters`,
-        `7. Footer: Optional`,
-        `  - Mention any breaking changes, starting with "BREAKING CHANGE:"`,
-        `  - Reference any related issues or pull requests (e.g., "Fixes #123", "Closes #456")`,
-        `8. General Rules:`,
-        `  - Be concise but descriptive`,
-        `  - Focus on the "why" behind the change, not just the "what"`,
-        `  - Separate subject from body with a blank line`,
-        `  - Use the body to explain what and why vs. how`,
+        '4. Exclude anything unnecessary such as translation. Your entire response will be passed directly into git commit.',
     ]
         .filter(Boolean)
         .join('\n');
 };
 
 const finalPrompt = (type: CommitType, generate: number) => {
+    const example = (type: CommitType) => {
+        if (type === 'conventional') {
+            return `${Array(generate)
+                .fill(null)
+                .map(
+                    (_, index) => `
+  {
+    "subject": "fix: fix bug in user authentication process",
+    "body": "- Update login function to handle edge cases\\n- Add additional error logging for debugging",
+    "footer": ""
+  }`
+                )
+                .join(',')}`;
+        }
+        return `${Array(generate)
+            .fill(null)
+            .map(
+                (_, index) => `
+  {
+    "subject": "🖼️ Add profile picture upload feature",
+    "body": "- Implement server-side handling of file uploads\\n- Add client-side image preview and cropping",
+    "footer": ""
+  }`
+            )
+            .join(',')}`;
+    };
+
     return [
-        `Generate exactly ${generate} ${type} commit message${generate !== 1 ? 's' : ''}.`,
         `Provide your response as a JSON array containing exactly ${generate} object${generate !== 1 ? 's' : ''}, each with the following keys:`,
-        `- "subject": The main commit message. It should be a concise summary of the changes.`,
+        `- "subject": The main commit message using the ${type} style. It should be a concise summary of the changes.`,
         `- "body": An optional detailed explanation of the changes. If not needed, use an empty string.`,
-        `- "footer": An optional footer for metadata like issue tracker IDs. If not needed, use an empty string.`,
+        `- "footer": An optional footer for metadata like BREAKING CHANGES. If not needed, use an empty string.`,
         `The array must always contain ${generate} element${generate !== 1 ? 's' : ''}, no more and no less.`,
-        `Example response format:
-    [
-      ${Array(generate)
-          .fill(null)
-          .map(
-              (_, index) => `{
-        "subject": "fix: fix bug in user authentication process",
-        "body": "- Updated login function to handle edge cases\\n- Added additional error logging for debugging\\n- Refactored password hashing method for better security",
-        "footer": ""
-      }`
-          )
-          .join(',\n      ')}
-    ]`,
+        `Example response format: \n[${example(type)}\n]`,
+        `Ensure you generate exactly ${generate} commit message${generate !== 1 ? 's' : ''}, even if it requires creating slightly varied versions for similar changes.`,
+        `The response should be valid JSON that can be parsed without errors.`,
     ]
         .filter(Boolean)
         .join('\n');
 };
 
 export const generatePrompt = (promptOptions: PromptOptions) => {
-    const { type, generate, promptPath } = promptOptions;
-    if (!promptPath) {
+    const { systemPrompt, systemPromptPath, type, generate } = promptOptions;
+    if (systemPrompt) {
+        return `${systemPrompt}\n${finalPrompt(type, generate)}`;
+    }
+
+    if (!systemPromptPath) {
         return `${defaultPrompt(promptOptions)}\n${finalPrompt(type, generate)}`;
     }
 
     try {
-        const userTemplate = fs.readFileSync(path.resolve(promptPath), 'utf-8');
-        return `${parseTemplate(userTemplate, promptOptions)}\n${finalPrompt(type, generate)}`;
+        const systemPromptTemplate = fs.readFileSync(path.resolve(systemPromptPath), 'utf-8');
+        return `${parseTemplate(systemPromptTemplate, promptOptions)}\n${finalPrompt(type, generate)}`;
     } catch (error) {
         return `${defaultPrompt(promptOptions)}\n${finalPrompt(type, generate)}`;
     }

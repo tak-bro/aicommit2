@@ -9,11 +9,9 @@ import ora from 'ora';
 import { AIRequestManager } from '../managers/ai-request.manager.js';
 import { ConsoleManager } from '../managers/console.manager.js';
 import { ReactivePromptManager } from '../managers/reactive-prompt.manager.js';
-import { AIType, ApiKeyName, ApiKeyNames } from '../services/ai/ai.service.js';
-import { getConfig } from '../utils/config.js';
+import { ModelName, RawConfig, getConfig, modelNames } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
 import { assertGitRepo, getStagedDiff } from '../utils/git.js';
-
 
 const consoleManager = new ConsoleManager();
 
@@ -25,7 +23,7 @@ export default async (
     commitType: string | undefined,
     confirm: boolean,
     useClipboard: boolean,
-    promptPath: string | undefined,
+    prompt: string | undefined,
     rawArgv: string[]
 ) =>
     (async () => {
@@ -46,56 +44,50 @@ export default async (
         }
         consoleManager.printStagedFiles(staged);
 
-        const { env } = process;
-        const config = await getConfig({
-            OPENAI_KEY: env.OPENAI_KEY || env.OPENAI_API_KEY,
-            OPENAI_MODEL: env.OPENAI_MODEL || env['openai-model'] || env['openai_model'],
-            OPENAI_URL: env.OPENAI_URL || env['openai-url'] || env['OPENAI_URL'],
-            GEMINI_KEY: env.GEMINI_KEY || env.GEMINI_API_KEY,
-            GEMINI_MODEL: env.GEMINI_MODEL || env['gemini-model'] || env['gemini_model'],
-            ANTHROPIC_KEY: env.ANTHROPIC_KEY || env.ANTHROPIC_API_KEY,
-            ANTHROPIC_MODEL: env.ANTHROPIC_MODEL || env['anthropic-model'] || env['anthropic_model'],
-            HUGGINGFACE_MODEL: env.HUGGINGFACE_MODEL,
-            MISTRAL_KEY: env.MISTRAL_KEY || env.MISTRAL_API_KEY,
-            CODESTRAL_KEY: env.CODESTRAL_KEY || env.CODESTRAL_API_KEY,
-            MISTRAL_MODEL: env.MISTRAL_MODEL || env['mistral-model'] || env['mistral_model'],
-            proxy: env.https_proxy || env.HTTPS_PROXY || env.http_proxy || env.HTTP_PROXY,
-            temperature: env.temperature,
-            generate: generate?.toString() || env.generate,
-            type: commitType?.toString() || env.type,
-            locale: locale?.toString() || env.locale,
-            promptPath: promptPath?.toString() || env.promptPath,
-        });
+        const config = await getConfig(
+            {
+                locale: locale?.toString() as string,
+                generate: generate?.toString() as string,
+                commitType: commitType?.toString() as string,
+                systemPrompt: prompt?.toString() as string,
+            },
+            rawArgv
+        );
 
-        if (config.promptPath) {
+        if (config.systemPromptPath) {
             try {
-                fs.readFileSync(path.resolve(config.promptPath), 'utf-8');
+                fs.readFileSync(path.resolve(config.systemPromptPath), 'utf-8');
             } catch (error) {
-                throw new KnownError(`Error reading user prompt file: ${config.promptPath}`);
+                throw new KnownError(`Error reading system prompt file: ${config.systemPromptPath}`);
             }
         }
 
-        const availableAPIKeyNames: ApiKeyName[] = Object.entries(config)
-            .filter(([key]) => ApiKeyNames.includes(key as ApiKeyName))
+        const availableAIs: ModelName[] = Object.entries(config)
+            .filter(([key]) => modelNames.includes(key as ModelName))
+            .map(([key, value]) => [key, value] as [ModelName, RawConfig])
             .filter(([key, value]) => {
-                if (key === AIType.OLLAMA) {
-                    return !!value && (value as string[]).length > 0;
+                if (key === 'OLLAMA') {
+                    return !!value && !!value.model && (value.model as string[]).length > 0;
                 }
-                return !!value;
+                if (key === 'HUGGINGFACE') {
+                    return !!value && !!value.cookie;
+                }
+                // @ts-ignore ignore
+                return !!value.key && value.key.length > 0;
             })
-            .map(([key]) => key as ApiKeyName);
+            .map(([key]) => key);
 
-        const hasNoAvailableAIs = availableAPIKeyNames.length === 0;
+        const hasNoAvailableAIs = availableAIs.length === 0;
         if (hasNoAvailableAIs) {
             throw new KnownError('Please set at least one API key via the `aicommit2 config set` command');
         }
 
         const aiRequestManager = new AIRequestManager(config, staged);
         const reactivePromptManager = new ReactivePromptManager();
-        const selectPrompt = reactivePromptManager.initPrompt(!config.ignoreBody);
+        const selectPrompt = reactivePromptManager.initPrompt();
 
         reactivePromptManager.startLoader();
-        const subscription = aiRequestManager.createAIRequests$(availableAPIKeyNames).subscribe(
+        const subscription = aiRequestManager.createAIRequests$(availableAIs).subscribe(
             (choice: ReactiveListChoice) => reactivePromptManager.refreshChoices(choice),
             () => {
                 /* empty */

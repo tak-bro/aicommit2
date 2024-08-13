@@ -48,3 +48,7 @@ export const removeTextAfterPhrase = (text: string, phrase: string, includePhras
     }
     return text;
 };
+
+export const flattenDeep = <T>(arr: any[]): T[] => {
+    return arr.reduce((acc: T[], val: any) => (Array.isArray(val) ? acc.concat(flattenDeep(val)) : acc.concat(val)), []);
+};

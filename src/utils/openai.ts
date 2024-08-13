@@ -6,7 +6,6 @@ import createHttpsProxyAgent from 'https-proxy-agent';
 
 import { KnownError } from './error.js';
 import { createLogResponse } from './log.js';
-import { DEFAULT_PROMPT_OPTIONS, PromptOptions, generatePrompt } from './prompt.js';
 
 import type { CommitType } from './config.js';
 import type { ClientRequest, IncomingMessage } from 'http';
@@ -140,7 +139,7 @@ const createChatCompletion = async (
     return JSON.parse(data) as CreateChatCompletionResponse;
 };
 
-const sanitizeMessage = (message: string) =>
+export const sanitizeMessage = (message: string) =>
     message
         .trim()
         .replace(/[\n\r]/g, '')
@@ -153,26 +152,16 @@ export const generateCommitMessage = async (
     model: TiktokenModel,
     locale: string,
     diff: string,
-    completions: number,
-    maxLength: number,
+    generate: number,
     type: CommitType,
     timeout: number,
     maxTokens: number,
     temperature: number,
-    promptPath: string,
+    systemPrompt: string,
     logging: boolean,
     proxy?: string
 ) => {
     try {
-        const promptOption: PromptOptions = {
-            ...DEFAULT_PROMPT_OPTIONS,
-            locale,
-            maxLength,
-            type,
-            generate: completions,
-            promptPath,
-        };
-        const systemPrompt = generatePrompt(promptOption);
         const completion = await createChatCompletion(
             url,
             path,
@@ -182,7 +171,7 @@ export const generateCommitMessage = async (
                 messages: [
                     {
                         role: 'system',
-                        content: `${systemPrompt}`,
+                        content: systemPrompt,
                     },
                     {
                         role: 'user',
@@ -195,6 +184,7 @@ export const generateCommitMessage = async (
                 presence_penalty: 0,
                 max_tokens: maxTokens,
                 stream: false,
+                n: 1,
             },
             timeout,
             proxy
@@ -205,7 +195,10 @@ export const generateCommitMessage = async (
             .map(choice => sanitizeMessage(choice.message!.content as string))
             .join();
         logging && createLogResponse('OPEN AI', diff, systemPrompt, fullText);
-        return fullText;
+
+        return completion.choices
+            .filter(choice => choice.message?.content)
+            .map(choice => sanitizeMessage(choice.message!.content as string));
     } catch (error) {
         const errorAsAny = error as any;
         if (errorAsAny.code === 'ENOTFOUND') {

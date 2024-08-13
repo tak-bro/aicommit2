@@ -1,25 +1,8 @@
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Observable, of } from 'rxjs';
 
-import { CommitType, ValidConfig } from '../../utils/config.js';
+import { CommitType, ModelConfig, ModelName } from '../../utils/config.js';
 import { StagedDiff } from '../../utils/git.js';
-import { DEFAULT_PROMPT_OPTIONS, PromptOptions, generatePrompt } from '../../utils/prompt.js';
-
-// NOTE: get AI Type from key names
-export const AIType = {
-    OPEN_AI: 'OPENAI_KEY',
-    GEMINI: 'GEMINI_KEY',
-    ANTHROPIC: 'ANTHROPIC_KEY',
-    HUGGINGFACE: 'HUGGINGFACE_COOKIE',
-    MISTRAL: 'MISTRAL_KEY',
-    CODESTRAL: 'CODESTRAL_KEY',
-    OLLAMA: 'OLLAMA_MODEL',
-    COHERE: 'COHERE_KEY',
-    GROQ: 'GROQ_KEY',
-    PERPLEXITY: 'PERPLEXITY_KEY',
-} as const;
-export type ApiKeyName = (typeof AIType)[keyof typeof AIType];
-export const ApiKeyNames: ApiKeyName[] = Object.values(AIType).map(value => value);
 
 export interface CommitMessage {
     title: string;
@@ -33,9 +16,9 @@ export interface RawCommitMessage {
 }
 
 export interface AIServiceParams {
-    config: ValidConfig;
+    config: ModelConfig<ModelName>;
     stagedDiff: StagedDiff;
-    keyName: ApiKeyName;
+    keyName: ModelName;
 }
 
 export interface AIServiceError extends Error {
@@ -62,19 +45,6 @@ export abstract class AIService {
 
     abstract generateCommitMessage$(): Observable<ReactiveListChoice>;
 
-    protected buildPrompt(locale: string, diff: string, generate: number, maxLength: number, type: CommitType, promptPath: string) {
-        const promptOption: PromptOptions = {
-            ...DEFAULT_PROMPT_OPTIONS,
-            locale,
-            maxLength,
-            type,
-            generate,
-            promptPath,
-        };
-        const defaultPrompt = generatePrompt(promptOption);
-        return `${defaultPrompt}}\nHere are diff: \n${diff}`;
-    }
-
     protected handleError$ = (error: AIServiceError): Observable<ReactiveListChoice> => {
         let simpleMessage = 'An error occurred';
         if (error.message) {
@@ -88,28 +58,22 @@ export abstract class AIService {
         });
     };
 
-    protected sanitizeMessage(generatedText: string, type: CommitType, maxCount: number, ignoreBody: boolean): CommitMessage[] {
+    protected parseMessage(generatedText: string, type: CommitType, maxCount: number): CommitMessage[] {
         try {
             const commitMessages: RawCommitMessage[] = JSON.parse(generatedText);
-            const filtedMessages = commitMessages
+            const filteredMessages = commitMessages
                 .map(data => this.extractMessageAsType(data, type))
                 .map((data: RawCommitMessage) => {
-                    if (ignoreBody) {
-                        return {
-                            title: `${data.subject}`,
-                            value: `${data.subject}`,
-                        };
-                    }
                     return {
                         title: `${data.subject}`,
                         value: `${data.subject}${data.body ? `\n\n${data.body}` : ''}${data.footer ? `\n\n${data.footer}` : ''}`,
                     };
                 });
 
-            if (filtedMessages.length > maxCount) {
-                return filtedMessages.slice(0, maxCount);
+            if (filteredMessages.length > maxCount) {
+                return filteredMessages.slice(0, maxCount);
             }
-            return filtedMessages;
+            return filteredMessages;
         } catch (error) {
             const jsonPattern = /\[[\s\S]*?\]/;
             try {
@@ -120,25 +84,19 @@ export abstract class AIService {
                 }
                 const jsonStr = jsonMatch[0];
                 const commitMessages: RawCommitMessage[] = JSON.parse(jsonStr);
-                const filtedMessages = commitMessages
+                const filteredMessages = commitMessages
                     .map(data => this.extractMessageAsType(data, type))
                     .map((data: RawCommitMessage) => {
-                        if (ignoreBody) {
-                            return {
-                                title: `${data.subject}`,
-                                value: `${data.subject}`,
-                            };
-                        }
                         return {
                             title: `${data.subject}`,
                             value: `${data.subject}${data.body ? `\n\n${data.body}` : ''}${data.footer ? `\n\n${data.footer}` : ''}`,
                         };
                     });
 
-                if (filtedMessages.length > maxCount) {
-                    return filtedMessages.slice(0, maxCount);
+                if (filteredMessages.length > maxCount) {
+                    return filteredMessages.slice(0, maxCount);
                 }
-                return filtedMessages;
+                return filteredMessages;
             } catch (e) {
                 // Error parsing JSON
                 return [];
