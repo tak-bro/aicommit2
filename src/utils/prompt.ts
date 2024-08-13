@@ -170,187 +170,59 @@ const parseTemplate = (template: string, options: PromptOptions): string => {
     });
 };
 
-type CommitStyle = 'conventional' | 'gitmoji';
-
-const finalPrompt2 = (generate: number, style: CommitStyle): string => {
-    const conventionalTypes = ['feat', 'fix', 'docs', 'style', 'refactor', 'perf', 'test', 'build', 'ci', 'chore', 'revert'];
-
-    const gitmojiList = [
-        '🎨',
-        '⚡️',
-        '🔥',
-        '🐛',
-        '🚑️',
-        '✨',
-        '📝',
-        '🚀',
-        '💄',
-        '🎉',
-        '✅',
-        '🔒️',
-        '🔐',
-        '🔖',
-        '🚨',
-        '🚧',
-        '💚',
-        '⬇️',
-        '⬆️',
-        '📌',
-        '👷',
-        '📈',
-        '♻️',
-        '➕',
-        '➖',
-        '🔧',
-        '🔨',
-        '🌐',
-        '✏️',
-        '💩',
-        '⏪️',
-        '🔀',
-        '📦️',
-        '👽️',
-        '🚚',
-        '📄',
-        '💥',
-        '🍱',
-        '♿️',
-        '💡',
-        '🍻',
-        '💬',
-        '🗃️',
-        '🔊',
-        '🔇',
-        '👥',
-        '🚸',
-        '🏗️',
-        '📱',
-        '🤡',
-        '🥚',
-        '🙈',
-        '📸',
-        '⚗️',
-        '🔍️',
-        '🏷️',
-        '🌱',
-        '🚩',
-        '🥅',
-        '💫',
-        '🗑️',
-        '🛂',
-        '🩹',
-        '🧐',
-        '⚰️',
-    ];
-
-    const styleSpecificInstructions =
-        style === 'conventional'
-            ? `For Conventional Commits style:
-       1. The "subject" should start with a type (e.g., feat, fix, docs) followed by an optional scope in parentheses.
-       2. Use the format: <type>[(optional scope)]: <description>
-       3. Common types include: ${conventionalTypes.join(', ')}
-       Example: "feat(auth): implement two-factor authentication"`
-            : `For Gitmoji style:
-       1. The "subject" should start with an appropriate emoji followed by a short description.
-       2. Use the format: <emoji> <description>
-       3. Choose from common gitmojis such as: ${gitmojiList.slice(0, 10).join(' ')} (and many others)
-       Example: "✨ Add user profile customization feature"`;
-
-    return [
-        `You are a helpful assistant specializing in writing clear and informative Git commit messages using the ${style} style. Based on the given code changes or context, generate ${generate} appropriate Git commit message${generate !== 1 ? 's' : ''}.`,
-        `For each commit message, provide a JSON object with the following structure:`,
-        `{
-      "subject": "A concise summary of the changes (50-72 characters)",
-      "body": "A more detailed explanation of the changes (optional)",
-      "footer": "Any references to issue trackers or metadata (optional)"
-    }`,
-        `Guidelines for creating commit messages:`,
-        styleSpecificInstructions,
-        `4. The "body" should:
-       - Explain the what and why of the changes, not the how
-       - Be wrapped at 72 characters
-       - Use bullet points for multiple points (each starting with a hyphen)
-       - Be omitted (empty string) if the subject is self-explanatory`,
-        `5. The "footer" should:
-       - Include any other metadata relevant to the project
-       - Be omitted (empty string) if not needed`,
-        `Provide your response as a JSON array containing exactly ${generate} commit message object${generate !== 1 ? 's' : ''}. Example:`,
-        `[
-      ${Array(generate)
-          .fill(null)
-          .map(
-              () => `{
-        "subject": "${style === 'conventional' ? 'feat(user): add profile picture upload' : '🖼️ Add profile picture upload feature'}",
-        "body": "- Implement server-side handling of file uploads\\n- Add client-side image preview and cropping\\n- Ensure MIME type validation for security",
-        "footer": "Closes #234"
-      }`
-          )
-          .join(',\n      ')}
-    ]`,
-        `Ensure you generate exactly ${generate} commit message${generate !== 1 ? 's' : ''}, even if it requires creating slightly varied versions for similar changes.`,
-        `The response should be valid JSON that can be parsed without errors.`,
-    ]
-        .filter(Boolean)
-        .join('\n');
-};
-
 const defaultPrompt = (promptOptions: PromptOptions) => {
     const { type, maxLength, generate, locale } = promptOptions;
 
     return [
-        `You are a helpful assistant specializing in writing clear and informative Git commit messages.`,
-        `Based on the given code changes or context, generate ${generate} appropriate Git commit message${generate !== 1 ? 's' : ''}.`,
-        `For each commit message, provide a JSON object with the following structure:`,
-        `{`,
-        `  "subject": "A concise summary of the changes (${maxLength} characters or less)"`,
-        `  "body": "A more detailed explanation of the changes (Optional)"`,
-        `  "footer": "Any references to issue trackers or metadata (Optional)"`,
-        `}`,
-        `Generate exactly ${generate} ${type} commit message${generate !== 1 ? 's' : ''} based on the following guidelines.`,
-        `1. Language: ${locale}`,
+        `You are a helpful assistant specializing in writing clear and informative Git commit messages using the ${type} style`,
+        `Based on the given code changes or context, generate exactly ${generate} ${type} Git commit message${generate !== 1 ? 's' : ''} based on the following guidelines.`,
+        `1. Message Language: ${locale}`,
         `2. Format: follow the ${type} Commits format:`,
         `${commitTypeFormats[type]}`,
         `3. Types: use one of the following types:${commitTypes[type]}`,
-        `4. Scope: Optional, can be anything specifying the place of the commit change (e.g., component name, file name, module name)`,
-        `5. Description: `,
-        `  - Wrap lines at ${maxLength} characters`,
-        `  - Don't capitalize the first letter`,
-        `  - No period (.) at the end`,
-        `6. Body: Optional`,
-        `  - Wrap lines at 72 characters`,
-        `7. Footer: Optional`,
-        `  - Mention any breaking changes, starting with "BREAKING CHANGE:"`,
-        `8. General Rules:`,
-        `  - Use imperative, present tense: "change" not "changed" nor "changes"`,
-        `  - Be concise but descriptive`,
-        `  - Focus on the "why" behind the change, not just the "what"`,
-        `  - Separate subject from body with a blank line`,
-        `  - Use the body to explain what and why vs. how`,
+        '4. Exclude anything unnecessary such as translation. Your entire response will be passed directly into git commit.',
     ]
         .filter(Boolean)
         .join('\n');
 };
 
 const finalPrompt = (type: CommitType, generate: number) => {
+    const example = (type: CommitType) => {
+        if (type === 'conventional') {
+            return `${Array(generate)
+                .fill(null)
+                .map(
+                    (_, index) => `
+  {
+    "subject": "fix: fix bug in user authentication process",
+    "body": "- Update login function to handle edge cases\\n- Add additional error logging for debugging",
+    "footer": ""
+  }`
+                )
+                .join(',')}`;
+        }
+        return `${Array(generate)
+            .fill(null)
+            .map(
+                (_, index) => `
+  {
+    "subject": "🖼️ Add profile picture upload feature",
+    "body": "- Implement server-side handling of file uploads\\n- Add client-side image preview and cropping",
+    "footer": ""
+  }`
+            )
+            .join(',')}`;
+    };
+
     return [
         `Provide your response as a JSON array containing exactly ${generate} object${generate !== 1 ? 's' : ''}, each with the following keys:`,
-        `- "subject": The main commit message. It should be a concise summary of the changes.`,
+        `- "subject": The main commit message using the ${type} style. It should be a concise summary of the changes.`,
         `- "body": An optional detailed explanation of the changes. If not needed, use an empty string.`,
         `- "footer": An optional footer for metadata like BREAKING CHANGES. If not needed, use an empty string.`,
         `The array must always contain ${generate} element${generate !== 1 ? 's' : ''}, no more and no less.`,
-        `Example response format:
-    [
-      ${Array(generate)
-          .fill(null)
-          .map(
-              (_, index) => `{
-        "subject": "fix: fix bug in user authentication process",
-        "body": "- Updated login function to handle edge cases\\n- Added additional error logging for debugging",
-        "footer": ""
-      }`
-          )
-          .join(',\n      ')}
-    ]`,
+        `Example response format: \n[${example(type)}\n]`,
+        `Ensure you generate exactly ${generate} commit message${generate !== 1 ? 's' : ''}, even if it requires creating slightly varied versions for similar changes.`,
+        `The response should be valid JSON that can be parsed without errors.`,
     ]
         .filter(Boolean)
         .join('\n');

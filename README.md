@@ -753,17 +753,19 @@ aicommit2 config set systemPromptPath="/path/to/user/prompt.txt"
 aicommit2 config set OPENAI.systemPromptPath="/path/to/another-prompt.txt"
 ```
 
-> For the above command, OpenAI uses the prompt in the `another-prompt.txt` file, and the rest of the model uses `prompt.txt`.
+For the above command, OpenAI uses the prompt in the `another-prompt.txt` file, and the rest of the model uses `prompt.txt`.
+
+> **NOTE**: For the `systemPromptPath` option, set the **template path**, not the template content
 
 ### Template Format
 
 Your custom template can include placeholders for various commit options.
 Use curly braces `{}` to denote these placeholders for options. The following placeholders are supported:
 
-- [{locale}](#locale): The language for the commit message (string)
-- [{maxLength}](#max-length): The maximum length for the commit message (number)
-- [{type}](#type): The type of the commit (conventional or gitmoji)
-- [{generate}](#generate): The number of commit messages to generate (number)
+- [{locale}](#locale): The language for the commit message (**string**)
+- [{maxLength}](#max-length): The maximum length for the commit message (**number**)
+- [{type}](#type): The type of the commit message (**conventional** or **gitmoji**)
+- [{generate}](#generate): The number of commit messages to generate (**number**)
 
 ### Example Template
 
@@ -780,30 +782,31 @@ Remember to follow these guidelines:
 3. Explain the 'why' behind the change
 ```
 
-#### Appended Text
+### **Appended Text**
 
 Please note that the following text will **always** be appended to the end of your custom prompt:
 
 ```
-Provide your response as a JSON array containing exactly {generate} objects, each with the following keys:
-- "subject": The main commit message. It should be a concise summary of the changes.
+Provide your response as a JSON array containing exactly 1 object, each with the following keys:
+- "subject": The main commit message using the conventional style. It should be a concise summary of the changes.
 - "body": An optional detailed explanation of the changes. If not needed, use an empty string.
 - "footer": An optional footer for metadata like BREAKING CHANGES. If not needed, use an empty string.
-The array must always contain {generate} elements, no more and no less.
-Example response format:
-    [
-      {
-        "subject": "fix: fix bug in user authentication process",
-        "body": "- Updated login function to handle edge cases\n- Added additional error logging for debugging",
-        "footer": ""
-      },
-      ...
-    ]
+The array must always contain 1 element, no more and no less.
+Example response format: 
+[
+  {
+    "subject": "fix: fix bug in user authentication process",
+    "body": "- Update login function to handle edge cases\n- Add additional error logging for debugging",
+    "footer": ""
+  }
+]
+Ensure you generate exactly 1 commit message, even if it requires creating slightly varied versions for similar changes.
+The response should be valid JSON that can be parsed without errors.
 ```
 
 This ensures that the output is consistently formatted as a JSON array, regardless of the custom template used.
 
-> NOTE: For the `systemPromptPath` option, set the **template path**, not the template content
+> NOTE: The template may vary depending on the generate and commit message type.
 
 ## Loading Multiple Ollama Models
 
