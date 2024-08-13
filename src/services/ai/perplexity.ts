@@ -7,7 +7,7 @@ import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 import { AIService, AIServiceError, AIServiceParams, CommitMessage } from './ai.service.js';
 import { KnownError } from '../../utils/error.js';
 import { createLogResponse } from '../../utils/log.js';
-import { DEFAULT_PROMPT_OPTIONS, generatePrompt } from '../../utils/prompt.js';
+import { DEFAULT_PROMPT_OPTIONS, PromptOptions, generatePrompt } from '../../utils/prompt.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
 
 export interface CreateChatCompletionsResponse {
@@ -42,7 +42,7 @@ export class PerplexityService extends AIService {
         };
         this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold(`[Perplexity]`);
         this.errorPrefix = chalk.red.bold(`[Perplexity]`);
-        this.apiKey = this.params.config.PERPLEXITY_KEY;
+        this.apiKey = this.params.config.key;
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
@@ -50,8 +50,9 @@ export class PerplexityService extends AIService {
             concatMap(messages => from(messages)),
             map(data => ({
                 name: `${this.serviceName} ${data.title}`,
-                value: data.value,
-                description: data.value,
+                short: data.title,
+                value: this.params.config.ignoreBody ? data.title : data.value,
+                description: this.params.config.ignoreBody ? '' : data.value,
                 isError: false,
             })),
             catchError(this.handleError$)
@@ -89,19 +90,20 @@ export class PerplexityService extends AIService {
     private async generateMessage(): Promise<CommitMessage[]> {
         try {
             const diff = this.params.stagedDiff.diff;
-            const { locale, generate, type, promptPath, logging } = this.params.config;
-            const maxLength = this.params.config['max-length'];
-            const systemPrompt = generatePrompt({
+            const { systemPrompt, systemPromptPath, logging, locale, generate, type, maxLength } = this.params.config;
+            const promptOptions: PromptOptions = {
                 ...DEFAULT_PROMPT_OPTIONS,
                 locale,
                 maxLength,
                 type,
                 generate,
-                promptPath,
-            });
-            const chatResponse = await this.createChatCompletions(systemPrompt, diff);
-            logging && createLogResponse('Perplexity', diff, systemPrompt, chatResponse);
-            return this.sanitizeMessage(chatResponse, this.params.config.type, generate, this.params.config.ignoreBody);
+                systemPrompt,
+                systemPromptPath,
+            };
+            const generatedSystemPrompt = generatePrompt(promptOptions);
+            const chatResponse = await this.createChatCompletions(generatedSystemPrompt, diff);
+            logging && createLogResponse('Perplexity', diff, generatedSystemPrompt, chatResponse);
+            return this.parseMessage(chatResponse, type, generate);
         } catch (error) {
             const errorAsAny = error as any;
             if (errorAsAny.code === 'ENOTFOUND') {
@@ -122,7 +124,7 @@ export class PerplexityService extends AIService {
                 'content-type': 'application/json',
             })
             .setBody({
-                model: this.params.config.PERPLEXITY_MODEL,
+                model: this.params.config.model,
                 messages: [
                     {
                         role: 'system',
@@ -135,7 +137,7 @@ export class PerplexityService extends AIService {
                 ],
                 temperature: this.params.config.temperature,
                 top_p: 1,
-                max_tokens: this.params.config['max-tokens'],
+                max_tokens: this.params.config.maxTokens,
                 stream: false,
             })
             .execute();

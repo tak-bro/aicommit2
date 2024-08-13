@@ -683,10 +683,10 @@ aicommit2 config set GROQ.model="llama3-8b-8192"
 
 ### Perplexity
 
-| Setting            | Description                                                                                                      | Default       |
-|--------------------|------------------------------------------------------------------------------------------------------------------|---------------|
-| `key`              | API key                                                                                                          | -             |
-| `model`            | Model to use                                                                                                     | `gemma-7b-it` |
+| Setting            | Description      | Default                           |
+|--------------------|------------------|-----------------------------------|
+| `key`              | API key          | -                                 |
+| `model`            | Model to use     | `llama-3.1-sonar-small-128k-chat` |
 
 ##### PERPLEXITY.key
 
