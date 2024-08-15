@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/tak-bro/aicommit2/compare/v2.0.0...v2.0.1) (2024-08-15)
+
+
+### Features
+
+* add exclude option ([ba7a73f](https://github.com/tak-bro/aicommit2/commit/ba7a73fb393960931ddfa4731228ce21a7172f5e))
+
 # [2.0.0](https://github.com/tak-bro/aicommit2/compare/v1.13.0...v2.0.0) (2024-08-13)
 
 
