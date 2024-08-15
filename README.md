@@ -258,7 +258,7 @@ aicommit2 config set systemPromptPath="/path/to/user/prompt.txt"
 ##### exclude
 
 - Files to exclude from AI analysis
-- It is applied with the `--exclude` option of the CLI option. All files excluded through `--exclude` in CLI and above `exclude` setting.
+- It is applied with the `--exclude` option of the CLI option. All files excluded through `--exclude` in CLI and `exclude` general setting.
 
 ```sh
 aicommit2 config set exclude="*.ts"
