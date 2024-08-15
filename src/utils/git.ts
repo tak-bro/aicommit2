@@ -28,13 +28,14 @@ const filesToExclude = [
     '*.png',
 ].map(excludeFromDiff);
 
-export const getStagedDiff = async (excludeFiles?: string[]): Promise<StagedDiff | null> => {
+export const getStagedDiff = async (excludeFiles?: string[], exclude?: string[]): Promise<StagedDiff | null> => {
     const diffCached = ['diff', '--cached', '--diff-algorithm=minimal'];
     const { stdout: files } = await execa('git', [
         ...diffCached,
         '--name-only',
         ...filesToExclude,
         ...(excludeFiles ? excludeFiles.map(excludeFromDiff) : []),
+        ...(exclude ? exclude.map(excludeFromDiff) : []),
     ]);
 
     if (!files) {

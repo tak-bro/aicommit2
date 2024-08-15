@@ -5,7 +5,7 @@ import { Observable, catchError, concatMap, from, map, of } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIService, AIServiceError, AIServiceParams, CommitMessage } from './ai.service.js';
-import { DEFAULT_OLLMA_HOST } from '../../utils/config.js';
+import { DEFAULT_OLLAMA_HOST } from '../../utils/config.js';
 import { KnownError } from '../../utils/error.js';
 import { createLogResponse } from '../../utils/log.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, generatePrompt } from '../../utils/prompt.js';
@@ -15,7 +15,7 @@ import { HttpRequestBuilder } from '../http/http-request.builder.js';
 export interface OllamaServiceError extends AIServiceError {}
 
 export class OllamaService extends AIService {
-    private host = DEFAULT_OLLMA_HOST;
+    private host = DEFAULT_OLLAMA_HOST;
     private model = '';
     private ollama: Ollama;
 
@@ -31,7 +31,7 @@ export class OllamaService extends AIService {
             .hex(this.colors.secondary)
             .bold(`[${capitalizeFirstLetter(this.model)}]`);
         this.errorPrefix = chalk.red.bold(`[${capitalizeFirstLetter(this.model)}]`);
-        this.host = this.params.config.host || DEFAULT_OLLMA_HOST;
+        this.host = this.params.config.host || DEFAULT_OLLAMA_HOST;
         this.ollama = new Ollama({ host: this.host });
     }
 
