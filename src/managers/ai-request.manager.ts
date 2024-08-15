@@ -12,7 +12,7 @@ import { HuggingFaceService } from '../services/ai/hugging-face.service.js';
 import { MistralService } from '../services/ai/mistral.service.js';
 import { OllamaService } from '../services/ai/ollama.service.js';
 import { OpenAIService } from '../services/ai/openai.service.js';
-import { PerplexityService } from '../services/ai/perplexity.js';
+import { PerplexityService } from '../services/ai/perplexity.service.js';
 import { ModelName, ValidConfig } from '../utils/config.js';
 import { StagedDiff } from '../utils/git.js';
 

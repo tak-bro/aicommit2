@@ -34,16 +34,6 @@ export default async (
             await execa('git', ['add', '--update']); // NOTE: should be equivalent behavior to `git commit --all`
         }
 
-        const detectingFilesSpinner = consoleManager.displaySpinner('Detecting staged files');
-        const staged = await getStagedDiff(excludeFiles);
-        detectingFilesSpinner.stop();
-        if (!staged) {
-            throw new KnownError(
-                'No staged changes found. Stage your changes manually, or automatically stage all changes with the `--all` flag.'
-            );
-        }
-        consoleManager.printStagedFiles(staged);
-
         const config = await getConfig(
             {
                 locale: locale?.toString() as string,
@@ -61,6 +51,16 @@ export default async (
                 throw new KnownError(`Error reading system prompt file: ${config.systemPromptPath}`);
             }
         }
+
+        const detectingFilesSpinner = consoleManager.displaySpinner('Detecting staged files');
+        const staged = await getStagedDiff(excludeFiles, config.exclude);
+        detectingFilesSpinner.stop();
+        if (!staged) {
+            throw new KnownError(
+                'No staged changes found. Stage your changes manually, or automatically stage all changes with the `--all` flag.'
+            );
+        }
+        consoleManager.printStagedFiles(staged);
 
         const availableAIs: ModelName[] = Object.entries(config)
             .filter(([key]) => modelNames.includes(key as ModelName))

@@ -135,12 +135,11 @@ aicommit2 --all # or -a
   - If you give this option, **_aicommit2_ will not commit**.
 - `--generate` or `-g`: Number of messages to generate (default: **1**)
   - **Warning**: This uses more tokens, meaning it costs more.
-- `--prompt` or `-p`: System prompt for fine-tuning
-  - **Warning**: This option is **not recommended**. Please use `systemPrompt` or `systemPromptPath` for each model.
+- `--exclude` or `-x`: Files to exclude from AI analysis
 
 Example:
 ```sh
-aicommit2 --locale "jp" --all --type "conventional" --generate 3 --clipboard
+aicommit2 --locale "jp" --all --type "conventional" --generate 3 --clipboard --exclude "*.json" --exclude "*.ts"
 ```
 
 ### Git hook
@@ -217,19 +216,20 @@ model[]=codestral
 The following settings can be applied to most models, but support may vary.
 Please check the documentation for each specific model to confirm which settings are supported.
 
-| Setting            | Description                                                          | Default      |
-|--------------------|----------------------------------------------------------------------|--------------|
-| `systemPrompt`     | System Prompt text                                                   | -            |
-| `systemPromptPath` | Path to system prompt file                                           | -            |
-| `timeout`          | Request timeout (milliseconds)                                       | 10000        |
-| `temperature`      | Model's creativity (0.0 - 2.0)                                       | 0.7          |
-| `maxTokens`        | Maximum number of tokens to generate                                 | 1024         |
-| `locale`           | Locale for the generated commit messages                             | en           |
-| `generate`         | Number of commit messages to generate                                | 1            |
-| `type`             | Type of commit message to generate                                   | conventional |
-| `maxLength`        | Maximum character length of the Subject of generated commit message  | 50           |
-| `logging`          | Enable logging                                                       | true         |
-| `ignoreBody`       | Whether the commit message includes body                             | true         |
+| Setting            | Description                                                         | Default      |
+|--------------------|---------------------------------------------------------------------|--------------|
+| `systemPrompt`     | System Prompt text                                                  | -            |
+| `systemPromptPath` | Path to system prompt file                                          | -            |
+| `exclude`          | Files to exclude from AI analysis                                   | -            |
+| `timeout`          | Request timeout (milliseconds)                                      | 10000        |
+| `temperature`      | Model's creativity (0.0 - 2.0)                                      | 0.7          |
+| `maxTokens`        | Maximum number of tokens to generate                                | 1024         |
+| `locale`           | Locale for the generated commit messages                            | en           |
+| `generate`         | Number of commit messages to generate                               | 1            |
+| `type`             | Type of commit message to generate                                  | conventional |
+| `maxLength`        | Maximum character length of the Subject of generated commit message | 50           |
+| `logging`          | Enable logging                                                      | true         |
+| `ignoreBody`       | Whether the commit message includes body                            | true         |
 
 > 👉 **Tip:** To set the General Settings for each model, use the following command.
 > ```shell
@@ -255,6 +255,18 @@ aicommit2 config set systemPrompt="Generate git commit message."
 aicommit2 config set systemPromptPath="/path/to/user/prompt.txt"
 ```
 
+##### exclude
+
+- Files to exclude from AI analysis
+- It is applied with the `--exclude` option of the CLI option. All files excluded through `--exclude` in CLI and `exclude` general setting.
+
+```sh
+aicommit2 config set exclude="*.ts"
+aicommit2 config set exclude="*.ts,*.json"
+```
+
+> NOTE: `exclude` option does not support per model. It is **only** supported by General Settings.
+ 
 ##### timeout
 
 The timeout for network requests in milliseconds.
@@ -432,7 +444,7 @@ aicommit2 config set OLLAMA.model="llama3,codellama" # for multiple models
 aicommit2 config add OLLAMA.model="gemma2" # Only Ollama.model can be added.
 ```
 
-> OLLAMA.model is only **string array** type to support multiple Ollama. Please see [this section](#loading-multiple-ollama-models).
+> OLLAMA.model is **string array** type to support multiple Ollama. Please see [this section](#loading-multiple-ollama-models).
 
 ##### OLLAMA.host
 

@@ -13,13 +13,24 @@ import type { TiktokenModel } from '@dqbd/tiktoken';
 const commitTypes = ['', 'conventional', 'gitmoji'] as const;
 export type CommitType = (typeof commitTypes)[number];
 
-export const DEFAULT_OLLMA_HOST = 'http://localhost:11434';
+export const DEFAULT_OLLAMA_HOST = 'http://localhost:11434';
 
 const { hasOwnProperty } = Object.prototype;
 
 export const hasOwn = (object: unknown, key: PropertyKey) => hasOwnProperty.call(object, key);
 
-export const modelNames = ['OPENAI', 'OLLAMA', 'HUGGINGFACE', 'GEMINI', 'ANTHROPIC', 'MISTRAL', 'CODESTRAL', 'COHERE', 'GROQ', 'PERPLEXITY'] as const;
+export const modelNames = [
+    'OPENAI',
+    'OLLAMA',
+    'HUGGINGFACE',
+    'GEMINI',
+    'ANTHROPIC',
+    'MISTRAL',
+    'CODESTRAL',
+    'COHERE',
+    'GROQ',
+    'PERPLEXITY',
+] as const;
 export type ModelName = (typeof modelNames)[number];
 
 const parseAssert = (name: string, condition: any, message: string) => {
@@ -143,6 +154,13 @@ const generalConfigParsers = {
 
         parseAssert('ignoreBody', /^(?:true|false)$/.test(ignore), 'Must be a boolean(true or false)');
         return ignore === 'true';
+    },
+    exclude: (exclude?: string | string[]): string[] => {
+        if (!exclude) {
+            return [];
+        }
+        const excludeFiles = typeof exclude === 'string' ? exclude?.split(',') : exclude;
+        return excludeFiles.map(file => file.trim()).filter(file => !!file && file.length > 0);
     },
 } as const;
 
@@ -320,7 +338,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         },
         host: (host?: string) => {
             if (!host) {
-                return DEFAULT_OLLMA_HOST;
+                return DEFAULT_OLLAMA_HOST;
             }
             parseAssert('OLLAMA.host', /^https?:\/\//.test(host), 'Must be a valid URL');
             return host;
@@ -475,14 +493,22 @@ const readConfigFile = async (): Promise<RawConfig> => {
 
     const configString = await fs.readFile(configPath, 'utf8');
     let config = ini.parse(configString);
-    const hasOllmaModel = hasOwn(config, 'OLLAMA') && hasOwn(config['OLLAMA'], 'model');
-    if (hasOllmaModel) {
+    const hasOllamaModel = hasOwn(config, 'OLLAMA') && hasOwn(config['OLLAMA'], 'model');
+    if (hasOllamaModel) {
         config = {
             ...config,
             OLLAMA: {
                 ...config.OLLAMA,
                 model: typeof config['OLLAMA'].model === 'string' ? [config['OLLAMA'].model] : config['OLLAMA'].model,
             },
+        };
+    }
+
+    const hasExclude = hasOwn(config, 'exclude');
+    if (hasExclude) {
+        config = {
+            ...config,
+            exclude: typeof config.exclude === 'string' ? [config.exclude] : config.exclude,
         };
     }
     return config;
