@@ -381,13 +381,14 @@ aicommit2 config set ignoreBody="true"
 
 ### OpenAI
 
-| Setting            | Description        | Default                |
-|--------------------|--------------------|------------------------|
-| `key`              | API key            | -                      |
-| `model`            | Model to use       | `gpt-3.5-turbo`        |
-| `url`              | API endpoint URL   | https://api.openai.com |
-| `path`             | API path           | /v1/chat/completions   |
-| `proxy`            | Proxy settings     | -                      |
+| Setting | Description        | Default                |
+|---------|--------------------|------------------------|
+| `key`   | API key            | -                      |
+| `model` | Model to use       | `gpt-3.5-turbo`        |
+| `url`   | API endpoint URL   | https://api.openai.com |
+| `path`  | API path           | /v1/chat/completions   |
+| `proxy` | Proxy settings     | -                      |
+| `topP`  | Nucleus sampling   | 1                      |
 
 ##### OPENAI.key
 
@@ -429,14 +430,13 @@ The OpenAI Path.
 
 Default: `1`
 
-The `top_p` parameter selects tokens whose combined probability meets a threshold. Please see [detail](https://platform.openai.com/docs/api-reference/chat/create#chat-create-top_p)
+The `top_p` parameter selects tokens whose combined probability meets a threshold. Please see [detail](https://platform.openai.com/docs/api-reference/chat/create#chat-create-top_p).
 
 ```sh
-aicommit2 config set OPENAI.topP=0
+aicommit2 config set OPENAI.topP=0.2
 ```
 
 > NOTE: If `topP` is less than 0, it does not deliver the `top_p` parameter to the request. 
-> - You can use it when you don't need a `top_p` parameter on other compatible platform.
 
 ### Ollama
 
@@ -594,10 +594,11 @@ Anthropic does not support the following options in General Settings.
 
 ### Mistral
 
-| Setting            | Description  | Default        |
-|--------------------|--------------|----------------|
-| `key`              | API key      | -              |
-| `model`            | Model to use | `mistral-tiny` |
+| Setting  | Description      | Default        |
+|----------|------------------|----------------|
+| `key`    | API key          | -              |
+| `model`  | Model to use     | `mistral-tiny` |
+| `topP`   | Nucleus sampling | 1              |
 
 ##### MISTRAL.key
 
@@ -623,12 +624,23 @@ Supported:
 - `mistral-large-2402`
 - `mistral-embed`
 
+##### MISTRAL.topP
+
+Default: `1`
+
+Nucleus sampling, where the model considers the results of the tokens with top_p probability mass.
+
+```sh
+aicommit2 config set MISTRAL.topP=0.2
+```
+
 ### Codestral
 
-| Setting            | Description     | Default            |
-|--------------------|-----------------|--------------------|
-| `key`              | API key         | -                  |
-| `model`            | Model to use    | `codestral-latest` |
+| Setting | Description      | Default            |
+|---------|------------------|--------------------|
+| `key`   | API key          | -                  |
+| `model` | Model to use     | `codestral-latest` |
+| `topP`  | Nucleus sampling | 1                  |
 
 ##### CODESTRAL.key
 
@@ -644,6 +656,16 @@ Supported:
 
 ```sh
 aicommit2 config set CODESTRAL.model="codestral-2405"
+```
+
+##### CODESTRAL.topP
+
+Default: `1`
+
+Nucleus sampling, where the model considers the results of the tokens with top_p probability mass.
+
+```sh
+aicommit2 config set CODESTRAL.topP=0.1
 ```
 
 #### Cohere
@@ -708,10 +730,11 @@ aicommit2 config set GROQ.model="llama3-8b-8192"
 
 ### Perplexity
 
-| Setting            | Description      | Default                           |
-|--------------------|------------------|-----------------------------------|
-| `key`              | API key          | -                                 |
-| `model`            | Model to use     | `llama-3.1-sonar-small-128k-chat` |
+| Setting  | Description      | Default                           |
+|----------|------------------|-----------------------------------|
+| `key`    | API key          | -                                 |
+| `model`  | Model to use     | `llama-3.1-sonar-small-128k-chat` |
+| `topP`   | Nucleus sampling | 1                                 |
 
 ##### PERPLEXITY.key
 
@@ -735,6 +758,16 @@ Supported:
 
 ```sh
 aicommit2 config set PERPLEXITY.model="llama-3.1-70b"
+```
+
+##### PERPLEXITY.topP
+
+Default: `1`
+
+Nucleus sampling, where the model considers the results of the tokens with top_p probability mass.
+
+```sh
+aicommit2 config set PERPLEXITY.topP=0.3
 ```
 
 #### Usage

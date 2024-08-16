@@ -110,7 +110,7 @@ export class CodestralService extends AIService {
                     },
                 ],
                 temperature: this.params.config.temperature,
-                top_p: 1,
+                top_p: this.params.config.topP,
                 max_tokens: this.params.config.maxTokens,
                 stream: false,
                 safe_prompt: false,
