@@ -7,7 +7,6 @@ import createHttpsProxyAgent from 'https-proxy-agent';
 import { KnownError } from './error.js';
 import { createLogResponse } from './log.js';
 
-import type { CommitType } from './config.js';
 import type { ClientRequest, IncomingMessage } from 'http';
 import type { CreateChatCompletionRequest, CreateChatCompletionResponse } from 'openai';
 
@@ -150,51 +149,41 @@ export const generateCommitMessage = async (
     path: string,
     apiKey: string,
     model: TiktokenModel,
-    locale: string,
     diff: string,
-    generate: number,
-    type: CommitType,
     timeout: number,
     maxTokens: number,
     temperature: number,
+    topP: number,
     systemPrompt: string,
     logging: boolean,
     proxy?: string
 ) => {
     try {
-        const completion = await createChatCompletion(
-            url,
-            path,
-            apiKey,
-            {
-                model,
-                messages: [
-                    {
-                        role: 'system',
-                        content: systemPrompt,
-                    },
-                    {
-                        role: 'user',
-                        content: `Here are diff: ${diff}`,
-                    },
-                ],
-                temperature,
-                top_p: 1,
-                frequency_penalty: 0,
-                presence_penalty: 0,
-                max_tokens: maxTokens,
-                stream: false,
-                n: 1,
-            },
-            timeout,
-            proxy
-        );
+        const request: CreateChatCompletionRequest = {
+            model,
+            messages: [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: `Here are diff: ${diff}` },
+            ],
+            temperature,
+            max_tokens: maxTokens,
+            stream: false,
+            n: 1,
+            top_p: topP,
+            frequency_penalty: 0,
+            presence_penalty: 0,
+        };
+        // NOTE: remove top_p. please see https://github.com/tak-bro/aicommit2/issues/66
+        if (topP <= 0) {
+            delete request.top_p;
+        }
 
+        const completion = await createChatCompletion(url, path, apiKey, request, timeout, proxy);
         const fullText = completion.choices
             .filter(choice => choice.message?.content)
             .map(choice => sanitizeMessage(choice.message!.content as string))
             .join();
-        logging && createLogResponse('OPEN AI', diff, systemPrompt, fullText);
+        logging && createLogResponse('OPENAI', diff, systemPrompt, fullText);
 
         return completion.choices
             .filter(choice => choice.message?.content)

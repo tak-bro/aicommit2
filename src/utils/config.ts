@@ -177,6 +177,15 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         },
         path: (path?: string) => path || '/v1/chat/completions',
         proxy: (proxy?: string) => proxy || '',
+        topP: (topP?: string) => {
+            if (!topP) {
+                return 1;
+            }
+
+            const parsedTopP = Number(topP);
+            parseAssert('OPENAI.topP', parsedTopP <= 1.0, 'Must be less than or equal to 1');
+            return parsedTopP;
+        },
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
         timeout: generalConfigParsers.timeout,
@@ -246,12 +255,10 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
                 return 'claude-3-haiku-20240307';
             }
             const supportModels = [
-                'claude-2.1',
-                'claude-2.0',
-                'claude-instant-1.2',
-                'claude-3-haiku-20240307',
-                'claude-3-sonnet-20240229',
-                'claude-3-opus-20240229',
+                `claude-3-haiku-20240307`,
+                `claude-3-sonnet-20240229`,
+                `claude-3-opus-20240229`,
+                `claude-3-5-sonnet-20240620`,
             ];
             parseAssert('ANTHROPIC.model', supportModels.includes(model), 'Invalid model type of Anthropic');
             return model;
