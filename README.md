@@ -432,7 +432,7 @@ Default: `1`
 The `top_p` parameter selects tokens whose combined probability meets a threshold. Please see [detail](https://platform.openai.com/docs/api-reference/chat/create#chat-create-top_p)
 
 ```sh
-aicommit2 config set OPENAI.topP=0 # 
+aicommit2 config set OPENAI.topP=0
 ```
 
 > NOTE: If `topP` is less than 0, it does not deliver the `top_p` parameter to the request. 
