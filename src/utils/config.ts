@@ -300,6 +300,16 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
             parseAssert('MISTRAL.model', supportModels.includes(model), 'Invalid model type of Mistral AI');
             return model;
         },
+        topP: (topP?: string) => {
+            if (!topP) {
+                return 1;
+            }
+            parseAssert('MISTRAL.topP', /^(1|\d)(\.\d{1,2})?$/.test(topP), 'Must be decimal between 0 and 1');
+            const parsed = Number(topP);
+            parseAssert('MISTRAL.topP', parsed > 0.0, 'Must be greater than 0');
+            parseAssert('MISTRAL.topP', parsed <= 1.0, 'Must be less than or equal to 1');
+            return parsed;
+        },
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
         timeout: generalConfigParsers.timeout,
@@ -322,6 +332,16 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
 
             parseAssert('CODESTRAL.model', supportModels.includes(model), 'Invalid model type of Codestral');
             return model;
+        },
+        topP: (topP?: string) => {
+            if (!topP) {
+                return 1;
+            }
+            parseAssert('CODESTRAL.topP', /^(1|\d)(\.\d{1,2})?$/.test(topP), 'Must be decimal between 0 and 1');
+            const parsed = Number(topP);
+            parseAssert('CODESTRAL.topP', parsed > 0.0, 'Must be greater than 0');
+            parseAssert('CODESTRAL.topP', parsed <= 1.0, 'Must be less than or equal to 1');
+            return parsed;
         },
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
@@ -442,6 +462,16 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
 
             parseAssert('PERPLEXITY.model', supportModels.includes(model), 'Invalid model type of Perplexity');
             return model;
+        },
+        topP: (topP?: string) => {
+            if (!topP) {
+                return 1;
+            }
+            parseAssert('PERPLEXITY.topP', /^(1|\d)(\.\d{1,2})?$/.test(topP), 'Must be decimal between 0 and 1');
+            const parsed = Number(topP);
+            parseAssert('PERPLEXITY.topP', parsed > 0.0, 'Must be greater than 0');
+            parseAssert('PERPLEXITY.topP', parsed <= 1.0, 'Must be less than or equal to 1');
+            return parsed;
         },
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
