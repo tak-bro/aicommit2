@@ -1,3 +1,10 @@
+## [2.0.2](https://github.com/tak-bro/aicommit2/compare/v2.0.1...v2.0.2) (2024-08-16)
+
+
+### Features
+
+* add topP configuration for OPENAI model ([959687a](https://github.com/tak-bro/aicommit2/commit/959687a3b1b9ca4b08bb989ba52eb4e6602201c0))
+
 ## [2.0.1](https://github.com/tak-bro/aicommit2/compare/v2.0.0...v2.0.1) (2024-08-15)
 
 
