@@ -1,3 +1,10 @@
+## [2.0.3](https://github.com/tak-bro/aicommit2/compare/v2.0.2...v2.0.3) (2024-08-16)
+
+
+### Features
+
+* add topP configuration for Mistral, Codestral, and Perplexity AI services ([e2e873a](https://github.com/tak-bro/aicommit2/commit/e2e873aad459b12a179bce7145ca755fc2405baf))
+
 ## [2.0.2](https://github.com/tak-bro/aicommit2/compare/v2.0.1...v2.0.2) (2024-08-16)
 
 
