@@ -62,7 +62,7 @@ npm install -g aicommit2
 
 ```sh
 aicommit2 config set OPENAI.key=<your key>
-aicommit2 config set OLLAMA.model=<your local model>
+aicommit2 config set ANTHROPIC.key=<your key>
 # ... (similar commands for other providers)
 ```
 
@@ -635,10 +635,10 @@ aicommit2 config set CODESTRAL.model="codestral-2405"
 
 #### Cohere
 
-| Setting            | Description                                                                                                      | Default     |
-|--------------------|------------------------------------------------------------------------------------------------------------------|-------------|
-| `key`              | API key                                                                                                          | -           |
-| `model`            | Model to use                                                                                                     | `command`   |
+| Setting            | Description  | Default     |
+|--------------------|--------------|-------------|
+| `key`              | API key      | -           |
+| `model`            | Model to use | `command`   |
 
 ##### COHERE.key
 
