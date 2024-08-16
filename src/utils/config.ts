@@ -177,6 +177,15 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         },
         path: (path?: string) => path || '/v1/chat/completions',
         proxy: (proxy?: string) => proxy || '',
+        topP: (topP?: string) => {
+            if (!topP) {
+                return 1;
+            }
+
+            const parsedTopP = Number(topP);
+            parseAssert('OPENAI.topP', parsedTopP <= 1.0, 'Must be less than or equal to 1');
+            return parsedTopP;
+        },
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
         timeout: generalConfigParsers.timeout,

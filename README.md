@@ -381,13 +381,13 @@ aicommit2 config set ignoreBody="true"
 
 ### OpenAI
 
-| Setting            | Description                                                         | Default                |
-|--------------------|---------------------------------------------------------------------|------------------------|
-| `key`              | API key                                                             | -                      |
-| `model`            | Model to use                                                        | `gpt-3.5-turbo`        |
-| `url`              | API endpoint URL                                                    | https://api.openai.com |
-| `path`             | API path                                                            | /v1/chat/completions   |
-| `proxy`            | Proxy settings                                                      | -                      |
+| Setting            | Description        | Default                |
+|--------------------|--------------------|------------------------|
+| `key`              | API key            | -                      |
+| `model`            | Model to use       | `gpt-3.5-turbo`        |
+| `url`              | API endpoint URL   | https://api.openai.com |
+| `path`             | API path           | /v1/chat/completions   |
+| `proxy`            | Proxy settings     | -                      |
 
 ##### OPENAI.key
 
@@ -425,13 +425,26 @@ Default: `/v1/chat/completions`
 
 The OpenAI Path.
 
+##### OPENAI.topP
+
+Default: `1`
+
+The `top_p` parameter selects tokens whose combined probability meets a threshold. Please see [detail](https://platform.openai.com/docs/api-reference/chat/create#chat-create-top_p)
+
+```sh
+aicommit2 config set OPENAI.topP=0 # 
+```
+
+> NOTE: If `topP` is less than 0, it does not deliver the `top_p` parameter to the request. 
+> - You can use it when you don't need a `top_p` parameter on other compatible platform.
+
 ### Ollama
 
-| Setting            | Description                                                                                                      | Default                |
-|--------------------|------------------------------------------------------------------------------------------------------------------|------------------------|
-| `model`            | Model(s) to use (comma-separated list)                                                                           | -                      |
-| `host`             | Ollama host URL                                                                                                  | http://localhost:11434 |
-| `timeout`          | Request timeout (milliseconds)                                                                                   | 100_000 (100sec)       |
+| Setting            | Description                                  | Default                |
+|--------------------|----------------------------------------------|------------------------|
+| `model`            | Model(s) to use (comma-separated list)       | -                      |
+| `host`             | Ollama host URL                              | http://localhost:11434 |
+| `timeout`          | Request timeout (milliseconds)               | 100_000 (100sec)       |
 
 ##### OLLAMA.model
 
@@ -474,10 +487,10 @@ Ollama does not support the following options in General Settings.
 
 ### HuggingFace
 
-| Setting            | Description                                                                                                      | Default                                |
-|--------------------|------------------------------------------------------------------------------------------------------------------|----------------------------------------|
-| `cookie`           | Authentication cookie                                                                                            | -                                      |
-| `model`            | Model to use                                                                                                     | `CohereForAI/c4ai-command-r-plus`      |
+| Setting            | Description                | Default                                |
+|--------------------|----------------------------|----------------------------------------|
+| `cookie`           | Authentication cookie      | -                                      |
+| `model`            | Model to use               | `CohereForAI/c4ai-command-r-plus`      |
 
 ##### HUGGINGFACE.cookie
 
@@ -516,10 +529,10 @@ Huggingface does not support the following options in General Settings.
 
 ### Gemini
 
-| Setting            | Description                                                                                                      | Default           |
-|--------------------|------------------------------------------------------------------------------------------------------------------|-------------------|
-| `key`              | API key                                                                                                          | -                 |
-| `model`            | Model to use                                                                                                     | `gemini-1.5-pro`  |
+| Setting            | Description            | Default           |
+|--------------------|------------------------|-------------------|
+| `key`              | API key                | -                 |
+| `model`            | Model to use           | `gemini-1.5-pro`  |
 
 ##### GEMINI.key
 
@@ -581,10 +594,10 @@ Anthropic does not support the following options in General Settings.
 
 ### Mistral
 
-| Setting            | Description                                                                                                      | Default        |
-|--------------------|------------------------------------------------------------------------------------------------------------------|----------------|
-| `key`              | API key                                                                                                          | -              |
-| `model`            | Model to use                                                                                                     | `mistral-tiny` |
+| Setting            | Description  | Default        |
+|--------------------|--------------|----------------|
+| `key`              | API key      | -              |
+| `model`            | Model to use | `mistral-tiny` |
 
 ##### MISTRAL.key
 
@@ -612,10 +625,10 @@ Supported:
 
 ### Codestral
 
-| Setting            | Description                                                                                                      | Default            |
-|--------------------|------------------------------------------------------------------------------------------------------------------|--------------------|
-| `key`              | API key                                                                                                          | -                  |
-| `model`            | Model to use                                                                                                     | `codestral-latest` |
+| Setting            | Description     | Default            |
+|--------------------|-----------------|--------------------|
+| `key`              | API key         | -                  |
+| `model`            | Model to use    | `codestral-latest` |
 
 ##### CODESTRAL.key
 
