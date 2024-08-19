@@ -1,3 +1,10 @@
+## [2.0.4](https://github.com/tak-bro/aicommit2/compare/v2.0.3...v2.0.4) (2024-08-19)
+
+
+### Features
+
+* update OpenAI model to gpt-4o-mini ([0b86a69](https://github.com/tak-bro/aicommit2/commit/0b86a6928ab26561ae7d6e5b6c63a0593ed94c57))
+
 ## [2.0.3](https://github.com/tak-bro/aicommit2/compare/v2.0.2...v2.0.3) (2024-08-16)
 
 
