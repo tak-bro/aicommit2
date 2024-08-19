@@ -167,7 +167,7 @@ const generalConfigParsers = {
 const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>> = {
     OPENAI: {
         key: (key?: string) => key || '',
-        model: (model?: string): TiktokenModel => (model || 'gpt-3.5-turbo') as TiktokenModel,
+        model: (model?: string): TiktokenModel => (model || 'gpt-4o-mini') as TiktokenModel,
         url: (host?: string) => {
             if (!host) {
                 return 'https://api.openai.com';

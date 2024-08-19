@@ -384,7 +384,7 @@ aicommit2 config set ignoreBody="true"
 | Setting | Description        | Default                |
 |---------|--------------------|------------------------|
 | `key`   | API key            | -                      |
-| `model` | Model to use       | `gpt-3.5-turbo`        |
+| `model` | Model to use       | `gpt-4o-mini`          |
 | `url`   | API endpoint URL   | https://api.openai.com |
 | `path`  | API path           | /v1/chat/completions   |
 | `proxy` | Proxy settings     | -                      |
@@ -400,14 +400,12 @@ aicommit2 config set OPENAI.key="your api key"
 
 ##### OPENAI.model
 
-Default: `gpt-3.5-turbo`
+Default: `gpt-4o-mini`
 
 The Chat Completions (`/v1/chat/completions`) model to use. Consult the list of models available in the [OpenAI Documentation](https://platform.openai.com/docs/models/model-endpoint-compatibility).
 
-> Tip: If you have access, try upgrading to [`gpt-4`](https://platform.openai.com/docs/models/gpt-4) for next-level code analysis. It can handle double the input size, but comes at a higher cost. Check out OpenAI's website to learn more.
-
 ```sh
-aicommit2 config set OPENAI.model=gpt-4
+aicommit2 config set OPENAI.model=gpt-4o
 ```
 
 ##### OPENAI.url
@@ -769,21 +767,6 @@ Nucleus sampling, where the model considers the results of the tokens with top_p
 ```sh
 aicommit2 config set PERPLEXITY.topP=0.3
 ```
-
-#### Usage
-
-1. Stage your files and commit:
-
-```sh
-git add <files...>
-git commit # Only generates a message when it's not passed in
-```
-
-> If you ever want to write your own message instead of generating one, you can simply pass one in: `git commit -m "My message"`
-
-2. _aicommit2_ will generate the commit message for you and pass it back to Git. Git will open it with the [configured editor](https://docs.github.com/en/get-started/getting-started-with-git/associating-text-editors-with-git) for you to review/edit it.
-
-3. Save and close the editor to commit!
 
 ## Upgrading
 
