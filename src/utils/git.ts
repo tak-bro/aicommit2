@@ -24,6 +24,7 @@ const filesToExclude = [
     'pnpm-lock.yaml',
     // yarn.lock, Cargo.lock, Gemfile.lock, Pipfile.lock, etc.
     '*.lock',
+    '*.lockb',
     '*.gif',
     '*.png',
 ].map(excludeFromDiff);
