@@ -427,7 +427,10 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
                 `llama3-8b-8192`,
                 `llama3-groq-70b-8192-tool-use-preview`,
                 `llama3-groq-8b-8192-tool-use-preview`,
+                `llama-guard-3-8b`,
+                `mixtral-8x7b-32768`,
             ];
+
             parseAssert('GROQ.model', supportModels.includes(model), 'Invalid model type of Groq');
             return model;
         },
