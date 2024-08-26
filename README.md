@@ -721,6 +721,8 @@ Supported:
 - `llama3-8b-8192`
 - `llama3-groq-70b-8192-tool-use-preview`
 - `llama3-groq-8b-8192-tool-use-preview`
+- `llama-guard-3-8b`
+- `mixtral-8x7b-32768`
 
 ```sh
 aicommit2 config set GROQ.model="llama3-8b-8192"
