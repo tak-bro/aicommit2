@@ -1,3 +1,10 @@
+## [2.0.7](https://github.com/tak-bro/aicommit2/compare/v2.0.6...v2.0.7) (2024-08-26)
+
+
+### Features
+
+* add DeepSeekService for AI request management ([c88d1be](https://github.com/tak-bro/aicommit2/commit/c88d1be81d9d96914ad5936769d58a1b3dc12048))
+
 ## [2.0.6](https://github.com/tak-bro/aicommit2/compare/v2.0.5...v2.0.6) (2024-08-24)
 
 
