@@ -396,7 +396,7 @@ aicommit2 config set topP=0.2
 |    **Mistral AI**    |    ✓    |      ✓      |     ✓     |  ✓   |
 |    **Codestral**     |    ✓    |      ✓      |     ✓     |  ✓   |
 |      **Cohere**      |         |      ✓      |     ✓     |      |
-|       **Groq**       |    ✓    |      ✓      |     ✓     |  ✓   |
+|       **Groq**       |    ✓    |      ✓      |     ✓     |      |
 |    **Perplexity**    |    ✓    |      ✓      |     ✓     |  ✓   |
 |     **DeepSeek**     |    ✓    |      ✓      |     ✓     |  ✓   |
 |   **Huggingface**    |         |             |           |      |
@@ -740,6 +740,12 @@ Supported:
 aicommit2 config set GROQ.model="llama3-8b-8192"
 ```
 
+##### Unsupported Options
+
+Groq does not support the following options in General Settings.
+
+- topP
+ 
 ### Perplexity
 
 | Setting  | Description      | Default                           |
