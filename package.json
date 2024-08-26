@@ -33,7 +33,8 @@
         "cohere",
         "groq",
         "codestral",
-        "perplexity"
+        "perplexity",
+        "deepseek"
     ],
     "license": "MIT",
     "repository": "tak-bro/aicommit2",

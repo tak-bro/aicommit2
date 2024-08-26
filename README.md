@@ -42,6 +42,7 @@ _aicommit2_ is a reactive CLI tool that automatically generates Git commit messa
 - [Cohere](https://cohere.com/)
 - [Groq](https://groq.com/)
 - [Perplexity](https://docs.perplexity.ai/)
+- [DeepSeek](https://www.deepseek.com/)
 - [Huggingface **(Unofficial)**](https://huggingface.co/chat/)
 
 ### Local
@@ -768,6 +769,40 @@ Nucleus sampling, where the model considers the results of the tokens with top_p
 
 ```sh
 aicommit2 config set PERPLEXITY.topP=0.3
+```
+
+### DeepSeek
+
+| Setting | Description      | Default            |
+|---------|------------------|--------------------|
+| `key`   | API key          | -                  |
+| `model` | Model to use     | `deepseek-coder`   |
+| `topP`  | Nucleus sampling | 1                  |
+
+##### DEEPSEEK.key
+
+The DeepSeek API key. If you don't have one, please sign up and subscribe in [DeepSeek Platform](https://platform.deepseek.com/).
+
+##### DEEPSEEK.model
+
+Default: `deepseek-coder`
+
+Supported:
+- `deepseek-coder`
+- `deepseek-chat`
+
+```sh
+aicommit2 config set DEEPSEEK.model="deepseek-chat"
+```
+
+##### DEEPSEEK.topP
+
+Default: `1`
+
+Nucleus sampling, where the model considers the results of the tokens with top_p probability mass.
+
+```sh
+aicommit2 config set DEEPSEEK.topP=0.1
 ```
 
 ## Upgrading
