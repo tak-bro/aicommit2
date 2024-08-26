@@ -847,10 +847,10 @@ Remember to follow these guidelines:
 
 ### **Appended Text**
 
-Please note that the following text will **always** be appended to the end of your custom prompt:
+Please note that the following text will **ALWAYS** be appended to the end of your custom prompt:
 
 ```
-Provide your response as a JSON array containing exactly 1 object, each with the following keys:
+Lastly, Provide your response as a JSON array containing exactly 1 object, each with the following keys:
 - "subject": The main commit message using the conventional style. It should be a concise summary of the changes.
 - "body": An optional detailed explanation of the changes. If not needed, use an empty string.
 - "footer": An optional footer for metadata like BREAKING CHANGES. If not needed, use an empty string.
