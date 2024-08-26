@@ -217,21 +217,21 @@ model[]=codestral
 The following settings can be applied to most models, but support may vary.
 Please check the documentation for each specific model to confirm which settings are supported.
 
-| Setting            | Description                                                         | Default       |
-|--------------------|---------------------------------------------------------------------|---------------|
-| `systemPrompt`     | System Prompt text                                                  | -             |
-| `systemPromptPath` | Path to system prompt file                                          | -             |
-| `exclude`          | Files to exclude from AI analysis                                   | -             |
-| `type`             | Type of commit message to generate                                  | conventional  |
-| `locale`           | Locale for the generated commit messages                            | en            |
-| `generate`         | Number of commit messages to generate                               | 1             |
-| `logging`          | Enable logging                                                      | true          |
-| `ignoreBody`       | Whether the commit message includes body                            | true          |
-| `maxLength`        | Maximum character length of the Subject of generated commit message | 50            |
-| `timeout`          | Request timeout (milliseconds)                                      | 10000         |
-| `temperature`      | Model's creativity (0.0 - 2.0)                                      | 0.7           |
-| `maxTokens`        | Maximum number of tokens to generate                                | 1024          |
-| `topP`             | Nucleus sampling                                                    | 1             |
+| Setting            | Description                                                         | Default      |
+|--------------------|---------------------------------------------------------------------|--------------|
+| `systemPrompt`     | System Prompt text                                                  | -            |
+| `systemPromptPath` | Path to system prompt file                                          | -            |
+| `exclude`          | Files to exclude from AI analysis                                   | -            |
+| `type`             | Type of commit message to generate                                  | conventional |
+| `locale`           | Locale for the generated commit messages                            | en           |
+| `generate`         | Number of commit messages to generate                               | 1            |
+| `logging`          | Enable logging                                                      | true         |
+| `ignoreBody`       | Whether the commit message includes body                            | true         |
+| `maxLength`        | Maximum character length of the Subject of generated commit message | 50           |
+| `timeout`          | Request timeout (milliseconds)                                      | 10000        |
+| `temperature`      | Model's creativity (0.0 - 2.0)                                      | 0.7          |
+| `maxTokens`        | Maximum number of tokens to generate                                | 1024         |
+| `topP`             | Nucleus sampling                                                    | 0.9          |
 
 > 👉 **Tip:** To set the General Settings for each model, use the following command.
 > ```shell
@@ -379,7 +379,7 @@ aicommit2 config set maxTokens=3000
 
 ##### topP
 
-Default: `1`
+Default: `0.9`
 
 Nucleus sampling, where the model considers the results of the tokens with top_p probability mass.
 
@@ -388,19 +388,19 @@ aicommit2 config set topP=0.2
 ```
 
 ## Available General Settings by Model
-|                      | timeout | temperature | maxTokens | topP |
-|:--------------------:|:-------:|:-----------:|:---------:|:----:|
-|      **OpenAI**      |    ✓    |      ✓      |     ✓     |  ✓   |
-| **Anthropic Claude** |         |      ✓      |     ✓     |      |
-|      **Gemini**      |         |      ✓      |     ✓     |      |
-|    **Mistral AI**    |    ✓    |      ✓      |     ✓     |  ✓   |
-|    **Codestral**     |    ✓    |      ✓      |     ✓     |  ✓   |
-|      **Cohere**      |         |      ✓      |     ✓     |      |
-|       **Groq**       |    ✓    |      ✓      |     ✓     |      |
-|    **Perplexity**    |    ✓    |      ✓      |     ✓     |  ✓   |
-|     **DeepSeek**     |    ✓    |      ✓      |     ✓     |  ✓   |
-|   **Huggingface**    |         |             |           |      |
-|      **Ollama**      |    ✓    |      ✓      |           |      |
+|                      | timeout | temperature | maxTokens |  topP  |
+|:--------------------:|:-------:|:-----------:|:---------:|:------:|
+|      **OpenAI**      |    ✓    |      ✓      |     ✓     |   ✓    |
+| **Anthropic Claude** |         |      ✓      |     ✓     |   ✓    |
+|      **Gemini**      |         |      ✓      |     ✓     |   ✓    |
+|    **Mistral AI**    |    ✓    |      ✓      |     ✓     |   ✓    |
+|    **Codestral**     |    ✓    |      ✓      |     ✓     |   ✓    |
+|      **Cohere**      |         |      ✓      |     ✓     |   ✓    |
+|       **Groq**       |    ✓    |      ✓      |     ✓     |   ✓    |
+|    **Perplexity**    |    ✓    |      ✓      |     ✓     |   ✓    |
+|     **DeepSeek**     |    ✓    |      ✓      |     ✓     |   ✓    |
+|   **Huggingface**    |         |             |           |        |
+|      **Ollama**      |    ✓    |      ✓      |           |   ✓    |
 
 > All AI support the following options in General Settings.
 > - systemPrompt, systemPromptPath, exclude, type, locale, generate, logging, ignoreBody, maxLength
@@ -455,7 +455,7 @@ The OpenAI Path.
 
 ##### OPENAI.topP
 
-Default: `1`
+Default: `0.9`
 
 The `top_p` parameter selects tokens whose combined probability meets a threshold. Please see [detail](https://platform.openai.com/docs/api-reference/chat/create#chat-create-top_p).
 
@@ -511,7 +511,6 @@ aicommit2 config set OLLAMA.timeout=<timeout>
 Ollama does not support the following options in General Settings.
  
 - maxTokens
-- topP
 
 ### HuggingFace
 
@@ -589,7 +588,6 @@ aicommit2 config set GEMINI.model="gemini-1.5-pro-exp-0801"
 Gemini does not support the following options in General Settings.
 
 - timeout
-- topP
 
 ### Anthropic
 
@@ -621,7 +619,6 @@ aicommit2 config set ANTHROPIC.model="claude-3-5-sonnet-20240620"
 Anthropic does not support the following options in General Settings.
 
 - timeout
-- topP
 
 ### Mistral
 
@@ -707,7 +704,6 @@ aicommit2 config set COHERE.model="command-nightly"
 Cohere does not support the following options in General Settings.
 
 - timeout
-- topP
 
 ### Groq
 
@@ -740,12 +736,6 @@ Supported:
 aicommit2 config set GROQ.model="llama3-8b-8192"
 ```
 
-##### Unsupported Options
-
-Groq does not support the following options in General Settings.
-
-- topP
- 
 ### Perplexity
 
 | Setting  | Description      | Default                           |

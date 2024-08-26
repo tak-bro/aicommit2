@@ -6,14 +6,14 @@ settings:
 
 dependencies:
   '@anthropic-ai/sdk':
-    specifier: ^0.20.8
-    version: 0.20.9
+    specifier: ^0.27.0
+    version: 0.27.0
   '@dqbd/tiktoken':
     specifier: ^1.0.16
     version: 1.0.16
   '@google/generative-ai':
-    specifier: ^0.15.0
-    version: 0.15.0
+    specifier: ^0.17.1
+    version: 0.17.1
   '@inquirer/prompts':
     specifier: ^3.0.0
     version: 3.3.2
@@ -27,8 +27,8 @@ dependencies:
     specifier: ^5.3.0
     version: 5.3.0
   cohere-ai:
-    specifier: ^7.11.0
-    version: 7.11.2(@aws-sdk/client-sso-oidc@3.606.0)
+    specifier: ^7.12.1
+    version: 7.12.1(@aws-sdk/client-sso-oidc@3.606.0)
   copy-paste:
     specifier: ^1.5.3
     version: 1.5.3
@@ -39,8 +39,8 @@ dependencies:
     specifier: ^6.0.3
     version: 6.0.3
   groq-sdk:
-    specifier: ^0.4.0
-    version: 0.4.0
+    specifier: ^0.5.0
+    version: 0.5.0
   inquirer:
     specifier: 9.2.8
     version: 9.2.8
@@ -187,8 +187,8 @@ devDependencies:
 
 packages:
 
-  /@anthropic-ai/sdk@0.20.9:
-    resolution: {integrity: sha512-Lq74+DhiEQO6F9/gdVOLmHx57pX45ebK2Q/zH14xYe1157a7QeUVknRqIp0Jz5gQI01o7NKbuv9Dag2uQsLjDg==}
+  /@anthropic-ai/sdk@0.27.0:
+    resolution: {integrity: sha512-DuksaCaCb0ENDAc1UHef341SRK6LQmPvey10+Q662Eo4rc8H2i/MKK/n6q/dJagqVkqJBoEEirrlMBLqIIhupw==}
     dependencies:
       '@types/node': 18.19.39
       '@types/node-fetch': 2.6.11
@@ -197,7 +197,6 @@ packages:
       form-data-encoder: 1.7.2
       formdata-node: 4.4.1
       node-fetch: 2.7.0
-      web-streams-polyfill: 3.3.3
     transitivePeerDependencies:
       - encoding
     dev: false
@@ -1066,8 +1065,8 @@ packages:
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dev: true
 
-  /@google/generative-ai@0.15.0:
-    resolution: {integrity: sha512-zs37judcTYFJf1U7tnuqnh7gdzF6dcWj9pNRxjA5JTONRoiQ0htrRdbefRFiewOIfXwhun5t9hbd2ray7812eQ==}
+  /@google/generative-ai@0.17.1:
+    resolution: {integrity: sha512-TgWz02c5l2XJlEDys81UVat5+Qg9xqmYah7tQt6xlsBwFvzIFPz64aZFGd1av2sxT22NsssqLATjNsusAIJICA==}
     engines: {node: '>=18.0.0'}
     dev: false
 
@@ -3067,8 +3066,8 @@ packages:
     engines: {node: '>=0.8'}
     dev: false
 
-  /cohere-ai@7.11.2(@aws-sdk/client-sso-oidc@3.606.0):
-    resolution: {integrity: sha512-IImDbZLg+kApTH9KswRAEGd0dRuZiChnsqC8gf6RepuklLuSxEkqto4uwSQQSUTj50Ns4uN7yaxzVyS6OmLpIg==}
+  /cohere-ai@7.12.1(@aws-sdk/client-sso-oidc@3.606.0):
+    resolution: {integrity: sha512-EgyhPSPR+d8ZP9JDe4obc/MHWbDVPlyqjnbGlY+rpL752JJ+9Fb2LCphRQt9AZhiwQhZUnUj2/xM+2cFK8fyAQ==}
     dependencies:
       '@aws-sdk/client-sagemaker': 3.606.0
       '@aws-sdk/credential-providers': 3.606.0(@aws-sdk/client-sso-oidc@3.606.0)
@@ -4679,8 +4678,8 @@ packages:
     resolution: {integrity: sha512-EtKwoO6kxCL9WO5xipiHTZlSzBm7WLT627TqC/uVRd0HKmq8NXyebnNYxDoBi7wt8eTWrUrKXCOVaFq9x1kgag==}
     dev: true
 
-  /groq-sdk@0.4.0:
-    resolution: {integrity: sha512-h79q9sv4hcOBESR05N5eqHlGhAug9H9lr3EIiB+37ysWWekeG+KYQDK2lIIHYCm6O9LzgZzO/VdLdPP298+T0w==}
+  /groq-sdk@0.5.0:
+    resolution: {integrity: sha512-RVmhW7qZ+XZoy5fIuSdx/LGQJONpL8MHgZEW7dFwTdgkzStub2XQx6OKv28CHogijdwH41J+Npj/z2jBPu3vmw==}
     dependencies:
       '@types/node': 18.19.39
       '@types/node-fetch': 2.6.11

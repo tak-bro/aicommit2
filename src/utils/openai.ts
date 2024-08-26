@@ -173,10 +173,6 @@ export const generateCommitMessage = async (
             frequency_penalty: 0,
             presence_penalty: 0,
         };
-        // NOTE: remove top_p. please see https://github.com/tak-bro/aicommit2/issues/66
-        if (topP <= 0) {
-            delete request.top_p;
-        }
 
         const completion = await createChatCompletion(url, path, apiKey, request, timeout, proxy);
         const fullText = completion.choices

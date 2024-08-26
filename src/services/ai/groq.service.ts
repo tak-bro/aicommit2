@@ -69,6 +69,7 @@ export class GroqService extends AIService {
                     ],
                     model: this.params.config.model,
                     max_tokens: maxTokens,
+                    top_p: this.params.config.topP,
                     temperature,
                 },
                 {

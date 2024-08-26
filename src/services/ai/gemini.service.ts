@@ -59,6 +59,7 @@ export class GeminiService extends AIService {
                 generationConfig: {
                     maxOutputTokens: maxTokens,
                     temperature: this.params.config.temperature,
+                    topP: this.params.config.topP,
                 },
             });
             const result = await model.generateContent(`Here are diff: ${diff}`);

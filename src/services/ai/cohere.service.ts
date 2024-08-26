@@ -64,6 +64,7 @@ export class CohereService extends AIService {
                 temperature,
                 model: this.params.config.model,
                 seed: getRandomNumber(10, 1000),
+                p: this.params.config.topP,
             });
 
             logging && createLogResponse('Cohere', diff, generatedSystemPrompt, prediction.text);

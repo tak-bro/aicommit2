@@ -71,6 +71,7 @@ export class AnthropicService extends AIService {
                         content: `Here are diff: ${diff}`,
                     },
                 ],
+                top_p: this.params.config.topP,
                 model: this.params.config.model,
             };
             const result: Anthropic.Message = await this.anthropic.messages.create(params);
