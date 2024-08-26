@@ -27,7 +27,7 @@ export const generateLogFileName = (date: Date, diff: string) => {
     const { year, month, day, hours, minutes, seconds } = getDateString(date);
     const hasher = xxh64(0);
     const hash = hasher.update(diff).digest('hex');
-    return `aic2_${year}-${month}-${day}_${hours}:${minutes}:${seconds}_${hash}.log`;
+    return `aic2_${year}-${month}-${day}_${hours}-${minutes}-${seconds}_${hash}.log`;
 };
 
 export const writeFileSyncRecursive = (fileName: string, content: string = '') => {
