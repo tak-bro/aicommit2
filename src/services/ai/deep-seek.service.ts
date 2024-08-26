@@ -9,22 +9,40 @@ import { CreateChatCompletionsResponse } from './mistral.service.js';
 import { KnownError } from '../../utils/error.js';
 import { createLogResponse } from '../../utils/log.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, generatePrompt } from '../../utils/prompt.js';
-import { getRandomNumber } from '../../utils/utils.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
-export interface CodestralServiceError extends AIServiceError {}
 
-export class CodestralService extends AIService {
-    private host = 'https://codestral.mistral.ai';
+export interface DeepSeekServiceError extends AIServiceError {}
+export interface DeepSeekChatCompletionResponse {
+    id: string;
+    object: string;
+    created: number;
+    model: string;
+    choices: {
+        index: number;
+        message: {
+            role: string;
+            content: string;
+        };
+        finish_reason: string;
+    }[];
+    usage: {
+        prompt_tokens: number;
+        completion_tokens: number;
+        total_tokens: number;
+    };
+}
+export class DeepSeekService extends AIService {
+    private host = 'https://api.deepseek.com';
     private apiKey = '';
 
     constructor(private readonly params: AIServiceParams) {
         super(params);
         this.colors = {
-            primary: '#e28c58',
+            primary: '#53a3f9',
             secondary: '#fff',
         };
-        this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold(`[Codestral]`);
-        this.errorPrefix = chalk.red.bold(`[Codestral]`);
+        this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold(`[DeepSeek]`);
+        this.errorPrefix = chalk.red.bold(`[DeepSeek]`);
         this.apiKey = this.params.config.key;
     }
 
@@ -57,7 +75,7 @@ export class CodestralService extends AIService {
             const generatedSystemPrompt = generatePrompt(promptOptions);
             this.checkAvailableModels();
             const chatResponse = await this.createChatCompletions(generatedSystemPrompt);
-            logging && createLogResponse('Codestral', diff, generatedSystemPrompt, chatResponse);
+            logging && createLogResponse('DeepSeek', diff, generatedSystemPrompt, chatResponse);
             return this.parseMessage(chatResponse, type, generate);
         } catch (error) {
             const errorAsAny = error as any;
@@ -68,7 +86,7 @@ export class CodestralService extends AIService {
         }
     }
 
-    handleError$ = (error: CodestralServiceError) => {
+    handleError$ = (error: DeepSeekServiceError) => {
         const simpleMessage = error.message?.replace(/(\r\n|\n|\r)/gm, '') || 'An error occurred';
         return of({
             name: `${this.errorPrefix} ${simpleMessage}`,
@@ -79,18 +97,17 @@ export class CodestralService extends AIService {
     };
 
     private checkAvailableModels() {
-        const supportModels = ['codestral-latest', 'codestral-2405'];
-
+        const supportModels = [`deepseek-coder`, `deepseek-chat`];
         if (supportModels.includes(this.params.config.model)) {
             return true;
         }
-        throw new Error(`Invalid model type of Codestral AI`);
+        throw new Error(`Invalid model type of DeepSeek`);
     }
 
     private async createChatCompletions(systemPrompt: string) {
         const response: AxiosResponse<CreateChatCompletionsResponse> = await new HttpRequestBuilder({
             method: 'POST',
-            baseURL: `${this.host}/v1/chat/completions`,
+            baseURL: `${this.host}/chat/completions`,
             timeout: this.params.config.timeout,
         })
             .setHeaders({
@@ -109,18 +126,16 @@ export class CodestralService extends AIService {
                         content: `Here are diff: ${this.params.stagedDiff.diff}`,
                     },
                 ],
+                response_format: {
+                    type: 'json_object',
+                },
                 temperature: this.params.config.temperature,
                 top_p: this.params.config.topP,
                 max_tokens: this.params.config.maxTokens,
                 stream: false,
-                safe_prompt: false,
-                random_seed: getRandomNumber(10, 1000),
-                response_format: {
-                    type: 'json_object',
-                },
             })
             .execute();
-        const result: CreateChatCompletionsResponse = response.data;
+        const result: DeepSeekChatCompletionResponse = response.data;
         const hasNoChoices = !result.choices || result.choices.length === 0;
         if (hasNoChoices || !result.choices[0].message?.content) {
             throw new Error(`No Content on response. Please open a Bug report`);

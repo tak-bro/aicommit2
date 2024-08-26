@@ -42,6 +42,7 @@ _aicommit2_ is a reactive CLI tool that automatically generates Git commit messa
 - [Cohere](https://cohere.com/)
 - [Groq](https://groq.com/)
 - [Perplexity](https://docs.perplexity.ai/)
+- [DeepSeek](https://www.deepseek.com/)
 - [Huggingface **(Unofficial)**](https://huggingface.co/chat/)
 
 ### Local
@@ -216,20 +217,21 @@ model[]=codestral
 The following settings can be applied to most models, but support may vary.
 Please check the documentation for each specific model to confirm which settings are supported.
 
-| Setting            | Description                                                         | Default      |
-|--------------------|---------------------------------------------------------------------|--------------|
-| `systemPrompt`     | System Prompt text                                                  | -            |
-| `systemPromptPath` | Path to system prompt file                                          | -            |
-| `exclude`          | Files to exclude from AI analysis                                   | -            |
-| `timeout`          | Request timeout (milliseconds)                                      | 10000        |
-| `temperature`      | Model's creativity (0.0 - 2.0)                                      | 0.7          |
-| `maxTokens`        | Maximum number of tokens to generate                                | 1024         |
-| `locale`           | Locale for the generated commit messages                            | en           |
-| `generate`         | Number of commit messages to generate                               | 1            |
-| `type`             | Type of commit message to generate                                  | conventional |
-| `maxLength`        | Maximum character length of the Subject of generated commit message | 50           |
-| `logging`          | Enable logging                                                      | true         |
-| `ignoreBody`       | Whether the commit message includes body                            | true         |
+| Setting            | Description                                                         | Default       |
+|--------------------|---------------------------------------------------------------------|---------------|
+| `systemPrompt`     | System Prompt text                                                  | -             |
+| `systemPromptPath` | Path to system prompt file                                          | -             |
+| `exclude`          | Files to exclude from AI analysis                                   | -             |
+| `type`             | Type of commit message to generate                                  | conventional  |
+| `locale`           | Locale for the generated commit messages                            | en            |
+| `generate`         | Number of commit messages to generate                               | 1             |
+| `logging`          | Enable logging                                                      | true          |
+| `ignoreBody`       | Whether the commit message includes body                            | true          |
+| `maxLength`        | Maximum character length of the Subject of generated commit message | 50            |
+| `timeout`          | Request timeout (milliseconds)                                      | 10000         |
+| `temperature`      | Model's creativity (0.0 - 2.0)                                      | 0.7           |
+| `maxTokens`        | Maximum number of tokens to generate                                | 1024          |
+| `topP`             | Nucleus sampling                                                    | 1             |
 
 > 👉 **Tip:** To set the General Settings for each model, use the following command.
 > ```shell
@@ -266,35 +268,17 @@ aicommit2 config set exclude="*.ts,*.json"
 ```
 
 > NOTE: `exclude` option does not support per model. It is **only** supported by General Settings.
- 
-##### timeout
 
-The timeout for network requests in milliseconds.
+##### type
 
-Default: `10_000` (10 seconds)
+Default: `conventional`
 
-```sh
-aicommit2 config set timeout=20000 # 20s
-```
+Supported: `conventional`, `gitmoji`
 
-##### temperature
-
-The temperature (0.0-2.0) is used to control the randomness of the output
-
-Default: `0.7`
+The type of commit message to generate. Set this to "conventional" to generate commit messages that follow the Conventional Commits specification:
 
 ```sh
-aicommit2 config set temperature=0.3
-```
-
-##### maxTokens
-
-The maximum number of tokens that the AI models can generate.
-
-Default: `1024`
-
-```sh
-aicommit2 config set maxTokens=3000
+aicommit2 config set type="conventional"
 ```
 
 ##### locale
@@ -317,28 +301,6 @@ Note, this will use more tokens as it generates more results.
 
 ```sh
 aicommit2 config set generate=2
-```
-
-##### type
-
-Default: `conventional`
-
-Supported: `conventional`, `gitmoji`
-
-The type of commit message to generate. Set this to "conventional" to generate commit messages that follow the Conventional Commits specification:
-
-```sh
-aicommit2 config set type="conventional"
-```
-
-##### maxLength
-
-The maximum character length of the Subject of generated commit message
-
-Default: `50`
-
-```sh
-aicommit2 config set maxLength=100
 ```
 
 ##### logging
@@ -375,6 +337,74 @@ aicommit2 config set ignoreBody="true"
 
 ![ignore_body_true](https://github.com/tak-bro/aicommit2/blob/main/img/ignore_body_true.png?raw=true)
 
+##### maxLength
+
+The maximum character length of the Subject of generated commit message
+
+Default: `50`
+
+```sh
+aicommit2 config set maxLength=100
+```
+
+##### timeout
+
+The timeout for network requests in milliseconds.
+
+Default: `10_000` (10 seconds)
+
+```sh
+aicommit2 config set timeout=20000 # 20s
+```
+
+##### temperature
+
+The temperature (0.0-2.0) is used to control the randomness of the output
+
+Default: `0.7`
+
+```sh
+aicommit2 config set temperature=0.3
+```
+
+##### maxTokens
+
+The maximum number of tokens that the AI models can generate.
+
+Default: `1024`
+
+```sh
+aicommit2 config set maxTokens=3000
+```
+
+##### topP
+
+Default: `1`
+
+Nucleus sampling, where the model considers the results of the tokens with top_p probability mass.
+
+```sh
+aicommit2 config set topP=0.2
+```
+
+## Available General Settings by Model
+|                      | timeout | temperature | maxTokens | topP |
+|:--------------------:|:-------:|:-----------:|:---------:|:----:|
+|      **OpenAI**      |    ✓    |      ✓      |     ✓     |  ✓   |
+| **Anthropic Claude** |         |      ✓      |     ✓     |      |
+|      **Gemini**      |         |      ✓      |     ✓     |      |
+|    **Mistral AI**    |    ✓    |      ✓      |     ✓     |  ✓   |
+|    **Codestral**     |    ✓    |      ✓      |     ✓     |  ✓   |
+|      **Cohere**      |         |      ✓      |     ✓     |      |
+|       **Groq**       |    ✓    |      ✓      |     ✓     |  ✓   |
+|    **Perplexity**    |    ✓    |      ✓      |     ✓     |  ✓   |
+|     **DeepSeek**     |    ✓    |      ✓      |     ✓     |  ✓   |
+|   **Huggingface**    |         |             |           |      |
+|      **Ollama**      |    ✓    |      ✓      |           |      |
+
+> All AI support the following options in General Settings.
+> - systemPrompt, systemPromptPath, exclude, type, locale, generate, logging, ignoreBody, maxLength
+
 ## Model-Specific Settings
 
 > Some models mentioned below are subject to change.
@@ -388,7 +418,6 @@ aicommit2 config set ignoreBody="true"
 | `url`   | API endpoint URL   | https://api.openai.com |
 | `path`  | API path           | /v1/chat/completions   |
 | `proxy` | Proxy settings     | -                      |
-| `topP`  | Nucleus sampling   | 1                      |
 
 ##### OPENAI.key
 
@@ -482,6 +511,7 @@ aicommit2 config set OLLAMA.timeout=<timeout>
 Ollama does not support the following options in General Settings.
  
 - maxTokens
+- topP
 
 ### HuggingFace
 
@@ -524,6 +554,7 @@ Huggingface does not support the following options in General Settings.
 - maxTokens
 - timeout
 - temperature
+- topP
 
 ### Gemini
 
@@ -558,6 +589,7 @@ aicommit2 config set GEMINI.model="gemini-1.5-pro-exp-0801"
 Gemini does not support the following options in General Settings.
 
 - timeout
+- topP
 
 ### Anthropic
 
@@ -589,6 +621,7 @@ aicommit2 config set ANTHROPIC.model="claude-3-5-sonnet-20240620"
 Anthropic does not support the following options in General Settings.
 
 - timeout
+- topP
 
 ### Mistral
 
@@ -596,7 +629,6 @@ Anthropic does not support the following options in General Settings.
 |----------|------------------|----------------|
 | `key`    | API key          | -              |
 | `model`  | Model to use     | `mistral-tiny` |
-| `topP`   | Nucleus sampling | 1              |
 
 ##### MISTRAL.key
 
@@ -622,23 +654,12 @@ Supported:
 - `mistral-large-2402`
 - `mistral-embed`
 
-##### MISTRAL.topP
-
-Default: `1`
-
-Nucleus sampling, where the model considers the results of the tokens with top_p probability mass.
-
-```sh
-aicommit2 config set MISTRAL.topP=0.2
-```
-
 ### Codestral
 
 | Setting | Description      | Default            |
 |---------|------------------|--------------------|
 | `key`   | API key          | -                  |
 | `model` | Model to use     | `codestral-latest` |
-| `topP`  | Nucleus sampling | 1                  |
 
 ##### CODESTRAL.key
 
@@ -654,16 +675,6 @@ Supported:
 
 ```sh
 aicommit2 config set CODESTRAL.model="codestral-2405"
-```
-
-##### CODESTRAL.topP
-
-Default: `1`
-
-Nucleus sampling, where the model considers the results of the tokens with top_p probability mass.
-
-```sh
-aicommit2 config set CODESTRAL.topP=0.1
 ```
 
 #### Cohere
@@ -696,6 +707,7 @@ aicommit2 config set COHERE.model="command-nightly"
 Cohere does not support the following options in General Settings.
 
 - timeout
+- topP
 
 ### Groq
 
@@ -721,6 +733,8 @@ Supported:
 - `llama3-8b-8192`
 - `llama3-groq-70b-8192-tool-use-preview`
 - `llama3-groq-8b-8192-tool-use-preview`
+- `llama-guard-3-8b`
+- `mixtral-8x7b-32768`
 
 ```sh
 aicommit2 config set GROQ.model="llama3-8b-8192"
@@ -732,7 +746,6 @@ aicommit2 config set GROQ.model="llama3-8b-8192"
 |----------|------------------|-----------------------------------|
 | `key`    | API key          | -                                 |
 | `model`  | Model to use     | `llama-3.1-sonar-small-128k-chat` |
-| `topP`   | Nucleus sampling | 1                                 |
 
 ##### PERPLEXITY.key
 
@@ -758,14 +771,27 @@ Supported:
 aicommit2 config set PERPLEXITY.model="llama-3.1-70b"
 ```
 
-##### PERPLEXITY.topP
+### DeepSeek
 
-Default: `1`
+| Setting | Description      | Default            |
+|---------|------------------|--------------------|
+| `key`   | API key          | -                  |
+| `model` | Model to use     | `deepseek-coder`   |
 
-Nucleus sampling, where the model considers the results of the tokens with top_p probability mass.
+##### DEEPSEEK.key
+
+The DeepSeek API key. If you don't have one, please sign up and subscribe in [DeepSeek Platform](https://platform.deepseek.com/).
+
+##### DEEPSEEK.model
+
+Default: `deepseek-coder`
+
+Supported:
+- `deepseek-coder`
+- `deepseek-chat`
 
 ```sh
-aicommit2 config set PERPLEXITY.topP=0.3
+aicommit2 config set DEEPSEEK.model="deepseek-chat"
 ```
 
 ## Upgrading

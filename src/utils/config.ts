@@ -30,6 +30,7 @@ export const modelNames = [
     'COHERE',
     'GROQ',
     'PERPLEXITY',
+    'DEEPSEEK',
 ] as const;
 export type ModelName = (typeof modelNames)[number];
 
@@ -474,6 +475,39 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
             const parsed = Number(topP);
             parseAssert('PERPLEXITY.topP', parsed > 0.0, 'Must be greater than 0');
             parseAssert('PERPLEXITY.topP', parsed <= 1.0, 'Must be less than or equal to 1');
+            return parsed;
+        },
+        systemPrompt: generalConfigParsers.systemPrompt,
+        systemPromptPath: generalConfigParsers.systemPromptPath,
+        timeout: generalConfigParsers.timeout,
+        temperature: generalConfigParsers.temperature,
+        maxTokens: generalConfigParsers.maxTokens,
+        logging: generalConfigParsers.logging,
+        locale: generalConfigParsers.locale,
+        generate: generalConfigParsers.generate,
+        type: generalConfigParsers.type,
+        maxLength: generalConfigParsers.maxLength,
+        ignoreBody: generalConfigParsers.ignoreBody,
+    },
+    DEEPSEEK: {
+        key: (key?: string) => key || '',
+        model: (model?: string) => {
+            if (!model || model.length === 0) {
+                return `deepseek-coder`;
+            }
+            const supportModels = [`deepseek-coder`, `deepseek-chat`];
+
+            parseAssert('DEEPSEEK.model', supportModels.includes(model), 'Invalid model type of DeepSeek');
+            return model;
+        },
+        topP: (topP?: string) => {
+            if (!topP) {
+                return 1;
+            }
+            parseAssert('DEEPSEEK.topP', /^(1|\d)(\.\d{1,2})?$/.test(topP), 'Must be decimal between 0 and 1');
+            const parsed = Number(topP);
+            parseAssert('DEEPSEEK.topP', parsed > 0.0, 'Must be greater than 0');
+            parseAssert('DEEPSEEK.topP', parsed <= 1.0, 'Must be less than or equal to 1');
             return parsed;
         },
         systemPrompt: generalConfigParsers.systemPrompt,
