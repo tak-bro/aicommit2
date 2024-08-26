@@ -58,7 +58,7 @@ export class CohereService extends AIService {
 
             const prediction = await this.cohere.chat({
                 chatHistory: generatedSystemPrompt ? [{ role: 'SYSTEM', message: generatedSystemPrompt }] : [],
-                message: `Here are diff: ${diff}`,
+                message: `Here is the diff: ${diff}`,
                 connectors: [{ id: 'web-search' }],
                 maxTokens,
                 temperature,

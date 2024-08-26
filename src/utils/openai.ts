@@ -163,7 +163,7 @@ export const generateCommitMessage = async (
             model,
             messages: [
                 { role: 'system', content: systemPrompt },
-                { role: 'user', content: `Here are diff: ${diff}` },
+                { role: 'user', content: `Here is the diff: ${diff}` },
             ],
             temperature,
             max_tokens: maxTokens,

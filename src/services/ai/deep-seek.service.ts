@@ -123,7 +123,7 @@ export class DeepSeekService extends AIService {
                     },
                     {
                         role: 'user',
-                        content: `Here are diff: ${this.params.stagedDiff.diff}`,
+                        content: `Here is the diff: ${this.params.stagedDiff.diff}`,
                     },
                 ],
                 response_format: {

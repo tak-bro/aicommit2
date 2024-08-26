@@ -106,7 +106,7 @@ export class CodestralService extends AIService {
                     },
                     {
                         role: 'user',
-                        content: `Here are diff: ${this.params.stagedDiff.diff}`,
+                        content: `Here is the diff: ${this.params.stagedDiff.diff}`,
                     },
                 ],
                 temperature: this.params.config.temperature,

@@ -62,7 +62,7 @@ export class GeminiService extends AIService {
                     topP: this.params.config.topP,
                 },
             });
-            const result = await model.generateContent(`Here are diff: ${diff}`);
+            const result = await model.generateContent(`Here is the diff: ${diff}`);
             const response = result.response;
             const completion = response.text();
 

@@ -108,7 +108,7 @@ export class HuggingFaceService extends AIService {
             const generatedSystemPrompt = generatePrompt(promptOptions);
 
             const conversation = await this.getNewChat(generatedSystemPrompt);
-            const data = await this.sendMessage(`Here are diff: ${diff}`, conversation.id);
+            const data = await this.sendMessage(`Here is the diff: ${diff}`, conversation.id);
             const response = await data.completeResponsePromise();
             // await this.deleteConversation(conversation.id);
 
