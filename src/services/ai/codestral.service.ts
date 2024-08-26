@@ -115,6 +115,9 @@ export class CodestralService extends AIService {
                 stream: false,
                 safe_prompt: false,
                 random_seed: getRandomNumber(10, 1000),
+                response_format: {
+                    type: 'json_object',
+                },
             })
             .execute();
         const result: CreateChatCompletionsResponse = response.data;
