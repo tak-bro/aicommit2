@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenerativeAI, HarmBlockThreshold, HarmCategory } from '@google/generative-ai';
 import chalk from 'chalk';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Observable, catchError, concatMap, from, map, of } from 'rxjs';
@@ -60,7 +60,26 @@ export class GeminiService extends AIService {
                     maxOutputTokens: maxTokens,
                     temperature: this.params.config.temperature,
                 },
+                safetySettings: [
+                    {
+                        category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+                        threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
+                    },
+                    {
+                        category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+                        threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
+                    },
+                    {
+                        category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+                        threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
+                    },
+                    {
+                        category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+                        threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
+                    },
+                ],
             });
+
             const result = await model.generateContent(`Here are diff: ${diff}`);
             const response = result.response;
             const completion = response.text();
