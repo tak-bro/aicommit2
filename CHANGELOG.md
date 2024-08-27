@@ -1,3 +1,10 @@
+## [2.0.8](https://github.com/tak-bro/aicommit2/compare/v2.0.7...v2.0.8) (2024-08-27)
+
+
+### Features
+
+* **gemini:** add safety settings for content moderation ([31be80c](https://github.com/tak-bro/aicommit2/commit/31be80ce7968c47a7aea92bf066bd8ed9b6e8617))
+
 ## [2.0.7](https://github.com/tak-bro/aicommit2/compare/v2.0.6...v2.0.7) (2024-08-26)
 
 
