@@ -179,7 +179,7 @@ aicommit2 config set OPENAI.generate=3 GEMINI.temperature=0.5
 
 #### How to Configure in detail
 
-1. Command-line arguments: **use the format** `--[ModelName].[SettingKey]=value`
+1. Command-line arguments: **use the format** `--[Model].[Key]=value`
 ```sh
 aicommit2 --OPENAI.locale="jp" --GEMINI.temperatue="0.5"
 ```
@@ -465,95 +465,36 @@ aicommit2 config set OPENAI.topP=0.2
 
 > NOTE: If `topP` is less than 0, it does not deliver the `top_p` parameter to the request. 
 
-### Ollama
+### Anthropic
 
-| Setting            | Description                                  | Default                |
-|--------------------|----------------------------------------------|------------------------|
-| `model`            | Model(s) to use (comma-separated list)       | -                      |
-| `host`             | Ollama host URL                              | http://localhost:11434 |
-| `timeout`          | Request timeout (milliseconds)               | 100_000 (100sec)       |
+| Setting     | Description    | Default                   |
+|-------------|----------------|---------------------------|
+| `key`       | API key        | -                         |
+| `model`     | Model to use   | `claude-3-haiku-20240307` |
 
-##### OLLAMA.model
+##### ANTHROPIC.key
 
-The Ollama Model. Please see [a list of models available](https://ollama.com/library)
+The Anthropic API key. To get started with Anthropic Claude, request access to their API at [anthropic.com/earlyaccess](https://www.anthropic.com/earlyaccess).
 
-```sh
-aicommit2 config set OLLAMA.model="llama3.1"
-aicommit2 config set OLLAMA.model="llama3,codellama" # for multiple models
+##### ANTHROPIC.model
 
-aicommit2 config add OLLAMA.model="gemma2" # Only Ollama.model can be added.
-```
-
-> OLLAMA.model is **string array** type to support multiple Ollama. Please see [this section](#loading-multiple-ollama-models).
-
-##### OLLAMA.host
-
-Default: `http://localhost:11434`
-
-The Ollama host
-
-```sh
-aicommit2 config set OLLAMA.host=<host>
-```
-
-##### OLLAMA.timeout
-
-Default: `100_000` (100 seconds)
-
-Request timeout for the Ollama.
-
-```sh
-aicommit2 config set OLLAMA.timeout=<timeout>
-```
-
-##### Unsupported Options
-
-Ollama does not support the following options in General Settings.
- 
-- maxTokens
-
-### HuggingFace
-
-| Setting            | Description                | Default                                |
-|--------------------|----------------------------|----------------------------------------|
-| `cookie`           | Authentication cookie      | -                                      |
-| `model`            | Model to use               | `CohereForAI/c4ai-command-r-plus`      |
-
-##### HUGGINGFACE.cookie
-
-The [Huggingface Chat](https://huggingface.co/chat/) Cookie. Please check [how to get cookie](https://github.com/tak-bro/aicommit2?tab=readme-ov-file#how-to-get-cookieunofficial-api)
-
-```sh
-# Please be cautious of Escape characters(\", \') in browser cookie string
-aicommit2 config set HUGGINGFACE.cookie="your-cooke"
-```
-
-##### HUGGINGFACE.model
-
-Default: `CohereForAI/c4ai-command-r-plus`
+Default: `claude-3-haiku-20240307`
 
 Supported:
-- `CohereForAI/c4ai-command-r-plus`
-- `meta-llama/Meta-Llama-3-70B-Instruct`
-- `HuggingFaceH4/zephyr-orpo-141b-A35b-v0.1`
-- `mistralai/Mixtral-8x7B-Instruct-v0.1`
-- `NousResearch/Nous-Hermes-2-Mixtral-8x7B-DPO`
-- `01-ai/Yi-1.5-34B-Chat`
-- `mistralai/Mistral-7B-Instruct-v0.2`
-- `microsoft/Phi-3-mini-4k-instruct`
+- `claude-3-haiku-20240307`
+- `claude-3-sonnet-20240229`
+- `claude-3-opus-20240229`
+- `claude-3-5-sonnet-20240620`
 
 ```sh
-aicommit2 config set HUGGINGFACE.model="mistralai/Mistral-7B-Instruct-v0.2"
+aicommit2 config set ANTHROPIC.model="claude-3-5-sonnet-20240620"
 ```
 
 ##### Unsupported Options
 
-Huggingface does not support the following options in General Settings.
+Anthropic does not support the following options in General Settings.
 
-- maxTokens
 - timeout
-- temperature
-- topP
 
 ### Gemini
 
@@ -586,37 +527,6 @@ aicommit2 config set GEMINI.model="gemini-1.5-pro-exp-0801"
 ##### Unsupported Options
 
 Gemini does not support the following options in General Settings.
-
-- timeout
-
-### Anthropic
-
-| Setting     | Description    | Default                   |
-|-------------|----------------|---------------------------|
-| `key`       | API key        | -                         |
-| `model`     | Model to use   | `claude-3-haiku-20240307` |
-
-##### ANTHROPIC.key
-
-The Anthropic API key. To get started with Anthropic Claude, request access to their API at [anthropic.com/earlyaccess](https://www.anthropic.com/earlyaccess).
-
-##### ANTHROPIC.model
-
-Default: `claude-3-haiku-20240307`
-
-Supported:
-- `claude-3-haiku-20240307`
-- `claude-3-sonnet-20240229`
-- `claude-3-opus-20240229`
-- `claude-3-5-sonnet-20240620`
-
-```sh
-aicommit2 config set ANTHROPIC.model="claude-3-5-sonnet-20240620"
-```
-
-##### Unsupported Options
-
-Anthropic does not support the following options in General Settings.
 
 - timeout
 
@@ -674,7 +584,7 @@ Supported:
 aicommit2 config set CODESTRAL.model="codestral-2405"
 ```
 
-#### Cohere
+### Cohere
 
 | Setting            | Description  | Default     |
 |--------------------|--------------|-------------|
@@ -790,6 +700,96 @@ Supported:
 aicommit2 config set DEEPSEEK.model="deepseek-chat"
 ```
 
+### HuggingFace
+
+| Setting            | Description                | Default                                |
+|--------------------|----------------------------|----------------------------------------|
+| `cookie`           | Authentication cookie      | -                                      |
+| `model`            | Model to use               | `CohereForAI/c4ai-command-r-plus`      |
+
+##### HUGGINGFACE.cookie
+
+The [Huggingface Chat](https://huggingface.co/chat/) Cookie. Please check [how to get cookie](https://github.com/tak-bro/aicommit2?tab=readme-ov-file#how-to-get-cookieunofficial-api)
+
+```sh
+# Please be cautious of Escape characters(\", \') in browser cookie string
+aicommit2 config set HUGGINGFACE.cookie="your-cooke"
+```
+
+##### HUGGINGFACE.model
+
+Default: `CohereForAI/c4ai-command-r-plus`
+
+Supported:
+- `CohereForAI/c4ai-command-r-plus`
+- `meta-llama/Meta-Llama-3-70B-Instruct`
+- `HuggingFaceH4/zephyr-orpo-141b-A35b-v0.1`
+- `mistralai/Mixtral-8x7B-Instruct-v0.1`
+- `NousResearch/Nous-Hermes-2-Mixtral-8x7B-DPO`
+- `01-ai/Yi-1.5-34B-Chat`
+- `mistralai/Mistral-7B-Instruct-v0.2`
+- `microsoft/Phi-3-mini-4k-instruct`
+
+```sh
+aicommit2 config set HUGGINGFACE.model="mistralai/Mistral-7B-Instruct-v0.2"
+```
+
+##### Unsupported Options
+
+Huggingface does not support the following options in General Settings.
+
+- maxTokens
+- timeout
+- temperature
+- topP
+
+### Ollama
+
+| Setting            | Description                                  | Default                |
+|--------------------|----------------------------------------------|------------------------|
+| `model`            | Model(s) to use (comma-separated list)       | -                      |
+| `host`             | Ollama host URL                              | http://localhost:11434 |
+| `timeout`          | Request timeout (milliseconds)               | 100_000 (100sec)       |
+
+##### OLLAMA.model
+
+The Ollama Model. Please see [a list of models available](https://ollama.com/library)
+
+```sh
+aicommit2 config set OLLAMA.model="llama3.1"
+aicommit2 config set OLLAMA.model="llama3,codellama" # for multiple models
+
+aicommit2 config add OLLAMA.model="gemma2" # Only Ollama.model can be added.
+```
+
+> OLLAMA.model is **string array** type to support multiple Ollama. Please see [this section](#loading-multiple-ollama-models).
+
+##### OLLAMA.host
+
+Default: `http://localhost:11434`
+
+The Ollama host
+
+```sh
+aicommit2 config set OLLAMA.host=<host>
+```
+
+##### OLLAMA.timeout
+
+Default: `100_000` (100 seconds)
+
+Request timeout for the Ollama.
+
+```sh
+aicommit2 config set OLLAMA.timeout=<timeout>
+```
+
+##### Unsupported Options
+
+Ollama does not support the following options in General Settings.
+
+- maxTokens
+
 ## Upgrading
 
 Check the installed version with:
@@ -830,7 +830,7 @@ Use curly braces `{}` to denote these placeholders for options. The following pl
 - [{type}](#type): The type of the commit message (**conventional** or **gitmoji**)
 - [{generate}](#generate): The number of commit messages to generate (**number**)
 
-### Example Template
+#### Example Template
 
 Here's an example of how your custom template might look:
 
@@ -845,16 +845,16 @@ Remember to follow these guidelines:
 3. Explain the 'why' behind the change
 ```
 
-### **Appended Text**
+#### **Appended Text**
 
 Please note that the following text will **ALWAYS** be appended to the end of your custom prompt:
 
 ```
-Lastly, Provide your response as a JSON array containing exactly 1 object, each with the following keys:
-- "subject": The main commit message using the conventional style. It should be a concise summary of the changes.
+Lastly, Provide your response as a JSON array containing exactly {generate} object, each with the following keys:
+- "subject": The main commit message using the {type} style. It should be a concise summary of the changes.
 - "body": An optional detailed explanation of the changes. If not needed, use an empty string.
 - "footer": An optional footer for metadata like BREAKING CHANGES. If not needed, use an empty string.
-The array must always contain 1 element, no more and no less.
+The array must always contain {generate} element, no more and no less.
 Example response format: 
 [
   {
@@ -863,13 +863,11 @@ Example response format:
     "footer": ""
   }
 ]
-Ensure you generate exactly 1 commit message, even if it requires creating slightly varied versions for similar changes.
+Ensure you generate exactly {generate} commit message, even if it requires creating slightly varied versions for similar changes.
 The response should be valid JSON that can be parsed without errors.
 ```
 
 This ensures that the output is consistently formatted as a JSON array, regardless of the custom template used.
-
-> NOTE: The template may vary depending on the generate and commit message type.
 
 ## Loading Multiple Ollama Models
 
