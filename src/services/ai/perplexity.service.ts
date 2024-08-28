@@ -132,7 +132,7 @@ export class PerplexityService extends AIService {
                     },
                     {
                         role: 'user',
-                        content: `Here are diff: ${diff}`,
+                        content: `Here is the diff: ${diff}`,
                     },
                 ],
                 temperature: this.params.config.temperature,

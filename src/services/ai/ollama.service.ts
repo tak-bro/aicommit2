@@ -83,7 +83,7 @@ export class OllamaService extends AIService {
             const generatedSystemPrompt = generatePrompt(promptOptions);
 
             await this.checkIsAvailableOllama();
-            const chatResponse = await this.createChatCompletions(generatedSystemPrompt, `Here are diff: ${diff}`);
+            const chatResponse = await this.createChatCompletions(generatedSystemPrompt, `Here is the diff: ${diff}`);
             logging && createLogResponse(`Ollama_${this.model}`, diff, generatedSystemPrompt, chatResponse);
             return this.parseMessage(chatResponse, type, generate);
         } catch (error) {
@@ -128,6 +128,7 @@ export class OllamaService extends AIService {
             stream: false,
             options: {
                 temperature: this.params.config.temperature,
+                top_p: this.params.config.topP,
                 seed: getRandomNumber(10, 1000),
             },
         });

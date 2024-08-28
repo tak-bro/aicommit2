@@ -163,6 +163,16 @@ const generalConfigParsers = {
         const excludeFiles = typeof exclude === 'string' ? exclude?.split(',') : exclude;
         return excludeFiles.map(file => file.trim()).filter(file => !!file && file.length > 0);
     },
+    topP: (topP?: string) => {
+        if (!topP) {
+            return 0.9;
+        }
+        parseAssert('topP', /^(1|\d)(\.\d{1,2})?$/.test(topP), 'Must be decimal between 0 and 1');
+        const parsed = Number(topP);
+        parseAssert('topP', parsed > 0.0, 'Must be greater than 0');
+        parseAssert('topP', parsed <= 1.0, 'Must be less than or equal to 1');
+        return parsed;
+    },
 } as const;
 
 const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>> = {
@@ -178,15 +188,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         },
         path: (path?: string) => path || '/v1/chat/completions',
         proxy: (proxy?: string) => proxy || '',
-        topP: (topP?: string) => {
-            if (!topP) {
-                return 1;
-            }
-
-            const parsedTopP = Number(topP);
-            parseAssert('OPENAI.topP', parsedTopP <= 1.0, 'Must be less than or equal to 1');
-            return parsedTopP;
-        },
+        topP: generalConfigParsers.topP,
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
         timeout: generalConfigParsers.timeout,
@@ -248,6 +250,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         type: generalConfigParsers.type,
         maxLength: generalConfigParsers.maxLength,
         ignoreBody: generalConfigParsers.ignoreBody,
+        topP: generalConfigParsers.topP,
     },
     ANTHROPIC: {
         key: (key?: string) => key || '',
@@ -274,6 +277,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         type: generalConfigParsers.type,
         maxLength: generalConfigParsers.maxLength,
         ignoreBody: generalConfigParsers.ignoreBody,
+        topP: generalConfigParsers.topP,
     },
     MISTRAL: {
         key: (key?: string) => key || '',
@@ -301,16 +305,6 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
             parseAssert('MISTRAL.model', supportModels.includes(model), 'Invalid model type of Mistral AI');
             return model;
         },
-        topP: (topP?: string) => {
-            if (!topP) {
-                return 1;
-            }
-            parseAssert('MISTRAL.topP', /^(1|\d)(\.\d{1,2})?$/.test(topP), 'Must be decimal between 0 and 1');
-            const parsed = Number(topP);
-            parseAssert('MISTRAL.topP', parsed > 0.0, 'Must be greater than 0');
-            parseAssert('MISTRAL.topP', parsed <= 1.0, 'Must be less than or equal to 1');
-            return parsed;
-        },
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
         timeout: generalConfigParsers.timeout,
@@ -322,6 +316,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         type: generalConfigParsers.type,
         maxLength: generalConfigParsers.maxLength,
         ignoreBody: generalConfigParsers.ignoreBody,
+        topP: generalConfigParsers.topP,
     },
     CODESTRAL: {
         key: (key?: string) => key || '',
@@ -334,16 +329,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
             parseAssert('CODESTRAL.model', supportModels.includes(model), 'Invalid model type of Codestral');
             return model;
         },
-        topP: (topP?: string) => {
-            if (!topP) {
-                return 1;
-            }
-            parseAssert('CODESTRAL.topP', /^(1|\d)(\.\d{1,2})?$/.test(topP), 'Must be decimal between 0 and 1');
-            const parsed = Number(topP);
-            parseAssert('CODESTRAL.topP', parsed > 0.0, 'Must be greater than 0');
-            parseAssert('CODESTRAL.topP', parsed <= 1.0, 'Must be less than or equal to 1');
-            return parsed;
-        },
+        topP: generalConfigParsers.topP,
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
         timeout: generalConfigParsers.timeout,
@@ -391,6 +377,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         type: generalConfigParsers.type,
         maxLength: generalConfigParsers.maxLength,
         ignoreBody: generalConfigParsers.ignoreBody,
+        topP: generalConfigParsers.topP,
     },
     COHERE: {
         key: (key?: string) => key || '',
@@ -412,6 +399,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         type: generalConfigParsers.type,
         maxLength: generalConfigParsers.maxLength,
         ignoreBody: generalConfigParsers.ignoreBody,
+        topP: generalConfigParsers.topP,
     },
     GROQ: {
         key: (key?: string) => key || '',
@@ -446,6 +434,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         type: generalConfigParsers.type,
         maxLength: generalConfigParsers.maxLength,
         ignoreBody: generalConfigParsers.ignoreBody,
+        topP: generalConfigParsers.topP,
     },
     PERPLEXITY: {
         key: (key?: string) => key || '',
@@ -467,16 +456,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
             parseAssert('PERPLEXITY.model', supportModels.includes(model), 'Invalid model type of Perplexity');
             return model;
         },
-        topP: (topP?: string) => {
-            if (!topP) {
-                return 1;
-            }
-            parseAssert('PERPLEXITY.topP', /^(1|\d)(\.\d{1,2})?$/.test(topP), 'Must be decimal between 0 and 1');
-            const parsed = Number(topP);
-            parseAssert('PERPLEXITY.topP', parsed > 0.0, 'Must be greater than 0');
-            parseAssert('PERPLEXITY.topP', parsed <= 1.0, 'Must be less than or equal to 1');
-            return parsed;
-        },
+        topP: generalConfigParsers.topP,
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
         timeout: generalConfigParsers.timeout,
@@ -500,16 +480,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
             parseAssert('DEEPSEEK.model', supportModels.includes(model), 'Invalid model type of DeepSeek');
             return model;
         },
-        topP: (topP?: string) => {
-            if (!topP) {
-                return 1;
-            }
-            parseAssert('DEEPSEEK.topP', /^(1|\d)(\.\d{1,2})?$/.test(topP), 'Must be decimal between 0 and 1');
-            const parsed = Number(topP);
-            parseAssert('DEEPSEEK.topP', parsed > 0.0, 'Must be greater than 0');
-            parseAssert('DEEPSEEK.topP', parsed <= 1.0, 'Must be less than or equal to 1');
-            return parsed;
-        },
+        topP: generalConfigParsers.topP,
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
         timeout: generalConfigParsers.timeout,

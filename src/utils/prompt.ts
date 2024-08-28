@@ -215,7 +215,7 @@ const finalPrompt = (type: CommitType, generate: number) => {
     };
 
     return [
-        `Provide your response as a JSON array containing exactly ${generate} object${generate !== 1 ? 's' : ''}, each with the following keys:`,
+        `\nLastly, Provide your response as a JSON array containing exactly ${generate} object${generate !== 1 ? 's' : ''}, each with the following keys:`,
         `- "subject": The main commit message using the ${type} style. It should be a concise summary of the changes.`,
         `- "body": An optional detailed explanation of the changes. If not needed, use an empty string.`,
         `- "footer": An optional footer for metadata like BREAKING CHANGES. If not needed, use an empty string.`,

@@ -105,7 +105,9 @@ export default () =>
             instructions += `\n${messages[0]}\n`;
         }
 
-        await fs.appendFile(messageFilePath, instructions);
+        const currentContent = await fs.readFile(messageFilePath, 'utf8');
+        const newContent = instructions + '\n' + currentContent;
+        await fs.writeFile(messageFilePath, newContent);
         consoleManager.printSavedCommitMessage();
     })().catch(error => {
         const commandLineManager = new ConsoleManager();

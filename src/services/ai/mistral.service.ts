@@ -88,7 +88,7 @@ export class MistralService extends AIService {
             const generatedSystemPrompt = generatePrompt(promptOptions);
 
             await this.checkAvailableModels();
-            const chatResponse = await this.createChatCompletions(generatedSystemPrompt, `Here are diff: ${diff}`);
+            const chatResponse = await this.createChatCompletions(generatedSystemPrompt, `Here is the diff: ${diff}`);
             logging && createLogResponse('MistralAI', diff, generatedSystemPrompt, chatResponse);
             return this.parseMessage(chatResponse, this.params.config.type, generate);
         } catch (error) {

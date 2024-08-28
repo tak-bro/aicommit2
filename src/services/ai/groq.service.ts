@@ -64,11 +64,12 @@ export class GroqService extends AIService {
                         },
                         {
                             role: 'user',
-                            content: `Here are diff: ${diff}`,
+                            content: `Here is the diff: ${diff}`,
                         },
                     ],
                     model: this.params.config.model,
                     max_tokens: maxTokens,
+                    top_p: this.params.config.topP,
                     temperature,
                 },
                 {
