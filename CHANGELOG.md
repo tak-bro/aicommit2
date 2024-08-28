@@ -1,3 +1,16 @@
+## [2.0.9](https://github.com/tak-bro/aicommit2/compare/v2.0.8...v2.0.9) (2024-08-28)
+
+
+### Bug Fixes
+
+* append instructions instead of overwriting ([d4020f4](https://github.com/tak-bro/aicommit2/commit/d4020f4f53a933ae1de3838553d8dfb82e277bd4))
+* correct the type of tools in HuggingFaceService ([eeb8651](https://github.com/tak-bro/aicommit2/commit/eeb8651d589d27bc855a1ddd107b3306d70a2ba8))
+
+
+### Features
+
+* support topP options ([e9be03e](https://github.com/tak-bro/aicommit2/commit/e9be03e9a226223f7730961ceacc976273197fcf))
+
 ## [2.0.8](https://github.com/tak-bro/aicommit2/compare/v2.0.7...v2.0.8) (2024-08-27)
 
 
