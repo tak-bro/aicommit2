@@ -25,7 +25,7 @@ export const DEFAULT_INQUIRER_OPTIONS = {
     descPageSize: 15,
     showDescription: true,
     pickKey: 'short',
-    isDescriptionDim: false,
+    isDescriptionDim: true,
 };
 
 export class ReactivePromptManager {

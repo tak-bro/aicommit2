@@ -8,7 +8,7 @@ import ora from 'ora';
 
 import { AIRequestManager } from '../managers/ai-request.manager.js';
 import { ConsoleManager } from '../managers/console.manager.js';
-import { ReactivePromptManager, emptyCodeReview } from '../managers/reactive-prompt.manager.js';
+import { DEFAULT_INQUIRER_OPTIONS, ReactivePromptManager, emptyCodeReview } from '../managers/reactive-prompt.manager.js';
 import { ModelName, RawConfig, getConfig, modelNames } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
 import { assertGitRepo, getStagedDiff } from '../utils/git.js';
@@ -86,14 +86,10 @@ export default async (
         if (config.codeReview) {
             const codeReviewPromptManager = new ReactivePromptManager();
             const codeReviewInquirer = codeReviewPromptManager.initPrompt({
-                type: 'reactiveListPrompt',
+                ...DEFAULT_INQUIRER_OPTIONS,
                 name: 'codeReviewPrompt',
                 message: 'Pick a review to copy: ',
                 emptyMessage: `⚠ ${emptyCodeReview}`,
-                loop: false,
-                descPageSize: 15,
-                showDescription: true,
-                pickKey: 'short',
                 isDescriptionDim: false,
             });
 
