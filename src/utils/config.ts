@@ -144,16 +144,16 @@ const generalConfigParsers = {
 
         return parsed;
     },
-    ignoreBody(ignore?: string | boolean) {
+    includeBody(ignore?: string | boolean) {
         if (typeof ignore === 'boolean') {
             return ignore;
         }
 
         if (ignore === undefined || ignore === null) {
-            return true;
+            return false;
         }
 
-        parseAssert('ignoreBody', /^(?:true|false)$/.test(ignore), 'Must be a boolean(true or false)');
+        parseAssert('includeBody', /^(?:true|false)$/.test(ignore), 'Must be a boolean(true or false)');
         return ignore === 'true';
     },
     exclude: (exclude?: string | string[]): string[] => {
@@ -211,7 +211,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         generate: generalConfigParsers.generate,
         type: generalConfigParsers.type,
         maxLength: generalConfigParsers.maxLength,
-        ignoreBody: generalConfigParsers.ignoreBody,
+        includeBody: generalConfigParsers.includeBody,
     },
     HUGGINGFACE: {
         cookie: (cookie?: string) => cookie || '',
@@ -240,7 +240,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         generate: generalConfigParsers.generate,
         type: generalConfigParsers.type,
         maxLength: generalConfigParsers.maxLength,
-        ignoreBody: generalConfigParsers.ignoreBody,
+        includeBody: generalConfigParsers.includeBody,
     },
     GEMINI: {
         key: (key?: string) => key || '',
@@ -261,7 +261,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         generate: generalConfigParsers.generate,
         type: generalConfigParsers.type,
         maxLength: generalConfigParsers.maxLength,
-        ignoreBody: generalConfigParsers.ignoreBody,
+        includeBody: generalConfigParsers.includeBody,
         topP: generalConfigParsers.topP,
     },
     ANTHROPIC: {
@@ -288,7 +288,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         generate: generalConfigParsers.generate,
         type: generalConfigParsers.type,
         maxLength: generalConfigParsers.maxLength,
-        ignoreBody: generalConfigParsers.ignoreBody,
+        includeBody: generalConfigParsers.includeBody,
         topP: generalConfigParsers.topP,
     },
     MISTRAL: {
@@ -327,7 +327,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         generate: generalConfigParsers.generate,
         type: generalConfigParsers.type,
         maxLength: generalConfigParsers.maxLength,
-        ignoreBody: generalConfigParsers.ignoreBody,
+        includeBody: generalConfigParsers.includeBody,
         topP: generalConfigParsers.topP,
     },
     CODESTRAL: {
@@ -352,7 +352,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         generate: generalConfigParsers.generate,
         type: generalConfigParsers.type,
         maxLength: generalConfigParsers.maxLength,
-        ignoreBody: generalConfigParsers.ignoreBody,
+        includeBody: generalConfigParsers.includeBody,
     },
     OLLAMA: {
         model: (models?: string | string[]): string[] => {
@@ -388,7 +388,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         generate: generalConfigParsers.generate,
         type: generalConfigParsers.type,
         maxLength: generalConfigParsers.maxLength,
-        ignoreBody: generalConfigParsers.ignoreBody,
+        includeBody: generalConfigParsers.includeBody,
         topP: generalConfigParsers.topP,
     },
     COHERE: {
@@ -410,7 +410,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         generate: generalConfigParsers.generate,
         type: generalConfigParsers.type,
         maxLength: generalConfigParsers.maxLength,
-        ignoreBody: generalConfigParsers.ignoreBody,
+        includeBody: generalConfigParsers.includeBody,
         topP: generalConfigParsers.topP,
     },
     GROQ: {
@@ -445,7 +445,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         generate: generalConfigParsers.generate,
         type: generalConfigParsers.type,
         maxLength: generalConfigParsers.maxLength,
-        ignoreBody: generalConfigParsers.ignoreBody,
+        includeBody: generalConfigParsers.includeBody,
         topP: generalConfigParsers.topP,
     },
     PERPLEXITY: {
@@ -479,7 +479,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         generate: generalConfigParsers.generate,
         type: generalConfigParsers.type,
         maxLength: generalConfigParsers.maxLength,
-        ignoreBody: generalConfigParsers.ignoreBody,
+        includeBody: generalConfigParsers.includeBody,
     },
     DEEPSEEK: {
         key: (key?: string) => key || '',
@@ -503,7 +503,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         generate: generalConfigParsers.generate,
         type: generalConfigParsers.type,
         maxLength: generalConfigParsers.maxLength,
-        ignoreBody: generalConfigParsers.ignoreBody,
+        includeBody: generalConfigParsers.includeBody,
     },
 };
 
