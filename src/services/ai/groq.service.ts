@@ -6,7 +6,7 @@ import { Observable, catchError, concatMap, from, map, of } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIResponse, AIService, AIServiceParams } from './ai.service.js';
-import { createLogResponse } from '../../utils/log.js';
+import { RequestType, createLogResponse } from '../../utils/log.js';
 import { sanitizeMessage } from '../../utils/openai.js';
 import { CODE_REVIEW_PROMPT, DEFAULT_PROMPT_OPTIONS, PromptOptions, generatePrompt } from '../../utils/prompt.js';
 import { flattenDeep } from '../../utils/utils.js';
@@ -26,7 +26,7 @@ export class GroqService extends AIService {
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
-        return fromPromise(this.generateMessage()).pipe(
+        return fromPromise(this.generateMessage('commit')).pipe(
             concatMap(messages => from(messages)),
             map(data => ({
                 name: `${this.serviceName} ${data.title}`,
@@ -40,7 +40,7 @@ export class GroqService extends AIService {
     }
 
     generateCodeReview$(): Observable<ReactiveListChoice> {
-        return fromPromise(this.generateCodeReview()).pipe(
+        return fromPromise(this.generateMessage('review')).pipe(
             concatMap(messages => from(messages)),
             map(data => ({
                 name: `${this.serviceName} ${data.title}`,
@@ -53,7 +53,7 @@ export class GroqService extends AIService {
         );
     }
 
-    private async generateCodeReview(): Promise<AIResponse[]> {
+    private async generateMessage(requestType: RequestType): Promise<AIResponse[]> {
         try {
             const diff = this.params.stagedDiff.diff;
             const { systemPrompt, systemPromptPath, logging, locale, temperature, generate, type, maxLength } = this.params.config;
@@ -67,7 +67,7 @@ export class GroqService extends AIService {
                 systemPrompt,
                 systemPromptPath,
             };
-            const generatedSystemPrompt = CODE_REVIEW_PROMPT;
+            const generatedSystemPrompt = requestType === 'review' ? CODE_REVIEW_PROMPT : generatePrompt(promptOptions);
 
             const chatCompletion = await this.groq.chat.completions.create(
                 {
@@ -95,64 +95,15 @@ export class GroqService extends AIService {
                 .filter(choice => choice.message?.content)
                 .map(choice => sanitizeMessage(choice.message!.content as string))
                 .join();
-            logging && createLogResponse('Groq Review', diff, generatedSystemPrompt, fullText);
+            logging && createLogResponse('Groq', diff, generatedSystemPrompt, fullText, requestType);
 
             const results = chatCompletion.choices
                 .filter(choice => choice.message?.content)
                 .map(choice => sanitizeMessage(choice.message!.content as string));
-            return flattenDeep(results.map(value => this.sanitizeResponse(value)));
-        } catch (error) {
-            throw error as any;
-        }
-    }
 
-    private async generateMessage(): Promise<AIResponse[]> {
-        try {
-            const diff = this.params.stagedDiff.diff;
-            const { systemPrompt, systemPromptPath, logging, locale, temperature, generate, type, maxLength } = this.params.config;
-            const maxTokens = this.params.config.maxTokens;
-            const promptOptions: PromptOptions = {
-                ...DEFAULT_PROMPT_OPTIONS,
-                locale,
-                maxLength,
-                type,
-                generate,
-                systemPrompt,
-                systemPromptPath,
-            };
-            const generatedSystemPrompt = generatePrompt(promptOptions);
-
-            const chatCompletion = await this.groq.chat.completions.create(
-                {
-                    messages: [
-                        {
-                            role: 'system',
-                            content: generatedSystemPrompt,
-                        },
-                        {
-                            role: 'user',
-                            content: `Here is the diff: ${diff}`,
-                        },
-                    ],
-                    model: this.params.config.model,
-                    max_tokens: maxTokens,
-                    top_p: this.params.config.topP,
-                    temperature,
-                },
-                {
-                    timeout: this.params.config.timeout,
-                }
-            );
-
-            const fullText = chatCompletion.choices
-                .filter(choice => choice.message?.content)
-                .map(choice => sanitizeMessage(choice.message!.content as string))
-                .join();
-            logging && createLogResponse('Groq', diff, generatedSystemPrompt, fullText);
-
-            const results = chatCompletion.choices
-                .filter(choice => choice.message?.content)
-                .map(choice => sanitizeMessage(choice.message!.content as string));
+            if (requestType === 'review') {
+                return flattenDeep(results.map(value => this.sanitizeResponse(value)));
+            }
             return flattenDeep(results.map(value => this.parseMessage(value, type, generate)));
         } catch (error) {
             throw error as any;

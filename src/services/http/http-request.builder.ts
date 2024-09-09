@@ -44,6 +44,11 @@ export class HttpRequestBuilder {
         return this;
     }
 
+    addBody(data: Body): HttpRequestBuilder {
+        this.config.data = { ...this.config.data, ...data };
+        return this;
+    }
+
     setMethod(method: string): HttpRequestBuilder {
         this.config.method = method;
         return this;

@@ -5,7 +5,7 @@ import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIResponse, AIService, AIServiceParams } from './ai.service.js';
 import { KnownError } from '../../utils/error.js';
-import { createLogResponse } from '../../utils/log.js';
+import { RequestType, createLogResponse } from '../../utils/log.js';
 import { CODE_REVIEW_PROMPT, DEFAULT_PROMPT_OPTIONS, PromptOptions, generatePrompt } from '../../utils/prompt.js';
 
 interface Conversation {
@@ -77,7 +77,7 @@ export class HuggingFaceService extends AIService {
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
-        return fromPromise(this.generateMessage()).pipe(
+        return fromPromise(this.generateMessage('commit')).pipe(
             concatMap(messages => from(messages)),
             map(data => ({
                 name: `${this.serviceName} ${data.title}`,
@@ -91,7 +91,7 @@ export class HuggingFaceService extends AIService {
     }
 
     generateCodeReview$(): Observable<ReactiveListChoice> {
-        return fromPromise(this.generateCodeReview()).pipe(
+        return fromPromise(this.generateMessage('review')).pipe(
             concatMap(messages => from(messages)),
             map(data => ({
                 name: `${this.serviceName} ${data.title}`,
@@ -104,7 +104,7 @@ export class HuggingFaceService extends AIService {
         );
     }
 
-    private async generateCodeReview(): Promise<AIResponse[]> {
+    private async generateMessage(requestType: RequestType): Promise<AIResponse[]> {
         try {
             await this.intialize();
 
@@ -119,47 +119,17 @@ export class HuggingFaceService extends AIService {
                 systemPrompt,
                 systemPromptPath,
             };
-            const generatedSystemPrompt = CODE_REVIEW_PROMPT;
+            const generatedSystemPrompt = requestType === 'review' ? CODE_REVIEW_PROMPT : generatePrompt(promptOptions);
 
             const conversation = await this.getNewChat(generatedSystemPrompt);
             const data = await this.sendMessage(`Here is the diff: ${diff}`, conversation.id);
             const response = await data.completeResponsePromise();
-            // await this.deleteConversation(conversation.id);
+            await this.deleteConversation(conversation.id);
 
-            logging && createLogResponse('HuggingFace Review', diff, generatedSystemPrompt, response);
-            return this.sanitizeResponse(response);
-        } catch (error) {
-            const errorAsAny = error as any;
-            if (errorAsAny.code === 'ENOTFOUND') {
-                throw new KnownError(`Error connecting to ${errorAsAny.hostname} (${errorAsAny.syscall})`);
+            logging && createLogResponse('HuggingFace', diff, generatedSystemPrompt, response, requestType);
+            if (requestType === 'review') {
+                return this.sanitizeResponse(response);
             }
-            throw errorAsAny;
-        }
-    }
-
-    private async generateMessage(): Promise<AIResponse[]> {
-        try {
-            await this.intialize();
-
-            const diff = this.params.stagedDiff.diff;
-            const { systemPrompt, systemPromptPath, logging, locale, generate, type, maxLength } = this.params.config;
-            const promptOptions: PromptOptions = {
-                ...DEFAULT_PROMPT_OPTIONS,
-                locale,
-                maxLength,
-                type,
-                generate,
-                systemPrompt,
-                systemPromptPath,
-            };
-            const generatedSystemPrompt = generatePrompt(promptOptions);
-
-            const conversation = await this.getNewChat(generatedSystemPrompt);
-            const data = await this.sendMessage(`Here is the diff: ${diff}`, conversation.id);
-            const response = await data.completeResponsePromise();
-            // await this.deleteConversation(conversation.id);
-
-            logging && createLogResponse('HuggingFace', diff, generatedSystemPrompt, response);
             return this.parseMessage(response, type, generate);
         } catch (error) {
             const errorAsAny = error as any;

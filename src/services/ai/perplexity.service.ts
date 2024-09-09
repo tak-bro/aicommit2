@@ -6,7 +6,7 @@ import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
 import { KnownError } from '../../utils/error.js';
-import { createLogResponse } from '../../utils/log.js';
+import { RequestType, createLogResponse } from '../../utils/log.js';
 import { CODE_REVIEW_PROMPT, DEFAULT_PROMPT_OPTIONS, PromptOptions, generatePrompt } from '../../utils/prompt.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
 
@@ -46,7 +46,7 @@ export class PerplexityService extends AIService {
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
-        return fromPromise(this.generateMessage()).pipe(
+        return fromPromise(this.generateMessage('commit')).pipe(
             concatMap(messages => from(messages)),
             map(data => ({
                 name: `${this.serviceName} ${data.title}`,
@@ -60,7 +60,7 @@ export class PerplexityService extends AIService {
     }
 
     generateCodeReview$(): Observable<ReactiveListChoice> {
-        return fromPromise(this.generateCodeReview()).pipe(
+        return fromPromise(this.generateMessage('review')).pipe(
             concatMap(messages => from(messages)),
             map(data => ({
                 name: `${this.serviceName} ${data.title}`,
@@ -101,7 +101,7 @@ export class PerplexityService extends AIService {
         };
     }
 
-    private async generateCodeReview(): Promise<AIResponse[]> {
+    private async generateMessage(requestType: RequestType): Promise<AIResponse[]> {
         try {
             const diff = this.params.stagedDiff.diff;
             const { systemPrompt, systemPromptPath, logging, locale, generate, type, maxLength } = this.params.config;
@@ -114,35 +114,9 @@ export class PerplexityService extends AIService {
                 systemPrompt,
                 systemPromptPath,
             };
-            const generatedSystemPrompt = CODE_REVIEW_PROMPT;
+            const generatedSystemPrompt = requestType === 'review' ? CODE_REVIEW_PROMPT : generatePrompt(promptOptions);
             const chatResponse = await this.createChatCompletions(generatedSystemPrompt, diff);
-            logging && createLogResponse('Perplexity Review', diff, generatedSystemPrompt, chatResponse);
-            return this.sanitizeResponse(chatResponse);
-        } catch (error) {
-            const errorAsAny = error as any;
-            if (errorAsAny.code === 'ENOTFOUND') {
-                throw new KnownError(`Error connecting to ${errorAsAny.hostname} (${errorAsAny.syscall})`);
-            }
-            throw errorAsAny;
-        }
-    }
-
-    private async generateMessage(): Promise<AIResponse[]> {
-        try {
-            const diff = this.params.stagedDiff.diff;
-            const { systemPrompt, systemPromptPath, logging, locale, generate, type, maxLength } = this.params.config;
-            const promptOptions: PromptOptions = {
-                ...DEFAULT_PROMPT_OPTIONS,
-                locale,
-                maxLength,
-                type,
-                generate,
-                systemPrompt,
-                systemPromptPath,
-            };
-            const generatedSystemPrompt = generatePrompt(promptOptions);
-            const chatResponse = await this.createChatCompletions(generatedSystemPrompt, diff);
-            logging && createLogResponse('Perplexity', diff, generatedSystemPrompt, chatResponse);
+            logging && createLogResponse('Perplexity', diff, generatedSystemPrompt, chatResponse, requestType);
             return this.parseMessage(chatResponse, type, generate);
         } catch (error) {
             const errorAsAny = error as any;

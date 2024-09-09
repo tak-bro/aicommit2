@@ -7,7 +7,7 @@ import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
 import { CreateChatCompletionsResponse } from './mistral.service.js';
 import { KnownError } from '../../utils/error.js';
-import { createLogResponse } from '../../utils/log.js';
+import { RequestType, createLogResponse } from '../../utils/log.js';
 import { CODE_REVIEW_PROMPT, DEFAULT_PROMPT_OPTIONS, PromptOptions, generatePrompt } from '../../utils/prompt.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
 
@@ -47,7 +47,7 @@ export class DeepSeekService extends AIService {
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
-        return fromPromise(this.generateMessage()).pipe(
+        return fromPromise(this.generateMessage('commit')).pipe(
             concatMap(messages => from(messages)),
             map(data => ({
                 name: `${this.serviceName} ${data.title}`,
@@ -61,7 +61,7 @@ export class DeepSeekService extends AIService {
     }
 
     generateCodeReview$(): Observable<ReactiveListChoice> {
-        return fromPromise(this.generateCodeReview()).pipe(
+        return fromPromise(this.generateMessage('commit')).pipe(
             concatMap(messages => from(messages)),
             map(data => ({
                 name: `${this.serviceName} ${data.title}`,
@@ -74,7 +74,7 @@ export class DeepSeekService extends AIService {
         );
     }
 
-    private async generateCodeReview(): Promise<AIResponse[]> {
+    private async generateMessage(requestType: RequestType): Promise<AIResponse[]> {
         try {
             const diff = this.params.stagedDiff.diff;
             const { systemPrompt, systemPromptPath, logging, locale, generate, type, maxLength } = this.params.config;
@@ -87,37 +87,13 @@ export class DeepSeekService extends AIService {
                 systemPrompt,
                 systemPromptPath,
             };
-            const generatedSystemPrompt = CODE_REVIEW_PROMPT;
+            const generatedSystemPrompt = requestType === 'review' ? CODE_REVIEW_PROMPT : generatePrompt(promptOptions);
             this.checkAvailableModels();
-            const chatResponse = await this.createChatCompletions(generatedSystemPrompt);
-            logging && createLogResponse('DeepSeek Review', diff, generatedSystemPrompt, chatResponse);
-            return this.sanitizeResponse(chatResponse);
-        } catch (error) {
-            const errorAsAny = error as any;
-            if (errorAsAny.code === 'ENOTFOUND') {
-                throw new KnownError(`Error connecting to ${errorAsAny.hostname} (${errorAsAny.syscall})`);
+            const chatResponse = await this.createChatCompletions(generatedSystemPrompt, requestType);
+            logging && createLogResponse('DeepSeek', diff, generatedSystemPrompt, chatResponse, requestType);
+            if (requestType === 'review') {
+                return this.sanitizeResponse(chatResponse);
             }
-            throw errorAsAny;
-        }
-    }
-
-    private async generateMessage(): Promise<AIResponse[]> {
-        try {
-            const diff = this.params.stagedDiff.diff;
-            const { systemPrompt, systemPromptPath, logging, locale, generate, type, maxLength } = this.params.config;
-            const promptOptions: PromptOptions = {
-                ...DEFAULT_PROMPT_OPTIONS,
-                locale,
-                maxLength,
-                type,
-                generate,
-                systemPrompt,
-                systemPromptPath,
-            };
-            const generatedSystemPrompt = generatePrompt(promptOptions);
-            this.checkAvailableModels();
-            const chatResponse = await this.createChatCompletions(generatedSystemPrompt);
-            logging && createLogResponse('DeepSeek', diff, generatedSystemPrompt, chatResponse);
             return this.parseMessage(chatResponse, type, generate);
         } catch (error) {
             const errorAsAny = error as any;
@@ -146,8 +122,8 @@ export class DeepSeekService extends AIService {
         throw new Error(`Invalid model type of DeepSeek`);
     }
 
-    private async createChatCompletions(systemPrompt: string) {
-        const response: AxiosResponse<CreateChatCompletionsResponse> = await new HttpRequestBuilder({
+    private async createChatCompletions(systemPrompt: string, requestType: RequestType) {
+        const requestBuilder = new HttpRequestBuilder({
             method: 'POST',
             baseURL: `${this.host}/chat/completions`,
             timeout: this.params.config.timeout,
@@ -168,15 +144,21 @@ export class DeepSeekService extends AIService {
                         content: `Here is the diff: ${this.params.stagedDiff.diff}`,
                     },
                 ],
-                response_format: {
-                    type: 'json_object',
-                },
                 temperature: this.params.config.temperature,
                 top_p: this.params.config.topP,
                 max_tokens: this.params.config.maxTokens,
                 stream: false,
-            })
-            .execute();
+            });
+
+        if (requestType === 'commit') {
+            requestBuilder.addBody({
+                response_format: {
+                    type: 'json_object',
+                },
+            });
+        }
+
+        const response: AxiosResponse<CreateChatCompletionsResponse> = await requestBuilder.execute();
         const result: DeepSeekChatCompletionResponse = response.data;
         const hasNoChoices = !result.choices || result.choices.length === 0;
         if (hasNoChoices || !result.choices[0].message?.content) {

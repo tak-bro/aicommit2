@@ -4,6 +4,7 @@ import { Observable, catchError, concatMap, from, map, of } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
+import { RequestType } from '../../utils/log.js';
 import { generateCommitMessage } from '../../utils/openai.js';
 import { CODE_REVIEW_PROMPT, DEFAULT_PROMPT_OPTIONS, PromptOptions, generatePrompt } from '../../utils/prompt.js';
 import { flattenDeep } from '../../utils/utils.js';
@@ -20,7 +21,7 @@ export class OpenAIService extends AIService {
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
-        return fromPromise(this.generateMessage()).pipe(
+        return fromPromise(this.generateMessage('commit')).pipe(
             concatMap(messages => from(messages)),
             map(data => ({
                 name: `${this.serviceName} ${data.title}`,
@@ -34,7 +35,7 @@ export class OpenAIService extends AIService {
     }
 
     generateCodeReview$(): Observable<ReactiveListChoice> {
-        return fromPromise(this.generateCodeReview()).pipe(
+        return fromPromise(this.generateMessage('review')).pipe(
             concatMap(messages => from(messages)),
             map(data => ({
                 name: `${this.serviceName} ${data.title}`,
@@ -75,7 +76,7 @@ export class OpenAIService extends AIService {
         };
     }
 
-    private async generateMessage(): Promise<AIResponse[]> {
+    private async generateMessage(requestType: RequestType): Promise<AIResponse[]> {
         const diff = this.params.stagedDiff.diff;
         const { systemPrompt, systemPromptPath, temperature, logging, locale, generate, type, maxLength, proxy, maxTokens, timeout } =
             this.params.config;
@@ -88,7 +89,7 @@ export class OpenAIService extends AIService {
             systemPrompt,
             systemPromptPath,
         };
-        const generatedSystemPrompt = generatePrompt(promptOptions);
+        const generatedSystemPrompt = requestType === 'review' ? CODE_REVIEW_PROMPT : generatePrompt(promptOptions);
 
         const results = await generateCommitMessage(
             this.params.config.url,
@@ -102,42 +103,13 @@ export class OpenAIService extends AIService {
             this.params.config.topP,
             generatedSystemPrompt,
             logging,
+            requestType,
             proxy
         );
 
+        if (requestType === 'review') {
+            return flattenDeep(results.map(value => this.sanitizeResponse(value)));
+        }
         return flattenDeep(results.map(value => this.parseMessage(value, type, generate)));
-    }
-
-    private async generateCodeReview(): Promise<AIResponse[]> {
-        const diff = this.params.stagedDiff.diff;
-        const { systemPrompt, systemPromptPath, temperature, logging, locale, generate, type, maxLength, proxy, maxTokens, timeout } =
-            this.params.config;
-        const promptOptions: PromptOptions = {
-            ...DEFAULT_PROMPT_OPTIONS,
-            locale,
-            maxLength,
-            type,
-            generate,
-            systemPrompt,
-            systemPromptPath,
-        };
-        const generatedSystemPrompt = CODE_REVIEW_PROMPT;
-
-        const results = await generateCommitMessage(
-            this.params.config.url,
-            this.params.config.path,
-            this.params.config.key,
-            this.params.config.model,
-            diff,
-            timeout,
-            maxTokens,
-            temperature,
-            this.params.config.topP,
-            generatedSystemPrompt,
-            logging,
-            proxy
-        );
-
-        return flattenDeep(results.map(value => this.sanitizeResponse(value)));
     }
 }

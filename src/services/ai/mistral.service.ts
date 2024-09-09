@@ -6,7 +6,7 @@ import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
 import { KnownError } from '../../utils/error.js';
-import { createLogResponse } from '../../utils/log.js';
+import { RequestType, createLogResponse } from '../../utils/log.js';
 import { CODE_REVIEW_PROMPT, DEFAULT_PROMPT_OPTIONS, PromptOptions, generatePrompt } from '../../utils/prompt.js';
 import { getRandomNumber } from '../../utils/utils.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
@@ -59,7 +59,7 @@ export class MistralService extends AIService {
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
-        return fromPromise(this.generateMessage()).pipe(
+        return fromPromise(this.generateMessage('commit')).pipe(
             concatMap(messages => from(messages)),
             map(data => ({
                 name: `${this.serviceName} ${data.title}`,
@@ -73,7 +73,7 @@ export class MistralService extends AIService {
     }
 
     generateCodeReview$(): Observable<ReactiveListChoice> {
-        return fromPromise(this.generateCodeReview()).pipe(
+        return fromPromise(this.generateMessage('review')).pipe(
             concatMap(messages => from(messages)),
             map(data => ({
                 name: `${this.serviceName} ${data.title}`,
@@ -86,7 +86,7 @@ export class MistralService extends AIService {
         );
     }
 
-    private async generateCodeReview(): Promise<AIResponse[]> {
+    private async generateMessage(requestType: RequestType): Promise<AIResponse[]> {
         try {
             const diff = this.params.stagedDiff.diff;
             const { systemPrompt, systemPromptPath, logging, locale, generate, type, maxLength } = this.params.config;
@@ -99,40 +99,15 @@ export class MistralService extends AIService {
                 systemPrompt,
                 systemPromptPath,
             };
-            const generatedSystemPrompt = CODE_REVIEW_PROMPT;
+            const generatedSystemPrompt = requestType === 'review' ? CODE_REVIEW_PROMPT : generatePrompt(promptOptions);
 
             await this.checkAvailableModels();
             const chatResponse = await this.createChatCompletions(generatedSystemPrompt, `Here is the diff: ${diff}`);
-            logging && createLogResponse('MistralAI Review', diff, generatedSystemPrompt, chatResponse);
-            return this.sanitizeResponse(chatResponse);
-        } catch (error) {
-            const errorAsAny = error as any;
-            if (errorAsAny.code === 'ENOTFOUND') {
-                throw new KnownError(`Error connecting to ${errorAsAny.hostname} (${errorAsAny.syscall})`);
+            logging && createLogResponse('MistralAI', diff, generatedSystemPrompt, chatResponse, requestType);
+            if (requestType === 'review') {
+                return this.sanitizeResponse(chatResponse);
             }
-            throw errorAsAny;
-        }
-    }
-
-    private async generateMessage(): Promise<AIResponse[]> {
-        try {
-            const diff = this.params.stagedDiff.diff;
-            const { systemPrompt, systemPromptPath, logging, locale, generate, type, maxLength } = this.params.config;
-            const promptOptions: PromptOptions = {
-                ...DEFAULT_PROMPT_OPTIONS,
-                locale,
-                maxLength,
-                type,
-                generate,
-                systemPrompt,
-                systemPromptPath,
-            };
-            const generatedSystemPrompt = generatePrompt(promptOptions);
-
-            await this.checkAvailableModels();
-            const chatResponse = await this.createChatCompletions(generatedSystemPrompt, `Here is the diff: ${diff}`);
-            logging && createLogResponse('MistralAI', diff, generatedSystemPrompt, chatResponse);
-            return this.parseMessage(chatResponse, this.params.config.type, generate);
+            return this.parseMessage(chatResponse, type, generate);
         } catch (error) {
             const errorAsAny = error as any;
             if (errorAsAny.code === 'ENOTFOUND') {

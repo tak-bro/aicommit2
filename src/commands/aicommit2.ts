@@ -83,12 +83,13 @@ export default async (
         }
 
         const aiRequestManager = new AIRequestManager(config, staged);
+
         if (config.codeReview) {
             const codeReviewPromptManager = new ReactivePromptManager();
             const codeReviewInquirer = codeReviewPromptManager.initPrompt({
                 ...DEFAULT_INQUIRER_OPTIONS,
                 name: 'codeReviewPrompt',
-                message: 'Pick a review to copy: ',
+                message: 'Please check reviews: ',
                 emptyMessage: `⚠ ${emptyCodeReview}`,
                 isDescriptionDim: false,
             });
@@ -108,7 +109,6 @@ export default async (
             }
             codeReviewSubscription.unsubscribe();
             codeReviewPromptManager.completeSubject();
-            consoleManager.moveCursorUp(); // NOTE: reactiveListPrompt has 2 blank lines
 
             const confirmInquirer = await inquirer.prompt([
                 {
