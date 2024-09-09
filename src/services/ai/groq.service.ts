@@ -56,7 +56,8 @@ export class GroqService extends AIService {
     private async generateMessage(requestType: RequestType): Promise<AIResponse[]> {
         try {
             const diff = this.params.stagedDiff.diff;
-            const { systemPrompt, systemPromptPath, logging, locale, temperature, generate, type, maxLength } = this.params.config;
+            const { systemPrompt, systemPromptPath, codeReviewPromptPath, logging, locale, temperature, generate, type, maxLength } =
+                this.params.config;
             const maxTokens = this.params.config.maxTokens;
             const promptOptions: PromptOptions = {
                 ...DEFAULT_PROMPT_OPTIONS,
@@ -66,6 +67,7 @@ export class GroqService extends AIService {
                 generate,
                 systemPrompt,
                 systemPromptPath,
+                codeReviewPromptPath,
             };
             const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
 

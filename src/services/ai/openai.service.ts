@@ -78,8 +78,20 @@ export class OpenAIService extends AIService {
 
     private async generateMessage(requestType: RequestType): Promise<AIResponse[]> {
         const diff = this.params.stagedDiff.diff;
-        const { systemPrompt, systemPromptPath, temperature, logging, locale, generate, type, maxLength, proxy, maxTokens, timeout } =
-            this.params.config;
+        const {
+            systemPrompt,
+            systemPromptPath,
+            codeReviewPromptPath,
+            temperature,
+            logging,
+            locale,
+            generate,
+            type,
+            maxLength,
+            proxy,
+            maxTokens,
+            timeout,
+        } = this.params.config;
         const promptOptions: PromptOptions = {
             ...DEFAULT_PROMPT_OPTIONS,
             locale,
@@ -88,6 +100,7 @@ export class OpenAIService extends AIService {
             generate,
             systemPrompt,
             systemPromptPath,
+            codeReviewPromptPath,
         };
         const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
 

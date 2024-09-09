@@ -115,6 +115,14 @@ async function validateSystemPrompt(config: ValidConfig) {
             throw new KnownError(`Error reading system prompt file: ${config.systemPromptPath}`);
         }
     }
+
+    if (config.codeReview && config.codeReviewPromptPath) {
+        try {
+            fs.readFileSync(path.resolve(config.codeReviewPromptPath), 'utf-8');
+        } catch (error) {
+            throw new KnownError(`Error reading code review prompt file: ${config.codeReviewPromptPath}`);
+        }
+    }
 }
 
 function getAvailableAIs(config: ValidConfig): ModelName[] {
@@ -143,6 +151,7 @@ async function handleCodeReview(aiRequestManager: AIRequestManager, availableAIs
         emptyMessage: `⚠ ${emptyCodeReview}`,
         isDescriptionDim: false,
         stopMessage: 'Code review completed',
+        descPageSize: 20,
     });
 
     codeReviewPromptManager.startLoader();

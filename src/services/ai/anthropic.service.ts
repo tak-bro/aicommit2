@@ -62,8 +62,20 @@ export class AnthropicService extends AIService {
     private async generateMessage(requestType: RequestType): Promise<AIResponse[]> {
         try {
             const diff = this.params.stagedDiff.diff;
-            const { systemPrompt, systemPromptPath, logging, temperature, locale, generate, type, maxLength, maxTokens, topP, model } =
-                this.params.config;
+            const {
+                systemPrompt,
+                systemPromptPath,
+                codeReviewPromptPath,
+                logging,
+                temperature,
+                locale,
+                generate,
+                type,
+                maxLength,
+                maxTokens,
+                topP,
+                model,
+            } = this.params.config;
 
             const promptOptions: PromptOptions = {
                 ...DEFAULT_PROMPT_OPTIONS,
@@ -73,6 +85,7 @@ export class AnthropicService extends AIService {
                 generate,
                 systemPrompt,
                 systemPromptPath,
+                codeReviewPromptPath,
             };
             const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
 

@@ -53,6 +53,12 @@ const generalConfigParsers = {
         }
         return systemPromptPath;
     },
+    codeReviewPromptPath(codeReviewPromptPath?: string) {
+        if (!codeReviewPromptPath) {
+            return '';
+        }
+        return codeReviewPromptPath;
+    },
     timeout(timeout?: string) {
         if (!timeout) {
             return 10_000;
@@ -144,17 +150,17 @@ const generalConfigParsers = {
 
         return parsed;
     },
-    includeBody(ignore?: string | boolean) {
-        if (typeof ignore === 'boolean') {
-            return ignore;
+    includeBody(includeBody?: string | boolean) {
+        if (typeof includeBody === 'boolean') {
+            return includeBody;
         }
 
-        if (ignore === undefined || ignore === null) {
+        if (includeBody === undefined || includeBody === null) {
             return false;
         }
 
-        parseAssert('includeBody', /^(?:true|false)$/.test(ignore), 'Must be a boolean(true or false)');
-        return ignore === 'true';
+        parseAssert('includeBody', /^(?:true|false)$/.test(includeBody), 'Must be a boolean(true or false)');
+        return includeBody === 'true';
     },
     exclude: (exclude?: string | string[]): string[] => {
         if (!exclude) {
@@ -203,6 +209,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         topP: generalConfigParsers.topP,
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
+        codeReviewPromptPath: generalConfigParsers.codeReviewPromptPath,
         timeout: generalConfigParsers.timeout,
         temperature: generalConfigParsers.temperature,
         maxTokens: generalConfigParsers.maxTokens,
@@ -235,6 +242,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         },
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
+        codeReviewPromptPath: generalConfigParsers.codeReviewPromptPath,
         logging: generalConfigParsers.logging,
         locale: generalConfigParsers.locale,
         generate: generalConfigParsers.generate,
@@ -254,6 +262,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         },
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
+        codeReviewPromptPath: generalConfigParsers.codeReviewPromptPath,
         temperature: generalConfigParsers.temperature,
         maxTokens: generalConfigParsers.maxTokens,
         logging: generalConfigParsers.logging,
@@ -281,6 +290,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         },
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
+        codeReviewPromptPath: generalConfigParsers.codeReviewPromptPath,
         temperature: generalConfigParsers.temperature,
         maxTokens: generalConfigParsers.maxTokens,
         logging: generalConfigParsers.logging,
@@ -319,6 +329,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         },
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
+        codeReviewPromptPath: generalConfigParsers.codeReviewPromptPath,
         timeout: generalConfigParsers.timeout,
         temperature: generalConfigParsers.temperature,
         maxTokens: generalConfigParsers.maxTokens,
@@ -344,6 +355,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         topP: generalConfigParsers.topP,
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
+        codeReviewPromptPath: generalConfigParsers.codeReviewPromptPath,
         timeout: generalConfigParsers.timeout,
         temperature: generalConfigParsers.temperature,
         maxTokens: generalConfigParsers.maxTokens,
@@ -382,6 +394,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         },
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
+        codeReviewPromptPath: generalConfigParsers.codeReviewPromptPath,
         temperature: generalConfigParsers.temperature,
         logging: generalConfigParsers.logging,
         locale: generalConfigParsers.locale,
@@ -403,6 +416,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         },
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
+        codeReviewPromptPath: generalConfigParsers.codeReviewPromptPath,
         temperature: generalConfigParsers.temperature,
         maxTokens: generalConfigParsers.maxTokens,
         logging: generalConfigParsers.logging,
@@ -437,6 +451,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         },
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
+        codeReviewPromptPath: generalConfigParsers.codeReviewPromptPath,
         timeout: generalConfigParsers.timeout,
         temperature: generalConfigParsers.temperature,
         maxTokens: generalConfigParsers.maxTokens,
@@ -471,6 +486,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         topP: generalConfigParsers.topP,
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
+        codeReviewPromptPath: generalConfigParsers.codeReviewPromptPath,
         timeout: generalConfigParsers.timeout,
         temperature: generalConfigParsers.temperature,
         maxTokens: generalConfigParsers.maxTokens,
@@ -495,6 +511,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         topP: generalConfigParsers.topP,
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
+        codeReviewPromptPath: generalConfigParsers.codeReviewPromptPath,
         timeout: generalConfigParsers.timeout,
         temperature: generalConfigParsers.temperature,
         maxTokens: generalConfigParsers.maxTokens,

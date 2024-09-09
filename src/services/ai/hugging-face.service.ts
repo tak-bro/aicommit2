@@ -109,7 +109,7 @@ export class HuggingFaceService extends AIService {
             await this.intialize();
 
             const diff = this.params.stagedDiff.diff;
-            const { systemPrompt, systemPromptPath, logging, locale, generate, type, maxLength } = this.params.config;
+            const { systemPrompt, systemPromptPath, codeReviewPromptPath, logging, locale, generate, type, maxLength } = this.params.config;
             const promptOptions: PromptOptions = {
                 ...DEFAULT_PROMPT_OPTIONS,
                 locale,
@@ -118,6 +118,7 @@ export class HuggingFaceService extends AIService {
                 generate,
                 systemPrompt,
                 systemPromptPath,
+                codeReviewPromptPath,
             };
             const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
 
