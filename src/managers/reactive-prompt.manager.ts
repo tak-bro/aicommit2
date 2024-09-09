@@ -12,7 +12,9 @@ const defaultLoader = {
     },
 };
 
-const emptyCommitMessage = `No commit messages were generated`;
+export const emptyCommitMessage = `No commit messages were generated`;
+
+export const emptyCodeReview = `No code reviews were generated`;
 
 export const DEFAULT_INQUIRER_OPTIONS = {
     type: 'reactiveListPrompt',
@@ -23,7 +25,7 @@ export const DEFAULT_INQUIRER_OPTIONS = {
     descPageSize: 15,
     showDescription: true,
     pickKey: 'short',
-    isDescriptionDim: true,
+    isDescriptionDim: false,
 };
 
 export class ReactivePromptManager {

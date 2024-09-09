@@ -3,10 +3,10 @@ import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Observable, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
-import { AIService, AIServiceParams, CommitMessage } from './ai.service.js';
+import { AIResponse, AIService, AIServiceParams } from './ai.service.js';
 import { KnownError } from '../../utils/error.js';
 import { createLogResponse } from '../../utils/log.js';
-import { DEFAULT_PROMPT_OPTIONS, PromptOptions, generatePrompt } from '../../utils/prompt.js';
+import { CODE_REVIEW_PROMPT, DEFAULT_PROMPT_OPTIONS, PromptOptions, generatePrompt } from '../../utils/prompt.js';
 
 interface Conversation {
     id: string;
@@ -90,7 +90,54 @@ export class HuggingFaceService extends AIService {
         );
     }
 
-    private async generateMessage(): Promise<CommitMessage[]> {
+    generateCodeReview$(): Observable<ReactiveListChoice> {
+        return fromPromise(this.generateCodeReview()).pipe(
+            concatMap(messages => from(messages)),
+            map(data => ({
+                name: `${this.serviceName} ${data.title}`,
+                short: data.title,
+                value: data.value,
+                description: data.value,
+                isError: false,
+            })),
+            catchError(this.handleError$)
+        );
+    }
+
+    private async generateCodeReview(): Promise<AIResponse[]> {
+        try {
+            await this.intialize();
+
+            const diff = this.params.stagedDiff.diff;
+            const { systemPrompt, systemPromptPath, logging, locale, generate, type, maxLength } = this.params.config;
+            const promptOptions: PromptOptions = {
+                ...DEFAULT_PROMPT_OPTIONS,
+                locale,
+                maxLength,
+                type,
+                generate,
+                systemPrompt,
+                systemPromptPath,
+            };
+            const generatedSystemPrompt = CODE_REVIEW_PROMPT;
+
+            const conversation = await this.getNewChat(generatedSystemPrompt);
+            const data = await this.sendMessage(`Here is the diff: ${diff}`, conversation.id);
+            const response = await data.completeResponsePromise();
+            // await this.deleteConversation(conversation.id);
+
+            logging && createLogResponse('HuggingFace Review', diff, generatedSystemPrompt, response);
+            return this.sanitizeResponse(response);
+        } catch (error) {
+            const errorAsAny = error as any;
+            if (errorAsAny.code === 'ENOTFOUND') {
+                throw new KnownError(`Error connecting to ${errorAsAny.hostname} (${errorAsAny.syscall})`);
+            }
+            throw errorAsAny;
+        }
+    }
+
+    private async generateMessage(): Promise<AIResponse[]> {
         try {
             await this.intialize();
 

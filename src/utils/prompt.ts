@@ -258,3 +258,13 @@ export const isValidGitmojiMessage = (message: string): boolean => {
     const gitmojiCommitMessageRegex = /:\w*:/;
     return gitmojiCommitMessageRegex.test(message);
 };
+
+export const CODE_REVIEW_PROMPT = `I want you to act like a code reviewer. I'll give you the output of the "git diff" command as an input, and your job is to review the code changes, spot any bad coding practices and make suggestions in case you have any. Please follow these instructions carefully:
+
+1. Format all your responses using Markdown syntax.
+2. Use header syntax ('#', '##', '###', etc.) for titles and subtitles.
+3. Use **bold** or *italic* for emphasis where appropriate.
+4. Use ordered or unordered list syntax when presenting lists.
+5. Enclose code blocks with triple backticks (\`\`\`).
+6. Use '>' for quotations.
+7. Use appropriate Markdown syntax for inserting links or images.`;

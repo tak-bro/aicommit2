@@ -4,10 +4,10 @@ import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Observable, catchError, concatMap, from, map, of } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
-import { AIService, AIServiceError, AIServiceParams, CommitMessage } from './ai.service.js';
+import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
 import { KnownError } from '../../utils/error.js';
 import { createLogResponse } from '../../utils/log.js';
-import { DEFAULT_PROMPT_OPTIONS, PromptOptions, generatePrompt } from '../../utils/prompt.js';
+import { CODE_REVIEW_PROMPT, DEFAULT_PROMPT_OPTIONS, PromptOptions, generatePrompt } from '../../utils/prompt.js';
 import { getRandomNumber } from '../../utils/utils.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
 
@@ -72,7 +72,49 @@ export class MistralService extends AIService {
         );
     }
 
-    private async generateMessage(): Promise<CommitMessage[]> {
+    generateCodeReview$(): Observable<ReactiveListChoice> {
+        return fromPromise(this.generateCodeReview()).pipe(
+            concatMap(messages => from(messages)),
+            map(data => ({
+                name: `${this.serviceName} ${data.title}`,
+                short: data.title,
+                value: data.value,
+                description: data.value,
+                isError: false,
+            })),
+            catchError(this.handleError$)
+        );
+    }
+
+    private async generateCodeReview(): Promise<AIResponse[]> {
+        try {
+            const diff = this.params.stagedDiff.diff;
+            const { systemPrompt, systemPromptPath, logging, locale, generate, type, maxLength } = this.params.config;
+            const promptOptions: PromptOptions = {
+                ...DEFAULT_PROMPT_OPTIONS,
+                locale,
+                maxLength,
+                type,
+                generate,
+                systemPrompt,
+                systemPromptPath,
+            };
+            const generatedSystemPrompt = CODE_REVIEW_PROMPT;
+
+            await this.checkAvailableModels();
+            const chatResponse = await this.createChatCompletions(generatedSystemPrompt, `Here is the diff: ${diff}`);
+            logging && createLogResponse('MistralAI Review', diff, generatedSystemPrompt, chatResponse);
+            return this.sanitizeResponse(chatResponse);
+        } catch (error) {
+            const errorAsAny = error as any;
+            if (errorAsAny.code === 'ENOTFOUND') {
+                throw new KnownError(`Error connecting to ${errorAsAny.hostname} (${errorAsAny.syscall})`);
+            }
+            throw errorAsAny;
+        }
+    }
+
+    private async generateMessage(): Promise<AIResponse[]> {
         try {
             const diff = this.params.stagedDiff.diff;
             const { systemPrompt, systemPromptPath, logging, locale, generate, type, maxLength } = this.params.config;

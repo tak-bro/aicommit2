@@ -8,7 +8,7 @@ import ora from 'ora';
 
 import { AIRequestManager } from '../managers/ai-request.manager.js';
 import { ConsoleManager } from '../managers/console.manager.js';
-import { ReactivePromptManager } from '../managers/reactive-prompt.manager.js';
+import { ReactivePromptManager, emptyCodeReview } from '../managers/reactive-prompt.manager.js';
 import { ModelName, RawConfig, getConfig, modelNames } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
 import { assertGitRepo, getStagedDiff } from '../utils/git.js';
@@ -84,44 +84,82 @@ export default async (
 
         const aiRequestManager = new AIRequestManager(config, staged);
         if (config.codeReview) {
-            console.log('123');
-            throw new KnownError('Please set at least one API key via the `aicommit2 config set` command');
-        }
+            const codeReviewPromptManager = new ReactivePromptManager();
+            const codeReviewInquirer = codeReviewPromptManager.initPrompt({
+                type: 'reactiveListPrompt',
+                name: 'codeReviewPrompt',
+                message: 'Pick a review to copy: ',
+                emptyMessage: `⚠ ${emptyCodeReview}`,
+                loop: false,
+                descPageSize: 15,
+                showDescription: true,
+                pickKey: 'short',
+                isDescriptionDim: false,
+            });
 
+            codeReviewPromptManager.startLoader();
+            const codeReviewSubscription = aiRequestManager.createCodeReviewRequests$(availableAIs).subscribe(
+                (choice: ReactiveListChoice) => codeReviewPromptManager.refreshChoices(choice),
+                () => {
+                    /* empty */
+                },
+                () => codeReviewPromptManager.checkErrorOnChoices()
+            );
+            const codeReviewInquirerResult = await codeReviewInquirer;
+            const selectedCodeReview = codeReviewInquirerResult.codeReviewPrompt?.value;
+            if (!selectedCodeReview) {
+                throw new KnownError('An error occurred! No selected code review');
+            }
+            codeReviewSubscription.unsubscribe();
+            codeReviewPromptManager.completeSubject();
+            consoleManager.moveCursorUp(); // NOTE: reactiveListPrompt has 2 blank lines
+
+            const confirmInquirer = await inquirer.prompt([
+                {
+                    type: 'confirm',
+                    name: 'continuePrompt',
+                    message: `Will you continue without changing the code?`,
+                    default: true,
+                },
+            ]);
+            const { continuePrompt } = confirmInquirer;
+            if (!continuePrompt) {
+                consoleManager.printCancelledCommit();
+                process.exit();
+            }
+        }
         const commitMsgPromptManager = new ReactivePromptManager();
-        const selectPrompt = commitMsgPromptManager.initPrompt();
+        const commitMsgInquirer = commitMsgPromptManager.initPrompt();
 
         commitMsgPromptManager.startLoader();
-        const subscription = aiRequestManager.createAIRequests$(availableAIs).subscribe(
+        const commitMsgSubscription = aiRequestManager.createCommitMsgRequests$(availableAIs).subscribe(
             (choice: ReactiveListChoice) => commitMsgPromptManager.refreshChoices(choice),
             () => {
                 /* empty */
             },
             () => commitMsgPromptManager.checkErrorOnChoices()
         );
-        const answer = await selectPrompt;
-        subscription.unsubscribe();
+        const commitMsgInquirerResult = await commitMsgInquirer;
+        commitMsgSubscription.unsubscribe();
         commitMsgPromptManager.completeSubject();
 
-        // NOTE: reactiveListPrompt has 2 blank lines
-        consoleManager.moveCursorUp();
-
-        const chosenMessage = answer.aicommit2Prompt?.value;
-        if (!chosenMessage) {
+        consoleManager.moveCursorUp(); // NOTE: reactiveListPrompt has 2 blank lines
+        const selectedCommitMessage = commitMsgInquirerResult.aicommit2Prompt?.value;
+        if (!selectedCommitMessage) {
             throw new KnownError('An error occurred! No selected message');
         }
 
         if (useClipboard) {
             // eslint-disable-next-line @typescript-eslint/no-var-requires
             const ncp = require('copy-paste');
-            ncp.copy(chosenMessage);
+            ncp.copy(selectedCommitMessage);
             consoleManager.printCopied();
             process.exit();
         }
 
         if (confirm) {
             const commitSpinner = ora('Committing with the generated message').start();
-            await execa('git', ['commit', '-m', chosenMessage, ...rawArgv]);
+            await execa('git', ['commit', '-m', selectedCommitMessage, ...rawArgv]);
             commitSpinner.stop();
             commitSpinner.clear();
             consoleManager.printCommitted();
@@ -139,7 +177,7 @@ export default async (
         const { confirmationPrompt } = confirmPrompt;
         if (confirmationPrompt) {
             const commitSpinner = ora('Committing with the generated message').start();
-            await execa('git', ['commit', '-m', chosenMessage, ...rawArgv]);
+            await execa('git', ['commit', '-m', selectedCommitMessage, ...rawArgv]);
             commitSpinner.stop();
             commitSpinner.clear();
             consoleManager.printCommitted();
