@@ -217,22 +217,23 @@ model[]=codestral
 The following settings can be applied to most models, but support may vary.
 Please check the documentation for each specific model to confirm which settings are supported.
 
-| Setting            | Description                                                         | Default      |
-|--------------------|---------------------------------------------------------------------|--------------|
-| `systemPrompt`     | System Prompt text                                                  | -            |
-| `systemPromptPath` | Path to system prompt file                                          | -            |
-| `exclude`          | Files to exclude from AI analysis                                   | -            |
-| `type`             | Type of commit message to generate                                  | conventional |
-| `locale`           | Locale for the generated commit messages                            | en           |
-| `generate`         | Number of commit messages to generate                               | 1            |
-| `logging`          | Enable logging                                                      | true         |
-| `includeBody`      | Whether the commit message includes body                            | false        |
-| `maxLength`        | Maximum character length of the Subject of generated commit message | 50           |
-| `timeout`          | Request timeout (milliseconds)                                      | 10000        |
-| `temperature`      | Model's creativity (0.0 - 2.0)                                      | 0.7          |
-| `maxTokens`        | Maximum number of tokens to generate                                | 1024         |
-| `topP`             | Nucleus sampling                                                    | 0.9          |
-| `codeReview`       | Nucleus sampling                                                    | false        |
+| Setting                | Description                                                         | Default      |
+|------------------------|---------------------------------------------------------------------|--------------|
+| `systemPrompt`         | System Prompt text                                                  | -            |
+| `systemPromptPath`     | Path to system prompt file                                          | -            |
+| `exclude`              | Files to exclude from AI analysis                                   | -            |
+| `type`                 | Type of commit message to generate                                  | conventional |
+| `locale`               | Locale for the generated commit messages                            | en           |
+| `generate`             | Number of commit messages to generate                               | 1            |
+| `logging`              | Enable logging                                                      | true         |
+| `includeBody`          | Whether the commit message includes body                            | false        |
+| `maxLength`            | Maximum character length of the Subject of generated commit message | 50           |
+| `timeout`              | Request timeout (milliseconds)                                      | 10000        |
+| `temperature`          | Model's creativity (0.0 - 2.0)                                      | 0.7          |
+| `maxTokens`            | Maximum number of tokens to generate                                | 1024         |
+| `topP`                 | Nucleus sampling                                                    | 0.9          |
+| `codeReview`           | whether to include an automated code review in the process          | false        |
+| `codeReviewPromptPath` | Path to code review prompt file                                     | -            |
 
 > 👉 **Tip:** To set the General Settings for each model, use the following command.
 > ```shell
@@ -404,8 +405,19 @@ aicommit2 config set codeReview=true
 
 - The `codeReview` feature is currently experimental.
 - This feature performs a code review before generating commit messages.
-- Use with caution as it may significantly impact performance and cost.
+- Using this feature will significantly increase the overall processing time.
+- It may significantly impact performance and cost.
 - The code review process consumes a large number of tokens.
+- **Due to the lack of caching, tokens for git diff may be consumed more than once.**
+
+> The `codeReview` is only supported in General settings. It does not support model-specific options.
+
+##### codeReviewPromptPath
+- Allow users to specify a custom file path for code review
+
+```sh
+aicommit2 config set codeReviewPromptPath="/path/to/user/prompt.txt"
+```
 
 
 ## Available General Settings by Model
@@ -424,7 +436,7 @@ aicommit2 config set codeReview=true
 |      **Ollama**      |    ✓    |      ✓      |           |   ✓    |
 
 > All AI support the following options in General Settings.
-> - systemPrompt, systemPromptPath, exclude, type, locale, generate, logging, includeBody, maxLength
+> - systemPrompt, systemPromptPath, codeReviewPromptPath, exclude, type, locale, generate, logging, includeBody, maxLength
 
 ## Model-Specific Settings
 
