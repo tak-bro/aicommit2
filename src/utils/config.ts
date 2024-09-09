@@ -219,6 +219,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         type: generalConfigParsers.type,
         maxLength: generalConfigParsers.maxLength,
         includeBody: generalConfigParsers.includeBody,
+        codeReview: generalConfigParsers.codeReview,
     },
     HUGGINGFACE: {
         cookie: (cookie?: string) => cookie || '',
@@ -249,6 +250,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         type: generalConfigParsers.type,
         maxLength: generalConfigParsers.maxLength,
         includeBody: generalConfigParsers.includeBody,
+        codeReview: generalConfigParsers.codeReview,
     },
     GEMINI: {
         key: (key?: string) => key || '',
@@ -272,6 +274,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         maxLength: generalConfigParsers.maxLength,
         includeBody: generalConfigParsers.includeBody,
         topP: generalConfigParsers.topP,
+        codeReview: generalConfigParsers.codeReview,
     },
     ANTHROPIC: {
         key: (key?: string) => key || '',
@@ -300,6 +303,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         maxLength: generalConfigParsers.maxLength,
         includeBody: generalConfigParsers.includeBody,
         topP: generalConfigParsers.topP,
+        codeReview: generalConfigParsers.codeReview,
     },
     MISTRAL: {
         key: (key?: string) => key || '',
@@ -340,6 +344,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         maxLength: generalConfigParsers.maxLength,
         includeBody: generalConfigParsers.includeBody,
         topP: generalConfigParsers.topP,
+        codeReview: generalConfigParsers.codeReview,
     },
     CODESTRAL: {
         key: (key?: string) => key || '',
@@ -365,6 +370,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         type: generalConfigParsers.type,
         maxLength: generalConfigParsers.maxLength,
         includeBody: generalConfigParsers.includeBody,
+        codeReview: generalConfigParsers.codeReview,
     },
     OLLAMA: {
         model: (models?: string | string[]): string[] => {
@@ -403,6 +409,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         maxLength: generalConfigParsers.maxLength,
         includeBody: generalConfigParsers.includeBody,
         topP: generalConfigParsers.topP,
+        codeReview: generalConfigParsers.codeReview,
     },
     COHERE: {
         key: (key?: string) => key || '',
@@ -426,6 +433,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         maxLength: generalConfigParsers.maxLength,
         includeBody: generalConfigParsers.includeBody,
         topP: generalConfigParsers.topP,
+        codeReview: generalConfigParsers.codeReview,
     },
     GROQ: {
         key: (key?: string) => key || '',
@@ -462,6 +470,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         maxLength: generalConfigParsers.maxLength,
         includeBody: generalConfigParsers.includeBody,
         topP: generalConfigParsers.topP,
+        codeReview: generalConfigParsers.codeReview,
     },
     PERPLEXITY: {
         key: (key?: string) => key || '',
@@ -496,6 +505,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         type: generalConfigParsers.type,
         maxLength: generalConfigParsers.maxLength,
         includeBody: generalConfigParsers.includeBody,
+        codeReview: generalConfigParsers.codeReview,
     },
     DEEPSEEK: {
         key: (key?: string) => key || '',
@@ -521,6 +531,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         type: generalConfigParsers.type,
         maxLength: generalConfigParsers.maxLength,
         includeBody: generalConfigParsers.includeBody,
+        codeReview: generalConfigParsers.codeReview,
     },
 };
 

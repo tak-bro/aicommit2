@@ -18,6 +18,7 @@ import {
 import { ModelName, RawConfig, ValidConfig, getConfig, modelNames } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
 import { assertGitRepo, getStagedDiff } from '../utils/git.js';
+import { RequestType } from '../utils/log.js';
 
 const consoleManager = new ConsoleManager();
 
@@ -63,15 +64,17 @@ export default async (
 
         consoleManager.printStagedFiles(staged);
 
-        const availableAIs = getAvailableAIs(config);
+        const availableAIs = getAvailableAIs(config, 'commit');
         if (availableAIs.length === 0) {
             throw new KnownError('Please set at least one API key via the `aicommit2 config set` command');
         }
 
         const aiRequestManager = new AIRequestManager(config, staged);
-        if (config.codeReview) {
-            await handleCodeReview(aiRequestManager, availableAIs);
+        const codeReviewAIs = getAvailableAIs(config, 'review');
+        if (codeReviewAIs.length > 0) {
+            await handleCodeReview(aiRequestManager, codeReviewAIs);
         }
+
         const selectedCommitMessage = await handleCommitMessage(aiRequestManager, availableAIs);
         if (useClipboard) {
             // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -125,19 +128,33 @@ async function validateSystemPrompt(config: ValidConfig) {
     }
 }
 
-function getAvailableAIs(config: ValidConfig): ModelName[] {
+function getAvailableAIs(config: ValidConfig, requestType: RequestType): ModelName[] {
     return Object.entries(config)
         .filter(([key]) => modelNames.includes(key as ModelName))
         .map(([key, value]) => [key, value] as [ModelName, RawConfig])
         .filter(([key, value]) => {
-            if (key === 'OLLAMA') {
-                return !!value && !!value.model && (value.model as string[]).length > 0;
+            switch (requestType) {
+                case 'commit':
+                    if (key === 'OLLAMA') {
+                        return !!value && !!value.model && (value.model as string[]).length > 0;
+                    }
+                    if (key === 'HUGGINGFACE') {
+                        return !!value && !!value.cookie;
+                    }
+                    // @ts-ignore ignore
+                    return !!value.key && value.key.length > 0;
+                case 'review':
+                    const codeReview = config.codeReview || value.codeReview;
+                    if (key === 'OLLAMA') {
+                        return !!value && !!value.model && (value.model as string[]).length > 0 && codeReview;
+                    }
+                    if (key === 'HUGGINGFACE') {
+                        return !!value && !!value.cookie && codeReview;
+                    }
+                    // @ts-ignore ignore
+                    return !!value.key && value.key.length > 0 && codeReview;
             }
-            if (key === 'HUGGINGFACE') {
-                return !!value && !!value.cookie;
-            }
-            // @ts-ignore ignore
-            return !!value.key && value.key.length > 0;
+            return false;
         })
         .map(([key]) => key);
 }

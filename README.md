@@ -401,16 +401,15 @@ aicommit2 config set codeReview=true
 
 > NOTE: When enabled, aicommit2 will perform a code review before generating commit messages.
 
+<img src="https://github.com/tak-bro/aicommit2/blob/main/img/code_review.gif?raw=true" alt="CODE_REVIEW" />
+
 ⚠️ **CAUTION**
 
 - The `codeReview` feature is currently experimental.
 - This feature performs a code review before generating commit messages.
 - Using this feature will significantly increase the overall processing time.
 - It may significantly impact performance and cost.
-- The code review process consumes a large number of tokens.
-- **Due to the lack of caching, tokens for git diff may be consumed more than once.**
-
-> The `codeReview` is only supported in General settings. It does not support model-specific options.
+- **The code review process consumes a large number of tokens, due to the lack of caching for git diff.**
 
 ##### codeReviewPromptPath
 - Allow users to specify a custom file path for code review
@@ -436,7 +435,7 @@ aicommit2 config set codeReviewPromptPath="/path/to/user/prompt.txt"
 |      **Ollama**      |    ✓    |      ✓      |           |   ✓    |
 
 > All AI support the following options in General Settings.
-> - systemPrompt, systemPromptPath, codeReviewPromptPath, exclude, type, locale, generate, logging, includeBody, maxLength
+> - systemPrompt, systemPromptPath, codeReview, codeReviewPromptPath, exclude, type, locale, generate, logging, includeBody, maxLength
 
 ## Model-Specific Settings
 
