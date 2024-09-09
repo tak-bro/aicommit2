@@ -202,7 +202,7 @@ systemPromptPath="<your-prompt-path>"
 [GEMINI]
 key="<your-api-key>"
 generate=5
-ignoreBody=false
+includeBody=true
 
 [OLLAMA]
 temperature=0.7
@@ -226,7 +226,7 @@ Please check the documentation for each specific model to confirm which settings
 | `locale`           | Locale for the generated commit messages                            | en           |
 | `generate`         | Number of commit messages to generate                               | 1            |
 | `logging`          | Enable logging                                                      | true         |
-| `ignoreBody`       | Whether the commit message includes body                            | true         |
+| `includeBody`      | Whether the commit message includes body                            | false        |
 | `maxLength`        | Maximum character length of the Subject of generated commit message | 50           |
 | `timeout`          | Request timeout (milliseconds)                                      | 10000        |
 | `temperature`      | Model's creativity (0.0 - 2.0)                                      | 0.7          |
@@ -237,7 +237,7 @@ Please check the documentation for each specific model to confirm which settings
 > ```shell
 > aicommit2 config set OPENAI.locale="jp"
 > aicommit2 config set CODESTRAL.type="gitmoji"
-> aicommit2 config set GEMINI.ignoreBody=false
+> aicommit2 config set GEMINI.includeBody=false
 > ```
 
 ##### systemPrompt
@@ -318,21 +318,21 @@ The log files will be stored in the `~/.aicommit2_log` directory(user's home).
 aicommit2 log removeAll 
 ```
 
-##### ignoreBody
+##### includeBody
 
-Default: `true`
+Default: `false`
 
-This option determines whether the commit message includes body. If you want to include body in message, you can set it to `false`.
+This option determines whether the commit message includes body. If you want to include body in message, you can set it to `true`.
 
 ```sh
-aicommit2 config set ignoreBody="false"
+aicommit2 config set includeBody="true"
 ```
 
 ![ignore_body_false](https://github.com/tak-bro/aicommit2/blob/main/img/demo_body_min.gif?raw=true)
 
 
 ```sh
-aicommit2 config set ignoreBody="true"
+aicommit2 config set includeBody="false"
 ```
 
 ![ignore_body_true](https://github.com/tak-bro/aicommit2/blob/main/img/ignore_body_true.png?raw=true)
@@ -403,7 +403,7 @@ aicommit2 config set topP=0.2
 |      **Ollama**      |    ✓    |      ✓      |           |   ✓    |
 
 > All AI support the following options in General Settings.
-> - systemPrompt, systemPromptPath, exclude, type, locale, generate, logging, ignoreBody, maxLength
+> - systemPrompt, systemPromptPath, exclude, type, locale, generate, logging, includeBody, maxLength
 
 ## Model-Specific Settings
 

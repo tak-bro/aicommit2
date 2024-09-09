@@ -37,8 +37,8 @@ export class AnthropicService extends AIService {
             map(data => ({
                 name: `${this.serviceName} ${data.title}`,
                 short: data.title,
-                value: this.params.config.ignoreBody ? data.title : data.value,
-                description: this.params.config.ignoreBody ? '' : data.value,
+                value: this.params.config.includeBody ? data.value : data.title,
+                description: this.params.config.includeBody ? data.value : '',
                 isError: false,
             })),
             catchError(this.handleError$)
