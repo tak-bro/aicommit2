@@ -8,7 +8,7 @@ import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.ser
 import { DEFAULT_OLLAMA_HOST } from '../../utils/config.js';
 import { KnownError } from '../../utils/error.js';
 import { RequestType, createLogResponse } from '../../utils/log.js';
-import { CODE_REVIEW_PROMPT, DEFAULT_PROMPT_OPTIONS, PromptOptions, generatePrompt } from '../../utils/prompt.js';
+import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 import { capitalizeFirstLetter, getRandomNumber } from '../../utils/utils.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
 
@@ -94,7 +94,7 @@ export class OllamaService extends AIService {
                 systemPrompt,
                 systemPromptPath,
             };
-            const generatedSystemPrompt = requestType === 'review' ? CODE_REVIEW_PROMPT : generatePrompt(promptOptions);
+            const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
 
             await this.checkIsAvailableOllama();
             const chatResponse = await this.createChatCompletions(generatedSystemPrompt, `Here is the diff: ${diff}`);

@@ -8,7 +8,7 @@ import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 import { AIResponse, AIService, AIServiceParams } from './ai.service.js';
 import { RequestType, createLogResponse } from '../../utils/log.js';
 import { sanitizeMessage } from '../../utils/openai.js';
-import { CODE_REVIEW_PROMPT, DEFAULT_PROMPT_OPTIONS, PromptOptions, generatePrompt } from '../../utils/prompt.js';
+import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 import { flattenDeep } from '../../utils/utils.js';
 
 export class GroqService extends AIService {
@@ -67,7 +67,7 @@ export class GroqService extends AIService {
                 systemPrompt,
                 systemPromptPath,
             };
-            const generatedSystemPrompt = requestType === 'review' ? CODE_REVIEW_PROMPT : generatePrompt(promptOptions);
+            const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
 
             const chatCompletion = await this.groq.chat.completions.create(
                 {

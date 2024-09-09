@@ -6,7 +6,7 @@ import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
 import { RequestType } from '../../utils/log.js';
 import { generateCommitMessage } from '../../utils/openai.js';
-import { CODE_REVIEW_PROMPT, DEFAULT_PROMPT_OPTIONS, PromptOptions, generatePrompt } from '../../utils/prompt.js';
+import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 import { flattenDeep } from '../../utils/utils.js';
 
 export class OpenAIService extends AIService {
@@ -89,7 +89,7 @@ export class OpenAIService extends AIService {
             systemPrompt,
             systemPromptPath,
         };
-        const generatedSystemPrompt = requestType === 'review' ? CODE_REVIEW_PROMPT : generatePrompt(promptOptions);
+        const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
 
         const results = await generateCommitMessage(
             this.params.config.url,

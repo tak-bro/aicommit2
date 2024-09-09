@@ -232,12 +232,13 @@ Please check the documentation for each specific model to confirm which settings
 | `temperature`      | Model's creativity (0.0 - 2.0)                                      | 0.7          |
 | `maxTokens`        | Maximum number of tokens to generate                                | 1024         |
 | `topP`             | Nucleus sampling                                                    | 0.9          |
+| `codeReview`       | Nucleus sampling                                                    | false        |
 
 > 👉 **Tip:** To set the General Settings for each model, use the following command.
 > ```shell
 > aicommit2 config set OPENAI.locale="jp"
 > aicommit2 config set CODESTRAL.type="gitmoji"
-> aicommit2 config set GEMINI.includeBody=false
+> aicommit2 config set GEMINI.includeBody=true
 > ```
 
 ##### systemPrompt
@@ -386,6 +387,26 @@ Nucleus sampling, where the model considers the results of the tokens with top_p
 ```sh
 aicommit2 config set topP=0.2
 ```
+
+##### codeReview
+
+Default: `false`
+
+The `codeReview` parameter determines whether to include an automated code review in the process.
+
+```sh
+aicommit2 config set codeReview=true
+```
+
+> NOTE: When enabled, aicommit2 will perform a code review before generating commit messages.
+
+⚠️ **CAUTION**
+
+- The `codeReview` feature is currently experimental.
+- This feature performs a code review before generating commit messages.
+- Use with caution as it may significantly impact performance and cost.
+- The code review process consumes a large number of tokens.
+
 
 ## Available General Settings by Model
 |                      | timeout | temperature | maxTokens |  topP  |

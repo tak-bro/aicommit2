@@ -259,11 +259,14 @@ export const isValidGitmojiMessage = (message: string): boolean => {
     return gitmojiCommitMessageRegex.test(message);
 };
 
-export const CODE_REVIEW_PROMPT = `I'll give you the output of the "git diff" command as an input. Please review the following code and provide your feedback in MARKDOWN format. Focus on:
+export const codeReviewPrompt = (
+    promptOptions: PromptOptions
+) => `I'll give you the output of the "git diff" command as an input. Please review the following code and provide your feedback in Markdown format. Focus on:
 
-1. Code quality and best practices
-2. Potential bugs or errors
-3. Performance improvements
-4. Readability and maintainability
+1. Message Language: ${promptOptions.locale}
+2. Code quality and best practices
+3. Potential bugs or errors
+4. Performance improvements
+5. Readability and maintainability
 
-Please structure your response with appropriate markdown headings, code blocks, and bullet points.`;
+Please structure your response with appropriate Markdown headings, code blocks, and bullet points.`;
