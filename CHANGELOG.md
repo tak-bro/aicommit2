@@ -1,3 +1,14 @@
+# [2.1.0](https://github.com/tak-bro/aicommit2/compare/v2.0.9...v2.1.0) (2024-09-09)
+
+
+### Features
+
+* add codeReviewPromptPath to config ([c53980f](https://github.com/tak-bro/aicommit2/commit/c53980f8db3569f9d5e1adb79c90ab6e96135335))
+* **aicommit2:** add code review feature ([d672e4c](https://github.com/tak-bro/aicommit2/commit/d672e4c66539a3b7556df532fd65fad9702d7fb2))
+* **minor:** support codeReview ([408d3bd](https://github.com/tak-bro/aicommit2/commit/408d3bd561711012e7005b5d1488b78ffa0a7b16))
+* support language in code review prompt ([23a2446](https://github.com/tak-bro/aicommit2/commit/23a24461d040a6bb9828205da706d04359ef343f))
+* update aicommit2 command file ([7b3fb88](https://github.com/tak-bro/aicommit2/commit/7b3fb88b4c22e9f6af366cb271d5f705e4ab5c1d))
+
 ## [2.0.9](https://github.com/tak-bro/aicommit2/compare/v2.0.8...v2.0.9) (2024-08-28)
 
 
