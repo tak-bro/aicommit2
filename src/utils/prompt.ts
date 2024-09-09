@@ -8,8 +8,9 @@ export interface PromptOptions {
     maxLength: number;
     type: CommitType;
     generate: number;
-    systemPromptPath?: string;
     systemPrompt?: string;
+    systemPromptPath?: string;
+    codeReviewPromptPath?: string;
 }
 
 export const DEFAULT_PROMPT_OPTIONS: PromptOptions = {
@@ -19,6 +20,7 @@ export const DEFAULT_PROMPT_OPTIONS: PromptOptions = {
     generate: 1,
     systemPrompt: '',
     systemPromptPath: '',
+    codeReviewPromptPath: '',
 };
 
 const MAX_COMMIT_LENGTH = 80;
@@ -257,4 +259,28 @@ export const isValidConventionalMessage = (message: string): boolean => {
 export const isValidGitmojiMessage = (message: string): boolean => {
     const gitmojiCommitMessageRegex = /:\w*:/;
     return gitmojiCommitMessageRegex.test(message);
+};
+
+export const codeReviewPrompt = (promptOptions: PromptOptions) => {
+    const { codeReviewPromptPath, locale } = promptOptions;
+    const defaultPrompt = `I'll give you the output of the "git diff" command as an input. Please review the following code and provide your feedback in Markdown format. Focus on:
+
+1. Language: ${locale}
+2. Code quality and best practices
+3. Potential bugs or errors
+4. Performance improvements
+5. Readability and maintainability
+
+Please structure your response with appropriate Markdown headings, code blocks, and bullet points.`;
+
+    if (!codeReviewPromptPath) {
+        return defaultPrompt;
+    }
+
+    try {
+        const codeReviewPromptTemplate = fs.readFileSync(path.resolve(codeReviewPromptPath), 'utf-8');
+        return `${parseTemplate(codeReviewPromptTemplate, promptOptions)}`;
+    } catch (error) {
+        return defaultPrompt;
+    }
 };

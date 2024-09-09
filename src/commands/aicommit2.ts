@@ -8,10 +8,17 @@ import ora from 'ora';
 
 import { AIRequestManager } from '../managers/ai-request.manager.js';
 import { ConsoleManager } from '../managers/console.manager.js';
-import { ReactivePromptManager } from '../managers/reactive-prompt.manager.js';
-import { ModelName, RawConfig, getConfig, modelNames } from '../utils/config.js';
+import {
+    DEFAULT_INQUIRER_OPTIONS,
+    ReactivePromptManager,
+    codeReviewLoader,
+    commitMsgLoader,
+    emptyCodeReview,
+} from '../managers/reactive-prompt.manager.js';
+import { ModelName, RawConfig, ValidConfig, getConfig, modelNames } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
 import { assertGitRepo, getStagedDiff } from '../utils/git.js';
+import { RequestType } from '../utils/log.js';
 
 const consoleManager = new ConsoleManager();
 
@@ -43,87 +50,46 @@ export default async (
             },
             rawArgv
         );
-
-        if (config.systemPromptPath) {
-            try {
-                fs.readFileSync(path.resolve(config.systemPromptPath), 'utf-8');
-            } catch (error) {
-                throw new KnownError(`Error reading system prompt file: ${config.systemPromptPath}`);
-            }
-        }
+        await validateSystemPrompt(config);
 
         const detectingFilesSpinner = consoleManager.displaySpinner('Detecting staged files');
         const staged = await getStagedDiff(excludeFiles, config.exclude);
         detectingFilesSpinner.stop();
+
         if (!staged) {
             throw new KnownError(
                 'No staged changes found. Stage your changes manually, or automatically stage all changes with the `--all` flag.'
             );
         }
+
         consoleManager.printStagedFiles(staged);
 
-        const availableAIs: ModelName[] = Object.entries(config)
-            .filter(([key]) => modelNames.includes(key as ModelName))
-            .map(([key, value]) => [key, value] as [ModelName, RawConfig])
-            .filter(([key, value]) => {
-                if (key === 'OLLAMA') {
-                    return !!value && !!value.model && (value.model as string[]).length > 0;
-                }
-                if (key === 'HUGGINGFACE') {
-                    return !!value && !!value.cookie;
-                }
-                // @ts-ignore ignore
-                return !!value.key && value.key.length > 0;
-            })
-            .map(([key]) => key);
-
-        const hasNoAvailableAIs = availableAIs.length === 0;
-        if (hasNoAvailableAIs) {
+        const availableAIs = getAvailableAIs(config, 'commit');
+        if (availableAIs.length === 0) {
             throw new KnownError('Please set at least one API key via the `aicommit2 config set` command');
         }
 
         const aiRequestManager = new AIRequestManager(config, staged);
-        const reactivePromptManager = new ReactivePromptManager();
-        const selectPrompt = reactivePromptManager.initPrompt();
-
-        reactivePromptManager.startLoader();
-        const subscription = aiRequestManager.createAIRequests$(availableAIs).subscribe(
-            (choice: ReactiveListChoice) => reactivePromptManager.refreshChoices(choice),
-            () => {
-                /* empty */
-            },
-            () => reactivePromptManager.checkErrorOnChoices()
-        );
-        const answer = await selectPrompt;
-        subscription.unsubscribe();
-        reactivePromptManager.completeSubject();
-
-        // NOTE: reactiveListPrompt has 2 blank lines
-        consoleManager.moveCursorUp();
-
-        const chosenMessage = answer.aicommit2Prompt?.value;
-        if (!chosenMessage) {
-            throw new KnownError('An error occurred! No selected message');
+        const codeReviewAIs = getAvailableAIs(config, 'review');
+        if (codeReviewAIs.length > 0) {
+            await handleCodeReview(aiRequestManager, codeReviewAIs);
         }
 
+        const selectedCommitMessage = await handleCommitMessage(aiRequestManager, availableAIs);
         if (useClipboard) {
             // eslint-disable-next-line @typescript-eslint/no-var-requires
             const ncp = require('copy-paste');
-            ncp.copy(chosenMessage);
+            ncp.copy(selectedCommitMessage);
             consoleManager.printCopied();
             process.exit();
         }
 
         if (confirm) {
-            const commitSpinner = ora('Committing with the generated message').start();
-            await execa('git', ['commit', '-m', chosenMessage, ...rawArgv]);
-            commitSpinner.stop();
-            commitSpinner.clear();
-            consoleManager.printCommitted();
+            await commitChanges(selectedCommitMessage, rawArgv);
             process.exit();
         }
 
-        const confirmPrompt = await inquirer.prompt([
+        const { confirmationPrompt } = await inquirer.prompt([
             {
                 type: 'confirm',
                 name: 'confirmationPrompt',
@@ -131,19 +97,143 @@ export default async (
                 default: true,
             },
         ]);
-        const { confirmationPrompt } = confirmPrompt;
+
         if (confirmationPrompt) {
-            const commitSpinner = ora('Committing with the generated message').start();
-            await execa('git', ['commit', '-m', chosenMessage, ...rawArgv]);
-            commitSpinner.stop();
-            commitSpinner.clear();
-            consoleManager.printCommitted();
-            process.exit();
+            await commitChanges(selectedCommitMessage, rawArgv);
+        } else {
+            consoleManager.printCancelledCommit();
         }
-        consoleManager.printCancelledCommit();
         process.exit();
     })().catch(error => {
         consoleManager.printErrorMessage(error.message);
         handleCliError(error);
         process.exit(1);
     });
+
+async function validateSystemPrompt(config: ValidConfig) {
+    if (config.systemPromptPath) {
+        try {
+            fs.readFileSync(path.resolve(config.systemPromptPath), 'utf-8');
+        } catch (error) {
+            throw new KnownError(`Error reading system prompt file: ${config.systemPromptPath}`);
+        }
+    }
+
+    if (config.codeReview && config.codeReviewPromptPath) {
+        try {
+            fs.readFileSync(path.resolve(config.codeReviewPromptPath), 'utf-8');
+        } catch (error) {
+            throw new KnownError(`Error reading code review prompt file: ${config.codeReviewPromptPath}`);
+        }
+    }
+}
+
+function getAvailableAIs(config: ValidConfig, requestType: RequestType): ModelName[] {
+    return Object.entries(config)
+        .filter(([key]) => modelNames.includes(key as ModelName))
+        .map(([key, value]) => [key, value] as [ModelName, RawConfig])
+        .filter(([key, value]) => {
+            switch (requestType) {
+                case 'commit':
+                    if (key === 'OLLAMA') {
+                        return !!value && !!value.model && (value.model as string[]).length > 0;
+                    }
+                    if (key === 'HUGGINGFACE') {
+                        return !!value && !!value.cookie;
+                    }
+                    // @ts-ignore ignore
+                    return !!value.key && value.key.length > 0;
+                case 'review':
+                    const codeReview = config.codeReview || value.codeReview;
+                    if (key === 'OLLAMA') {
+                        return !!value && !!value.model && (value.model as string[]).length > 0 && codeReview;
+                    }
+                    if (key === 'HUGGINGFACE') {
+                        return !!value && !!value.cookie && codeReview;
+                    }
+                    // @ts-ignore ignore
+                    return !!value.key && value.key.length > 0 && codeReview;
+            }
+            return false;
+        })
+        .map(([key]) => key);
+}
+
+async function handleCodeReview(aiRequestManager: AIRequestManager, availableAIs: ModelName[]) {
+    const codeReviewPromptManager = new ReactivePromptManager(codeReviewLoader);
+    const codeReviewInquirer = codeReviewPromptManager.initPrompt({
+        ...DEFAULT_INQUIRER_OPTIONS,
+        name: 'codeReviewPrompt',
+        message: 'Please check code reviews: ',
+        emptyMessage: `⚠ ${emptyCodeReview}`,
+        isDescriptionDim: false,
+        stopMessage: 'Code review completed',
+        descPageSize: 20,
+    });
+
+    codeReviewPromptManager.startLoader();
+    const codeReviewSubscription = aiRequestManager.createCodeReviewRequests$(availableAIs).subscribe(
+        (choice: ReactiveListChoice) => codeReviewPromptManager.refreshChoices(choice),
+        () => {
+            /* empty */
+        },
+        () => codeReviewPromptManager.checkErrorOnChoices()
+    );
+
+    const codeReviewInquirerResult = await codeReviewInquirer;
+    const selectedCodeReview = codeReviewInquirerResult.codeReviewPrompt?.value;
+    if (!selectedCodeReview) {
+        throw new KnownError('An error occurred! No selected code review');
+    }
+    codeReviewSubscription.unsubscribe();
+    codeReviewPromptManager.completeSubject();
+    consoleManager.moveCursorUp(); // NOTE: reactiveListPrompt has 2 blank lines
+
+    const { continuePrompt } = await inquirer.prompt([
+        {
+            type: 'confirm',
+            name: 'continuePrompt',
+            message: `Will you continue without changing the code?`,
+            default: true,
+        },
+    ]);
+
+    if (!continuePrompt) {
+        consoleManager.printCancelledCommit();
+        process.exit();
+    }
+}
+
+async function handleCommitMessage(aiRequestManager: AIRequestManager, availableAIs: ModelName[]) {
+    const commitMsgPromptManager = new ReactivePromptManager(commitMsgLoader);
+    const commitMsgInquirer = commitMsgPromptManager.initPrompt();
+
+    commitMsgPromptManager.startLoader();
+    const commitMsgSubscription = aiRequestManager.createCommitMsgRequests$(availableAIs).subscribe(
+        (choice: ReactiveListChoice) => commitMsgPromptManager.refreshChoices(choice),
+        () => {
+            /* empty */
+        },
+        () => commitMsgPromptManager.checkErrorOnChoices()
+    );
+
+    const commitMsgInquirerResult = await commitMsgInquirer;
+    commitMsgSubscription.unsubscribe();
+    commitMsgPromptManager.completeSubject();
+
+    consoleManager.moveCursorUp(); // NOTE: reactiveListPrompt has 2 blank lines
+    const selectedCommitMessage = commitMsgInquirerResult.aicommit2Prompt?.value;
+    if (!selectedCommitMessage) {
+        throw new KnownError('An error occurred! No selected message');
+    }
+
+    return selectedCommitMessage;
+}
+
+async function commitChanges(message: string, rawArgv: string[]) {
+    const commitSpinner = ora('Committing with the generated message').start();
+    await execa('git', ['commit', '-m', message, ...rawArgv]);
+    commitSpinner.stop();
+    commitSpinner.clear();
+    consoleManager.printCommitted();
+}

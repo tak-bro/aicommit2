@@ -8,9 +8,11 @@ export const logPath = path.join(os.homedir(), '.aicommit2_log');
 
 const now = new Date();
 
-export const createLogResponse = (aiName: string, diff: string, prompt: string, response: string) => {
+export type RequestType = 'review' | 'commit';
+
+export const createLogResponse = (aiName: string, diff: string, prompt: string, response: string, requestType: RequestType) => {
     const title = `[${aiName}]`;
-    const fileName = generateLogFileName(now, diff);
+    const fileName = generateLogFileName(now, diff, requestType);
     const fullPath = `${logPath}/${fileName}`;
     const systemPrompt = `- System Prompt\n${prompt}`;
     const aiResponse = `- Response\n${response}`;
@@ -23,10 +25,13 @@ export const createLogResponse = (aiName: string, diff: string, prompt: string, 
     writeFileSyncRecursive(fullPath, `${title}\n${aiResponse}\n\n${systemPrompt}\n\n${diffContent}`);
 };
 
-export const generateLogFileName = (date: Date, diff: string) => {
+export const generateLogFileName = (date: Date, diff: string, requestType: RequestType) => {
     const { year, month, day, hours, minutes, seconds } = getDateString(date);
     const hasher = xxh64(0);
     const hash = hasher.update(diff).digest('hex');
+    if (requestType === 'review') {
+        return `aic2_review_${year}-${month}-${day}_${hours}-${minutes}-${seconds}_${hash}.log`;
+    }
     return `aic2_${year}-${month}-${day}_${hours}-${minutes}-${seconds}_${hash}.log`;
 };
 

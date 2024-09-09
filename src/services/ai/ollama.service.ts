@@ -4,11 +4,11 @@ import { Ollama } from 'ollama';
 import { Observable, catchError, concatMap, from, map, of } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
-import { AIService, AIServiceError, AIServiceParams, CommitMessage } from './ai.service.js';
+import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
 import { DEFAULT_OLLAMA_HOST } from '../../utils/config.js';
 import { KnownError } from '../../utils/error.js';
-import { createLogResponse } from '../../utils/log.js';
-import { DEFAULT_PROMPT_OPTIONS, PromptOptions, generatePrompt } from '../../utils/prompt.js';
+import { RequestType, createLogResponse } from '../../utils/log.js';
+import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 import { capitalizeFirstLetter, getRandomNumber } from '../../utils/utils.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
 
@@ -36,13 +36,27 @@ export class OllamaService extends AIService {
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
-        return fromPromise(this.generateMessage()).pipe(
+        return fromPromise(this.generateMessage('commit')).pipe(
             concatMap(messages => from(messages)),
             map(data => ({
                 name: `${this.serviceName} ${data.title}`,
                 short: data.title,
-                value: this.params.config.ignoreBody ? data.title : data.value,
-                description: this.params.config.ignoreBody ? '' : data.value,
+                value: this.params.config.includeBody ? data.value : data.title,
+                description: this.params.config.includeBody ? data.value : '',
+                isError: false,
+            })),
+            catchError(this.handleError$)
+        );
+    }
+
+    generateCodeReview$(): Observable<ReactiveListChoice> {
+        return fromPromise(this.generateMessage('review')).pipe(
+            concatMap(messages => from(messages)),
+            map(data => ({
+                name: `${this.serviceName} ${data.title}`,
+                short: data.title,
+                value: data.value,
+                description: data.value,
                 isError: false,
             })),
             catchError(this.handleError$)
@@ -67,10 +81,10 @@ export class OllamaService extends AIService {
         });
     };
 
-    private async generateMessage(): Promise<CommitMessage[]> {
+    private async generateMessage(requestType: RequestType): Promise<AIResponse[]> {
         try {
             const diff = this.params.stagedDiff.diff;
-            const { systemPrompt, systemPromptPath, logging, locale, generate, type, maxLength } = this.params.config;
+            const { systemPrompt, systemPromptPath, codeReviewPromptPath, logging, locale, generate, type, maxLength } = this.params.config;
             const promptOptions: PromptOptions = {
                 ...DEFAULT_PROMPT_OPTIONS,
                 locale,
@@ -79,12 +93,16 @@ export class OllamaService extends AIService {
                 generate,
                 systemPrompt,
                 systemPromptPath,
+                codeReviewPromptPath,
             };
-            const generatedSystemPrompt = generatePrompt(promptOptions);
+            const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
 
             await this.checkIsAvailableOllama();
             const chatResponse = await this.createChatCompletions(generatedSystemPrompt, `Here is the diff: ${diff}`);
-            logging && createLogResponse(`Ollama_${this.model}`, diff, generatedSystemPrompt, chatResponse);
+            logging && createLogResponse(`Ollama_${this.model}`, diff, generatedSystemPrompt, chatResponse, requestType);
+            if (requestType === 'review') {
+                return this.sanitizeResponse(chatResponse);
+            }
             return this.parseMessage(chatResponse, type, generate);
         } catch (error) {
             const errorAsAny = error as any;

@@ -65,7 +65,7 @@ export default () =>
         let messages: string[];
         try {
             messages = await lastValueFrom(
-                aiRequestManager.createAIRequests$(availableAIs).pipe(
+                aiRequestManager.createCommitMsgRequests$(availableAIs).pipe(
                     filter(data => !data.isError),
                     map(data => data.value),
                     toArray()

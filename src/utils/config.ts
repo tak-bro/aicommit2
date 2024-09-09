@@ -53,6 +53,12 @@ const generalConfigParsers = {
         }
         return systemPromptPath;
     },
+    codeReviewPromptPath(codeReviewPromptPath?: string) {
+        if (!codeReviewPromptPath) {
+            return '';
+        }
+        return codeReviewPromptPath;
+    },
     timeout(timeout?: string) {
         if (!timeout) {
             return 10_000;
@@ -144,17 +150,17 @@ const generalConfigParsers = {
 
         return parsed;
     },
-    ignoreBody(ignore?: string | boolean) {
-        if (typeof ignore === 'boolean') {
-            return ignore;
+    includeBody(includeBody?: string | boolean) {
+        if (typeof includeBody === 'boolean') {
+            return includeBody;
         }
 
-        if (ignore === undefined || ignore === null) {
-            return true;
+        if (includeBody === undefined || includeBody === null) {
+            return false;
         }
 
-        parseAssert('ignoreBody', /^(?:true|false)$/.test(ignore), 'Must be a boolean(true or false)');
-        return ignore === 'true';
+        parseAssert('includeBody', /^(?:true|false)$/.test(includeBody), 'Must be a boolean(true or false)');
+        return includeBody === 'true';
     },
     exclude: (exclude?: string | string[]): string[] => {
         if (!exclude) {
@@ -172,6 +178,18 @@ const generalConfigParsers = {
         parseAssert('topP', parsed > 0.0, 'Must be greater than 0');
         parseAssert('topP', parsed <= 1.0, 'Must be less than or equal to 1');
         return parsed;
+    },
+    codeReview(codeReview?: string | boolean) {
+        if (typeof codeReview === 'boolean') {
+            return codeReview;
+        }
+
+        if (codeReview === undefined || codeReview === null) {
+            return false;
+        }
+
+        parseAssert('codeReview', /^(?:true|false)$/.test(codeReview), 'Must be a boolean(true or false)');
+        return codeReview === 'true';
     },
 } as const;
 
@@ -191,6 +209,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         topP: generalConfigParsers.topP,
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
+        codeReviewPromptPath: generalConfigParsers.codeReviewPromptPath,
         timeout: generalConfigParsers.timeout,
         temperature: generalConfigParsers.temperature,
         maxTokens: generalConfigParsers.maxTokens,
@@ -199,7 +218,8 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         generate: generalConfigParsers.generate,
         type: generalConfigParsers.type,
         maxLength: generalConfigParsers.maxLength,
-        ignoreBody: generalConfigParsers.ignoreBody,
+        includeBody: generalConfigParsers.includeBody,
+        codeReview: generalConfigParsers.codeReview,
     },
     HUGGINGFACE: {
         cookie: (cookie?: string) => cookie || '',
@@ -223,12 +243,14 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         },
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
+        codeReviewPromptPath: generalConfigParsers.codeReviewPromptPath,
         logging: generalConfigParsers.logging,
         locale: generalConfigParsers.locale,
         generate: generalConfigParsers.generate,
         type: generalConfigParsers.type,
         maxLength: generalConfigParsers.maxLength,
-        ignoreBody: generalConfigParsers.ignoreBody,
+        includeBody: generalConfigParsers.includeBody,
+        codeReview: generalConfigParsers.codeReview,
     },
     GEMINI: {
         key: (key?: string) => key || '',
@@ -242,6 +264,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         },
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
+        codeReviewPromptPath: generalConfigParsers.codeReviewPromptPath,
         temperature: generalConfigParsers.temperature,
         maxTokens: generalConfigParsers.maxTokens,
         logging: generalConfigParsers.logging,
@@ -249,8 +272,9 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         generate: generalConfigParsers.generate,
         type: generalConfigParsers.type,
         maxLength: generalConfigParsers.maxLength,
-        ignoreBody: generalConfigParsers.ignoreBody,
+        includeBody: generalConfigParsers.includeBody,
         topP: generalConfigParsers.topP,
+        codeReview: generalConfigParsers.codeReview,
     },
     ANTHROPIC: {
         key: (key?: string) => key || '',
@@ -269,6 +293,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         },
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
+        codeReviewPromptPath: generalConfigParsers.codeReviewPromptPath,
         temperature: generalConfigParsers.temperature,
         maxTokens: generalConfigParsers.maxTokens,
         logging: generalConfigParsers.logging,
@@ -276,8 +301,9 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         generate: generalConfigParsers.generate,
         type: generalConfigParsers.type,
         maxLength: generalConfigParsers.maxLength,
-        ignoreBody: generalConfigParsers.ignoreBody,
+        includeBody: generalConfigParsers.includeBody,
         topP: generalConfigParsers.topP,
+        codeReview: generalConfigParsers.codeReview,
     },
     MISTRAL: {
         key: (key?: string) => key || '',
@@ -307,6 +333,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         },
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
+        codeReviewPromptPath: generalConfigParsers.codeReviewPromptPath,
         timeout: generalConfigParsers.timeout,
         temperature: generalConfigParsers.temperature,
         maxTokens: generalConfigParsers.maxTokens,
@@ -315,8 +342,9 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         generate: generalConfigParsers.generate,
         type: generalConfigParsers.type,
         maxLength: generalConfigParsers.maxLength,
-        ignoreBody: generalConfigParsers.ignoreBody,
+        includeBody: generalConfigParsers.includeBody,
         topP: generalConfigParsers.topP,
+        codeReview: generalConfigParsers.codeReview,
     },
     CODESTRAL: {
         key: (key?: string) => key || '',
@@ -332,6 +360,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         topP: generalConfigParsers.topP,
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
+        codeReviewPromptPath: generalConfigParsers.codeReviewPromptPath,
         timeout: generalConfigParsers.timeout,
         temperature: generalConfigParsers.temperature,
         maxTokens: generalConfigParsers.maxTokens,
@@ -340,7 +369,8 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         generate: generalConfigParsers.generate,
         type: generalConfigParsers.type,
         maxLength: generalConfigParsers.maxLength,
-        ignoreBody: generalConfigParsers.ignoreBody,
+        includeBody: generalConfigParsers.includeBody,
+        codeReview: generalConfigParsers.codeReview,
     },
     OLLAMA: {
         model: (models?: string | string[]): string[] => {
@@ -370,14 +400,16 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         },
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
+        codeReviewPromptPath: generalConfigParsers.codeReviewPromptPath,
         temperature: generalConfigParsers.temperature,
         logging: generalConfigParsers.logging,
         locale: generalConfigParsers.locale,
         generate: generalConfigParsers.generate,
         type: generalConfigParsers.type,
         maxLength: generalConfigParsers.maxLength,
-        ignoreBody: generalConfigParsers.ignoreBody,
+        includeBody: generalConfigParsers.includeBody,
         topP: generalConfigParsers.topP,
+        codeReview: generalConfigParsers.codeReview,
     },
     COHERE: {
         key: (key?: string) => key || '',
@@ -391,6 +423,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         },
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
+        codeReviewPromptPath: generalConfigParsers.codeReviewPromptPath,
         temperature: generalConfigParsers.temperature,
         maxTokens: generalConfigParsers.maxTokens,
         logging: generalConfigParsers.logging,
@@ -398,8 +431,9 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         generate: generalConfigParsers.generate,
         type: generalConfigParsers.type,
         maxLength: generalConfigParsers.maxLength,
-        ignoreBody: generalConfigParsers.ignoreBody,
+        includeBody: generalConfigParsers.includeBody,
         topP: generalConfigParsers.topP,
+        codeReview: generalConfigParsers.codeReview,
     },
     GROQ: {
         key: (key?: string) => key || '',
@@ -425,6 +459,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         },
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
+        codeReviewPromptPath: generalConfigParsers.codeReviewPromptPath,
         timeout: generalConfigParsers.timeout,
         temperature: generalConfigParsers.temperature,
         maxTokens: generalConfigParsers.maxTokens,
@@ -433,8 +468,9 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         generate: generalConfigParsers.generate,
         type: generalConfigParsers.type,
         maxLength: generalConfigParsers.maxLength,
-        ignoreBody: generalConfigParsers.ignoreBody,
+        includeBody: generalConfigParsers.includeBody,
         topP: generalConfigParsers.topP,
+        codeReview: generalConfigParsers.codeReview,
     },
     PERPLEXITY: {
         key: (key?: string) => key || '',
@@ -459,6 +495,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         topP: generalConfigParsers.topP,
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
+        codeReviewPromptPath: generalConfigParsers.codeReviewPromptPath,
         timeout: generalConfigParsers.timeout,
         temperature: generalConfigParsers.temperature,
         maxTokens: generalConfigParsers.maxTokens,
@@ -467,7 +504,8 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         generate: generalConfigParsers.generate,
         type: generalConfigParsers.type,
         maxLength: generalConfigParsers.maxLength,
-        ignoreBody: generalConfigParsers.ignoreBody,
+        includeBody: generalConfigParsers.includeBody,
+        codeReview: generalConfigParsers.codeReview,
     },
     DEEPSEEK: {
         key: (key?: string) => key || '',
@@ -483,6 +521,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         topP: generalConfigParsers.topP,
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
+        codeReviewPromptPath: generalConfigParsers.codeReviewPromptPath,
         timeout: generalConfigParsers.timeout,
         temperature: generalConfigParsers.temperature,
         maxTokens: generalConfigParsers.maxTokens,
@@ -491,7 +530,8 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         generate: generalConfigParsers.generate,
         type: generalConfigParsers.type,
         maxLength: generalConfigParsers.maxLength,
-        ignoreBody: generalConfigParsers.ignoreBody,
+        includeBody: generalConfigParsers.includeBody,
+        codeReview: generalConfigParsers.codeReview,
     },
 };
 

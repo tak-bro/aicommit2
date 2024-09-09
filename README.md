@@ -202,7 +202,7 @@ systemPromptPath="<your-prompt-path>"
 [GEMINI]
 key="<your-api-key>"
 generate=5
-ignoreBody=false
+includeBody=true
 
 [OLLAMA]
 temperature=0.7
@@ -217,27 +217,29 @@ model[]=codestral
 The following settings can be applied to most models, but support may vary.
 Please check the documentation for each specific model to confirm which settings are supported.
 
-| Setting            | Description                                                         | Default      |
-|--------------------|---------------------------------------------------------------------|--------------|
-| `systemPrompt`     | System Prompt text                                                  | -            |
-| `systemPromptPath` | Path to system prompt file                                          | -            |
-| `exclude`          | Files to exclude from AI analysis                                   | -            |
-| `type`             | Type of commit message to generate                                  | conventional |
-| `locale`           | Locale for the generated commit messages                            | en           |
-| `generate`         | Number of commit messages to generate                               | 1            |
-| `logging`          | Enable logging                                                      | true         |
-| `ignoreBody`       | Whether the commit message includes body                            | true         |
-| `maxLength`        | Maximum character length of the Subject of generated commit message | 50           |
-| `timeout`          | Request timeout (milliseconds)                                      | 10000        |
-| `temperature`      | Model's creativity (0.0 - 2.0)                                      | 0.7          |
-| `maxTokens`        | Maximum number of tokens to generate                                | 1024         |
-| `topP`             | Nucleus sampling                                                    | 0.9          |
+| Setting                | Description                                                         | Default      |
+|------------------------|---------------------------------------------------------------------|--------------|
+| `systemPrompt`         | System Prompt text                                                  | -            |
+| `systemPromptPath`     | Path to system prompt file                                          | -            |
+| `exclude`              | Files to exclude from AI analysis                                   | -            |
+| `type`                 | Type of commit message to generate                                  | conventional |
+| `locale`               | Locale for the generated commit messages                            | en           |
+| `generate`             | Number of commit messages to generate                               | 1            |
+| `logging`              | Enable logging                                                      | true         |
+| `includeBody`          | Whether the commit message includes body                            | false        |
+| `maxLength`            | Maximum character length of the Subject of generated commit message | 50           |
+| `timeout`              | Request timeout (milliseconds)                                      | 10000        |
+| `temperature`          | Model's creativity (0.0 - 2.0)                                      | 0.7          |
+| `maxTokens`            | Maximum number of tokens to generate                                | 1024         |
+| `topP`                 | Nucleus sampling                                                    | 0.9          |
+| `codeReview`           | whether to include an automated code review in the process          | false        |
+| `codeReviewPromptPath` | Path to code review prompt file                                     | -            |
 
 > 👉 **Tip:** To set the General Settings for each model, use the following command.
 > ```shell
 > aicommit2 config set OPENAI.locale="jp"
 > aicommit2 config set CODESTRAL.type="gitmoji"
-> aicommit2 config set GEMINI.ignoreBody=false
+> aicommit2 config set GEMINI.includeBody=true
 > ```
 
 ##### systemPrompt
@@ -318,21 +320,21 @@ The log files will be stored in the `~/.aicommit2_log` directory(user's home).
 aicommit2 log removeAll 
 ```
 
-##### ignoreBody
+##### includeBody
 
-Default: `true`
+Default: `false`
 
-This option determines whether the commit message includes body. If you want to include body in message, you can set it to `false`.
+This option determines whether the commit message includes body. If you want to include body in message, you can set it to `true`.
 
 ```sh
-aicommit2 config set ignoreBody="false"
+aicommit2 config set includeBody="true"
 ```
 
 ![ignore_body_false](https://github.com/tak-bro/aicommit2/blob/main/img/demo_body_min.gif?raw=true)
 
 
 ```sh
-aicommit2 config set ignoreBody="true"
+aicommit2 config set includeBody="false"
 ```
 
 ![ignore_body_true](https://github.com/tak-bro/aicommit2/blob/main/img/ignore_body_true.png?raw=true)
@@ -387,6 +389,36 @@ Nucleus sampling, where the model considers the results of the tokens with top_p
 aicommit2 config set topP=0.2
 ```
 
+##### codeReview
+
+Default: `false`
+
+The `codeReview` parameter determines whether to include an automated code review in the process.
+
+```sh
+aicommit2 config set codeReview=true
+```
+
+> NOTE: When enabled, aicommit2 will perform a code review before generating commit messages.
+
+<img src="https://github.com/tak-bro/aicommit2/blob/main/img/code_review.gif?raw=true" alt="CODE_REVIEW" />
+
+⚠️ **CAUTION**
+
+- The `codeReview` feature is currently experimental.
+- This feature performs a code review before generating commit messages.
+- Using this feature will significantly increase the overall processing time.
+- It may significantly impact performance and cost.
+- **The code review process consumes a large number of tokens, due to the lack of caching for git diff.**
+
+##### codeReviewPromptPath
+- Allow users to specify a custom file path for code review
+
+```sh
+aicommit2 config set codeReviewPromptPath="/path/to/user/prompt.txt"
+```
+
+
 ## Available General Settings by Model
 |                      | timeout | temperature | maxTokens |  topP  |
 |:--------------------:|:-------:|:-----------:|:---------:|:------:|
@@ -403,7 +435,7 @@ aicommit2 config set topP=0.2
 |      **Ollama**      |    ✓    |      ✓      |           |   ✓    |
 
 > All AI support the following options in General Settings.
-> - systemPrompt, systemPromptPath, exclude, type, locale, generate, logging, ignoreBody, maxLength
+> - systemPrompt, systemPromptPath, codeReview, codeReviewPromptPath, exclude, type, locale, generate, logging, includeBody, maxLength
 
 ## Model-Specific Settings
 

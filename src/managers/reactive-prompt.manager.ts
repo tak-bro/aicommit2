@@ -5,36 +5,55 @@ import { BehaviorSubject, ReplaySubject } from 'rxjs';
 
 import { sortByDisabled } from '../utils/utils.js';
 
-const defaultLoader = {
+export const commitMsgLoader = {
     isLoading: false,
     startOption: {
         text: 'AI is analyzing your changes',
     },
 };
 
-const emptyCommitMessage = `No commit messages were generated`;
+export const codeReviewLoader = {
+    isLoading: false,
+    startOption: {
+        text: 'AI is performing a code review',
+    },
+};
+
+export const emptyCommitMessage = `No commit messages were generated`;
+
+export const emptyCodeReview = `No code reviews were generated`;
+
+export const DEFAULT_INQUIRER_OPTIONS = {
+    type: 'reactiveListPrompt',
+    name: 'aicommit2Prompt',
+    message: 'Pick a commit message to use: ',
+    emptyMessage: `⚠ ${emptyCommitMessage}`,
+    loop: false,
+    descPageSize: 15,
+    showDescription: true,
+    pickKey: 'short',
+    isDescriptionDim: true,
+    stopMessage: 'Changes analyzed',
+};
 
 export class ReactivePromptManager {
     private choices$: BehaviorSubject<ChoiceItem[]> = new BehaviorSubject<ChoiceItem[]>([]);
-    private loader$: BehaviorSubject<ReactiveListLoader> = new BehaviorSubject<ReactiveListLoader>(defaultLoader);
+    private loader$: BehaviorSubject<ReactiveListLoader>;
     private destroyed$: ReplaySubject<boolean> = new ReplaySubject(1);
+    private stopMessage = 'Changes analyzed';
 
-    constructor() {}
+    constructor(loader: ReactiveListLoader) {
+        this.loader$ = new BehaviorSubject<ReactiveListLoader>(loader);
+    }
 
-    initPrompt(showDescription = true) {
+    initPrompt(options: any = DEFAULT_INQUIRER_OPTIONS) {
+        this.stopMessage = options.stopMessage;
+
         inquirer.registerPrompt('reactiveListPrompt', ReactiveListPrompt);
         return inquirer.prompt({
-            type: 'reactiveListPrompt',
-            name: 'aicommit2Prompt',
-            message: 'Pick a commit message to use: ',
-            emptyMessage: `⚠ ${emptyCommitMessage}`,
-            loop: false,
-            showDescription,
-            descPageSize: 15,
+            ...options,
             choices$: this.choices$,
             loader$: this.loader$,
-            // @ts-ignore ignore
-            pickKey: 'short',
         });
     }
 
@@ -84,7 +103,7 @@ export class ReactivePromptManager {
     }
 
     private stopLoaderOnSuccess() {
-        this.loader$.next({ isLoading: false, message: 'Changes analyzed' });
+        this.loader$.next({ isLoading: false, message: this.stopMessage });
     }
 
     private logEmptyCommitMessage() {

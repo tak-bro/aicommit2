@@ -23,7 +23,7 @@ export class AIRequestManager {
         private readonly stagedDiff: StagedDiff
     ) {}
 
-    createAIRequests$(modelNames: ModelName[]): Observable<ReactiveListChoice> {
+    createCommitMsgRequests$(modelNames: ModelName[]): Observable<ReactiveListChoice> {
         return from(modelNames).pipe(
             mergeMap(ai => {
                 switch (ai) {
@@ -97,6 +97,102 @@ export class AIRequestManager {
                             stagedDiff: this.stagedDiff,
                             keyName: ai,
                         }).generateCommitMessage$();
+                    default:
+                        const prefixError = chalk.red.bold(`[${ai}]`);
+                        return of({
+                            name: prefixError + ' Invalid AI type',
+                            value: 'Invalid AI type',
+                            isError: true,
+                            disabled: true,
+                        });
+                }
+            }),
+            catchError(err => {
+                const prefixError = chalk.red.bold(`[UNKNOWN]`);
+                return of({
+                    name: prefixError + ` ${err.message || ''}`,
+                    value: 'Unknown error',
+                    isError: true,
+                    disabled: true,
+                });
+            })
+        );
+    }
+
+    createCodeReviewRequests$(modelNames: ModelName[]): Observable<ReactiveListChoice> {
+        return from(modelNames).pipe(
+            mergeMap(ai => {
+                switch (ai) {
+                    case 'OPENAI':
+                        return AIServiceFactory.create(OpenAIService, {
+                            config: this.config.OPENAI,
+                            stagedDiff: this.stagedDiff,
+                            keyName: ai,
+                        }).generateCodeReview$();
+                    case 'GEMINI':
+                        return AIServiceFactory.create(GeminiService, {
+                            config: this.config.GEMINI,
+                            stagedDiff: this.stagedDiff,
+                            keyName: ai,
+                        }).generateCodeReview$();
+                    case 'ANTHROPIC':
+                        return AIServiceFactory.create(AnthropicService, {
+                            config: this.config.ANTHROPIC,
+                            stagedDiff: this.stagedDiff,
+                            keyName: ai,
+                        }).generateCodeReview$();
+                    case 'HUGGINGFACE':
+                        return AIServiceFactory.create(HuggingFaceService, {
+                            config: this.config.HUGGINGFACE,
+                            stagedDiff: this.stagedDiff,
+                            keyName: ai,
+                        }).generateCodeReview$();
+                    case 'MISTRAL':
+                        return AIServiceFactory.create(MistralService, {
+                            config: this.config.MISTRAL,
+                            stagedDiff: this.stagedDiff,
+                            keyName: ai,
+                        }).generateCodeReview$();
+                    case 'CODESTRAL':
+                        return AIServiceFactory.create(CodestralService, {
+                            config: this.config.CODESTRAL,
+                            stagedDiff: this.stagedDiff,
+                            keyName: ai,
+                        }).generateCodeReview$();
+                    case 'OLLAMA':
+                        return from(this.config.OLLAMA.model).pipe(
+                            mergeMap(model => {
+                                return AIServiceFactory.create(OllamaService, {
+                                    config: this.config.OLLAMA,
+                                    keyName: model as ModelName,
+                                    stagedDiff: this.stagedDiff,
+                                }).generateCodeReview$();
+                            })
+                        );
+                    case 'COHERE':
+                        return AIServiceFactory.create(CohereService, {
+                            config: this.config.COHERE,
+                            stagedDiff: this.stagedDiff,
+                            keyName: ai,
+                        }).generateCodeReview$();
+                    case 'GROQ':
+                        return AIServiceFactory.create(GroqService, {
+                            config: this.config.GROQ,
+                            stagedDiff: this.stagedDiff,
+                            keyName: ai,
+                        }).generateCodeReview$();
+                    case 'PERPLEXITY':
+                        return AIServiceFactory.create(PerplexityService, {
+                            config: this.config.PERPLEXITY,
+                            stagedDiff: this.stagedDiff,
+                            keyName: ai,
+                        }).generateCodeReview$();
+                    case 'DEEPSEEK':
+                        return AIServiceFactory.create(DeepSeekService, {
+                            config: this.config.DEEPSEEK,
+                            stagedDiff: this.stagedDiff,
+                            keyName: ai,
+                        }).generateCodeReview$();
                     default:
                         const prefixError = chalk.red.bold(`[${ai}]`);
                         return of({

@@ -1,0 +1,687 @@
+# The configurations that used for the recording, feel free to edit them
+config:
+
+  # Specify a command to be executed
+  # like `/bin/bash -l`, `ls`, or any other commands
+  # the default is bash for Linux
+  # or powershell.exe for Windows
+  command: zsh
+
+  # Specify the current working directory path
+  # the default is the current working directory path
+  cwd: /Users/tak/workspace/tak-bro/aicommit2
+
+  # Export additional ENV variables
+  env:
+    recording: true
+
+  # Explicitly set the number of columns
+  # or use `auto` to take the current
+  # number of columns of your shell
+  cols: 105
+
+  # Explicitly set the number of rows
+  # or use `auto` to take the current
+  # number of rows of your shell
+  rows: 35
+
+  # Amount of times to repeat GIF
+  # If value is -1, play once
+  # If value is 0, loop indefinitely
+  # If value is a positive number, loop n times
+  repeat: 0
+
+  # Quality
+  # 1 - 100
+  quality: 100
+
+  # Delay between frames in ms
+  # If the value is `auto` use the actual recording delays
+  frameDelay: auto
+
+  # Maximum delay between frames in ms
+  # Ignored if the `frameDelay` isn't set to `auto`
+  # Set to `auto` to prevent limiting the max idle time
+  maxIdleTime: 2000
+
+  # The surrounding frame box
+  # The `type` can be null, window, floating, or solid`
+  # To hide the title use the value null
+  # Don't forget to add a backgroundColor style with a null as type
+  frameBox:
+    type: floating
+    title: AICommit2
+    style:
+      border: 0px black solid
+      # boxShadow: none
+      # margin: 0px
+
+  # Add a watermark image to the rendered gif
+  # You need to specify an absolute path for
+  # the image on your machine or a URL, and you can also
+  # add your own CSS styles
+  watermark:
+    imagePath: null
+    style:
+      position: absolute
+      right: 15px
+      bottom: 15px
+      width: 100px
+      opacity: 0.9
+
+  # Cursor style can be one of
+  # `block`, `underline`, or `bar`
+  cursorStyle: block
+
+  # Font family
+  # You can use any font that is installed on your machine
+  # in CSS-like syntax
+  fontFamily: "Monaco, Lucida Console, Ubuntu Mono, Monospace"
+
+  # The size of the font
+  fontSize: 12
+
+  # The height of lines
+  lineHeight: 1
+
+  # The spacing between letters
+  letterSpacing: 0
+
+  # Theme
+  theme:
+    background: "transparent"
+    foreground: "#afafaf"
+    cursor: "#c7c7c7"
+    black: "#232628"
+    red: "#fc4384"
+    green: "#b3e33b"
+    yellow: "#ffa727"
+    blue: "#75dff2"
+    magenta: "#ae89fe"
+    cyan: "#708387"
+    white: "#d5d5d0"
+    brightBlack: "#626566"
+    brightRed: "#ff7fac"
+    brightGreen: "#c8ed71"
+    brightYellow: "#ebdf86"
+    brightBlue: "#75dff2"
+    brightMagenta: "#ae89fe"
+    brightCyan: "#b1c6ca"
+    brightWhite: "#f9f9f4"
+
+# Records, feel free to edit them
+records:
+  - delay: 323
+    content: "\e[?25l\e8\e[0m\e[49m\e[39m\e[27m\e[24m\e[J\e]2;tak@louis-lemon:~/workspace/tak-bro/aicommit2\a\e]1;..bro/aicommit2\a\e]7;file://louis-lemon.local/Users/tak/workspace/tak-bro/aicommit2\e\\\e]697;OSCUnlock=19b0dbad0a0b482d8702f550ca1a1732\a\e]697;Dir=/Users/tak/workspace/tak-bro/aicommit2\a\e]697;Shell=zsh\a\e]697;ShellPath=/opt/homebrew/Cellar/zsh/5.9/bin/zsh\a\e]697;PID=39561\a\e]697;ExitCode=0\a\e]697;TTY=/dev/ttys079\a\e]697;Log=\a\e]697;ZshAutosuggestionColor=fg=245\a\e]697;FigAutosuggestionColor=\a\e]697;User=tak\a\e[0m\e[38;5;31m\e[49m\e[39m\e[27m\e[24m\e[1m\e[7m%\e[27m\e[1m\e[0m                                                                                                        \r\e[0m\e[49m\e[39m\e[27m\e[24m\e[K\r\e[0m\e[27m\e[24m\e[J\e]697;StartPrompt\a\e[0m\e[49m\e[39m\r\n\e[A\e[0m\e[49m\e[39m\e[0m\e[49m\e[39m\e[0m\e[49m \e[0m\e[49m\e[38;5;31m \e[1m\e[38;5;31m\e[38;5;39m~\e[0m\e[38;5;39m\e[49m\e[38;5;31m/workspace/tak-bro/\e[1m\e[38;5;31m\e[38;5;39maicommit2\e[0m\e[38;5;39m\e[49m\e[38;5;31m\e[0m\e[38;5;31m\e[49m\e[38;5;31m\e[0m\e[38;5;31m\e[49m \e[0m\e[38;5;31m\e[49m\e[38;5;178m\e[0m\e[38;5;178m\e[49m\e[38;5;76m\e[0m\e[38;5;76m\e[49m\e[38;5;178m \e[38;5;76m feature/add-ai-review \e[38;5;76m*33 \e[38;5;178m!1\e[0m\e[38;5;178m\e[49m\e[38;5;178m\e[0m\e[38;5;178m\e[49m\e[30m \e[0m\e[30m\e[49m\e[39m\e[38;5;238m················\e[0m\e[38;5;238m\e[49m\e[30m \e[0m\e[30m\e[49m\e[38;5;70m 20.10.0\e[0m\e[38;5;70m\e[49m\e[38;5;70m\e[0m\e[38;5;70m\e[49m\e[38;5;70m\e[0m\e[38;5;70m\e[49m\e[38;5;66m  20:06:12\e[0m\e[38;5;66m\e[49m\e[38;5;66m\e[0m\e[38;5;66m\e[49m\e[38;5;66m\e[0m\e[38;5;66m\e[49m\e[39m\r\n\e[0m\e[49m\e[39m\e[0m\e[49m\e[38;5;76m❯\e[0m\e[38;5;76m\e[49m\e[38;5;76m\e[0m\e[38;5;76m\e[49m\e[30m\e[0m\e[30m\e[49m\e[39m \e[0m\e[49m\e[39m\e]697;EndPrompt\a\e]697;NewCmd=19b0dbad0a0b482d8702f550ca1a1732\a\e[K\e[102C\e]697;StartPrompt\a\e]697;EndPrompt\a\e[102D\e[?1h\e=\e[?25h\e[?2004h"
+  - delay: 204
+    content: ".\b\e[32m.\e[39m\b\e[32m.\e[39m\e[38;5;245m/dist/cli.mjs -a\e[39m\e[16D"
+  - delay: 36
+    content: "\b\e[32m.\e[32m/\e[39m\b\b\e[4m\e[32m.\e[4m\e[32m/\e[24m\e[39m"
+  - delay: 135
+    content: "\b\b\e[4m\e[32m.\e[4m\e[32m/\e[4m\e[32md\e[24m\e[39m\b\b\b\e[39m\e[4m.\e[39m\e[4m/\e[39m\e[4md\e[24m"
+  - delay: 136
+    content: "\e[39mi\e[39ms\e[39mt\e[39m/\e[39mc\e[39ml\e[39mi\e[39m.\e[39mm\e[39mj\e[39ms\e[39m \e[39m-\e[39ma"
+  - delay: 5
+    content: "\e[17D\e[24m\e[32m.\e[24m\e[32m/\e[24m\e[32md\e[32mi\e[32ms\e[32mt\e[32m/\e[32mc\e[32ml\e[32mi\e[32m.\e[32mm\e[32mj\e[32ms\e[39m\e[3C"
+  - delay: 330
+    content: "\e[?1l\e>\e[?2004l\e[?25l\r\r\e[A\e[0m\e[27m\e[24m\e[J\e[0m\e[49m\e[27m\e[24m\e[38;5;76m❯\e[0m\e[38;5;76m\e[49m\e[39m\e[27m\e[24m \e[32m./dist/cli.mjs\e[39m -a\e[K\e[?25h\r\r\n\e]697;OSCLock=19b0dbad0a0b482d8702f550ca1a1732\a\e]697;PreExec\a\e]2;./dist/cli.mjs -a\a\e]1;./dist/cli.mjs\a"
+  - delay: 238
+    content: "       _                    _ _   ___ \r\n  __ _(_)__ ___ _ __  _ __ (_) |_|_  )\r\n / _` | / _/ _ \\ '  \\| '  \\| |  _|/ / \r\n \\__,_|_\\__\\___/_|_|_|_|_|_|_|\\__/___|\r\n                                      \r\n"
+  - delay: 21
+    content: "\e[?25l\e[1G\e[1G\e[36m⠋\e[39m Detecting staged files"
+  - delay: 14
+    content: "\e[1G\e[0K\e[?25h\e[1m\e[32m✔ \e[39m\e[22m\e[1mDetected 1 staged file:\e[22m\r\n     src/managers/console.manager.ts\r\n\r\n\e[?25l\e[33m⚠ No code reviews were generated\e[39m\e[32D\e[32C\e[?25l\e[1G\e[1G\e[36m⠋\e[39m AI is performing a code review"
+  - delay: 84
+    content: "\e[1G\e[0K\e[36m⠙\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠹\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠸\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠼\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠴\e[39m AI is performing a code review"
+  - delay: 79
+    content: "\e[1G\e[0K\e[36m⠦\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠧\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠇\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠏\e[39m AI is performing a code review"
+  - delay: 30
+    content: "\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPlease check code reviews: \e[22m\e[1m\e[0m \e[0m\e[22m\e[2m  (Use ↑↓ arrows to move)\e[22m\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;245;80;54m\e[38;2;255;255;255m\e[1m[Groq]\e[22m\e[1m\e[39m\e[36m\e[49m ## Review of `console.manager.ts`This diff...\e[39m\e[22m\r\n\r\n\e[32m\e[1m## Review of \e[33mconsole.manager.ts\e[39m\e[32m\e[22m\e[39m\r\n\r\n\e[0mThis diff removes the \e[33mprintBlankLine\e[39m function from the \e[33mConsoleManager\e[39m class. Here's a breakdown of the \r\nchanges and some feedback:\e[0m\r\n\r\n\e[32m\e[1m### Removed Functionality\e[22m\e[39m\r\n\r\n    * \e[0m**`printBlankLine()`:** This function simply printed a newline character.\e[0m\r\n\r\n\e[32m\e[1m### Feedback\e[22m\e[39m\r\n\r\n    * \e[0m\e[0m\e[0m**Redundancy:**  The removal of `printBlankLine()` is likely justified. A newline is already \r\nprinted within the `printErrorMessage()` function. \e[0m\e[0m\e[0m\r\n    * \e[0m\e[0m\e[0m**Potential Use Case:** While the removal seems reasonable, consider if there might be scenarios \r\nwhere you need to print a blank line independently of an error message. If so, you might want to \r\nreconsider removing this function.\e[0m\e[0m\e[0m\r\n\r\n\e[0m\e[1mGeneral Code Quality:\e[22m\e[0m\r\n\r\n    * \e[0mThe code is concise and easy to understand.\e[0m\r\n    * \e[0mThe use of `chalk` for styling output is a good practice, making error messages more visually \r\ndistinct.\e[0m\r\n    * \e[0mThe `readline` module is used appropriately for interacting with the console.\e[0m\e[2m\e[22m\r\n\e[2m\e[22m\r\n\e[2m(Page \e[1m\e[36m1\e[39m\e[22m\e[2m/\e[36m2\e[39m. Use PgUp/PgDn to scroll)\e[22m\r\n\r\n\e[0D"
+  - delay: 49
+    content: "\e[1G\e[0K\e[36m⠋\e[39m AI is performing a code review"
+  - delay: 82
+    content: "\e[1G\e[0K\e[36m⠙\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠹\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠋\e[39m AI is performing a code review"
+  - delay: 82
+    content: "\e[1G\e[0K\e[36m⠙\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠹\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠸\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠼\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠴\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠦\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠼\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠴\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠦\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠧\e[39m AI is performing a code review"
+  - delay: 79
+    content: "\e[1G\e[0K\e[36m⠇\e[39m AI is performing a code review"
+  - delay: 82
+    content: "\e[1G\e[0K\e[36m⠴\e[39m AI is performing a code review"
+  - delay: 7
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPlease check code reviews: \e[22m\e[1m\e[0m \e[0m\e[22m\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;245;80;54m\e[38;2;255;255;255m\e[1m[Groq]\e[22m\e[1m\e[39m\e[36m\e[49m ## Review of `console.manager.ts`This diff...\e[39m\e[22m\r\n\r\n\r\n\e[0mLet me know if you have any further questions or would like me to analyze another code diff!\e[0m\r\n\r\n\e[2m\e[22m\r\n\e[2m\e[22m\r\n\e[2m(Page \e[1m\e[36m2\e[39m\e[22m\e[2m/\e[36m2\e[39m. Use PgUp/PgDn to scroll)\e[22m\r\n\r\n\e[0D"
+  - delay: 73
+    content: "\e[1G\e[0K\e[36m⠦\e[39m AI is performing a code review"
+  - delay: 82
+    content: "\e[1G\e[0K\e[36m⠧\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠇\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠏\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠋\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠙\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠹\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠸\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠼\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠴\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠦\e[39m AI is performing a code review"
+  - delay: 82
+    content: "\e[1G\e[0K\e[36m⠧\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠇\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠏\e[39m AI is performing a code review"
+  - delay: 36
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPlease check code reviews: \e[22m\e[1m\e[0m \e[0m\e[22m\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;245;80;54m\e[38;2;255;255;255m\e[1m[Groq]\e[22m\e[1m\e[39m\e[36m\e[49m ## Review of `console.manager.ts`This diff...\e[39m\e[22m\r\n\r\n\e[32m\e[1m## Review of \e[33mconsole.manager.ts\e[39m\e[32m\e[22m\e[39m\r\n\r\n\e[0mThis diff removes the \e[33mprintBlankLine\e[39m function from the \e[33mConsoleManager\e[39m class. Here's a breakdown of the \r\nchanges and some feedback:\e[0m\r\n\r\n\e[32m\e[1m### Removed Functionality\e[22m\e[39m\r\n\r\n    * \e[0m**`printBlankLine()`:** This function simply printed a newline character.\e[0m\r\n\r\n\e[32m\e[1m### Feedback\e[22m\e[39m\r\n\r\n    * \e[0m\e[0m\e[0m**Redundancy:**  The removal of `printBlankLine()` is likely justified. A newline is already \r\nprinted within the `printErrorMessage()` function. \e[0m\e[0m\e[0m\r\n    * \e[0m\e[0m\e[0m**Potential Use Case:** While the removal seems reasonable, consider if there might be scenarios \r\nwhere you need to print a blank line independently of an error message. If so, you might want to \r\nreconsider removing this function.\e[0m\e[0m\e[0m\r\n\r\n\e[0m\e[1mGeneral Code Quality:\e[22m\e[0m\r\n\r\n    * \e[0mThe code is concise and easy to understand.\e[0m\r\n    * \e[0mThe use of `chalk` for styling output is a good practice, making error messages more visually \r\ndistinct.\e[0m\r\n    * \e[0mThe `readline` module is used appropriately for interacting with the console.\e[0m\e[2m\e[22m\r\n\e[2m\e[22m\r\n\e[2m(Page \e[1m\e[36m1\e[39m\e[22m\e[2m/\e[36m2\e[39m. Use PgUp/PgDn to scroll)\e[22m\r\n\r\n\e[0D"
+  - delay: 42
+    content: "\e[1G\e[0K\e[36m⠋\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠙\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠹\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠸\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠼\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠴\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠦\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠧\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠇\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠏\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠋\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠙\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠹\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠸\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠼\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠴\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠦\e[39m AI is performing a code review"
+  - delay: 82
+    content: "\e[1G\e[0K\e[36m⠧\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠇\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠏\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠋\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠙\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠹\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠸\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠼\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠴\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠦\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠧\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠇\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠏\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠋\e[39m AI is performing a code review"
+  - delay: 82
+    content: "\e[1G\e[0K\e[36m⠙\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠹\e[39m AI is performing a code review"
+  - delay: 79
+    content: "\e[1G\e[0K\e[36m⠸\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠼\e[39m AI is performing a code review"
+  - delay: 82
+    content: "\e[1G\e[0K\e[36m⠴\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠦\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠧\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠇\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠏\e[39m AI is performing a code review"
+  - delay: 32
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPlease check code reviews: \e[22m\e[1m\e[0m \e[0m\e[22m\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;245;80;54m\e[38;2;255;255;255m\e[1m[Groq]\e[22m\e[1m\e[39m\e[36m\e[49m ## Review of `console.manager.ts`This diff...\e[39m\e[22m\r\n    \e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[39m\e[49m ```diff--- a/src/managers/console.manager.ts+++ b/src/managers/console.manager.ts@@ -50,10 \r\n+50,6...\r\n\r\n\e[32m\e[1m## Review of \e[33mconsole.manager.ts\e[39m\e[32m\e[22m\e[39m\r\n\r\n\e[0mThis diff removes the \e[33mprintBlankLine\e[39m function from the \e[33mConsoleManager\e[39m class. Here's a breakdown of the \r\nchanges and some feedback:\e[0m\r\n\r\n\e[32m\e[1m### Removed Functionality\e[22m\e[39m\r\n\r\n    * \e[0m**`printBlankLine()`:** This function simply printed a newline character.\e[0m\r\n\r\n\e[32m\e[1m### Feedback\e[22m\e[39m\r\n\r\n    * \e[0m\e[0m\e[0m**Redundancy:**  The removal of `printBlankLine()` is likely justified. A newline is already \r\nprinted within the `printErrorMessage()` function. \e[0m\e[0m\e[0m\r\n    * \e[0m\e[0m\e[0m**Potential Use Case:** While the removal seems reasonable, consider if there might be scenarios \r\nwhere you need to print a blank line independently of an error message. If so, you might want to \r\nreconsider removing this function.\e[0m\e[0m\e[0m\r\n\r\n\e[0m\e[1mGeneral Code Quality:\e[22m\e[0m\r\n\r\n    * \e[0mThe code is concise and easy to understand.\e[0m\r\n    * \e[0mThe use of `chalk` for styling output is a good practice, making error messages more visually \r\ndistinct.\e[0m\r\n    * \e[0mThe `readline` module is used appropriately for interacting with the console.\e[0m\e[2m\e[22m\r\n\e[2m\e[22m\r\n\e[2m(Page \e[1m\e[36m1\e[39m\e[22m\e[2m/\e[36m2\e[39m. Use PgUp/PgDn to scroll)\e[22m\r\n\r\n\e[0D"
+  - delay: 49
+    content: "\e[1G\e[0K\e[36m⠋\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠙\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠹\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠸\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠼\e[39m AI is performing a code review"
+  - delay: 82
+    content: "\e[1G\e[0K\e[36m⠴\e[39m AI is performing a code review"
+  - delay: 79
+    content: "\e[1G\e[0K\e[36m⠦\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠧\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠇\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠏\e[39m AI is performing a code review"
+  - delay: 84
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPlease check code reviews: \e[22m\e[1m\e[0m \e[0m\e[22m\r\n    \e[48;2;245;80;54m\e[38;2;255;255;255m\e[1m[Groq]\e[22m\e[39m\e[49m ## Review of `console.manager.ts`This diff...\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[1m\e[39m\e[36m\e[49m ```diff--- a/src/managers/console.manager.ts+++ b/src/managers/console.manager.ts@@ -50,10 \r\n+50,6...\e[39m\e[22m\r\n\r\n    \e[32m--- a/src/managers/console.manager.ts\e[39m\r\n    \e[32m+++ b/src/managers/console.manager.ts\e[39m\r\n    \e[90m@@ -50,10 +50,6 @@\e[39m export class ConsoleManager {\r\n         printErrorMessage(message: string) {\r\n             console.log(`\\n${chalk.bold.red('✖')} ${chalk.red(`${message}`)}`);\r\n         }\r\n    \e[31m-\e[39m\r\n    \e[31m-    printBlankLine() {\e[39m\r\n    \e[31m-        console.log(`\\n`);\e[39m\r\n    \e[31m-    }\e[39m\r\n    \e[31m-\e[39m\r\n         moveCursorUp() {\r\n             const rl = readline.createInterface({\r\n                 input: process.stdin,\r\n    \r\n\r\n\e[0m\e[1m코드 리뷰:\e[22m\e[0m\r\n\e[2m\e[22m\r\n\e[2m\e[22m\r\n\e[2m(Page \e[1m\e[36m1\e[39m\e[22m\e[2m/\e[36m2\e[39m. Use PgUp/PgDn to scroll)\e[22m\r\n\r\n\e[0D\e[1G\e[0K\e[36m⠋\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠙\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠹\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠸\e[39m AI is performing a code review"
+  - delay: 82
+    content: "\e[1G\e[0K\e[36m⠼\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠴\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠦\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠧\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠇\e[39m AI is performing a code review"
+  - delay: 82
+    content: "\e[1G\e[0K\e[36m⠏\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠋\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠙\e[39m AI is performing a code review"
+  - delay: 82
+    content: "\e[1G\e[0K\e[36m⠹\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠸\e[39m AI is performing a code review"
+  - delay: 14
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPlease check code reviews: \e[22m\e[1m\e[0m \e[0m\e[22m\r\n    \e[48;2;245;80;54m\e[38;2;255;255;255m\e[1m[Groq]\e[22m\e[39m\e[49m ## Review of `console.manager.ts`This diff...\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[1m\e[39m\e[36m\e[49m ```diff--- a/src/managers/console.manager.ts+++ b/src/managers/console.manager.ts@@ -50,10 \r\n+50,6...\e[39m\e[22m\r\n\r\n    * \e[0m`printBlankLine()` 함수가 제거되었습니다. 이 함수는 단순히 빈 줄을 출력하는 기능을 했는데,  \r\n`console.log()` 호출 시 줄 바꿈 문자(`\\n`)를 추가하는 것으로 대체 가능하기 때문입니다.\e[0m\r\n\r\n\e[0m\e[1m개선 사항:\e[22m\e[0m\r\n\r\n    * \e[0m`printBlankLine()` 함수를 제거하여 코드 중복을 줄이고 간결하게 만들었습니다.\e[0m\r\n\r\n\e[0m\e[1m코드 예시:\e[22m\e[0m\r\n\r\n    \e[32m// 빈 줄 출력이 필요한 경우\e[39m\r\n    \e[36mconsole\e[39m.log(\e[31m'\\n'\e[39m); \r\n\r\n\e[0m\e[1m총평:\e[22m\e[0m\r\n\r\n\e[0m제거된 함수는 간단한 기능을 수행했으며, 다른 곳에서 쉽게 대체 가능했습니다. 이러한 변경 사항은 코드의 \r\n가독성과 유지 관리성을 향상시킵니다. \e[0m\r\n\r\n\e[2m\e[22m\r\n\e[2m\e[22m\r\n\e[2m(Page \e[1m\e[36m2\e[39m\e[22m\e[2m/\e[36m2\e[39m. Use PgUp/PgDn to scroll)\e[22m\r\n\r\n\e[0D"
+  - delay: 65
+    content: "\e[1G\e[0K\e[36m⠼\e[39m AI is performing a code review"
+  - delay: 79
+    content: "\e[1G\e[0K\e[36m⠴\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠦\e[39m AI is performing a code review"
+  - delay: 82
+    content: "\e[1G\e[0K\e[36m⠧\e[39m AI is performing a code review"
+  - delay: 79
+    content: "\e[1G\e[0K\e[36m⠇\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠏\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠋\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠙\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠹\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠸\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠼\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠴\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠦\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠧\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠇\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠏\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠋\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠙\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠹\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠸\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠼\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠴\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠦\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠧\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠇\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠏\e[39m AI is performing a code review"
+  - delay: 49
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPlease check code reviews: \e[22m\e[1m\e[0m \e[0m\e[22m\r\n    \e[48;2;245;80;54m\e[38;2;255;255;255m\e[1m[Groq]\e[22m\e[39m\e[49m ## Review of `console.manager.ts`This diff...\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[1m\e[39m\e[36m\e[49m ```diff--- a/src/managers/console.manager.ts+++ b/src/managers/console.manager.ts@@ -50,10 \r\n+50,6...\e[39m\e[22m\r\n\r\n    \e[32m--- a/src/managers/console.manager.ts\e[39m\r\n    \e[32m+++ b/src/managers/console.manager.ts\e[39m\r\n    \e[90m@@ -50,10 +50,6 @@\e[39m export class ConsoleManager {\r\n         printErrorMessage(message: string) {\r\n             console.log(`\\n${chalk.bold.red('✖')} ${chalk.red(`${message}`)}`);\r\n         }\r\n    \e[31m-\e[39m\r\n    \e[31m-    printBlankLine() {\e[39m\r\n    \e[31m-        console.log(`\\n`);\e[39m\r\n    \e[31m-    }\e[39m\r\n    \e[31m-\e[39m\r\n         moveCursorUp() {\r\n             const rl = readline.createInterface({\r\n                 input: process.stdin,\r\n    \r\n\r\n\e[0m\e[1m코드 리뷰:\e[22m\e[0m\r\n\e[2m\e[22m\r\n\e[2m\e[22m\r\n\e[2m(Page \e[1m\e[36m1\e[39m\e[22m\e[2m/\e[36m2\e[39m. Use PgUp/PgDn to scroll)\e[22m\r\n\r\n\e[0D"
+  - delay: 32
+    content: "\e[1G\e[0K\e[36m⠋\e[39m AI is performing a code review"
+  - delay: 82
+    content: "\e[1G\e[0K\e[36m⠙\e[39m AI is performing a code review"
+  - delay: 79
+    content: "\e[1G\e[0K\e[36m⠹\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠸\e[39m AI is performing a code review"
+  - delay: 82
+    content: "\e[1G\e[0K\e[36m⠼\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠴\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠦\e[39m AI is performing a code review"
+  - delay: 85
+    content: "\e[1G\e[0K\e[36m⠧\e[39m AI is performing a code review"
+  - delay: 82
+    content: "\e[1G\e[0K\e[36m⠇\e[39m AI is performing a code review"
+  - delay: 79
+    content: "\e[1G\e[0K\e[36m⠏\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠋\e[39m AI is performing a code review"
+  - delay: 82
+    content: "\e[1G\e[0K\e[36m⠙\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠹\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠸\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠼\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠴\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠦\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠧\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠇\e[39m AI is performing a code review"
+  - delay: 54
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPlease check code reviews: \e[22m\e[1m\e[0m \e[0m\e[22m\r\n    \e[48;2;245;80;54m\e[38;2;255;255;255m\e[1m[Groq]\e[22m\e[39m\e[49m ## Review of `console.manager.ts`This diff...\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[1m\e[39m\e[36m\e[49m ```diff--- a/src/managers/console.manager.ts+++ b/src/managers/console.manager.ts@@ -50,10 \r\n+50,6...\e[39m\e[22m\r\n    \e[48;2;255;255;255m\e[38;2;0;0;0m\e[1m[Llama3.1]\e[22m\e[39m\e[49m **Code Review**===============**Language and Best \r\nPractices**------------------------------The...\r\n\r\n    \e[32m--- a/src/managers/console.manager.ts\e[39m\r\n    \e[32m+++ b/src/managers/console.manager.ts\e[39m\r\n    \e[90m@@ -50,10 +50,6 @@\e[39m export class ConsoleManager {\r\n         printErrorMessage(message: string) {\r\n             console.log(`\\n${chalk.bold.red('✖')} ${chalk.red(`${message}`)}`);\r\n         }\r\n    \e[31m-\e[39m\r\n    \e[31m-    printBlankLine() {\e[39m\r\n    \e[31m-        console.log(`\\n`);\e[39m\r\n    \e[31m-    }\e[39m\r\n    \e[31m-\e[39m\r\n         moveCursorUp() {\r\n             const rl = readline.createInterface({\r\n                 input: process.stdin,\r\n    \r\n\r\n\e[0m\e[1m코드 리뷰:\e[22m\e[0m\r\n\e[2m\e[22m\r\n\e[2m\e[22m\r\n\e[2m(Page \e[1m\e[36m1\e[39m\e[22m\e[2m/\e[36m2\e[39m. Use PgUp/PgDn to scroll)\e[22m\r\n\r\n\e[0D"
+  - delay: 27
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 80
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 80
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 82
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 80
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 74
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPlease check code reviews: \e[22m\e[1m\e[0m \e[0m\e[22m\r\n    \e[48;2;245;80;54m\e[38;2;255;255;255m\e[1m[Groq]\e[22m\e[39m\e[49m ## Review of `console.manager.ts`This diff...\r\n    \e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[39m\e[49m ```diff--- a/src/managers/console.manager.ts+++ b/src/managers/console.manager.ts@@ -50,10 \r\n+50,6...\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;255;255;255m\e[38;2;0;0;0m\e[1m[Llama3.1]\e[22m\e[1m\e[39m\e[36m\e[49m **Code Review**===============**Language and Best \r\nPractices**------------------------------The...\e[39m\e[22m\r\n\r\n\e[35m\e[4m\e[1m# \e[1mCode Review\e[22m\e[1m\e[22m\e[24m\e[39m\r\n\r\n\e[32m\e[1m## \e[1mLanguage and Best Practices\e[22m\e[1m\e[22m\e[39m\r\n\r\n\e[0mThe code is written in TypeScript with a Node.js environment. The language is English.\e[0m\r\n\r\n\e[32m\e[1m### Code Quality and Best Practices\e[22m\e[39m\r\n\r\n    * \e[0mThe code follows a consistent naming convention (CamelCase) for variables and functions.\e[0m\r\n    * \e[0mThe use of a linter like `tslint` or `eslint` would be beneficial to enforce coding standards and \r\ncatch potential errors.\e[0m\r\n    * \e[0mThe `ConsoleManager` class has a clear responsibility, which is managing console interactions.\e[0m\r\n\r\n\e[32m\e[1m## \e[1mPotential Bugs or Errors\e[22m\e[1m\e[22m\e[39m\r\n\r\n\e[0mThe provided diff does not contain any obvious bugs or errors. However, some potential issues that could \r\narise from the changes are:\e[0m\r\n\r\n    * \e[0mIf the `printBlankLine()` function is removed, there might be unintended behavior in cases where a \r\nblank line is required.\e[0m\r\n    * \e[0mThe `moveCursorUp()` function uses `readline` which might not be necessary if the console \r\ninteraction does not require user input.\e[0m\e[2m\e[22m\r\n\e[2m\e[22m\r\n\e[2m(Page \e[1m\e[36m1\e[39m\e[22m\e[2m/\e[36m3\e[39m. Use PgUp/PgDn to scroll)\e[22m\r\n\r\n\e[0D"
+  - delay: 6
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 80
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 82
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 80
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 28
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPlease check code reviews: \e[22m\e[1m\e[0m \e[0m\e[22m\r\n    \e[48;2;245;80;54m\e[38;2;255;255;255m\e[1m[Groq]\e[22m\e[39m\e[49m ## Review of `console.manager.ts`This diff...\r\n    \e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[39m\e[49m ```diff--- a/src/managers/console.manager.ts+++ b/src/managers/console.manager.ts@@ -50,10 \r\n+50,6...\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;255;255;255m\e[38;2;0;0;0m\e[1m[Llama3.1]\e[22m\e[1m\e[39m\e[36m\e[49m **Code Review**===============**Language and Best \r\nPractices**------------------------------The...\e[39m\e[22m\r\n\r\n\r\n\e[32m\e[1m## \e[1mPerformance Improvements\e[22m\e[1m\e[22m\e[39m\r\n\r\n\e[0mThe changes do not appear to have any significant impact on performance. However, using a more efficient \r\nlogging mechanism or optimizing the \e[33mconsole.log()\e[39m statements could improve performance in high-traffic \r\nscenarios.\e[0m\r\n\r\n\e[32m\e[1m## \e[1mReadability and Maintainability\e[22m\e[1m\e[22m\e[39m\r\n\r\n    * \e[0mThe code is well-structured and easy to read.\e[0m\r\n    * \e[0mThe use of comments and function names makes it clear what each part of the code does.\e[0m\r\n    * \e[0mHowever, a brief description of the `ConsoleManager` class at the top would provide context for \r\nother developers.\e[0m\r\n\r\n\e[32m\e[1m### Recommendation\e[22m\e[39m\r\n\r\n\e[0mOverall, the changes look good, and the code is well-maintained. A brief comment at the top to describe \r\nthe purpose of the \e[33mConsoleManager\e[39m class would be beneficial. Additionally, using a linter like \e[33mtslint\e[39m or \r\n\e[33meslint\e[39m would help enforce coding standards and catch potential errors.\e[0m\r\n\r\n    \e[32m// src/managers/console.manager.ts\e[39m\r\n    \r\n    \e[32m/**\e[39m\r\n    \e[32m * Manages console interactions.\e[39m\r\n    \e[32m */\e[39m\e[2m\e[22m\r\n\e[2m\e[22m\r\n\e[2m(Page \e[1m\e[36m2\e[39m\e[22m\e[2m/\e[36m3\e[39m. Use PgUp/PgDn to scroll)\e[22m\r\n\r\n\e[0D"
+  - delay: 49
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 82
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 79
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 79
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 82
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 27
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPlease check code reviews: \e[22m\e[1m\e[0m \e[0m\e[22m\r\n    \e[48;2;245;80;54m\e[38;2;255;255;255m\e[1m[Groq]\e[22m\e[39m\e[49m ## Review of `console.manager.ts`This diff...\r\n    \e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[39m\e[49m ```diff--- a/src/managers/console.manager.ts+++ b/src/managers/console.manager.ts@@ -50,10 \r\n+50,6...\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;255;255;255m\e[38;2;0;0;0m\e[1m[Llama3.1]\e[22m\e[1m\e[39m\e[36m\e[49m **Code Review**===============**Language and Best \r\nPractices**------------------------------The...\e[39m\e[22m\r\n\r\n    \e[34mexport\e[39m \e[34m\e[34mclass\e[39m\e[34m ConsoleManager \e[39m{\r\n      \e[32m// ...\e[39m\r\n    \r\n      \e[33mprintErrorMessage(message: \e[36mstring\e[39m\e[33m)\e[39m {\r\n        \e[36mconsole\e[39m.log(\e[31m`\\n${chalk.bold.red(\e[31m'✖'\e[39m\e[31m)} ${chalk.red(\e[31m`${message}`\e[39m\e[31m)}`\e[39m);\r\n      }\r\n    \r\n      \e[33mmoveCursorUp()\e[39m {\r\n        \e[34mconst\e[39m rl = readline.createInterface({\r\n          \e[36minput\e[39m: process.stdin,\r\n\r\n\e[2m\e[22m\r\r\n\e[2m\e[22m\r\n\e[2m(Page \e[1m\e[36m3\e[39m\e[22m\e[2m/\e[36m3\e[39m. Use PgUp/PgDn to scroll)\e[22m\r\n\r\n\e[0D"
+  - delay: 52
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 82
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 80
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 80
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 56
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPlease check code reviews: \e[22m\e[1m\e[0m \e[0m\e[22m\e[36m**Code Review**===============**Language and Best \e[39m\r\n\e[36mPractices**------------------------------The...\e[39m\r\n    \e[48;2;245;80;54m\e[38;2;255;255;255m\e[1m[Groq]\e[22m\e[39m\e[49m ## Review of `console.manager.ts`This diff...\r\n    \e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[39m\e[49m ```diff--- a/src/managers/console.manager.ts+++ b/src/managers/console.manager.ts@@ -50,10 \r\n+50,6...\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;255;255;255m\e[38;2;0;0;0m\e[1m[Llama3.1]\e[22m\e[1m\e[39m\e[36m\e[49m **Code Review**===============**Language and Best \r\nPractices**------------------------------The...\e[39m\e[22m\r\n\r\n    \e[34mexport\e[39m \e[34m\e[34mclass\e[39m\e[34m ConsoleManager \e[39m{\r\n      \e[32m// ...\e[39m\r\n    \r\n      \e[33mprintErrorMessage(message: \e[36mstring\e[39m\e[33m)\e[39m {\r\n        \e[36mconsole\e[39m.log(\e[31m`\\n${chalk.bold.red(\e[31m'✖'\e[39m\e[31m)} ${chalk.red(\e[31m`${message}`\e[39m\e[31m)}`\e[39m);\r\n      }\r\n    \r\n      \e[33mmoveCursorUp()\e[39m {\r\n        \e[34mconst\e[39m rl = readline.createInterface({\r\n          \e[36minput\e[39m: process.stdin,\r\n\r\n\e[2m\e[22m\r\n\e[2m\e[22m\r\n\e[2m(Page \e[1m\e[36m3\e[39m\e[22m\e[2m/\e[36m3\e[39m. Use PgUp/PgDn to scroll)\e[22m\r\n\r\n\e[0D\e[1G\e[0K\e[?25h\e[1G\r\n\e[?25h\e[1A\e[32m?\e[39m \e[1mWill you continue without changing the code?\e[22m\e[0m \e[0m\e[2m(Y/n) \e[22m\e[53D\e[53C"
+  - delay: 950
+    content: "\e[2K\e[G\e[32m?\e[39m \e[1mWill you continue without changing the code?\e[22m\e[0m \e[0m\e[36mYes\e[39m\e[50D\e[50C\r\n\e[?25l\e[33m⚠ No commit messages were generated\e[39m\e[35D\e[35C\e[?25l\e[1G\e[1G\e[36m⠋\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠙\e[39m AI is analyzing your changes"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠹\e[39m AI is analyzing your changes"
+  - delay: 82
+    content: "\e[1G\e[0K\e[36m⠸\e[39m AI is analyzing your changes"
+  - delay: 73
+    content: "\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[1m\e[0m \e[0m\e[22m\e[2m  (Use ↑↓ arrows to move)\e[22m\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;245;80;54m\e[38;2;255;255;255m\e[1m[Groq]\e[22m\e[1m\e[39m\e[36m\e[49m refactor: remove unused printBlankLine method\e[39m\e[22m\r\n\r\n\e[0D"
+  - delay: 6
+    content: "\e[1G\e[0K\e[36m⠼\e[39m AI is analyzing your changes"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠴\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠦\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠧\e[39m AI is analyzing your changes"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠇\e[39m AI is analyzing your changes"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠏\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠧\e[39m AI is analyzing your changes"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠇\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠏\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠋\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠙\e[39m AI is analyzing your changes"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠹\e[39m AI is analyzing your changes"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠸\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠼\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠴\e[39m AI is analyzing your changes"
+  - delay: 82
+    content: "\e[1G\e[0K\e[36m⠦\e[39m AI is analyzing your changes"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠧\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠇\e[39m AI is analyzing your changes"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠏\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠋\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠙\e[39m AI is analyzing your changes"
+  - delay: 40
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[1m\e[0m \e[0m\e[22m\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;245;80;54m\e[38;2;255;255;255m\e[1m[Groq]\e[22m\e[1m\e[39m\e[36m\e[49m refactor: remove unused printBlankLine method\e[39m\e[22m\r\n    \e[48;2;255;255;255m\e[38;2;0;0;0m\e[1m[Llama3.1]\e[22m\e[39m\e[49m fix: remove unused printBlankLine method\r\n\r\n\e[0D"
+  - delay: 40
+    content: "\e[1G\e[0K\e[36m⠹\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠸\e[39m AI is analyzing your changes"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠼\e[39m AI is analyzing your changes"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠴\e[39m AI is analyzing your changes"
+  - delay: 31
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[1m\e[0m \e[0m\e[22m\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;245;80;54m\e[38;2;255;255;255m\e[1m[Groq]\e[22m\e[1m\e[39m\e[36m\e[49m refactor: remove unused printBlankLine method\e[39m\e[22m\r\n    \e[48;2;255;255;255m\e[38;2;0;0;0m\e[1m[Llama3.1]\e[22m\e[39m\e[49m fix: remove unused printBlankLine method\r\n    \e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[39m\e[49m refactor(console): remove unused printBlankLine method\r\n\r\n\e[0D\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[1m\e[0m \e[0m\e[22m\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;245;80;54m\e[38;2;255;255;255m\e[1m[Groq]\e[22m\e[1m\e[39m\e[36m\e[49m refactor: remove unused printBlankLine method\e[39m\e[22m\r\n    \e[48;2;255;255;255m\e[38;2;0;0;0m\e[1m[Llama3.1]\e[22m\e[39m\e[49m fix: remove unused printBlankLine method\r\n    \e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[39m\e[49m refactor(console): remove unused printBlankLine method\r\n    \e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[39m\e[49m style(console): delete unused code\r\n\r\n\e[0D"
+  - delay: 50
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
+  - delay: 80
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
+  - delay: 48
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[1m\e[0m \e[0m\e[22m\r\n    \e[48;2;245;80;54m\e[38;2;255;255;255m\e[1m[Groq]\e[22m\e[39m\e[49m refactor: remove unused printBlankLine method\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;255;255;255m\e[38;2;0;0;0m\e[1m[Llama3.1]\e[22m\e[1m\e[39m\e[36m\e[49m fix: remove unused printBlankLine method\e[39m\e[22m\r\n    \e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[39m\e[49m refactor(console): remove unused printBlankLine method\r\n    \e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[39m\e[49m style(console): delete unused code\r\n\r\n\e[0D"
+  - delay: 33
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
+  - delay: 79
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
+  - delay: 80
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
+  - delay: 79
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
+  - delay: 29
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[1m\e[0m \e[0m\e[22m\r\n    \e[48;2;245;80;54m\e[38;2;255;255;255m\e[1m[Groq]\e[22m\e[39m\e[49m refactor: remove unused printBlankLine method\r\n    \e[48;2;255;255;255m\e[38;2;0;0;0m\e[1m[Llama3.1]\e[22m\e[39m\e[49m fix: remove unused printBlankLine method\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[1m\e[39m\e[36m\e[49m refactor(console): remove unused printBlankLine method\e[39m\e[22m\r\n    \e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[39m\e[49m style(console): delete unused code\r\n\r\n\e[0D"
+  - delay: 53
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
+  - delay: 82
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
+  - delay: 80
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
+  - delay: 80
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
+  - delay: 9
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[1m\e[0m \e[0m\e[22m\r\n    \e[48;2;245;80;54m\e[38;2;255;255;255m\e[1m[Groq]\e[22m\e[39m\e[49m refactor: remove unused printBlankLine method\r\n    \e[48;2;255;255;255m\e[38;2;0;0;0m\e[1m[Llama3.1]\e[22m\e[39m\e[49m fix: remove unused printBlankLine method\r\n    \e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[39m\e[49m refactor(console): remove unused printBlankLine method\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[1m\e[39m\e[36m\e[49m style(console): delete unused code\e[39m\e[22m\r\n\r\n\e[0D"
+  - delay: 72
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
+  - delay: 80
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mChanges analyzed\e[22m"
+  - delay: 71
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPick a commit message to use: \e[22m\e[1m\e[0m \e[0m\e[22m\e[36mstyle(console): delete unused code\e[39m\r\n    \e[48;2;245;80;54m\e[38;2;255;255;255m\e[1m[Groq]\e[22m\e[39m\e[49m refactor: remove unused printBlankLine method\r\n    \e[48;2;255;255;255m\e[38;2;0;0;0m\e[1m[Llama3.1]\e[22m\e[39m\e[49m fix: remove unused printBlankLine method\r\n    \e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[39m\e[49m refactor(console): remove unused printBlankLine method\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;0;119;255m\e[38;2;255;255;255m\e[1m[Gemini]\e[22m\e[1m\e[39m\e[36m\e[49m style(console): delete unused code\e[39m\e[22m\r\n\r\n\e[0D\e[1G\e[0K\e[?25h\e[1G\r\n\e[?25h\e[1A\e[32m?\e[39m \e[1mUse selected message?\e[22m\e[0m \e[0m\e[2m(Y/n) \e[22m\e[30D\e[30C"
+  - delay: 872
+    content: "\e[2K\e[G\e[32m?\e[39m \e[1mUse selected message?\e[22m\e[0m \e[0m\e[2m(Y/n) \e[22my\e[31D\e[31C"
+  - delay: 384
+    content: "\e[2K\e[G\e[32m?\e[39m \e[1mUse selected message?\e[22m\e[0m \e[0m\e[36mYes\e[39m\e[27D\e[27C\r\n\e[?25l\e[1G\e[1G\e[36m⠋\e[39m Committing with the generated message"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠙\e[39m Committing with the generated message"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠹\e[39m Committing with the generated message"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠸\e[39m Committing with the generated message"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠼\e[39m Committing with the generated message"
+  - delay: 82
+    content: "\e[1G\e[0K\e[36m⠴\e[39m Committing with the generated message"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠦\e[39m Committing with the generated message"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠧\e[39m Committing with the generated message"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠇\e[39m Committing with the generated message"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠏\e[39m Committing with the generated message"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠋\e[39m Committing with the generated message"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠙\e[39m Committing with the generated message"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠹\e[39m Committing with the generated message"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠸\e[39m Committing with the generated message"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠼\e[39m Committing with the generated message"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠴\e[39m Committing with the generated message"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠦\e[39m Committing with the generated message"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠧\e[39m Committing with the generated message"
+  - delay: 6
+    content: "\e[1G\e[0K\e[?25h\e[1G\r\n\e[1m\e[32m✔\e[39m\e[22m \e[1mSuccessfully committed!\e[22m\r\n\e[?25h\e[1m\e[7m%\e[27m\e[1m\e[0m                                                                                                        \r \r\e]2;tak@louis-lemon:~/workspace/tak-bro/aicommit2\a\e]1;..bro/aicommit2\a\e]7;file://louis-lemon.local/Users/tak/workspace/tak-bro/aicommit2\e\\"
+  - delay: 51
+    content: "\e]697;OSCUnlock=19b0dbad0a0b482d8702f550ca1a1732\a\e]697;Dir=/Users/tak/workspace/tak-bro/aicommit2\a\e]697;Shell=zsh\a\e]697;ShellPath=/opt/homebrew/Cellar/zsh/5.9/bin/zsh\a\e]697;PID=39561\a\e]697;ExitCode=0\a\e]697;TTY=/dev/ttys079\a\e]697;Log=\a\e]697;ZshAutosuggestionColor=fg=245\a\e]697;FigAutosuggestionColor=\a\e]697;User=tak\a\r\e[0m\e[27m\e[24m\e[J\e]697;StartPrompt\a\e[0m\e[49m\e[39m\r\n\r\n\e[A\e[0m\e[49m\e[39m\e[0m\e[49m\e[39m\e[0m\e[49m \e[0m\e[49m\e[38;5;31m \e[1m\e[38;5;31m\e[38;5;39m~\e[0m\e[38;5;39m\e[49m\e[38;5;31m/workspace/tak-bro/\e[1m\e[38;5;31m\e[38;5;39maicommit2\e[0m\e[38;5;39m\e[49m\e[38;5;31m\e[0m\e[38;5;31m\e[49m\e[38;5;31m\e[0m\e[38;5;31m\e[49m \e[0m\e[38;5;31m\e[49m\e[38;5;76m \e[38;5;76m feature/add-ai-review \e[38;5;76m*33\e[0m\e[38;5;76m\e[49m\e[38;5;76m\e[0m\e[38;5;76m\e[49m\e[30m \e[0m\e[30m\e[49m\e[39m\e[38;5;238m·············\e[0m\e[38;5;238m\e[49m\e[30m \e[0m\e[30m\e[49m\e[38;5;101m 27s\e[0m\e[38;5;101m\e[49m\e[38;5;101m\e[0m\e[38;5;101m\e[49m\e[38;5;101m\e[0m\e[38;5;101m\e[49m\e[38;5;70m  20.10.0\e[0m\e[38;5;70m\e[49m\e[38;5;70m\e[0m\e[38;5;70m\e[49m\e[38;5;70m\e[0m\e[38;5;70m\e[49m\e[38;5;66m  20:06:41\e[0m\e[38;5;66m\e[49m\e[38;5;66m\e[0m\e[38;5;66m\e[49m\e[38;5;66m\e[0m\e[38;5;66m\e[49m\e[39m\r\n\e[0m\e[49m\e[39m\e[0m\e[49m\e[38;5;76m❯\e[0m\e[38;5;76m\e[49m\e[38;5;76m\e[0m\e[38;5;76m\e[49m\e[30m\e[0m\e[30m\e[49m\e[39m \e[0m\e[49m\e[39m\e]697;EndPrompt\a\e]697;NewCmd=19b0dbad0a0b482d8702f550ca1a1732\a\e[K\e[102C\e]697;StartPrompt\a\e]697;EndPrompt\a\e[102D\e[?1h\e=\e[?2004h"

@@ -3,8 +3,9 @@ import { Observable, of } from 'rxjs';
 
 import { CommitType, ModelConfig, ModelName } from '../../utils/config.js';
 import { StagedDiff } from '../../utils/git.js';
+import { getFirstWordsFrom } from '../../utils/utils.js';
 
-export interface CommitMessage {
+export interface AIResponse {
     title: string;
     value: string;
 }
@@ -44,6 +45,7 @@ export abstract class AIService {
     }
 
     abstract generateCommitMessage$(): Observable<ReactiveListChoice>;
+    abstract generateCodeReview$(): Observable<ReactiveListChoice>;
 
     protected handleError$ = (error: AIServiceError): Observable<ReactiveListChoice> => {
         let simpleMessage = 'An error occurred';
@@ -58,7 +60,7 @@ export abstract class AIService {
         });
     };
 
-    protected parseMessage(generatedText: string, type: CommitType, maxCount: number): CommitMessage[] {
+    protected parseMessage(generatedText: string, type: CommitType, maxCount: number): AIResponse[] {
         try {
             const commitMessages: RawCommitMessage[] = JSON.parse(generatedText);
             const filteredMessages = commitMessages
@@ -138,5 +140,27 @@ export abstract class AIService {
         }
 
         return message;
+    }
+
+    protected sanitizeResponse(generatedText: string | string[]): AIResponse[] {
+        if (typeof generatedText === 'string') {
+            try {
+                const title = `${getFirstWordsFrom(generatedText)}...`;
+                const value = generatedText;
+                return [{ title, value }];
+            } catch (error) {
+                return [];
+            }
+        }
+
+        return generatedText.map(text => {
+            try {
+                const title = `${getFirstWordsFrom(text)}...`;
+                const value = text;
+                return { title, value };
+            } catch (error) {
+                return { title: '', value: '' };
+            }
+        });
     }
 }

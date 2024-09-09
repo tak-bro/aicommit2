@@ -3,9 +3,10 @@ import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Observable, catchError, concatMap, from, map, of } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
-import { AIService, AIServiceError, AIServiceParams, CommitMessage } from './ai.service.js';
+import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
+import { RequestType } from '../../utils/log.js';
 import { generateCommitMessage } from '../../utils/openai.js';
-import { DEFAULT_PROMPT_OPTIONS, PromptOptions, generatePrompt } from '../../utils/prompt.js';
+import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 import { flattenDeep } from '../../utils/utils.js';
 
 export class OpenAIService extends AIService {
@@ -20,13 +21,27 @@ export class OpenAIService extends AIService {
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
-        return fromPromise(this.generateMessage()).pipe(
+        return fromPromise(this.generateMessage('commit')).pipe(
             concatMap(messages => from(messages)),
             map(data => ({
                 name: `${this.serviceName} ${data.title}`,
                 short: data.title,
-                value: this.params.config.ignoreBody ? data.title : data.value,
-                description: this.params.config.ignoreBody ? '' : data.value,
+                value: this.params.config.includeBody ? data.value : data.title,
+                description: this.params.config.includeBody ? data.value : '',
+                isError: false,
+            })),
+            catchError(this.handleError$)
+        );
+    }
+
+    generateCodeReview$(): Observable<ReactiveListChoice> {
+        return fromPromise(this.generateMessage('review')).pipe(
+            concatMap(messages => from(messages)),
+            map(data => ({
+                name: `${this.serviceName} ${data.title}`,
+                short: data.title,
+                value: data.value,
+                description: data.value,
                 isError: false,
             })),
             catchError(this.handleError$)
@@ -61,10 +76,22 @@ export class OpenAIService extends AIService {
         };
     }
 
-    private async generateMessage(): Promise<CommitMessage[]> {
+    private async generateMessage(requestType: RequestType): Promise<AIResponse[]> {
         const diff = this.params.stagedDiff.diff;
-        const { systemPrompt, systemPromptPath, temperature, logging, locale, generate, type, maxLength, proxy, maxTokens, timeout } =
-            this.params.config;
+        const {
+            systemPrompt,
+            systemPromptPath,
+            codeReviewPromptPath,
+            temperature,
+            logging,
+            locale,
+            generate,
+            type,
+            maxLength,
+            proxy,
+            maxTokens,
+            timeout,
+        } = this.params.config;
         const promptOptions: PromptOptions = {
             ...DEFAULT_PROMPT_OPTIONS,
             locale,
@@ -73,8 +100,9 @@ export class OpenAIService extends AIService {
             generate,
             systemPrompt,
             systemPromptPath,
+            codeReviewPromptPath,
         };
-        const generatedSystemPrompt = generatePrompt(promptOptions);
+        const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
 
         const results = await generateCommitMessage(
             this.params.config.url,
@@ -88,9 +116,13 @@ export class OpenAIService extends AIService {
             this.params.config.topP,
             generatedSystemPrompt,
             logging,
+            requestType,
             proxy
         );
 
+        if (requestType === 'review') {
+            return flattenDeep(results.map(value => this.sanitizeResponse(value)));
+        }
         return flattenDeep(results.map(value => this.parseMessage(value, type, generate)));
     }
 }

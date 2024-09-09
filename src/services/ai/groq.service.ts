@@ -5,10 +5,10 @@ import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Observable, catchError, concatMap, from, map, of } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
-import { AIService, AIServiceParams, CommitMessage } from './ai.service.js';
-import { createLogResponse } from '../../utils/log.js';
+import { AIResponse, AIService, AIServiceParams } from './ai.service.js';
+import { RequestType, createLogResponse } from '../../utils/log.js';
 import { sanitizeMessage } from '../../utils/openai.js';
-import { DEFAULT_PROMPT_OPTIONS, PromptOptions, generatePrompt } from '../../utils/prompt.js';
+import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 import { flattenDeep } from '../../utils/utils.js';
 
 export class GroqService extends AIService {
@@ -26,23 +26,38 @@ export class GroqService extends AIService {
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
-        return fromPromise(this.generateMessage()).pipe(
+        return fromPromise(this.generateMessage('commit')).pipe(
             concatMap(messages => from(messages)),
             map(data => ({
                 name: `${this.serviceName} ${data.title}`,
                 short: data.title,
-                value: this.params.config.ignoreBody ? data.title : data.value,
-                description: this.params.config.ignoreBody ? '' : data.value,
+                value: this.params.config.includeBody ? data.value : data.title,
+                description: this.params.config.includeBody ? data.value : '',
                 isError: false,
             })),
             catchError(this.handleError$)
         );
     }
 
-    private async generateMessage(): Promise<CommitMessage[]> {
+    generateCodeReview$(): Observable<ReactiveListChoice> {
+        return fromPromise(this.generateMessage('review')).pipe(
+            concatMap(messages => from(messages)),
+            map(data => ({
+                name: `${this.serviceName} ${data.title}`,
+                short: data.title,
+                value: data.value,
+                description: data.value,
+                isError: false,
+            })),
+            catchError(this.handleError$)
+        );
+    }
+
+    private async generateMessage(requestType: RequestType): Promise<AIResponse[]> {
         try {
             const diff = this.params.stagedDiff.diff;
-            const { systemPrompt, systemPromptPath, logging, locale, temperature, generate, type, maxLength } = this.params.config;
+            const { systemPrompt, systemPromptPath, codeReviewPromptPath, logging, locale, temperature, generate, type, maxLength } =
+                this.params.config;
             const maxTokens = this.params.config.maxTokens;
             const promptOptions: PromptOptions = {
                 ...DEFAULT_PROMPT_OPTIONS,
@@ -52,8 +67,9 @@ export class GroqService extends AIService {
                 generate,
                 systemPrompt,
                 systemPromptPath,
+                codeReviewPromptPath,
             };
-            const generatedSystemPrompt = generatePrompt(promptOptions);
+            const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
 
             const chatCompletion = await this.groq.chat.completions.create(
                 {
@@ -81,11 +97,15 @@ export class GroqService extends AIService {
                 .filter(choice => choice.message?.content)
                 .map(choice => sanitizeMessage(choice.message!.content as string))
                 .join();
-            logging && createLogResponse('Groq', diff, generatedSystemPrompt, fullText);
+            logging && createLogResponse('Groq', diff, generatedSystemPrompt, fullText, requestType);
 
             const results = chatCompletion.choices
                 .filter(choice => choice.message?.content)
                 .map(choice => sanitizeMessage(choice.message!.content as string));
+
+            if (requestType === 'review') {
+                return flattenDeep(results.map(value => this.sanitizeResponse(value)));
+            }
             return flattenDeep(results.map(value => this.parseMessage(value, type, generate)));
         } catch (error) {
             throw error as any;

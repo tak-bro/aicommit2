@@ -5,7 +5,7 @@ import { type TiktokenModel } from '@dqbd/tiktoken';
 import createHttpsProxyAgent from 'https-proxy-agent';
 
 import { KnownError } from './error.js';
-import { createLogResponse } from './log.js';
+import { RequestType, createLogResponse } from './log.js';
 
 import type { ClientRequest, IncomingMessage } from 'http';
 import type { CreateChatCompletionRequest, CreateChatCompletionResponse } from 'openai';
@@ -138,11 +138,7 @@ const createChatCompletion = async (
     return JSON.parse(data) as CreateChatCompletionResponse;
 };
 
-export const sanitizeMessage = (message: string) =>
-    message
-        .trim()
-        .replace(/[\n\r]/g, '')
-        .replace(/(\w)\.$/, '$1');
+export const sanitizeMessage = (message: string) => message.trim();
 
 export const generateCommitMessage = async (
     url: string,
@@ -156,6 +152,7 @@ export const generateCommitMessage = async (
     topP: number,
     systemPrompt: string,
     logging: boolean,
+    requestType: RequestType,
     proxy?: string
 ) => {
     try {
@@ -179,7 +176,7 @@ export const generateCommitMessage = async (
             .filter(choice => choice.message?.content)
             .map(choice => sanitizeMessage(choice.message!.content as string))
             .join();
-        logging && createLogResponse('OPENAI', diff, systemPrompt, fullText);
+        logging && createLogResponse('OPENAI', diff, systemPrompt, fullText, requestType);
 
         return completion.choices
             .filter(choice => choice.message?.content)

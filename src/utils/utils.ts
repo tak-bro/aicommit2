@@ -52,3 +52,10 @@ export const removeTextAfterPhrase = (text: string, phrase: string, includePhras
 export const flattenDeep = <T>(arr: any[]): T[] => {
     return arr.reduce((acc: T[], val: any) => (Array.isArray(val) ? acc.concat(flattenDeep(val)) : acc.concat(val)), []);
 };
+
+export const getFirstWordsFrom = (input: string, wordCount: number = 5): string => {
+    const sanitizedInput = input.replace(/[\n\r]/g, '');
+    const words = sanitizedInput.split(' ');
+    const firstFiveWords = words.slice(0, wordCount);
+    return firstFiveWords.join(' ');
+};
