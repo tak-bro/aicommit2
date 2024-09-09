@@ -51,6 +51,10 @@ export class ConsoleManager {
         console.log(`\n${chalk.bold.red('✖')} ${chalk.red(`${message}`)}`);
     }
 
+    printBlankLine() {
+        console.log(`\n`);
+    }
+
     moveCursorUp() {
         const rl = readline.createInterface({
             input: process.stdin,

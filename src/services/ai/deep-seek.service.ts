@@ -61,7 +61,7 @@ export class DeepSeekService extends AIService {
     }
 
     generateCodeReview$(): Observable<ReactiveListChoice> {
-        return fromPromise(this.generateMessage('commit')).pipe(
+        return fromPromise(this.generateMessage('review')).pipe(
             concatMap(messages => from(messages)),
             map(data => ({
                 name: `${this.serviceName} ${data.title}`,

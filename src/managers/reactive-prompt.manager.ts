@@ -5,10 +5,17 @@ import { BehaviorSubject, ReplaySubject } from 'rxjs';
 
 import { sortByDisabled } from '../utils/utils.js';
 
-const defaultLoader = {
+export const commitMsgLoader = {
     isLoading: false,
     startOption: {
         text: 'AI is analyzing your changes',
+    },
+};
+
+export const codeReviewLoader = {
+    isLoading: false,
+    startOption: {
+        text: 'AI is performing a code review',
     },
 };
 
@@ -26,16 +33,22 @@ export const DEFAULT_INQUIRER_OPTIONS = {
     showDescription: true,
     pickKey: 'short',
     isDescriptionDim: true,
+    stopMessage: 'Changes analyzed',
 };
 
 export class ReactivePromptManager {
     private choices$: BehaviorSubject<ChoiceItem[]> = new BehaviorSubject<ChoiceItem[]>([]);
-    private loader$: BehaviorSubject<ReactiveListLoader> = new BehaviorSubject<ReactiveListLoader>(defaultLoader);
+    private loader$: BehaviorSubject<ReactiveListLoader>;
     private destroyed$: ReplaySubject<boolean> = new ReplaySubject(1);
+    private stopMessage = 'Changes analyzed';
 
-    constructor() {}
+    constructor(loader: ReactiveListLoader) {
+        this.loader$ = new BehaviorSubject<ReactiveListLoader>(loader);
+    }
 
     initPrompt(options: any = DEFAULT_INQUIRER_OPTIONS) {
+        this.stopMessage = options.stopMessage;
+
         inquirer.registerPrompt('reactiveListPrompt', ReactiveListPrompt);
         return inquirer.prompt({
             ...options,
@@ -90,7 +103,7 @@ export class ReactivePromptManager {
     }
 
     private stopLoaderOnSuccess() {
-        this.loader$.next({ isLoading: false, message: 'Changes analyzed' });
+        this.loader$.next({ isLoading: false, message: this.stopMessage });
     }
 
     private logEmptyCommitMessage() {

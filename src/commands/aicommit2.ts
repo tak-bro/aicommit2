@@ -8,24 +8,18 @@ import ora from 'ora';
 
 import { AIRequestManager } from '../managers/ai-request.manager.js';
 import { ConsoleManager } from '../managers/console.manager.js';
-import { DEFAULT_INQUIRER_OPTIONS, ReactivePromptManager, emptyCodeReview } from '../managers/reactive-prompt.manager.js';
+import {
+    DEFAULT_INQUIRER_OPTIONS,
+    ReactivePromptManager,
+    codeReviewLoader,
+    commitMsgLoader,
+    emptyCodeReview,
+} from '../managers/reactive-prompt.manager.js';
 import { ModelName, RawConfig, ValidConfig, getConfig, modelNames } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
 import { assertGitRepo, getStagedDiff } from '../utils/git.js';
 
 const consoleManager = new ConsoleManager();
-
-interface AICommit2Options {
-    locale?: string;
-    generate?: number;
-    excludeFiles: string[];
-    stageAll: boolean;
-    commitType?: string;
-    confirm: boolean;
-    useClipboard: boolean;
-    prompt?: string;
-    rawArgv: string[];
-}
 
 export default async (
     locale: string | undefined,
@@ -141,13 +135,14 @@ function getAvailableAIs(config: ValidConfig): ModelName[] {
 }
 
 async function handleCodeReview(aiRequestManager: AIRequestManager, availableAIs: ModelName[]) {
-    const codeReviewPromptManager = new ReactivePromptManager();
+    const codeReviewPromptManager = new ReactivePromptManager(codeReviewLoader);
     const codeReviewInquirer = codeReviewPromptManager.initPrompt({
         ...DEFAULT_INQUIRER_OPTIONS,
         name: 'codeReviewPrompt',
-        message: 'Pick a review to copy: ',
+        message: 'Please check code reviews: ',
         emptyMessage: `⚠ ${emptyCodeReview}`,
         isDescriptionDim: false,
+        stopMessage: 'Code review completed',
     });
 
     codeReviewPromptManager.startLoader();
@@ -166,6 +161,7 @@ async function handleCodeReview(aiRequestManager: AIRequestManager, availableAIs
     }
     codeReviewSubscription.unsubscribe();
     codeReviewPromptManager.completeSubject();
+    consoleManager.moveCursorUp(); // NOTE: reactiveListPrompt has 2 blank lines
 
     const { continuePrompt } = await inquirer.prompt([
         {
@@ -183,7 +179,7 @@ async function handleCodeReview(aiRequestManager: AIRequestManager, availableAIs
 }
 
 async function handleCommitMessage(aiRequestManager: AIRequestManager, availableAIs: ModelName[]) {
-    const commitMsgPromptManager = new ReactivePromptManager();
+    const commitMsgPromptManager = new ReactivePromptManager(commitMsgLoader);
     const commitMsgInquirer = commitMsgPromptManager.initPrompt();
 
     commitMsgPromptManager.startLoader();
