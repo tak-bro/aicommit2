@@ -173,6 +173,18 @@ const generalConfigParsers = {
         parseAssert('topP', parsed <= 1.0, 'Must be less than or equal to 1');
         return parsed;
     },
+    codeReview(codeReview?: string | boolean) {
+        if (typeof codeReview === 'boolean') {
+            return codeReview;
+        }
+
+        if (codeReview === undefined || codeReview === null) {
+            return false;
+        }
+
+        parseAssert('codeReview', /^(?:true|false)$/.test(codeReview), 'Must be a boolean(true or false)');
+        return codeReview === 'true';
+    },
 } as const;
 
 const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>> = {

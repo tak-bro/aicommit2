@@ -83,20 +83,25 @@ export default async (
         }
 
         const aiRequestManager = new AIRequestManager(config, staged);
-        const reactivePromptManager = new ReactivePromptManager();
-        const selectPrompt = reactivePromptManager.initPrompt();
+        if (config.codeReview) {
+            console.log('123');
+            throw new KnownError('Please set at least one API key via the `aicommit2 config set` command');
+        }
 
-        reactivePromptManager.startLoader();
+        const commitMsgPromptManager = new ReactivePromptManager();
+        const selectPrompt = commitMsgPromptManager.initPrompt();
+
+        commitMsgPromptManager.startLoader();
         const subscription = aiRequestManager.createAIRequests$(availableAIs).subscribe(
-            (choice: ReactiveListChoice) => reactivePromptManager.refreshChoices(choice),
+            (choice: ReactiveListChoice) => commitMsgPromptManager.refreshChoices(choice),
             () => {
                 /* empty */
             },
-            () => reactivePromptManager.checkErrorOnChoices()
+            () => commitMsgPromptManager.checkErrorOnChoices()
         );
         const answer = await selectPrompt;
         subscription.unsubscribe();
-        reactivePromptManager.completeSubject();
+        commitMsgPromptManager.completeSubject();
 
         // NOTE: reactiveListPrompt has 2 blank lines
         consoleManager.moveCursorUp();

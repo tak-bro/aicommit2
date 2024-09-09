@@ -14,6 +14,18 @@ const defaultLoader = {
 
 const emptyCommitMessage = `No commit messages were generated`;
 
+export const DEFAULT_INQUIRER_OPTIONS = {
+    type: 'reactiveListPrompt',
+    name: 'aicommit2Prompt',
+    message: 'Pick a commit message to use: ',
+    emptyMessage: `⚠ ${emptyCommitMessage}`,
+    loop: false,
+    descPageSize: 15,
+    showDescription: true,
+    pickKey: 'short',
+    isDescriptionDim: true,
+};
+
 export class ReactivePromptManager {
     private choices$: BehaviorSubject<ChoiceItem[]> = new BehaviorSubject<ChoiceItem[]>([]);
     private loader$: BehaviorSubject<ReactiveListLoader> = new BehaviorSubject<ReactiveListLoader>(defaultLoader);
@@ -21,20 +33,12 @@ export class ReactivePromptManager {
 
     constructor() {}
 
-    initPrompt(showDescription = true) {
+    initPrompt(options: any = DEFAULT_INQUIRER_OPTIONS) {
         inquirer.registerPrompt('reactiveListPrompt', ReactiveListPrompt);
         return inquirer.prompt({
-            type: 'reactiveListPrompt',
-            name: 'aicommit2Prompt',
-            message: 'Pick a commit message to use: ',
-            emptyMessage: `⚠ ${emptyCommitMessage}`,
-            loop: false,
-            showDescription,
-            descPageSize: 15,
+            ...options,
             choices$: this.choices$,
             loader$: this.loader$,
-            // @ts-ignore ignore
-            pickKey: 'short',
         });
     }
 

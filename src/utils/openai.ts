@@ -138,11 +138,7 @@ const createChatCompletion = async (
     return JSON.parse(data) as CreateChatCompletionResponse;
 };
 
-export const sanitizeMessage = (message: string) =>
-    message
-        .trim()
-        .replace(/[\n\r]/g, '')
-        .replace(/(\w)\.$/, '$1');
+export const sanitizeMessage = (message: string) => message.trim();
 
 export const generateCommitMessage = async (
     url: string,
