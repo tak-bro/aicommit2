@@ -100,7 +100,7 @@ export default () =>
             instructions += `\n${messages.map(message => `# ${message}`).join('\n')}`;
         } else {
             if (supportsComments) {
-                instructions += '# Edit the message below and commit:\n';
+                instructions += '# Edit the message below and commit:';
             }
             instructions += `\n${messages[0]}\n`;
         }
