@@ -1,3 +1,10 @@
+## [2.1.1](https://github.com/tak-bro/aicommit2/compare/v2.1.0...v2.1.1) (2024-09-10)
+
+
+### Bug Fixes
+
+* **prepare-commit-msg-hook:** remove leading blank line ([60c76e4](https://github.com/tak-bro/aicommit2/commit/60c76e4cba37341caf7e56ef93fdbea1cc95be6b))
+
 # [2.1.0](https://github.com/tak-bro/aicommit2/compare/v2.0.9...v2.1.0) (2024-09-09)
 
 
