@@ -12,8 +12,8 @@ dependencies:
     specifier: ^1.0.16
     version: 1.0.16
   '@google/generative-ai':
-    specifier: ^0.17.1
-    version: 0.17.1
+    specifier: ^0.19.0
+    version: 0.19.0
   '@inquirer/prompts':
     specifier: ^3.0.0
     version: 3.3.2
@@ -1064,8 +1064,8 @@ packages:
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dev: true
 
-  /@google/generative-ai@0.17.1:
-    resolution: {integrity: sha512-TgWz02c5l2XJlEDys81UVat5+Qg9xqmYah7tQt6xlsBwFvzIFPz64aZFGd1av2sxT22NsssqLATjNsusAIJICA==}
+  /@google/generative-ai@0.19.0:
+    resolution: {integrity: sha512-iGf/62v3sTwtEJGJY6S5m7PfkglU8hi1URaxqIjiRg1OItV27xyc4aVeR0og8cDkZFkUlGZKv+23bJtT1QWFzQ==}
     engines: {node: '>=18.0.0'}
     dev: false
 
