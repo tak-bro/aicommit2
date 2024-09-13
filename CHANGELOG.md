@@ -1,3 +1,11 @@
+## [2.1.2](https://github.com/tak-bro/aicommit2/compare/v2.1.1...v2.1.2) (2024-09-13)
+
+
+### Features
+
+* update @google/generative-ai to v0.19.0 ([d3428e5](https://github.com/tak-bro/aicommit2/commit/d3428e5315e276e17264eac4c03abb829f7ba4f2))
+* update groq-sdk to 0.7.0 ([025441e](https://github.com/tak-bro/aicommit2/commit/025441efb1d0e30f06c8d1b04b8e10378857fe0c))
+
 ## [2.1.1](https://github.com/tak-bro/aicommit2/compare/v2.1.0...v2.1.1) (2024-09-10)
 
 
