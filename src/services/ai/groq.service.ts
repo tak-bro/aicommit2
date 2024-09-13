@@ -1,15 +1,12 @@
 import chalk from 'chalk';
 import Groq from 'groq-sdk';
-import { GroqError } from 'groq-sdk/error';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Observable, catchError, concatMap, from, map, of } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIResponse, AIService, AIServiceParams } from './ai.service.js';
 import { RequestType, createLogResponse } from '../../utils/log.js';
-import { sanitizeMessage } from '../../utils/openai.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
-import { flattenDeep } from '../../utils/utils.js';
 
 export class GroqService extends AIService {
     private groq: Groq;
@@ -71,7 +68,7 @@ export class GroqService extends AIService {
             };
             const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
 
-            const chatCompletion = await this.groq.chat.completions.create(
+            const chatCompletion: Groq.Chat.ChatCompletion = await this.groq.chat.completions.create(
                 {
                     messages: [
                         {
@@ -93,35 +90,25 @@ export class GroqService extends AIService {
                 }
             );
 
-            const fullText = chatCompletion.choices
-                .filter(choice => choice.message?.content)
-                .map(choice => sanitizeMessage(choice.message!.content as string))
-                .join();
-            logging && createLogResponse('Groq', diff, generatedSystemPrompt, fullText, requestType);
-
-            const results = chatCompletion.choices
-                .filter(choice => choice.message?.content)
-                .map(choice => sanitizeMessage(choice.message!.content as string));
-
+            const result = chatCompletion.choices[0].message.content || '';
+            logging && createLogResponse('Groq', diff, generatedSystemPrompt, result, requestType);
             if (requestType === 'review') {
-                return flattenDeep(results.map(value => this.sanitizeResponse(value)));
+                return this.sanitizeResponse(result);
             }
-            return flattenDeep(results.map(value => this.parseMessage(value, type, generate)));
+            return this.parseMessage(result, type, generate);
         } catch (error) {
             throw error as any;
         }
     }
 
-    handleError$ = (error: GroqError) => {
+    handleError$ = (error: Error) => {
+        let status = 'N/A';
         let simpleMessage = 'An error occurred';
-        const regex = /"message":\s*"([^"]*)"/;
-        const match = error.message.match(regex);
-        if (match && match[1]) {
-            simpleMessage = match[1];
+        if (error instanceof Groq.APIError) {
+            status = `${error.status}`;
+            simpleMessage = error.name;
         }
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-expect-error
-        const message = `${error['status']} ${simpleMessage}`;
+        const message = `${status} ${simpleMessage}`;
         return of({
             name: `${this.errorPrefix} ${message}`,
             value: simpleMessage,
