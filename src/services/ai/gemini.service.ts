@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI, HarmBlockThreshold, HarmCategory } from '@google/generative-ai';
+import { GenerationConfig, GoogleGenerativeAI, HarmBlockThreshold, HarmCategory } from '@google/generative-ai';
 import chalk from 'chalk';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Observable, catchError, concatMap, from, map, of } from 'rxjs';
@@ -67,15 +67,50 @@ export class GeminiService extends AIService {
                 codeReviewPromptPath,
             };
             const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
+            const generationConfig: GenerationConfig = {
+                maxOutputTokens: maxTokens,
+                temperature: this.params.config.temperature,
+                topP: this.params.config.topP,
+            };
+
+            // TODO: add below after test
+            // if (requestType === 'commit') {
+            //     generationConfig = {
+            //         ...generationConfig,
+            //         responseSchema: {
+            //             type: SchemaType.ARRAY,
+            //             items: {
+            //                 type: SchemaType.OBJECT,
+            //                 properties: {
+            //                     subject: {
+            //                         type: SchemaType.STRING,
+            //                         nullable: false,
+            //                         format: "enum",
+            //                         enum: ["no sleeves", "short", "3/4", "long"]
+            //                     },
+            //                     body: {
+            //                         type: SchemaType.STRING,
+            //                         nullable: !this.params.config.includeBody,
+            //                         format: "enum",
+            //                         enum: ["no sleeves", "short", "3/4", "long"]
+            //                     },
+            //                     footer: {
+            //                         type: SchemaType.STRING,
+            //                         nullable: true,
+            //                         format: "enum",
+            //                         enum: ["no sleeves", "short", "3/4", "long"]
+            //                     }
+            //                 },
+            //                 required: ["subject"],
+            //             },
+            //         }
+            //     }
+            // }
 
             const model = this.genAI.getGenerativeModel({
                 model: this.params.config.model,
                 systemInstruction: generatedSystemPrompt,
-                generationConfig: {
-                    maxOutputTokens: maxTokens,
-                    temperature: this.params.config.temperature,
-                    topP: this.params.config.topP,
-                },
+                generationConfig,
                 safetySettings: [
                     {
                         category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
@@ -95,6 +130,7 @@ export class GeminiService extends AIService {
                     },
                 ],
             });
+
             const result = await model.generateContent(`Here is the diff: ${diff}`);
             const response = result.response;
             const completion = response.text();
