@@ -132,6 +132,7 @@ function getAvailableAIs(config: ValidConfig, requestType: RequestType): ModelNa
     return Object.entries(config)
         .filter(([key]) => modelNames.includes(key as ModelName))
         .map(([key, value]) => [key, value] as [ModelName, RawConfig])
+        .filter(([key, value]) => !value.disabled)
         .filter(([key, value]) => {
             switch (requestType) {
                 case 'commit':
