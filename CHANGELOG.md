@@ -1,3 +1,10 @@
+## [2.1.4](https://github.com/tak-bro/aicommit2/compare/v2.1.3...v2.1.4) (2024-09-19)
+
+
+### Bug Fixes
+
+* consider disabled models on msg-hook ([c89ece3](https://github.com/tak-bro/aicommit2/commit/c89ece340aacc461dc1e0a5daa8c81bbffae8653))
+
 ## [2.1.3](https://github.com/tak-bro/aicommit2/compare/v2.1.2...v2.1.3) (2024-09-19)
 
 
