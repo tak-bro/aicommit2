@@ -232,8 +232,9 @@ Please check the documentation for each specific model to confirm which settings
 | `temperature`          | Model's creativity (0.0 - 2.0)                                      | 0.7          |
 | `maxTokens`            | Maximum number of tokens to generate                                | 1024         |
 | `topP`                 | Nucleus sampling                                                    | 0.9          |
-| `codeReview`           | whether to include an automated code review in the process          | false        |
+| `codeReview`           | Whether to include an automated code review in the process          | false        |
 | `codeReviewPromptPath` | Path to code review prompt file                                     | -            |
+| `disabled`             | Whether a specific model is enabled or disabled                     | false        |
 
 > 👉 **Tip:** To set the General Settings for each model, use the following command.
 > ```shell
@@ -389,6 +390,19 @@ Nucleus sampling, where the model considers the results of the tokens with top_p
 aicommit2 config set topP=0.2
 ```
 
+##### disabled
+
+Default: `false`
+
+This option determines whether a specific model is enabled or disabled. If you want to disable a particular model, you can set this option to `true`.
+
+To disable a model, use the following commands:
+
+```sh
+aicommit2 config set GEMINI.disabled="true"
+aicommit2 config set GROQ.disabled="true"
+```
+
 ##### codeReview
 
 Default: `false`
@@ -409,7 +423,7 @@ aicommit2 config set codeReview=true
 - This feature performs a code review before generating commit messages.
 - Using this feature will significantly increase the overall processing time.
 - It may significantly impact performance and cost.
-- **The code review process consumes a large number of tokens, due to the lack of caching for git diff.**
+- **The code review process consumes a large number of tokens.**
 
 ##### codeReviewPromptPath
 - Allow users to specify a custom file path for code review
