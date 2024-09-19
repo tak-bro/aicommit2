@@ -1,3 +1,10 @@
+## [2.1.3](https://github.com/tak-bro/aicommit2/compare/v2.1.2...v2.1.3) (2024-09-19)
+
+
+### Features
+
+* add disabled option for models ([f56f3c0](https://github.com/tak-bro/aicommit2/commit/f56f3c0c6783098c5719916dc0cc4e7c4dc81d5d))
+
 ## [2.1.2](https://github.com/tak-bro/aicommit2/compare/v2.1.1...v2.1.2) (2024-09-13)
 
 
