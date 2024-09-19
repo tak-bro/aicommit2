@@ -43,6 +43,7 @@ export default () =>
         const availableAIs: ModelName[] = Object.entries(config)
             .filter(([key]) => modelNames.includes(key as ModelName))
             .map(([key, value]) => [key, value] as [ModelName, RawConfig])
+            .filter(([key, value]) => !value.disabled)
             .filter(([key, value]) => {
                 if (key === 'OLLAMA') {
                     return !!value && !!value.model && (value.model as string[]).length > 0;
