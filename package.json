@@ -73,6 +73,7 @@
         "@pacote/xxhash": "^0.3.2",
         "axios": "^1.6.8",
         "chalk": "^5.3.0",
+        "chokidar": "^4.0.0",
         "cohere-ai": "^7.12.1",
         "copy-paste": "^1.5.3",
         "figlet": "^1.7.0",
