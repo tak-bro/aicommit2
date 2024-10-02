@@ -2,7 +2,7 @@ import { execa } from 'execa';
 
 import { KnownError } from './error.js';
 
-export interface StagedDiff {
+export interface GitDiff {
     files: string[];
     diff: string;
 }
@@ -29,7 +29,7 @@ const filesToExclude = [
     '*.png',
 ].map(excludeFromDiff);
 
-export const getStagedDiff = async (excludeFiles?: string[], exclude?: string[]): Promise<StagedDiff | null> => {
+export const getStagedDiff = async (excludeFiles?: string[], exclude?: string[]): Promise<GitDiff | null> => {
     const diffCached = ['diff', '--cached', '--diff-algorithm=minimal'];
     const { stdout: files } = await execa('git', [
         ...diffCached,
@@ -57,3 +57,34 @@ export const getStagedDiff = async (excludeFiles?: string[], exclude?: string[])
 
 export const getDetectedMessage = (files: string[]) =>
     `Detected ${files.length.toLocaleString()} staged file${files.length > 1 ? 's' : ''}`;
+
+export const getCommitDiff = async (commitHash: string, excludeFiles?: string[], exclude?: string[]): Promise<GitDiff | null> => {
+    const diffCommand = ['diff-tree', '-r', '--no-commit-id', '--name-only', commitHash];
+    const { stdout: files } = await execa('git', [
+        ...diffCommand,
+        ...filesToExclude,
+        ...(excludeFiles ? excludeFiles.map(excludeFromDiff) : []),
+        ...(exclude ? exclude.map(excludeFromDiff) : []),
+    ]);
+
+    if (!files) {
+        return null;
+    }
+
+    const { stdout: diff } = await execa('git', [
+        'show',
+        commitHash,
+        '--',
+        ...filesToExclude,
+        ...(excludeFiles ? excludeFiles.map(excludeFromDiff) : []),
+        ...(exclude ? exclude.map(excludeFromDiff) : []),
+    ]);
+
+    return {
+        files: files.split('\n').filter(Boolean),
+        diff,
+    };
+};
+
+export const getDetectedCommit = (files: string[]) =>
+    `Detected ${files.length.toLocaleString()} changed file${files.length > 1 ? 's' : ''}`;

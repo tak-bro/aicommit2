@@ -41,6 +41,7 @@ export class ReactivePromptManager {
     private loader$: BehaviorSubject<ReactiveListLoader>;
     private destroyed$: ReplaySubject<boolean> = new ReplaySubject(1);
     private stopMessage = 'Changes analyzed';
+    private inquirerInstance: any = null;
 
     constructor(loader: ReactiveListLoader) {
         this.loader$ = new BehaviorSubject<ReactiveListLoader>(loader);
@@ -50,11 +51,13 @@ export class ReactivePromptManager {
         this.stopMessage = options.stopMessage;
 
         inquirer.registerPrompt('reactiveListPrompt', ReactiveListPrompt);
-        return inquirer.prompt({
+        this.inquirerInstance = inquirer.prompt({
             ...options,
             choices$: this.choices$,
             loader$: this.loader$,
         });
+
+        return this.inquirerInstance;
     }
 
     startLoader() {
