@@ -7,7 +7,6 @@ import { ConsoleManager } from '../managers/console.manager.js';
 import { KnownError, handleCliError } from '../utils/error.js';
 import { logPath } from '../utils/log.js';
 
-
 export default command(
     {
         name: 'log',
@@ -26,7 +25,7 @@ export default command(
             throw new KnownError(`Invalid mode: ${removeAll}`);
         })().catch(error => {
             const commandLineManager = new ConsoleManager();
-            commandLineManager.printErrorMessage(error.message);
+            commandLineManager.printError(error.message);
             handleCliError(error);
             process.exit(1);
         });
