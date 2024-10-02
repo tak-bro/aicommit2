@@ -42,7 +42,7 @@ export default command(
             throw new KnownError(`Invalid mode: ${mode}`);
         })().catch(error => {
             const commandLineManager = new ConsoleManager();
-            commandLineManager.printErrorMessage(error.message);
+            commandLineManager.printError(error.message);
             handleCliError(error);
             process.exit(1);
         });

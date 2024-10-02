@@ -112,7 +112,7 @@ export default () =>
         consoleManager.printSavedCommitMessage();
     })().catch(error => {
         const commandLineManager = new ConsoleManager();
-        commandLineManager.printErrorMessage(error.message);
+        commandLineManager.printError(error.message);
         handleCliError(error);
         process.exit(1);
     });

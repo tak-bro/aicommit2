@@ -1,7 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 
-import type { CommitType } from './config.js';
+import { CommitType, ValidConfig } from './config.js';
+import { KnownError } from './error.js';
 
 export interface PromptOptions {
     locale: string;
@@ -282,5 +283,23 @@ Please structure your response with appropriate Markdown headings, code blocks, 
         return `${parseTemplate(codeReviewPromptTemplate, promptOptions)}`;
     } catch (error) {
         return defaultPrompt;
+    }
+};
+
+export const validateSystemPrompt = async (config: ValidConfig) => {
+    if (config.systemPromptPath) {
+        try {
+            fs.readFileSync(path.resolve(config.systemPromptPath), 'utf-8');
+        } catch (error) {
+            throw new KnownError(`Error reading system prompt file: ${config.systemPromptPath}`);
+        }
+    }
+
+    if (config.codeReview && config.codeReviewPromptPath) {
+        try {
+            fs.readFileSync(path.resolve(config.codeReviewPromptPath), 'utf-8');
+        } catch (error) {
+            throw new KnownError(`Error reading code review prompt file: ${config.codeReviewPromptPath}`);
+        }
     }
 };

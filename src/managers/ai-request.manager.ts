@@ -15,12 +15,12 @@ import { OllamaService } from '../services/ai/ollama.service.js';
 import { OpenAIService } from '../services/ai/openai.service.js';
 import { PerplexityService } from '../services/ai/perplexity.service.js';
 import { ModelName, ValidConfig } from '../utils/config.js';
-import { StagedDiff } from '../utils/git.js';
+import { GitDiff } from '../utils/git.js';
 
 export class AIRequestManager {
     constructor(
         private readonly config: ValidConfig,
-        private readonly stagedDiff: StagedDiff
+        private readonly stagedDiff: GitDiff
     ) {}
 
     createCommitMsgRequests$(modelNames: ModelName[]): Observable<ReactiveListChoice> {

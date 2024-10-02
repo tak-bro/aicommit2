@@ -2,7 +2,7 @@ import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Observable, of } from 'rxjs';
 
 import { CommitType, ModelConfig, ModelName } from '../../utils/config.js';
-import { StagedDiff } from '../../utils/git.js';
+import { GitDiff } from '../../utils/git.js';
 import { getFirstWordsFrom } from '../../utils/utils.js';
 
 export interface AIResponse {
@@ -18,7 +18,7 @@ export interface RawCommitMessage {
 
 export interface AIServiceParams {
     config: ModelConfig<ModelName>;
-    stagedDiff: StagedDiff;
+    stagedDiff: GitDiff;
     keyName: ModelName;
 }
 
