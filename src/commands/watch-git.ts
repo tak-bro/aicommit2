@@ -66,11 +66,11 @@ export const watchGit = async (
 };
 export default watchGit;
 
-function initLogFile() {
+const initLogFile = () => {
     fs.writeFileSync(LOG_PATH, '', { flag: 'w' });
-}
+};
 
-function getAvailableAIs(config: ValidConfig): ModelName[] {
+const getAvailableAIs = (config: ValidConfig): ModelName[] => {
     return Object.entries(config)
         .filter(([key]) => modelNames.includes(key as ModelName))
         .map(([key, value]) => [key, value] as [ModelName, RawConfig])
@@ -87,18 +87,18 @@ function getAvailableAIs(config: ValidConfig): ModelName[] {
             return !!value.key && value.key.length > 0 && codeReview;
         })
         .map(([key]) => key);
-}
+};
 
-function setupGitHook() {
+const setupGitHook = () => {
     fs.writeFileSync(HOOK_PATH, hookScript, { mode: 0o755 });
     consoleManager.printSetupGitEvent('post-commit');
-}
+};
 
-function clearTerminal() {
+const clearTerminal = () => {
     process.stdout.write('\x1Bc');
-}
+};
 
-async function handleCommitEvent(config: ValidConfig, commitHash: string) {
+const handleCommitEvent = async (config: ValidConfig, commitHash: string) => {
     try {
         const diffInfo = await getCommitDiff(commitHash);
         if (!diffInfo) {
@@ -161,10 +161,9 @@ async function handleCommitEvent(config: ValidConfig, commitHash: string) {
     } catch (error) {
         consoleManager.printError(`Error processing commit ${commitHash}: ${error.message}`);
     }
-}
+};
 
-// 로그 파일 감시 및 처리
-async function watchCommitLog(config: ValidConfig) {
+const watchCommitLog = async (config: ValidConfig) => {
     const watcher = chokidar.watch(LOG_PATH, { persistent: true });
 
     watcher.on('change', async () => {
@@ -196,4 +195,4 @@ async function watchCommitLog(config: ValidConfig) {
         consoleManager.printError(`Watcher error: ${error.message}`);
         setTimeout(() => watchCommitLog(config), 1000);
     });
-}
+};
