@@ -98,10 +98,8 @@ function clearTerminal() {
     process.stdout.write('\x1Bc');
 }
 
-// Commit 이벤트 처리 함수
 async function handleCommitEvent(config: ValidConfig, commitHash: string) {
     try {
-        // 이전 세션 강제 종료
         const diffInfo = await getCommitDiff(commitHash);
         if (!diffInfo) {
             consoleManager.printWarning('No changes found in this commit');
@@ -118,13 +116,10 @@ async function handleCommitEvent(config: ValidConfig, commitHash: string) {
 
         const aiRequestManager = new AIRequestManager(config, diffInfo);
         if (currentCodeReviewPromptManager) {
-            // clearTerminal();
-            // consoleManager.moveCursorDown(); // NOTE: reactiveListPrompt has 2 blank lines
             currentCodeReviewPromptManager.clearLoader();
             currentCodeReviewPromptManager.completeSubject();
             currentCodeReviewPromptManager.closeInquirerInstance();
             currentCodeReviewSubscription?.unsubscribe();
-            // consoleManager.moveCursorUp(); // NOTE: reactiveListPrompt has 2 blank lines
         }
 
         currentCodeReviewPromptManager = new ReactivePromptManager(codeReviewLoader);
@@ -159,25 +154,12 @@ async function handleCommitEvent(config: ValidConfig, commitHash: string) {
                 currentCodeReviewPromptManager.closeInquirerInstance();
                 currentCodeReviewSubscription?.unsubscribe();
                 currentCodeReviewPromptManager = null;
-                // consoleManager.moveCursorUp(); // NOTE: reactiveListPrompt has 2 blank lines
-                // consoleManager.moveCursorDown(); // NOTE: reactiveListPrompt has 2 blank lines
             }
             clearTerminal();
             consoleManager.showLoader('Watching for new Git commits...');
         });
     } catch (error) {
         consoleManager.printError(`Error processing commit ${commitHash}: ${error.message}`);
-    } finally {
-        // // 세션 정리
-        // if (currentCodeReviewSubscription) {
-        //     currentCodeReviewSubscription.unsubscribe();
-        //     currentCodeReviewSubscription = null;
-        // }
-        // if (currentCodeReviewPromptManager) {
-        //     currentCodeReviewPromptManager.completeSubject();
-        //     currentCodeReviewPromptManager = null;
-        // }
-        // consoleManager.moveCursorUp(); // NOTE: reactiveListPrompt has 2 blank lines
     }
 }
 
@@ -196,7 +178,6 @@ async function watchCommitLog(config: ValidConfig) {
                     consoleManager.printWarning('Empty commit hash detected, skipping...');
                     continue;
                 }
-                // consoleManager.stopLoader();
                 clearTerminal();
                 await handleCommitEvent(config, hash.trim());
             }
@@ -208,13 +189,11 @@ async function watchCommitLog(config: ValidConfig) {
             } catch (truncateError) {
                 consoleManager.printError(`Error truncating log file: ${truncateError.message}`);
             }
-            // consoleManager.showLoader('Watching for new Git commits...');
         }
     });
 
     watcher.on('error', error => {
         consoleManager.printError(`Watcher error: ${error.message}`);
-        // 워치 에러 발생 시 3초 후 재시작
-        setTimeout(() => watchCommitLog(config), 0);
+        setTimeout(() => watchCommitLog(config), 1000);
     });
 }
