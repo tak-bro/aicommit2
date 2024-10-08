@@ -3,7 +3,7 @@ import path from 'path';
 
 import chokidar from 'chokidar';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
-import { Subject, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 
 import { AIRequestManager } from '../managers/ai-request.manager.js';
 import { ConsoleManager } from '../managers/console.manager.js';
@@ -29,7 +29,6 @@ echo "$commit_hash: $commit_message" >> ${LOG_PATH}
 
 let currentCodeReviewSubscription: Subscription | null = null;
 let currentCodeReviewPromptManager: ReactivePromptManager | null = null;
-const autoSelectTrigger: Subject<void> | null = null;
 
 export const watchGit = async (
     locale: string | undefined,
@@ -109,13 +108,24 @@ async function handleCommitEvent(config: ValidConfig, commitHash: string) {
             return;
         }
 
-        consoleManager.printStagedFiles(diffInfo);
         const availableAIs = getAvailableAIs(config);
         if (availableAIs.length === 0) {
             consoleManager.printError('Please set at least one API key via the `aicommit2 config set` command');
             return;
         }
+        consoleManager.stopLoader();
+        consoleManager.printStagedFiles(diffInfo);
+
         const aiRequestManager = new AIRequestManager(config, diffInfo);
+        if (currentCodeReviewPromptManager) {
+            // clearTerminal();
+            // consoleManager.moveCursorDown(); // NOTE: reactiveListPrompt has 2 blank lines
+            currentCodeReviewPromptManager.clearLoader();
+            currentCodeReviewPromptManager.completeSubject();
+            currentCodeReviewPromptManager.closeInquirerInstance();
+            currentCodeReviewSubscription?.unsubscribe();
+            // consoleManager.moveCursorUp(); // NOTE: reactiveListPrompt has 2 blank lines
+        }
 
         currentCodeReviewPromptManager = new ReactivePromptManager(codeReviewLoader);
         const codeReviewInquirer = currentCodeReviewPromptManager.initPrompt({
@@ -126,10 +136,9 @@ async function handleCommitEvent(config: ValidConfig, commitHash: string) {
             isDescriptionDim: false,
             stopMessage: 'Code review completed',
             descPageSize: 20,
-            autoSelect: true, // 자동 선택 활성화
         });
 
-        // currentCodeReviewPromptManager.startLoader();
+        currentCodeReviewPromptManager.startLoader();
         currentCodeReviewSubscription = aiRequestManager.createCodeReviewRequests$(availableAIs).subscribe(
             (choice: ReactiveListChoice) => {
                 currentCodeReviewPromptManager?.refreshChoices(choice);
@@ -139,24 +148,23 @@ async function handleCommitEvent(config: ValidConfig, commitHash: string) {
             },
             () => {
                 currentCodeReviewPromptManager?.checkErrorOnChoices();
-                // currentCodeReviewPromptManager?.forceAutoSelect();
             }
         );
 
-        // codeReviewInquirer.then((codeReviewInquirerResult: { codeReviewPrompt: { value: any; }; }) => {
-        //     const selectedCodeReview = codeReviewInquirerResult.codeReviewPrompt?.value;
-        //     // 선택된 코드 리뷰에 대한 처리
-        //     if (selectedCodeReview) {
-        //         console.log('selected')
-        //     }
-        // })
-        const codeReviewInquirerResult = await codeReviewInquirer;
-        const selectedCodeReview = codeReviewInquirerResult.codeReviewPrompt?.value;
-
-        // 선택된 코드 리뷰에 대한 처리
-        if (selectedCodeReview) {
-            console.log('selected');
-        }
+        codeReviewInquirer.then((codeReviewInquirerResult: { codeReviewPrompt: { value: any } }) => {
+            const selectedCodeReview = codeReviewInquirerResult.codeReviewPrompt?.value;
+            if (currentCodeReviewPromptManager) {
+                currentCodeReviewPromptManager.clearLoader();
+                currentCodeReviewPromptManager.completeSubject();
+                currentCodeReviewPromptManager.closeInquirerInstance();
+                currentCodeReviewSubscription?.unsubscribe();
+                currentCodeReviewPromptManager = null;
+                // consoleManager.moveCursorUp(); // NOTE: reactiveListPrompt has 2 blank lines
+                // consoleManager.moveCursorDown(); // NOTE: reactiveListPrompt has 2 blank lines
+            }
+            clearTerminal();
+            consoleManager.showLoader('Watching for new Git commits...');
+        });
     } catch (error) {
         consoleManager.printError(`Error processing commit ${commitHash}: ${error.message}`);
     } finally {
@@ -177,8 +185,6 @@ async function handleCommitEvent(config: ValidConfig, commitHash: string) {
 async function watchCommitLog(config: ValidConfig) {
     const watcher = chokidar.watch(LOG_PATH, { persistent: true });
 
-    consoleManager.showLoader('Watching for new Git commits...');
-
     watcher.on('change', async () => {
         try {
             const logContent = fs.readFileSync(LOG_PATH, 'utf8');
@@ -190,11 +196,9 @@ async function watchCommitLog(config: ValidConfig) {
                     consoleManager.printWarning('Empty commit hash detected, skipping...');
                     continue;
                 }
+                // consoleManager.stopLoader();
                 clearTerminal();
-                // TODO: add..
-                console.log(hash);
-                // await handleCommitEvent(config, hash.trim());
-                consoleManager.stopLoader();
+                await handleCommitEvent(config, hash.trim());
             }
         } catch (error) {
             consoleManager.printError(`Error reading or processing commit log: ${error.message}`);
@@ -204,7 +208,7 @@ async function watchCommitLog(config: ValidConfig) {
             } catch (truncateError) {
                 consoleManager.printError(`Error truncating log file: ${truncateError.message}`);
             }
-            consoleManager.showLoader('Watching for new Git commits...');
+            // consoleManager.showLoader('Watching for new Git commits...');
         }
     });
 

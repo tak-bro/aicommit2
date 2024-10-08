@@ -87,7 +87,7 @@ export class ConsoleManager {
             input: process.stdin,
             output: process.stdout,
         });
-        readline.moveCursor(process.stdout, 0, 1);
+        readline.moveCursor(process.stdout, 0, 2);
         rl.close();
     }
 }
