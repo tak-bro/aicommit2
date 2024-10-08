@@ -48,8 +48,8 @@ dependencies:
     specifier: 9.2.8
     version: 9.2.8
   inquirer-reactive-list-prompt:
-    specifier: ^1.0.10
-    version: 1.0.10(inquirer@9.2.8)
+    specifier: 1.0.14
+    version: 1.0.14(inquirer@9.2.8)
   ollama:
     specifier: ^0.5.6
     version: 0.5.6
@@ -4895,8 +4895,8 @@ packages:
     engines: {node: ^12.13.0 || ^14.15.0 || >=16.0.0}
     dev: true
 
-  /inquirer-reactive-list-prompt@1.0.10(inquirer@9.2.8):
-    resolution: {integrity: sha512-iB8ELz/6tqolHj8s0D9ls08dhi2kuN46Gm8mTnnM3iOulydhTDGDvJ6NZVDWHEmxkte1IQpA4KCStkf745c0HQ==}
+  /inquirer-reactive-list-prompt@1.0.14(inquirer@9.2.8):
+    resolution: {integrity: sha512-xRjwqRYgfp82opMcynagbhpnanKD6UOkFriJUKT0nUzgo+E566ItfKlMnp+FnhoZwyV/M7QKoZBM92vDfeKi/g==}
     peerDependencies:
       inquirer: 9.2.8
     dependencies:
