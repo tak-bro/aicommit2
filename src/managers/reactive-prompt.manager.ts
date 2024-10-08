@@ -52,9 +52,9 @@ export class ReactivePromptManager {
 
         inquirer.registerPrompt('reactiveListPrompt', ReactiveListPrompt);
         this.inquirerInstance = inquirer.prompt({
-            ...options,
             choices$: this.choices$,
             loader$: this.loader$,
+            ...options,
         });
 
         return this.inquirerInstance;
@@ -62,6 +62,13 @@ export class ReactivePromptManager {
 
     startLoader() {
         this.loader$.next({ isLoading: true });
+    }
+
+    clearLoader() {
+        if (!this.inquirerInstance) {
+            return;
+        }
+        this.loader$.next({ isLoading: false, clear: true });
     }
 
     refreshChoices(choice: ReactiveListChoice) {
@@ -92,6 +99,13 @@ export class ReactivePromptManager {
         this.loader$.complete();
         this.destroyed$.next(true);
         this.destroyed$.complete();
+    }
+
+    closeInquirerInstance() {
+        if (!this.inquirerInstance) {
+            return;
+        }
+        this.inquirerInstance.ui.close();
     }
 
     private alertNoGeneratedMessage() {
