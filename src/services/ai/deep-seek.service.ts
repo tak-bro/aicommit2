@@ -74,7 +74,7 @@ export class DeepSeekService extends AIService {
             };
             const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
             this.checkAvailableModels();
-            const chatResponse = await this.createChatCompletions(generatedSystemPrompt, requestType);
+            const chatResponse = await this.createChatCompletions(generatedSystemPrompt);
             logging && createLogResponse('DeepSeek', diff, generatedSystemPrompt, chatResponse, requestType);
             if (requestType === 'review') {
                 return this.sanitizeResponse(chatResponse);
@@ -107,7 +107,7 @@ export class DeepSeekService extends AIService {
         throw new Error(`Invalid model type of DeepSeek`);
     }
 
-    private async createChatCompletions(systemPrompt: string, requestType: RequestType) {
+    private async createChatCompletions(systemPrompt: string) {
         const chatCompletion = await this.deepSeek.chat.completions.create(
             {
                 messages: [
@@ -130,7 +130,6 @@ export class DeepSeekService extends AIService {
             }
         );
 
-        const response = chatCompletion.choices[0].message.content || '';
-        return response;
+        return chatCompletion.choices[0].message.content || '';
     }
 }
