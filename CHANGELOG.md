@@ -1,3 +1,10 @@
+## [2.1.5](https://github.com/tak-bro/aicommit2/compare/v2.1.4...v2.1.5) (2024-10-11)
+
+
+### Bug Fixes
+
+* integrate OpenAI library for Deepseek chat completions ([83bd287](https://github.com/tak-bro/aicommit2/commit/83bd287c8f8d59c02aec29c76974b931caf96aec))
+
 ## [2.1.4](https://github.com/tak-bro/aicommit2/compare/v2.1.3...v2.1.4) (2024-09-19)
 
 
