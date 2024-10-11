@@ -1,39 +1,19 @@
-import { AxiosResponse } from 'axios';
 import chalk from 'chalk';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
+import OpenAI from 'openai';
 import { Observable, catchError, concatMap, from, map, of } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
-import { CreateChatCompletionsResponse } from './mistral.service.js';
 import { KnownError } from '../../utils/error.js';
 import { RequestType, createLogResponse } from '../../utils/log.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
-import { HttpRequestBuilder } from '../http/http-request.builder.js';
 
 export interface DeepSeekServiceError extends AIServiceError {}
-export interface DeepSeekChatCompletionResponse {
-    id: string;
-    object: string;
-    created: number;
-    model: string;
-    choices: {
-        index: number;
-        message: {
-            role: string;
-            content: string;
-        };
-        finish_reason: string;
-    }[];
-    usage: {
-        prompt_tokens: number;
-        completion_tokens: number;
-        total_tokens: number;
-    };
-}
+
 export class DeepSeekService extends AIService {
     private host = 'https://api.deepseek.com';
-    private apiKey = '';
+    private deepSeek: OpenAI;
 
     constructor(private readonly params: AIServiceParams) {
         super(params);
@@ -43,7 +23,11 @@ export class DeepSeekService extends AIService {
         };
         this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold(`[DeepSeek]`);
         this.errorPrefix = chalk.red.bold(`[DeepSeek]`);
-        this.apiKey = this.params.config.key;
+
+        this.deepSeek = new OpenAI({
+            baseURL: this.host,
+            apiKey: this.params.config.key,
+        });
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
@@ -124,17 +108,8 @@ export class DeepSeekService extends AIService {
     }
 
     private async createChatCompletions(systemPrompt: string, requestType: RequestType) {
-        const requestBuilder = new HttpRequestBuilder({
-            method: 'POST',
-            baseURL: `${this.host}/chat/completions`,
-            timeout: this.params.config.timeout,
-        })
-            .setHeaders({
-                Authorization: `Bearer ${this.apiKey}`,
-                'content-type': 'application/json',
-            })
-            .setBody({
-                model: this.params.config.model,
+        const chatCompletion = await this.deepSeek.chat.completions.create(
+            {
                 messages: [
                     {
                         role: 'system',
@@ -145,26 +120,17 @@ export class DeepSeekService extends AIService {
                         content: `Here is the diff: ${this.params.stagedDiff.diff}`,
                     },
                 ],
-                temperature: this.params.config.temperature,
-                top_p: this.params.config.topP,
+                model: this.params.config.model,
                 max_tokens: this.params.config.maxTokens,
-                stream: false,
-            });
+                top_p: this.params.config.topP,
+                temperature: this.params.config.temperature,
+            },
+            {
+                timeout: this.params.config.timeout,
+            }
+        );
 
-        if (requestType === 'commit') {
-            requestBuilder.addBody({
-                response_format: {
-                    type: 'json_object',
-                },
-            });
-        }
-
-        const response: AxiosResponse<CreateChatCompletionsResponse> = await requestBuilder.execute();
-        const result: DeepSeekChatCompletionResponse = response.data;
-        const hasNoChoices = !result.choices || result.choices.length === 0;
-        if (hasNoChoices || !result.choices[0].message?.content) {
-            throw new Error(`No Content on response. Please open a Bug report`);
-        }
-        return result.choices[0].message.content;
+        const response = chatCompletion.choices[0].message.content || '';
+        return response;
     }
 }
