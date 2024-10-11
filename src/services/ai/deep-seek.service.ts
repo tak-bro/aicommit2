@@ -10,28 +10,9 @@ import { RequestType, createLogResponse } from '../../utils/log.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 
 export interface DeepSeekServiceError extends AIServiceError {}
-export interface DeepSeekChatCompletionResponse {
-    id: string;
-    object: string;
-    created: number;
-    model: string;
-    choices: {
-        index: number;
-        message: {
-            role: string;
-            content: string;
-        };
-        finish_reason: string;
-    }[];
-    usage: {
-        prompt_tokens: number;
-        completion_tokens: number;
-        total_tokens: number;
-    };
-}
+
 export class DeepSeekService extends AIService {
     private host = 'https://api.deepseek.com';
-    private apiKey = '';
     private deepSeek: OpenAI;
 
     constructor(private readonly params: AIServiceParams) {
@@ -42,7 +23,6 @@ export class DeepSeekService extends AIService {
         };
         this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold(`[DeepSeek]`);
         this.errorPrefix = chalk.red.bold(`[DeepSeek]`);
-        this.apiKey = this.params.config.key;
 
         this.deepSeek = new OpenAI({
             baseURL: this.host,
