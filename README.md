@@ -318,7 +318,7 @@ The log files will be stored in the `~/.aicommit2_log` directory(user's home).
 - You can remove all logs below comamnd.
 
 ```sh
-aicommit2 log removeAll 
+aicommit2 log removeAll
 ```
 
 ##### includeBody
@@ -509,7 +509,7 @@ The `top_p` parameter selects tokens whose combined probability meets a threshol
 aicommit2 config set OPENAI.topP=0.2
 ```
 
-> NOTE: If `topP` is less than 0, it does not deliver the `top_p` parameter to the request. 
+> NOTE: If `topP` is less than 0, it does not deliver the `top_p` parameter to the request.
 
 ### Anthropic
 
@@ -531,6 +531,7 @@ Supported:
 - `claude-3-sonnet-20240229`
 - `claude-3-opus-20240229`
 - `claude-3-5-sonnet-20240620`
+- `claude-3-5-sonnet-20241022`
 
 ```sh
 aicommit2 config set ANTHROPIC.model="claude-3-5-sonnet-20240620"
@@ -901,7 +902,7 @@ Lastly, Provide your response as a JSON array containing exactly {generate} obje
 - "body": An optional detailed explanation of the changes. If not needed, use an empty string.
 - "footer": An optional footer for metadata like BREAKING CHANGES. If not needed, use an empty string.
 The array must always contain {generate} element, no more and no less.
-Example response format: 
+Example response format:
 [
   {
     "subject": "fix: fix bug in user authentication process",
@@ -928,7 +929,7 @@ Follow these steps to set up and utilize multiple models simultaneously:
 
 ##### 1. Running Ollama Server
 
-First, launch the Ollama server with the `OLLAMA_MAX_LOADED_MODELS` environment variable set. This variable specifies the maximum number of models to be loaded simultaneously. 
+First, launch the Ollama server with the `OLLAMA_MAX_LOADED_MODELS` environment variable set. This variable specifies the maximum number of models to be loaded simultaneously.
 For example, to load up to 3 models, use the following command:
 
 ```shell
