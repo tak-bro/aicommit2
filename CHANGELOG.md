@@ -1,3 +1,11 @@
+## [2.1.6](https://github.com/tak-bro/aicommit2/compare/v2.1.5...v2.1.6) (2024-10-26)
+
+
+### Features
+
+* **anthropic:** add support for `claude-3-5-sonnet-20241022` model ([bc6eaf3](https://github.com/tak-bro/aicommit2/commit/bc6eaf38ca799480042bb403d6db61835d1bd212))
+* **config:** add support for latest Claude-3 models ([46b490d](https://github.com/tak-bro/aicommit2/commit/46b490dc85eadda17969737c24920e2e1aea9ef3))
+
 ## [2.1.5](https://github.com/tak-bro/aicommit2/compare/v2.1.4...v2.1.5) (2024-10-11)
 
 
