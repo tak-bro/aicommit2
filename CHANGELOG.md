@@ -1,3 +1,10 @@
+## [2.1.7](https://github.com/tak-bro/aicommit2/compare/v2.1.6...v2.1.7) (2024-10-29)
+
+
+### Features
+
+* add api key to ollama service ([47465e7](https://github.com/tak-bro/aicommit2/commit/47465e76174880d517b716501953814f8d5d8a0c))
+
 ## [2.1.6](https://github.com/tak-bro/aicommit2/compare/v2.1.5...v2.1.6) (2024-10-26)
 
 
