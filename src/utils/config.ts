@@ -466,16 +466,26 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
                 return 'gemma2-9b-it';
             }
             const supportModels = [
-                `gemma2-9b-it`,
-                `gemma-7b-it`,
-                `llama-3.1-70b-versatile`,
-                `llama-3.1-8b-instant`,
-                `llama3-70b-8192`,
-                `llama3-8b-8192`,
                 `llama3-groq-70b-8192-tool-use-preview`,
+                `distil-whisper-large-v3-en`,
+                `llama3-70b-8192`,
+                `llama-3.2-11b-vision-preview`,
+                `whisper-large-v3-turbo`,
+                `gemma-7b-it`,
                 `llama3-groq-8b-8192-tool-use-preview`,
-                `llama-guard-3-8b`,
+                `llama-3.2-1b-preview`,
+                `llama-3.1-8b-instant`,
                 `mixtral-8x7b-32768`,
+                `llama-3.2-90b-text-preview`,
+                `llama3-8b-8192`,
+                `llama-guard-3-8b`,
+                `llama-3.2-90b-vision-preview`,
+                `llama-3.2-11b-text-preview`,
+                `llama-3.2-3b-preview`,
+                `llava-v1.5-7b-4096-preview`,
+                `whisper-large-v3`,
+                `llama-3.1-70b-versatile`,
+                `gemma2-9b-it`,
             ];
 
             parseAssert('GROQ.model', supportModels.includes(model), 'Invalid model type of Groq');
