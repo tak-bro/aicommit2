@@ -83,7 +83,7 @@ You can also use your model for free with [Ollama](https://ollama.com/) and it i
 
 2. Start it with your model
 ```shell
-ollama run llama3.1 # model you want use. ex) codellama, deepseek-coder
+ollama run llama3.2 # model you want use. ex) codellama, deepseek-coder
 ```
 
 3. Set the model and host
@@ -206,7 +206,7 @@ includeBody=true
 
 [OLLAMA]
 temperature=0.7
-model[]=llama3.1
+model[]=llama3.2
 model[]=codestral
 ```
 
@@ -678,16 +678,26 @@ The Groq API key. If you don't have one, please sign up and get the API key in [
 Default: `gemma2-9b-it`
 
 Supported:
-- `gemma2-9b-it`
-- `gemma-7b-it`
-- `llama-3.1-70b-versatile`
-- `llama-3.1-8b-instant`
-- `llama3-70b-8192`
-- `llama3-8b-8192`
 - `llama3-groq-70b-8192-tool-use-preview`
+- `distil-whisper-large-v3-en`
+- `llama3-70b-8192`
+- `llama-3.2-11b-vision-preview`
+- `whisper-large-v3-turbo`
+- `gemma-7b-it`
 - `llama3-groq-8b-8192-tool-use-preview`
-- `llama-guard-3-8b`
+- `llama-3.2-1b-preview`
+- `llama-3.1-8b-instant`
 - `mixtral-8x7b-32768`
+- `llama-3.2-90b-text-preview`
+- `llama3-8b-8192`
+- `llama-guard-3-8b`
+- `llama-3.2-90b-vision-preview`
+- `llama-3.2-11b-text-preview`
+- `llama-3.2-3b-preview`
+- `llava-v1.5-7b-4096-preview`
+- `whisper-large-v3`
+- `llama-3.1-70b-versatile`
+- `gemma2-9b-it`
 
 ```sh
 aicommit2 config set GROQ.model="llama3-8b-8192"
@@ -792,11 +802,12 @@ Huggingface does not support the following options in General Settings.
 
 ### Ollama
 
-| Setting            | Description                                  | Default                |
-|--------------------|----------------------------------------------|------------------------|
-| `model`            | Model(s) to use (comma-separated list)       | -                      |
-| `host`             | Ollama host URL                              | http://localhost:11434 |
-| `timeout`          | Request timeout (milliseconds)               | 100_000 (100sec)       |
+| Setting   | Description                            | Default                |
+|-----------|----------------------------------------|------------------------|
+| `model`   | Model(s) to use (comma-separated list) | -                      |
+| `host`    | Ollama host URL                        | http://localhost:11434 |
+| `key`     | API key                                | -                      |
+| `timeout` | Request timeout (milliseconds)         | 100_000 (100sec)       |
 
 ##### OLLAMA.model
 
@@ -819,6 +830,14 @@ The Ollama host
 
 ```sh
 aicommit2 config set OLLAMA.host=<host>
+```
+
+##### OLLAMA.key
+
+Not required. Use when your Ollama server requests an authentication key. Please see [this issue](https://github.com/tak-bro/aicommit2/issues/90).
+
+```sh
+aicommit2 config set OLLAMA.key=<key>
 ```
 
 ##### OLLAMA.timeout
