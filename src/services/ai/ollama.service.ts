@@ -17,6 +17,7 @@ export interface OllamaServiceError extends AIServiceError {}
 export class OllamaService extends AIService {
     private host = DEFAULT_OLLAMA_HOST;
     private model = '';
+    private key = '';
     private ollama: Ollama;
 
     constructor(private readonly params: AIServiceParams) {
@@ -32,7 +33,11 @@ export class OllamaService extends AIService {
             .bold(`[${capitalizeFirstLetter(this.model)}]`);
         this.errorPrefix = chalk.red.bold(`[${capitalizeFirstLetter(this.model)}]`);
         this.host = this.params.config.host || DEFAULT_OLLAMA_HOST;
-        this.ollama = new Ollama({ host: this.host });
+        this.key = this.params.config.key || '';
+        this.ollama = new Ollama({
+            host: this.host,
+            ...(this.key && { headers: { Authorization: `Bearer ${this.key}` } }),
+        });
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
