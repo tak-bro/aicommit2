@@ -419,6 +419,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
             parseAssert('OLLAMA.timeout', parsed >= 500, 'Must be greater than 500ms');
             return parsed;
         },
+        key: (key?: string) => key || '',
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
         codeReviewPromptPath: generalConfigParsers.codeReviewPromptPath,
