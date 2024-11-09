@@ -806,7 +806,8 @@ Huggingface does not support the following options in General Settings.
 |-----------|----------------------------------------|------------------------|
 | `model`   | Model(s) to use (comma-separated list) | -                      |
 | `host`    | Ollama host URL                        | http://localhost:11434 |
-| `key`     | API key                                | -                      |
+| `auth`    | Authentication type                    | Bearer                 |
+| `key`     | Authentication key                     | -                      |
 | `timeout` | Request timeout (milliseconds)         | 100_000 (100sec)       |
 
 ##### OLLAMA.model
@@ -832,13 +833,30 @@ The Ollama host
 aicommit2 config set OLLAMA.host=<host>
 ```
 
+##### OLLAMA.auth
+
+Not required. Use when your Ollama server requires authentication. Please see [this issue](https://github.com/tak-bro/aicommit2/issues/90).
+
+```sh
+aicommit2 config set OLLAMA.auth=<auth>
+```
+
 ##### OLLAMA.key
 
-Not required. Use when your Ollama server requests an authentication key. Please see [this issue](https://github.com/tak-bro/aicommit2/issues/90).
+Not required. Use when your Ollama server requires authentication. Please see [this issue](https://github.com/tak-bro/aicommit2/issues/90).
 
 ```sh
 aicommit2 config set OLLAMA.key=<key>
 ```
+
+Few examples of authentication methods:
+| **Authentication Method** | **OLLAMA.auth**              | **OLLAMA.key**                        |
+|---------------------------|------------------------------|---------------------------------------|
+| Bearer                    | `Bearer`                     | `<API key>`                           |
+| Basic                     | `Basic`                      | `<Base64 Encoded username:password>`  |
+| JWT                       | `Bearer`                     | `<JWT Token>`                         |
+| OAuth 2.0                 | `Bearer`                     | `<Access Token>`                      |
+| HMAC-SHA256               | `HMAC`                       | `<Base64 Encoded clientId:signature>` |
 
 ##### OLLAMA.timeout
 

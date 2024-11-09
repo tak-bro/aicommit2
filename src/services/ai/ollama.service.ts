@@ -33,10 +33,11 @@ export class OllamaService extends AIService {
             .bold(`[${capitalizeFirstLetter(this.model)}]`);
         this.errorPrefix = chalk.red.bold(`[${capitalizeFirstLetter(this.model)}]`);
         this.host = this.params.config.host || DEFAULT_OLLAMA_HOST;
+        this.auth = this.params.config.auth || 'Bearer';
         this.key = this.params.config.key || '';
         this.ollama = new Ollama({
             host: this.host,
-            ...(this.key && { headers: { Authorization: `Bearer ${this.key}` } }),
+            ...(this.key && { headers: { Authorization: `${this.auth} ${this.key}` } }),
         });
     }
 
@@ -120,12 +121,19 @@ export class OllamaService extends AIService {
 
     private async checkIsAvailableOllama() {
         try {
-            const response = await new HttpRequestBuilder({
+            const builder = new HttpRequestBuilder({
                 method: 'GET',
                 baseURL: `${this.host}`,
                 timeout: this.params.config.timeout,
-            }).execute();
+            });
 
+            if (this.key) {
+                builder.setHeaders({
+                    Authorization: `${this.auth} ${this.key}`,
+                });
+            }
+
+            const response = await builder.execute();
             return response.data;
         } catch (e: any) {
             if (e.code === 'ECONNREFUSED') {
