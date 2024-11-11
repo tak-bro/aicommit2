@@ -23,6 +23,9 @@ importers:
       '@pacote/xxhash':
         specifier: ^0.3.2
         version: 0.3.2
+      '@tak-bro/ollama':
+        specifier: ^0.0.1
+        version: 0.0.1
       axios:
         specifier: ^1.6.8
         version: 1.7.2
@@ -31,7 +34,7 @@ importers:
         version: 5.3.0
       cohere-ai:
         specifier: ^7.12.1
-        version: 7.12.1(@aws-sdk/client-sso-oidc@3.606.0)
+        version: 7.12.1(@aws-sdk/client-sso-oidc@3.606.0(@aws-sdk/client-sts@3.606.0))
       copy-paste:
         specifier: ^1.5.3
         version: 1.5.3
@@ -50,9 +53,6 @@ importers:
       inquirer-reactive-list-prompt:
         specifier: ^1.0.10
         version: 1.0.10(inquirer@9.2.8)
-      ollama:
-        specifier: ^0.5.6
-        version: 0.5.6
       openai:
         specifier: ^4.67.3
         version: 4.67.3
@@ -74,22 +74,22 @@ importers:
         version: 0.33.0(eslint@8.57.0)(typescript@4.9.5)
       '@semantic-release/changelog':
         specifier: ^6.0.3
-        version: 6.0.3(semantic-release@23.1.1)
+        version: 6.0.3(semantic-release@23.1.1(typescript@4.9.5))
       '@semantic-release/commit-analyzer':
         specifier: ^12.0.0
-        version: 12.0.0(semantic-release@23.1.1)
+        version: 12.0.0(semantic-release@23.1.1(typescript@4.9.5))
       '@semantic-release/git':
         specifier: ^10.0.1
-        version: 10.0.1(semantic-release@23.1.1)
+        version: 10.0.1(semantic-release@23.1.1(typescript@4.9.5))
       '@semantic-release/github':
         specifier: ^10.0.3
-        version: 10.0.6(semantic-release@23.1.1)
+        version: 10.0.6(semantic-release@23.1.1(typescript@4.9.5))
       '@semantic-release/npm':
         specifier: ^12.0.0
-        version: 12.0.1(semantic-release@23.1.1)
+        version: 12.0.1(semantic-release@23.1.1(typescript@4.9.5))
       '@semantic-release/release-notes-generator':
         specifier: ^13.0.0
-        version: 13.0.0(semantic-release@23.1.1)
+        version: 13.0.0(semantic-release@23.1.1(typescript@4.9.5))
       '@types/figlet':
         specifier: ^1.5.8
         version: 1.5.8
@@ -107,7 +107,7 @@ importers:
         version: 9.0.8
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.13.2
-        version: 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.57.0)(typescript@4.9.5)
+        version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.0)(typescript@4.9.5))(eslint@8.57.0)(typescript@4.9.5)
       '@typescript-eslint/parser':
         specifier: ^6.2.0
         version: 6.21.0(eslint@8.57.0)(typescript@4.9.5)
@@ -134,7 +134,7 @@ importers:
         version: 3.2.0(eslint@8.57.0)
       eslint-plugin-import:
         specifier: ^2.29.1
-        version: 2.29.1(@typescript-eslint/parser@6.21.0)(eslint@8.57.0)
+        version: 2.29.1(@typescript-eslint/parser@6.21.0(eslint@8.57.0)(typescript@4.9.5))(eslint@8.57.0)
       eslint-plugin-jsonc:
         specifier: ^2.10.0
         version: 2.16.0(eslint@8.57.0)
@@ -149,7 +149,7 @@ importers:
         version: 49.0.0(eslint@8.57.0)
       eslint-plugin-unused-imports:
         specifier: ^3.0.0
-        version: 3.2.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint@8.57.0)
+        version: 3.2.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.0)(typescript@4.9.5))(eslint@8.57.0)(typescript@4.9.5))(eslint@8.57.0)
       execa:
         specifier: ^7.0.0
         version: 7.2.0
@@ -999,6 +999,9 @@ packages:
   '@smithy/util-waiter@3.1.2':
     resolution: {integrity: sha512-4pP0EV3iTsexDx+8PPGAKCQpd/6hsQBaQhqWzU4hqKPHN5epPsxKbvUTIiYIHTxaKt6/kEaqPBpu/ufvfbrRzw==}
     engines: {node: '>=16.0.0'}
+
+  '@tak-bro/ollama@0.0.1':
+    resolution: {integrity: sha512-Nj6IR8nU/O11aY4cAxx5sJ2xlAHtlXEx1MJmBQ8TojBxqDWxik/Kd5XCtX41W1xx5P4Y44M0yw+SrRMPRK1skw==}
 
   '@types/estree@1.0.5':
     resolution: {integrity: sha512-/kYRxGDLWzHOB7q+wtSUQlFrtcdUccpfy+X+9iMBpHK8QLLhx2wIPYuS5DYtR9Wa/YlZAbIovy7qVdB1Aq6Lyw==}
@@ -3036,9 +3039,6 @@ packages:
     resolution: {integrity: sha512-yBYjY9QX2hnRmZHAjG/f13MzmBzxzYgQhFrke06TTyKY5zSTEqkOeukBzIdVA3j3ulu8Qa3MbVFShV7T2RmGtQ==}
     engines: {node: '>= 0.4'}
 
-  ollama@0.5.6:
-    resolution: {integrity: sha512-4BySAMt96+OCt4emL6DE78UBCGqC7GvteM9LRCd6WwJyefn0x9w2BrcUcLm9nJ9bYpRsmkhf0Au18Q5MhsA14w==}
-
   once@1.4.0:
     resolution: {integrity: sha512-lNaJgI+2Q5URQBkccEKHTQOPaXdUxnZZElQTZY0MFUAuaEqe1E+Nyvgdz/aIyNi6Z9MzO5dv1H8n58/GELp3+w==}
 
@@ -4029,7 +4029,7 @@ snapshots:
       '@aws-sdk/client-sso-oidc': 3.606.0(@aws-sdk/client-sts@3.606.0)
       '@aws-sdk/client-sts': 3.606.0
       '@aws-sdk/core': 3.598.0
-      '@aws-sdk/credential-provider-node': 3.600.0(@aws-sdk/client-sso-oidc@3.606.0)(@aws-sdk/client-sts@3.606.0)
+      '@aws-sdk/credential-provider-node': 3.600.0(@aws-sdk/client-sso-oidc@3.606.0(@aws-sdk/client-sts@3.606.0))(@aws-sdk/client-sts@3.606.0)
       '@aws-sdk/middleware-host-header': 3.598.0
       '@aws-sdk/middleware-logger': 3.598.0
       '@aws-sdk/middleware-recursion-detection': 3.598.0
@@ -4075,7 +4075,7 @@ snapshots:
       '@aws-sdk/client-sso-oidc': 3.606.0(@aws-sdk/client-sts@3.606.0)
       '@aws-sdk/client-sts': 3.606.0
       '@aws-sdk/core': 3.598.0
-      '@aws-sdk/credential-provider-node': 3.600.0(@aws-sdk/client-sso-oidc@3.606.0)(@aws-sdk/client-sts@3.606.0)
+      '@aws-sdk/credential-provider-node': 3.600.0(@aws-sdk/client-sso-oidc@3.606.0(@aws-sdk/client-sts@3.606.0))(@aws-sdk/client-sts@3.606.0)
       '@aws-sdk/middleware-host-header': 3.598.0
       '@aws-sdk/middleware-logger': 3.598.0
       '@aws-sdk/middleware-recursion-detection': 3.598.0
@@ -4122,7 +4122,7 @@ snapshots:
       '@aws-crypto/sha256-js': 5.2.0
       '@aws-sdk/client-sts': 3.606.0
       '@aws-sdk/core': 3.598.0
-      '@aws-sdk/credential-provider-node': 3.600.0(@aws-sdk/client-sso-oidc@3.606.0)(@aws-sdk/client-sts@3.606.0)
+      '@aws-sdk/credential-provider-node': 3.600.0(@aws-sdk/client-sso-oidc@3.606.0(@aws-sdk/client-sts@3.606.0))(@aws-sdk/client-sts@3.606.0)
       '@aws-sdk/middleware-host-header': 3.598.0
       '@aws-sdk/middleware-logger': 3.598.0
       '@aws-sdk/middleware-recursion-detection': 3.598.0
@@ -4210,7 +4210,7 @@ snapshots:
       '@aws-crypto/sha256-js': 5.2.0
       '@aws-sdk/client-sso-oidc': 3.606.0(@aws-sdk/client-sts@3.606.0)
       '@aws-sdk/core': 3.598.0
-      '@aws-sdk/credential-provider-node': 3.600.0(@aws-sdk/client-sso-oidc@3.606.0)(@aws-sdk/client-sts@3.606.0)
+      '@aws-sdk/credential-provider-node': 3.600.0(@aws-sdk/client-sso-oidc@3.606.0(@aws-sdk/client-sts@3.606.0))(@aws-sdk/client-sts@3.606.0)
       '@aws-sdk/middleware-host-header': 3.598.0
       '@aws-sdk/middleware-logger': 3.598.0
       '@aws-sdk/middleware-recursion-detection': 3.598.0
@@ -4288,13 +4288,13 @@ snapshots:
       '@smithy/util-stream': 3.0.5
       tslib: 2.6.3
 
-  '@aws-sdk/credential-provider-ini@3.598.0(@aws-sdk/client-sso-oidc@3.606.0)(@aws-sdk/client-sts@3.606.0)':
+  '@aws-sdk/credential-provider-ini@3.598.0(@aws-sdk/client-sso-oidc@3.606.0(@aws-sdk/client-sts@3.606.0))(@aws-sdk/client-sts@3.606.0)':
     dependencies:
       '@aws-sdk/client-sts': 3.606.0
       '@aws-sdk/credential-provider-env': 3.598.0
       '@aws-sdk/credential-provider-http': 3.598.0
       '@aws-sdk/credential-provider-process': 3.598.0
-      '@aws-sdk/credential-provider-sso': 3.598.0(@aws-sdk/client-sso-oidc@3.606.0)
+      '@aws-sdk/credential-provider-sso': 3.598.0(@aws-sdk/client-sso-oidc@3.606.0(@aws-sdk/client-sts@3.606.0))
       '@aws-sdk/credential-provider-web-identity': 3.598.0(@aws-sdk/client-sts@3.606.0)
       '@aws-sdk/types': 3.598.0
       '@smithy/credential-provider-imds': 3.1.3
@@ -4306,13 +4306,13 @@ snapshots:
       - '@aws-sdk/client-sso-oidc'
       - aws-crt
 
-  '@aws-sdk/credential-provider-node@3.600.0(@aws-sdk/client-sso-oidc@3.606.0)(@aws-sdk/client-sts@3.606.0)':
+  '@aws-sdk/credential-provider-node@3.600.0(@aws-sdk/client-sso-oidc@3.606.0(@aws-sdk/client-sts@3.606.0))(@aws-sdk/client-sts@3.606.0)':
     dependencies:
       '@aws-sdk/credential-provider-env': 3.598.0
       '@aws-sdk/credential-provider-http': 3.598.0
-      '@aws-sdk/credential-provider-ini': 3.598.0(@aws-sdk/client-sso-oidc@3.606.0)(@aws-sdk/client-sts@3.606.0)
+      '@aws-sdk/credential-provider-ini': 3.598.0(@aws-sdk/client-sso-oidc@3.606.0(@aws-sdk/client-sts@3.606.0))(@aws-sdk/client-sts@3.606.0)
       '@aws-sdk/credential-provider-process': 3.598.0
-      '@aws-sdk/credential-provider-sso': 3.598.0(@aws-sdk/client-sso-oidc@3.606.0)
+      '@aws-sdk/credential-provider-sso': 3.598.0(@aws-sdk/client-sso-oidc@3.606.0(@aws-sdk/client-sts@3.606.0))
       '@aws-sdk/credential-provider-web-identity': 3.598.0(@aws-sdk/client-sts@3.606.0)
       '@aws-sdk/types': 3.598.0
       '@smithy/credential-provider-imds': 3.1.3
@@ -4333,10 +4333,10 @@ snapshots:
       '@smithy/types': 3.3.0
       tslib: 2.6.3
 
-  '@aws-sdk/credential-provider-sso@3.598.0(@aws-sdk/client-sso-oidc@3.606.0)':
+  '@aws-sdk/credential-provider-sso@3.598.0(@aws-sdk/client-sso-oidc@3.606.0(@aws-sdk/client-sts@3.606.0))':
     dependencies:
       '@aws-sdk/client-sso': 3.598.0
-      '@aws-sdk/token-providers': 3.598.0(@aws-sdk/client-sso-oidc@3.606.0)
+      '@aws-sdk/token-providers': 3.598.0(@aws-sdk/client-sso-oidc@3.606.0(@aws-sdk/client-sts@3.606.0))
       '@aws-sdk/types': 3.598.0
       '@smithy/property-provider': 3.1.3
       '@smithy/shared-ini-file-loader': 3.1.3
@@ -4354,7 +4354,7 @@ snapshots:
       '@smithy/types': 3.3.0
       tslib: 2.6.3
 
-  '@aws-sdk/credential-providers@3.606.0(@aws-sdk/client-sso-oidc@3.606.0)':
+  '@aws-sdk/credential-providers@3.606.0(@aws-sdk/client-sso-oidc@3.606.0(@aws-sdk/client-sts@3.606.0))':
     dependencies:
       '@aws-sdk/client-cognito-identity': 3.606.0
       '@aws-sdk/client-sso': 3.598.0
@@ -4362,10 +4362,10 @@ snapshots:
       '@aws-sdk/credential-provider-cognito-identity': 3.606.0
       '@aws-sdk/credential-provider-env': 3.598.0
       '@aws-sdk/credential-provider-http': 3.598.0
-      '@aws-sdk/credential-provider-ini': 3.598.0(@aws-sdk/client-sso-oidc@3.606.0)(@aws-sdk/client-sts@3.606.0)
-      '@aws-sdk/credential-provider-node': 3.600.0(@aws-sdk/client-sso-oidc@3.606.0)(@aws-sdk/client-sts@3.606.0)
+      '@aws-sdk/credential-provider-ini': 3.598.0(@aws-sdk/client-sso-oidc@3.606.0(@aws-sdk/client-sts@3.606.0))(@aws-sdk/client-sts@3.606.0)
+      '@aws-sdk/credential-provider-node': 3.600.0(@aws-sdk/client-sso-oidc@3.606.0(@aws-sdk/client-sts@3.606.0))(@aws-sdk/client-sts@3.606.0)
       '@aws-sdk/credential-provider-process': 3.598.0
-      '@aws-sdk/credential-provider-sso': 3.598.0(@aws-sdk/client-sso-oidc@3.606.0)
+      '@aws-sdk/credential-provider-sso': 3.598.0(@aws-sdk/client-sso-oidc@3.606.0(@aws-sdk/client-sts@3.606.0))
       '@aws-sdk/credential-provider-web-identity': 3.598.0(@aws-sdk/client-sts@3.606.0)
       '@aws-sdk/types': 3.598.0
       '@smithy/credential-provider-imds': 3.1.3
@@ -4423,7 +4423,7 @@ snapshots:
       '@smithy/signature-v4': 1.1.0
       tslib: 2.6.3
 
-  '@aws-sdk/token-providers@3.598.0(@aws-sdk/client-sso-oidc@3.606.0)':
+  '@aws-sdk/token-providers@3.598.0(@aws-sdk/client-sso-oidc@3.606.0(@aws-sdk/client-sts@3.606.0))':
     dependencies:
       '@aws-sdk/client-sso-oidc': 3.606.0(@aws-sdk/client-sts@3.606.0)
       '@aws-sdk/types': 3.598.0
@@ -4785,13 +4785,13 @@ snapshots:
 
   '@pvtnbr/eslint-config@0.33.0(eslint@8.57.0)(typescript@4.9.5)':
     dependencies:
-      '@typescript-eslint/eslint-plugin': 5.62.0(@typescript-eslint/parser@5.62.0)(eslint@8.57.0)(typescript@4.9.5)
+      '@typescript-eslint/eslint-plugin': 5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@4.9.5))(eslint@8.57.0)(typescript@4.9.5)
       '@typescript-eslint/parser': 5.62.0(eslint@8.57.0)(typescript@4.9.5)
       confusing-browser-globals: 1.0.11
       eslint: 8.57.0
-      eslint-import-resolver-typescript: 3.6.1(@typescript-eslint/parser@5.62.0)(eslint-plugin-import@2.29.1)(eslint@8.57.0)
+      eslint-import-resolver-typescript: 3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@4.9.5))(eslint-plugin-import@2.29.1)(eslint@8.57.0)
       eslint-plugin-eslint-comments: 3.2.0(eslint@8.57.0)
-      eslint-plugin-import: 2.29.1(@typescript-eslint/parser@5.62.0)(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0)
+      eslint-plugin-import: 2.29.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@4.9.5))(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0)
       eslint-plugin-jsonc: 2.16.0(eslint@8.57.0)
       eslint-plugin-markdown: 3.0.1(eslint@8.57.0)
       eslint-plugin-no-use-extend-native: 0.5.0
@@ -4810,8 +4810,9 @@ snapshots:
 
   '@rollup/plugin-alias@4.0.4(rollup@2.79.1)':
     dependencies:
-      rollup: 2.79.1
       slash: 4.0.0
+    optionalDependencies:
+      rollup: 2.79.1
 
   '@rollup/plugin-commonjs@24.1.0(rollup@2.79.1)':
     dependencies:
@@ -4821,6 +4822,7 @@ snapshots:
       glob: 8.1.0
       is-reference: 1.2.1
       magic-string: 0.27.0
+    optionalDependencies:
       rollup: 2.79.1
 
   '@rollup/plugin-inject@5.0.5(rollup@2.79.1)':
@@ -4828,11 +4830,13 @@ snapshots:
       '@rollup/pluginutils': 5.1.0(rollup@2.79.1)
       estree-walker: 2.0.2
       magic-string: 0.30.10
+    optionalDependencies:
       rollup: 2.79.1
 
   '@rollup/plugin-json@6.1.0(rollup@2.79.1)':
     dependencies:
       '@rollup/pluginutils': 5.1.0(rollup@2.79.1)
+    optionalDependencies:
       rollup: 2.79.1
 
   '@rollup/plugin-node-resolve@15.2.3(rollup@2.79.1)':
@@ -4843,12 +4847,14 @@ snapshots:
       is-builtin-module: 3.2.1
       is-module: 1.0.0
       resolve: 1.22.8
+    optionalDependencies:
       rollup: 2.79.1
 
   '@rollup/plugin-replace@5.0.7(rollup@2.79.1)':
     dependencies:
       '@rollup/pluginutils': 5.1.0(rollup@2.79.1)
       magic-string: 0.30.10
+    optionalDependencies:
       rollup: 2.79.1
 
   '@rollup/pluginutils@5.1.0(rollup@2.79.1)':
@@ -4856,11 +4862,12 @@ snapshots:
       '@types/estree': 1.0.5
       estree-walker: 2.0.2
       picomatch: 2.3.1
+    optionalDependencies:
       rollup: 2.79.1
 
   '@sec-ant/readable-stream@0.4.1': {}
 
-  '@semantic-release/changelog@6.0.3(semantic-release@23.1.1)':
+  '@semantic-release/changelog@6.0.3(semantic-release@23.1.1(typescript@4.9.5))':
     dependencies:
       '@semantic-release/error': 3.0.0
       aggregate-error: 3.1.0
@@ -4868,7 +4875,7 @@ snapshots:
       lodash: 4.17.21
       semantic-release: 23.1.1(typescript@4.9.5)
 
-  '@semantic-release/commit-analyzer@12.0.0(semantic-release@23.1.1)':
+  '@semantic-release/commit-analyzer@12.0.0(semantic-release@23.1.1(typescript@4.9.5))':
     dependencies:
       conventional-changelog-angular: 7.0.0
       conventional-commits-filter: 4.0.0
@@ -4885,7 +4892,7 @@ snapshots:
 
   '@semantic-release/error@4.0.0': {}
 
-  '@semantic-release/git@10.0.1(semantic-release@23.1.1)':
+  '@semantic-release/git@10.0.1(semantic-release@23.1.1(typescript@4.9.5))':
     dependencies:
       '@semantic-release/error': 3.0.0
       aggregate-error: 3.1.0
@@ -4899,7 +4906,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@semantic-release/github@10.0.6(semantic-release@23.1.1)':
+  '@semantic-release/github@10.0.6(semantic-release@23.1.1(typescript@4.9.5))':
     dependencies:
       '@octokit/core': 6.1.2
       '@octokit/plugin-paginate-rest': 11.3.0(@octokit/core@6.1.2)
@@ -4921,7 +4928,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@semantic-release/npm@12.0.1(semantic-release@23.1.1)':
+  '@semantic-release/npm@12.0.1(semantic-release@23.1.1(typescript@4.9.5))':
     dependencies:
       '@semantic-release/error': 4.0.0
       aggregate-error: 5.0.0
@@ -4938,7 +4945,7 @@ snapshots:
       semver: 7.6.2
       tempy: 3.1.0
 
-  '@semantic-release/release-notes-generator@13.0.0(semantic-release@23.1.1)':
+  '@semantic-release/release-notes-generator@13.0.0(semantic-release@23.1.1(typescript@4.9.5))':
     dependencies:
       conventional-changelog-angular: 7.0.0
       conventional-changelog-writer: 7.0.1
@@ -5285,6 +5292,10 @@ snapshots:
       '@smithy/types': 3.3.0
       tslib: 2.6.3
 
+  '@tak-bro/ollama@0.0.1':
+    dependencies:
+      whatwg-fetch: 3.6.20
+
   '@types/estree@1.0.5': {}
 
   '@types/figlet@1.5.8': {}
@@ -5355,7 +5366,7 @@ snapshots:
     dependencies:
       '@types/yargs-parser': 21.0.3
 
-  '@typescript-eslint/eslint-plugin@5.62.0(@typescript-eslint/parser@5.62.0)(eslint@8.57.0)(typescript@4.9.5)':
+  '@typescript-eslint/eslint-plugin@5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@4.9.5))(eslint@8.57.0)(typescript@4.9.5)':
     dependencies:
       '@eslint-community/regexpp': 4.11.0
       '@typescript-eslint/parser': 5.62.0(eslint@8.57.0)(typescript@4.9.5)
@@ -5369,11 +5380,12 @@ snapshots:
       natural-compare-lite: 1.4.0
       semver: 7.6.2
       tsutils: 3.21.0(typescript@4.9.5)
+    optionalDependencies:
       typescript: 4.9.5
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.57.0)(typescript@4.9.5)':
+  '@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.0)(typescript@4.9.5))(eslint@8.57.0)(typescript@4.9.5)':
     dependencies:
       '@eslint-community/regexpp': 4.11.0
       '@typescript-eslint/parser': 6.21.0(eslint@8.57.0)(typescript@4.9.5)
@@ -5388,6 +5400,7 @@ snapshots:
       natural-compare: 1.4.0
       semver: 7.6.2
       ts-api-utils: 1.3.0(typescript@4.9.5)
+    optionalDependencies:
       typescript: 4.9.5
     transitivePeerDependencies:
       - supports-color
@@ -5399,6 +5412,7 @@ snapshots:
       '@typescript-eslint/typescript-estree': 5.62.0(typescript@4.9.5)
       debug: 4.3.5
       eslint: 8.57.0
+    optionalDependencies:
       typescript: 4.9.5
     transitivePeerDependencies:
       - supports-color
@@ -5411,6 +5425,7 @@ snapshots:
       '@typescript-eslint/visitor-keys': 6.21.0
       debug: 4.3.5
       eslint: 8.57.0
+    optionalDependencies:
       typescript: 4.9.5
     transitivePeerDependencies:
       - supports-color
@@ -5432,6 +5447,7 @@ snapshots:
       debug: 4.3.5
       eslint: 8.57.0
       tsutils: 3.21.0(typescript@4.9.5)
+    optionalDependencies:
       typescript: 4.9.5
     transitivePeerDependencies:
       - supports-color
@@ -5443,6 +5459,7 @@ snapshots:
       debug: 4.3.5
       eslint: 8.57.0
       ts-api-utils: 1.3.0(typescript@4.9.5)
+    optionalDependencies:
       typescript: 4.9.5
     transitivePeerDependencies:
       - supports-color
@@ -5460,6 +5477,7 @@ snapshots:
       is-glob: 4.0.3
       semver: 7.6.2
       tsutils: 3.21.0(typescript@4.9.5)
+    optionalDependencies:
       typescript: 4.9.5
     transitivePeerDependencies:
       - supports-color
@@ -5474,6 +5492,7 @@ snapshots:
       minimatch: 9.0.3
       semver: 7.6.2
       ts-api-utils: 1.3.0(typescript@4.9.5)
+    optionalDependencies:
       typescript: 4.9.5
     transitivePeerDependencies:
       - supports-color
@@ -5840,10 +5859,10 @@ snapshots:
 
   clone@1.0.4: {}
 
-  cohere-ai@7.12.1(@aws-sdk/client-sso-oidc@3.606.0):
+  cohere-ai@7.12.1(@aws-sdk/client-sso-oidc@3.606.0(@aws-sdk/client-sts@3.606.0)):
     dependencies:
       '@aws-sdk/client-sagemaker': 3.606.0
-      '@aws-sdk/credential-providers': 3.606.0(@aws-sdk/client-sso-oidc@3.606.0)
+      '@aws-sdk/credential-providers': 3.606.0(@aws-sdk/client-sso-oidc@3.606.0(@aws-sdk/client-sts@3.606.0))
       '@aws-sdk/protocol-http': 3.374.0
       '@aws-sdk/signature-v4': 3.374.0
       form-data: 4.0.0
@@ -5937,6 +5956,7 @@ snapshots:
       import-fresh: 3.3.0
       js-yaml: 4.1.0
       parse-json: 5.2.0
+    optionalDependencies:
       typescript: 4.9.5
 
   cross-spawn@7.0.3:
@@ -6199,13 +6219,13 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0)(eslint-plugin-import@2.29.1)(eslint@8.57.0):
+  eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@4.9.5))(eslint-plugin-import@2.29.1)(eslint@8.57.0):
     dependencies:
       debug: 4.3.5
       enhanced-resolve: 5.17.0
       eslint: 8.57.0
-      eslint-module-utils: 2.8.1(@typescript-eslint/parser@5.62.0)(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0)
-      eslint-plugin-import: 2.29.1(@typescript-eslint/parser@5.62.0)(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0)
+      eslint-module-utils: 2.8.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@4.9.5))(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@4.9.5))(eslint-plugin-import@2.29.1)(eslint@8.57.0))(eslint@8.57.0)
+      eslint-plugin-import: 2.29.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@4.9.5))(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0)
       fast-glob: 3.3.2
       get-tsconfig: 4.7.5
       is-core-module: 2.14.0
@@ -6216,29 +6236,32 @@ snapshots:
       - eslint-import-resolver-webpack
       - supports-color
 
-  eslint-module-utils@2.8.1(@typescript-eslint/parser@5.62.0)(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0):
+  eslint-module-utils@2.8.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@4.9.5))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@4.9.5))(eslint-plugin-import@2.29.1)(eslint@8.57.0))(eslint@8.57.0):
     dependencies:
-      '@typescript-eslint/parser': 5.62.0(eslint@8.57.0)(typescript@4.9.5)
       debug: 3.2.7
+    optionalDependencies:
+      '@typescript-eslint/parser': 5.62.0(eslint@8.57.0)(typescript@4.9.5)
       eslint: 8.57.0
       eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 3.6.1(@typescript-eslint/parser@5.62.0)(eslint-plugin-import@2.29.1)(eslint@8.57.0)
+      eslint-import-resolver-typescript: 3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@4.9.5))(eslint-plugin-import@2.29.1)(eslint@8.57.0)
     transitivePeerDependencies:
       - supports-color
 
-  eslint-module-utils@2.8.1(@typescript-eslint/parser@5.62.0)(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0):
+  eslint-module-utils@2.8.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@4.9.5))(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@4.9.5))(eslint-plugin-import@2.29.1)(eslint@8.57.0))(eslint@8.57.0):
     dependencies:
+      debug: 3.2.7
+    optionalDependencies:
       '@typescript-eslint/parser': 5.62.0(eslint@8.57.0)(typescript@4.9.5)
-      debug: 3.2.7
       eslint: 8.57.0
-      eslint-import-resolver-typescript: 3.6.1(@typescript-eslint/parser@5.62.0)(eslint-plugin-import@2.29.1)(eslint@8.57.0)
+      eslint-import-resolver-typescript: 3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@4.9.5))(eslint-plugin-import@2.29.1)(eslint@8.57.0)
     transitivePeerDependencies:
       - supports-color
 
-  eslint-module-utils@2.8.1(@typescript-eslint/parser@6.21.0)(eslint-import-resolver-node@0.3.9)(eslint@8.57.0):
+  eslint-module-utils@2.8.1(@typescript-eslint/parser@6.21.0(eslint@8.57.0)(typescript@4.9.5))(eslint-import-resolver-node@0.3.9)(eslint@8.57.0):
     dependencies:
-      '@typescript-eslint/parser': 6.21.0(eslint@8.57.0)(typescript@4.9.5)
       debug: 3.2.7
+    optionalDependencies:
+      '@typescript-eslint/parser': 6.21.0(eslint@8.57.0)(typescript@4.9.5)
       eslint: 8.57.0
       eslint-import-resolver-node: 0.3.9
     transitivePeerDependencies:
@@ -6256,9 +6279,8 @@ snapshots:
       eslint: 8.57.0
       ignore: 5.3.1
 
-  eslint-plugin-import@2.29.1(@typescript-eslint/parser@5.62.0)(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0):
+  eslint-plugin-import@2.29.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@4.9.5))(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0):
     dependencies:
-      '@typescript-eslint/parser': 5.62.0(eslint@8.57.0)(typescript@4.9.5)
       array-includes: 3.1.8
       array.prototype.findlastindex: 1.2.5
       array.prototype.flat: 1.3.2
@@ -6267,7 +6289,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 8.57.0
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.8.1(@typescript-eslint/parser@5.62.0)(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0)
+      eslint-module-utils: 2.8.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@4.9.5))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@4.9.5))(eslint-plugin-import@2.29.1)(eslint@8.57.0))(eslint@8.57.0)
       hasown: 2.0.2
       is-core-module: 2.14.0
       is-glob: 4.0.3
@@ -6277,14 +6299,15 @@ snapshots:
       object.values: 1.2.0
       semver: 6.3.1
       tsconfig-paths: 3.15.0
+    optionalDependencies:
+      '@typescript-eslint/parser': 5.62.0(eslint@8.57.0)(typescript@4.9.5)
     transitivePeerDependencies:
       - eslint-import-resolver-typescript
       - eslint-import-resolver-webpack
       - supports-color
 
-  eslint-plugin-import@2.29.1(@typescript-eslint/parser@6.21.0)(eslint@8.57.0):
+  eslint-plugin-import@2.29.1(@typescript-eslint/parser@6.21.0(eslint@8.57.0)(typescript@4.9.5))(eslint@8.57.0):
     dependencies:
-      '@typescript-eslint/parser': 6.21.0(eslint@8.57.0)(typescript@4.9.5)
       array-includes: 3.1.8
       array.prototype.findlastindex: 1.2.5
       array.prototype.flat: 1.3.2
@@ -6293,7 +6316,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 8.57.0
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.8.1(@typescript-eslint/parser@6.21.0)(eslint-import-resolver-node@0.3.9)(eslint@8.57.0)
+      eslint-module-utils: 2.8.1(@typescript-eslint/parser@6.21.0(eslint@8.57.0)(typescript@4.9.5))(eslint-import-resolver-node@0.3.9)(eslint@8.57.0)
       hasown: 2.0.2
       is-core-module: 2.14.0
       is-glob: 4.0.3
@@ -6303,6 +6326,8 @@ snapshots:
       object.values: 1.2.0
       semver: 6.3.1
       tsconfig-paths: 3.15.0
+    optionalDependencies:
+      '@typescript-eslint/parser': 6.21.0(eslint@8.57.0)(typescript@4.9.5)
     transitivePeerDependencies:
       - eslint-import-resolver-typescript
       - eslint-import-resolver-webpack
@@ -6421,11 +6446,12 @@ snapshots:
       semver: 7.6.2
       strip-indent: 3.0.0
 
-  eslint-plugin-unused-imports@3.2.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint@8.57.0):
+  eslint-plugin-unused-imports@3.2.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.0)(typescript@4.9.5))(eslint@8.57.0)(typescript@4.9.5))(eslint@8.57.0):
     dependencies:
-      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.57.0)(typescript@4.9.5)
       eslint: 8.57.0
       eslint-rule-composer: 0.3.0
+    optionalDependencies:
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.0)(typescript@4.9.5))(eslint@8.57.0)(typescript@4.9.5)
 
   eslint-plugin-vue@9.26.0(eslint@8.57.0):
     dependencies:
@@ -7600,10 +7626,6 @@ snapshots:
       define-properties: 1.2.1
       es-object-atoms: 1.0.0
 
-  ollama@0.5.6:
-    dependencies:
-      whatwg-fetch: 3.6.20
-
   once@1.4.0:
     dependencies:
       wrappy: 1.0.2
@@ -7799,6 +7821,7 @@ snapshots:
       esbuild: 0.18.20
       magic-string: 0.30.10
       rollup: 2.79.1
+    optionalDependencies:
       typescript: 4.9.5
 
   pluralize@8.0.0: {}
@@ -8039,11 +8062,11 @@ snapshots:
 
   semantic-release@23.1.1(typescript@4.9.5):
     dependencies:
-      '@semantic-release/commit-analyzer': 12.0.0(semantic-release@23.1.1)
+      '@semantic-release/commit-analyzer': 12.0.0(semantic-release@23.1.1(typescript@4.9.5))
       '@semantic-release/error': 4.0.0
-      '@semantic-release/github': 10.0.6(semantic-release@23.1.1)
-      '@semantic-release/npm': 12.0.1(semantic-release@23.1.1)
-      '@semantic-release/release-notes-generator': 13.0.0(semantic-release@23.1.1)
+      '@semantic-release/github': 10.0.6(semantic-release@23.1.1(typescript@4.9.5))
+      '@semantic-release/npm': 12.0.1(semantic-release@23.1.1(typescript@4.9.5))
+      '@semantic-release/release-notes-generator': 13.0.0(semantic-release@23.1.1(typescript@4.9.5))
       aggregate-error: 5.0.0
       cosmiconfig: 9.0.0(typescript@4.9.5)
       debug: 4.3.5
