@@ -1,6 +1,6 @@
+import { Ollama } from '@tak-bro/ollama';
 import chalk from 'chalk';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
-import { Ollama } from 'ollama';
 import { Observable, catchError, concatMap, from, map, of } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
