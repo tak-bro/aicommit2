@@ -4,6 +4,8 @@ import path from 'path';
 import chokidar from 'chokidar';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Subscription } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 import { AIRequestManager } from '../managers/ai-request.manager.js';
 import { ConsoleManager } from '../managers/console.manager.js';
@@ -12,6 +14,9 @@ import { ModelName, RawConfig, ValidConfig, getConfig, modelNames } from '../uti
 import { handleCliError } from '../utils/error.js';
 import { assertGitRepo, getCommitDiff } from '../utils/git.js';
 import { validateSystemPrompt } from '../utils/prompt.js';
+
+
+let destroyed$ = new Subject<void>();
 
 const consoleManager = new ConsoleManager();
 
@@ -36,12 +41,12 @@ export const watchGit = async (
     rawArgv: string[]
 ) => {
     consoleManager.printTitle();
+    await assertGitRepo();
+    const config = await initializeConfig(locale, generate, prompt, rawArgv);
+    setupGitHook();
+    initLogFile();
 
     try {
-        await assertGitRepo();
-        const config = await initializeConfig(locale, generate, prompt, rawArgv);
-        setupGitHook();
-        initLogFile();
         await watchCommitLog(config);
     } catch (error) {
         handleWatchGitError(error);
@@ -64,6 +69,14 @@ const initializeConfig = async (
         rawArgv
     );
     await validateSystemPrompt(config);
+    const availableAIs = getAvailableAIs(config);
+    if (availableAIs.length === 0) {
+        consoleManager.printError(`Please set at least one API key and watchMode via the config command:
+  aicommit2 config set [MODEL].key="YOUR_API_KEY"
+  aicommit2 config set [MODEL].watchMode="true"`);
+        process.exit();
+    }
+
     return config;
 };
 
@@ -88,14 +101,14 @@ const getAvailableAIs = (config: ValidConfig): ModelName[] => {
 };
 
 const isAIAvailable = (key: ModelName, value: RawConfig, config: ValidConfig) => {
-    const codeReview = config.codeReview || value.codeReview;
+    const watchMode = config.watchMode || value.watchMode;
     if (key === 'OLLAMA') {
-        return !!value && !!value.model && (value.model as string[]).length > 0 && codeReview;
+        return !!value && !!value.model && (value.model as string[]).length > 0 && watchMode;
     }
     if (key === 'HUGGINGFACE') {
-        return !!value && !!value.cookie && codeReview;
+        return !!value && !!value.cookie && watchMode;
     }
-    return !!value.key && value.key.length > 0 && codeReview;
+    return !!value.key && value.key.length > 0 && watchMode;
 };
 
 const setupGitHook = () => {
@@ -115,14 +128,17 @@ const handleCommitEvent = async (config: ValidConfig, commitHash: string) => {
             return;
         }
 
-        const availableAIs = getAvailableAIs(config);
-        if (availableAIs.length === 0) {
-            consoleManager.printError('Please set at least one API key via the `aicommit2 config set` command');
-            return;
-        }
-
         consoleManager.stopLoader();
         consoleManager.printStagedFiles(diffInfo);
+
+        const availableAIs = getAvailableAIs(config);
+        if (availableAIs.length === 0) {
+            consoleManager.printError(`Please set at least one API key and watchMode via the config command:
+  aicommit2 config set [MODEL].key="YOUR_API_KEY"
+  aicommit2 config set [MODEL].watchMode="true"`);
+            process.exit();
+            return;
+        }
 
         await performCodeReview(config, diffInfo, availableAIs);
     } catch (error) {
@@ -151,6 +167,10 @@ const cleanupPreviousCodeReview = () => {
         currentCodeReviewPromptManager.completeSubject();
         currentCodeReviewPromptManager.closeInquirerInstance();
         currentCodeReviewSubscription?.unsubscribe();
+
+        destroyed$.next();
+        destroyed$.complete();
+        destroyed$ = new Subject<void>();
     }
 };
 
@@ -167,17 +187,20 @@ const initializeCodeReviewInquirer = () => {
 };
 
 const subscribeToCodeReviewRequests = (aiRequestManager: AIRequestManager, availableAIs: ModelName[]) => {
-    return aiRequestManager.createCodeReviewRequests$(availableAIs).subscribe(
-        (choice: ReactiveListChoice) => {
-            currentCodeReviewPromptManager?.refreshChoices(choice);
-        },
-        () => {
-            /* empty */
-        },
-        () => {
-            currentCodeReviewPromptManager?.checkErrorOnChoices();
-        }
-    );
+    return aiRequestManager
+        .createCodeReviewRequests$(availableAIs)
+        .pipe(takeUntil(destroyed$))
+        .subscribe(
+            (choice: ReactiveListChoice) => {
+                currentCodeReviewPromptManager?.refreshChoices(choice);
+            },
+            () => {
+                /* empty */
+            },
+            () => {
+                currentCodeReviewPromptManager?.checkErrorOnChoices(false);
+            }
+        );
 };
 
 const cleanupCodeReview = () => {

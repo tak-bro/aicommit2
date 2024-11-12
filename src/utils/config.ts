@@ -203,6 +203,18 @@ const generalConfigParsers = {
         parseAssert('disabled', /^(?:true|false)$/.test(disabled), 'Must be a boolean(true or false)');
         return disabled === 'true';
     },
+    watchMode(watchMode?: string | boolean) {
+        if (typeof watchMode === 'boolean') {
+            return watchMode;
+        }
+
+        if (watchMode === undefined || watchMode === null) {
+            return false;
+        }
+
+        parseAssert('watchMode', /^(?:true|false)$/.test(watchMode), 'Must be a boolean(true or false)');
+        return watchMode === 'true';
+    },
 } as const;
 
 const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>> = {
@@ -233,6 +245,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         includeBody: generalConfigParsers.includeBody,
         codeReview: generalConfigParsers.codeReview,
         disabled: generalConfigParsers.disabled,
+        watchMode: generalConfigParsers.watchMode,
     },
     HUGGINGFACE: {
         cookie: (cookie?: string) => cookie || '',
@@ -265,6 +278,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         includeBody: generalConfigParsers.includeBody,
         codeReview: generalConfigParsers.codeReview,
         disabled: generalConfigParsers.disabled,
+        watchMode: generalConfigParsers.watchMode,
     },
     GEMINI: {
         key: (key?: string) => key || '',
@@ -290,6 +304,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         topP: generalConfigParsers.topP,
         codeReview: generalConfigParsers.codeReview,
         disabled: generalConfigParsers.disabled,
+        watchMode: generalConfigParsers.watchMode,
     },
     ANTHROPIC: {
         key: (key?: string) => key || '',
@@ -323,6 +338,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         topP: generalConfigParsers.topP,
         codeReview: generalConfigParsers.codeReview,
         disabled: generalConfigParsers.disabled,
+        watchMode: generalConfigParsers.watchMode,
     },
     MISTRAL: {
         key: (key?: string) => key || '',
@@ -365,6 +381,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         topP: generalConfigParsers.topP,
         codeReview: generalConfigParsers.codeReview,
         disabled: generalConfigParsers.disabled,
+        watchMode: generalConfigParsers.watchMode,
     },
     CODESTRAL: {
         key: (key?: string) => key || '',
@@ -392,6 +409,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         includeBody: generalConfigParsers.includeBody,
         codeReview: generalConfigParsers.codeReview,
         disabled: generalConfigParsers.disabled,
+        watchMode: generalConfigParsers.watchMode,
     },
     OLLAMA: {
         model: (models?: string | string[]): string[] => {
@@ -445,6 +463,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         topP: generalConfigParsers.topP,
         codeReview: generalConfigParsers.codeReview,
         disabled: generalConfigParsers.disabled,
+        watchMode: generalConfigParsers.watchMode,
     },
     COHERE: {
         key: (key?: string) => key || '',
@@ -470,6 +489,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         topP: generalConfigParsers.topP,
         codeReview: generalConfigParsers.codeReview,
         disabled: generalConfigParsers.disabled,
+        watchMode: generalConfigParsers.watchMode,
     },
     GROQ: {
         key: (key?: string) => key || '',
@@ -518,6 +538,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         topP: generalConfigParsers.topP,
         codeReview: generalConfigParsers.codeReview,
         disabled: generalConfigParsers.disabled,
+        watchMode: generalConfigParsers.watchMode,
     },
     PERPLEXITY: {
         key: (key?: string) => key || '',
@@ -554,6 +575,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         includeBody: generalConfigParsers.includeBody,
         codeReview: generalConfigParsers.codeReview,
         disabled: generalConfigParsers.disabled,
+        watchMode: generalConfigParsers.watchMode,
     },
     DEEPSEEK: {
         key: (key?: string) => key || '',
@@ -581,6 +603,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         includeBody: generalConfigParsers.includeBody,
         codeReview: generalConfigParsers.codeReview,
         disabled: generalConfigParsers.disabled,
+        watchMode: generalConfigParsers.watchMode,
     },
 };
 
