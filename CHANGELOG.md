@@ -1,3 +1,11 @@
+## [2.1.9](https://github.com/tak-bro/aicommit2/compare/v2.1.8...v2.1.9) (2024-11-12)
+
+
+### Features
+
+* add authentication options to OLLAMA service ([75973a8](https://github.com/tak-bro/aicommit2/commit/75973a8581c3ee3a974d7490d8e885cc0bfbd928))
+* **package:** add new package dependency @tak-bro/ollama ([456a29a](https://github.com/tak-bro/aicommit2/commit/456a29a8edc9dcebda7a316fd2a52bc1059545c5))
+
 ## [2.1.8](https://github.com/tak-bro/aicommit2/compare/v2.1.7...v2.1.8) (2024-10-29)
 
 ## [2.1.7](https://github.com/tak-bro/aicommit2/compare/v2.1.6...v2.1.7) (2024-10-29)
