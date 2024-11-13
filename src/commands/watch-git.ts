@@ -3,7 +3,6 @@ import path from 'path';
 
 import chokidar from 'chokidar';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
-import { Subscription } from 'rxjs';
 import { Subject, Subscription } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -14,7 +13,6 @@ import { ModelName, RawConfig, ValidConfig, getConfig, modelNames } from '../uti
 import { handleCliError } from '../utils/error.js';
 import { assertGitRepo, getCommitDiff } from '../utils/git.js';
 import { validateSystemPrompt } from '../utils/prompt.js';
-
 
 let destroyed$ = new Subject<void>();
 
