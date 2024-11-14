@@ -108,6 +108,12 @@ export class ReactivePromptManager {
         this.inquirerInstance.ui.close();
     }
 
+    cancel() {
+        if (this.inquirerInstance?.ui?.activePrompt) {
+            (this.inquirerInstance.ui.activePrompt as ReactiveListPrompt<any>).abortPrompt();
+        }
+    }
+
     private alertNoGeneratedMessage() {
         this.loader$.next({
             isLoading: false,
