@@ -161,15 +161,16 @@ const performCodeReview = async (config: ValidConfig, diffInfo: any, availableAI
 
 const cleanupPreviousCodeReview = () => {
     if (currentCodeReviewPromptManager) {
-        currentCodeReviewPromptManager.clearLoader();
-        currentCodeReviewPromptManager.completeSubject();
-        currentCodeReviewPromptManager.closeInquirerInstance();
         currentCodeReviewSubscription?.unsubscribe();
 
-        destroyed$.next();
-        destroyed$.complete();
-        destroyed$ = new Subject<void>();
+        currentCodeReviewPromptManager.clearLoader();
+        currentCodeReviewPromptManager.completeSubject();
+        currentCodeReviewPromptManager.cancel();
+        currentCodeReviewPromptManager.closeInquirerInstance();
     }
+    destroyed$.next();
+    destroyed$.complete();
+    destroyed$ = new Subject<void>();
 };
 
 const initializeCodeReviewInquirer = () => {
@@ -203,10 +204,12 @@ const subscribeToCodeReviewRequests = (aiRequestManager: AIRequestManager, avail
 
 const cleanupCodeReview = () => {
     if (currentCodeReviewPromptManager) {
+        currentCodeReviewSubscription?.unsubscribe();
+
         currentCodeReviewPromptManager.clearLoader();
         currentCodeReviewPromptManager.completeSubject();
+        currentCodeReviewPromptManager.cancel();
         currentCodeReviewPromptManager.closeInquirerInstance();
-        currentCodeReviewSubscription?.unsubscribe();
         currentCodeReviewPromptManager = null;
     }
     clearTerminal();
