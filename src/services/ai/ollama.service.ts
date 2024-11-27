@@ -158,6 +158,7 @@ export class OllamaService extends AIService {
             ],
             stream: false,
             options: {
+                num_ctx: this.params.config.numCtx,
                 temperature: this.params.config.temperature,
                 top_p: this.params.config.topP,
                 seed: getRandomNumber(10, 1000),
