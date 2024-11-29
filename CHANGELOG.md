@@ -1,3 +1,10 @@
+## [2.1.10](https://github.com/tak-bro/aicommit2/compare/v2.1.9...v2.1.10) (2024-11-29)
+
+
+### Features
+
+* add numCtx config option for Ollama ([e64656a](https://github.com/tak-bro/aicommit2/commit/e64656a7b8ea6b5aecb2e2275454b851ee8d57ec))
+
 ## [2.1.9](https://github.com/tak-bro/aicommit2/compare/v2.1.8...v2.1.9) (2024-11-12)
 
 
