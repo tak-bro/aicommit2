@@ -665,6 +665,7 @@ packages:
 
   '@pvtnbr/eslint-config@0.33.0':
     resolution: {integrity: sha512-27Zs5L1LKtT4DKfFPalPTjImCiU3UMvfTMIModuFWn7nhGhbv4SEUPo5pc8fYoTgmAlnwp/NNMhw3yUUFZKyzw==}
+    deprecated: Package renamed to 'lintroll'
     peerDependencies:
       eslint: ^7.15.0 || ^8.0.0
 
@@ -1931,6 +1932,7 @@ packages:
   eslint@8.57.0:
     resolution: {integrity: sha512-dZ6+mexnaTIbSBZWgou51U6OmzIhYM2VcNdtiTtI7qPNZm35Akpr0f6vtw3w1Kmn5PYo+tZVfh13WrhpS6oLqQ==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+    deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
     hasBin: true
 
   espree@9.6.1:
@@ -3407,8 +3409,8 @@ packages:
     deprecated: Rimraf versions prior to v4 are no longer supported
     hasBin: true
 
-  rollup@2.79.1:
-    resolution: {integrity: sha512-uKxbd0IhMZOhjAiD5oAFp7BqvkA4Dv47qpOCtaNvng4HBwdbWtdOh8f5nZNuk2rp51PMGk3bzfWu5oayNEuYnw==}
+  rollup@2.79.2:
+    resolution: {integrity: sha512-fS6iqSPZDs3dr/y7Od6y5nha8dW1YnbgtsyotCVvoFGKbERG++CVRFv1meyGDE1SNItQA8BrnCw7ScdAhRJ3XQ==}
     engines: {node: '>=10.0.0'}
     hasBin: true
 
@@ -4808,62 +4810,62 @@ snapshots:
       - supports-color
       - typescript
 
-  '@rollup/plugin-alias@4.0.4(rollup@2.79.1)':
+  '@rollup/plugin-alias@4.0.4(rollup@2.79.2)':
     dependencies:
       slash: 4.0.0
     optionalDependencies:
-      rollup: 2.79.1
+      rollup: 2.79.2
 
-  '@rollup/plugin-commonjs@24.1.0(rollup@2.79.1)':
+  '@rollup/plugin-commonjs@24.1.0(rollup@2.79.2)':
     dependencies:
-      '@rollup/pluginutils': 5.1.0(rollup@2.79.1)
+      '@rollup/pluginutils': 5.1.0(rollup@2.79.2)
       commondir: 1.0.1
       estree-walker: 2.0.2
       glob: 8.1.0
       is-reference: 1.2.1
       magic-string: 0.27.0
     optionalDependencies:
-      rollup: 2.79.1
+      rollup: 2.79.2
 
-  '@rollup/plugin-inject@5.0.5(rollup@2.79.1)':
+  '@rollup/plugin-inject@5.0.5(rollup@2.79.2)':
     dependencies:
-      '@rollup/pluginutils': 5.1.0(rollup@2.79.1)
+      '@rollup/pluginutils': 5.1.0(rollup@2.79.2)
       estree-walker: 2.0.2
       magic-string: 0.30.10
     optionalDependencies:
-      rollup: 2.79.1
+      rollup: 2.79.2
 
-  '@rollup/plugin-json@6.1.0(rollup@2.79.1)':
+  '@rollup/plugin-json@6.1.0(rollup@2.79.2)':
     dependencies:
-      '@rollup/pluginutils': 5.1.0(rollup@2.79.1)
+      '@rollup/pluginutils': 5.1.0(rollup@2.79.2)
     optionalDependencies:
-      rollup: 2.79.1
+      rollup: 2.79.2
 
-  '@rollup/plugin-node-resolve@15.2.3(rollup@2.79.1)':
+  '@rollup/plugin-node-resolve@15.2.3(rollup@2.79.2)':
     dependencies:
-      '@rollup/pluginutils': 5.1.0(rollup@2.79.1)
+      '@rollup/pluginutils': 5.1.0(rollup@2.79.2)
       '@types/resolve': 1.20.2
       deepmerge: 4.3.1
       is-builtin-module: 3.2.1
       is-module: 1.0.0
       resolve: 1.22.8
     optionalDependencies:
-      rollup: 2.79.1
+      rollup: 2.79.2
 
-  '@rollup/plugin-replace@5.0.7(rollup@2.79.1)':
+  '@rollup/plugin-replace@5.0.7(rollup@2.79.2)':
     dependencies:
-      '@rollup/pluginutils': 5.1.0(rollup@2.79.1)
+      '@rollup/pluginutils': 5.1.0(rollup@2.79.2)
       magic-string: 0.30.10
     optionalDependencies:
-      rollup: 2.79.1
+      rollup: 2.79.2
 
-  '@rollup/pluginutils@5.1.0(rollup@2.79.1)':
+  '@rollup/pluginutils@5.1.0(rollup@2.79.2)':
     dependencies:
       '@types/estree': 1.0.5
       estree-walker: 2.0.2
       picomatch: 2.3.1
     optionalDependencies:
-      rollup: 2.79.1
+      rollup: 2.79.2
 
   '@sec-ant/readable-stream@0.4.1': {}
 
@@ -6224,8 +6226,8 @@ snapshots:
       debug: 4.3.5
       enhanced-resolve: 5.17.0
       eslint: 8.57.0
-      eslint-module-utils: 2.8.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@4.9.5))(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@4.9.5))(eslint-plugin-import@2.29.1)(eslint@8.57.0))(eslint@8.57.0)
-      eslint-plugin-import: 2.29.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@4.9.5))(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0)
+      eslint-module-utils: 2.8.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@4.9.5))(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0)
+      eslint-plugin-import: 2.29.1(@typescript-eslint/parser@6.21.0(eslint@8.57.0)(typescript@4.9.5))(eslint@8.57.0)
       fast-glob: 3.3.2
       get-tsconfig: 4.7.5
       is-core-module: 2.14.0
@@ -6236,7 +6238,7 @@ snapshots:
       - eslint-import-resolver-webpack
       - supports-color
 
-  eslint-module-utils@2.8.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@4.9.5))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@4.9.5))(eslint-plugin-import@2.29.1)(eslint@8.57.0))(eslint@8.57.0):
+  eslint-module-utils@2.8.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@4.9.5))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
@@ -6247,7 +6249,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-module-utils@2.8.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@4.9.5))(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@4.9.5))(eslint-plugin-import@2.29.1)(eslint@8.57.0))(eslint@8.57.0):
+  eslint-module-utils@2.8.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@4.9.5))(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
@@ -6289,7 +6291,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 8.57.0
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.8.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@4.9.5))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@4.9.5))(eslint-plugin-import@2.29.1)(eslint@8.57.0))(eslint@8.57.0)
+      eslint-module-utils: 2.8.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@4.9.5))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0)
       hasown: 2.0.2
       is-core-module: 2.14.0
       is-glob: 4.0.3
@@ -7811,16 +7813,16 @@ snapshots:
 
   pkgroll@1.11.1(typescript@4.9.5):
     dependencies:
-      '@rollup/plugin-alias': 4.0.4(rollup@2.79.1)
-      '@rollup/plugin-commonjs': 24.1.0(rollup@2.79.1)
-      '@rollup/plugin-inject': 5.0.5(rollup@2.79.1)
-      '@rollup/plugin-json': 6.1.0(rollup@2.79.1)
-      '@rollup/plugin-node-resolve': 15.2.3(rollup@2.79.1)
-      '@rollup/plugin-replace': 5.0.7(rollup@2.79.1)
-      '@rollup/pluginutils': 5.1.0(rollup@2.79.1)
+      '@rollup/plugin-alias': 4.0.4(rollup@2.79.2)
+      '@rollup/plugin-commonjs': 24.1.0(rollup@2.79.2)
+      '@rollup/plugin-inject': 5.0.5(rollup@2.79.2)
+      '@rollup/plugin-json': 6.1.0(rollup@2.79.2)
+      '@rollup/plugin-node-resolve': 15.2.3(rollup@2.79.2)
+      '@rollup/plugin-replace': 5.0.7(rollup@2.79.2)
+      '@rollup/pluginutils': 5.1.0(rollup@2.79.2)
       esbuild: 0.18.20
       magic-string: 0.30.10
-      rollup: 2.79.1
+      rollup: 2.79.2
     optionalDependencies:
       typescript: 4.9.5
 
@@ -8017,7 +8019,7 @@ snapshots:
     dependencies:
       glob: 7.2.3
 
-  rollup@2.79.1:
+  rollup@2.79.2:
     optionalDependencies:
       fsevents: 2.3.3
 
