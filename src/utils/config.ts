@@ -421,6 +421,17 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         },
         auth: (auth?: string) => auth || '',
         key: (key?: string) => key || '',
+        numCtx: (numCtx?: string) => {
+            if (!numCtx) {
+                return 2048;
+            }
+
+            parseAssert('OLLAMA.numCtx', /^\d+$/.test(numCtx), 'Must be an integer');
+
+            const parsed = Number(numCtx);
+            parseAssert('OLLAMA.numCtx', parsed >= 2048, 'Must be greater than 2048');
+            return parsed;
+        },
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
         codeReviewPromptPath: generalConfigParsers.codeReviewPromptPath,

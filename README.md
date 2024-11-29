@@ -86,9 +86,11 @@ You can also use your model for free with [Ollama](https://ollama.com/) and it i
 ollama run llama3.2 # model you want use. ex) codellama, deepseek-coder
 ```
 
-3. Set the model and host
+3. Set the host, model and numCtx. (The default numCtx value in Ollama is 2048. It is recommended to set it to 4096 or higher.)
 ```sh
+aicommit2 config set OLLAMA.host=<your host>
 aicommit2 config set OLLAMA.model=<your model>
+aicommit2 config set OLLAMA.numCtx=4096
 ```
 
 > If you want to use Ollama, you must set **OLLAMA.model**.
