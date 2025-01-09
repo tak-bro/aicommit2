@@ -434,7 +434,6 @@ aicommit2 config set codeReview=true
 aicommit2 config set codeReviewPromptPath="/path/to/user/prompt.txt"
 ```
 
-
 ## Available General Settings by Model
 |                      | timeout | temperature | maxTokens |  topP  |
 |:--------------------:|:-------:|:-----------:|:---------:|:------:|
@@ -875,6 +874,37 @@ aicommit2 config set OLLAMA.timeout=<timeout>
 Ollama does not support the following options in General Settings.
 
 - maxTokens
+
+## Watch Commit Mode
+
+Watch Commit mode allows you to monitor Git commits in real-time and automatically perform AI code reviews using the `--watch-commit` flag.
+
+```sh
+aicommit2 --watch-commit
+```
+
+This feature only works within Git repository directories and automatically triggers whenever a commit event occurs. When a new commit is detected, it automatically:
+1. Analyzes commit changes
+2. Performs AI code review
+3. Displays results in real-time
+
+> For detailed configuration of the code review feature, please refer to the [codeReview](#codereview) section. The settings in that section are shared with this feature.
+
+Example:
+```sh
+aicommit2 --watch-commit
+```
+
+⚠️ **CAUTION**
+
+- The Watch Commit feature is currently **experimental**
+- This feature performs AI analysis for each commit, which **consumes a significant number of API tokens**
+- API costs can increase substantially if there are many commits
+- It is recommended to **carefully monitor your token usage** when using this feature
+- To use this feature, you must enable watch mode for at least one AI model:
+  ```sh
+  aicommit2 config set [MODEL].watchMode="true"
+  ```
 
 ## Upgrading
 
