@@ -63,7 +63,7 @@ cli(
                 description: 'Custom prompt to let users fine-tune provided prompt',
                 alias: 'p',
             },
-            watch: {
+            'watch-commit': {
                 type: Boolean,
                 default: false,
             },
@@ -82,7 +82,7 @@ cli(
             prepareCommitMessageHook();
             return;
         }
-        if (argv.flags.watch) {
+        if (argv.flags['watch-commit']) {
             watchGit(argv.flags.locale, argv.flags.generate, argv.flags.exclude, argv.flags.prompt, rawArgv);
             return;
         }
