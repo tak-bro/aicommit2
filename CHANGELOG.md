@@ -1,3 +1,18 @@
+# [2.2.0](https://github.com/tak-bro/aicommit2/compare/v2.1.11...v2.2.0) (2025-01-13)
+
+
+### Bug Fixes
+
+* prevent watch mode memory leak ([cd20e22](https://github.com/tak-bro/aicommit2/commit/cd20e226e7ec91e71cf5f0980d78e0f3cc5d9a89))
+
+
+### Features
+
+* add contributor tdabasinskas ([f74b804](https://github.com/tak-bro/aicommit2/commit/f74b8046a8cca5d5ee6410ff38e532544bc426f7))
+* add watch-commit flag ([d2ed855](https://github.com/tak-bro/aicommit2/commit/d2ed85543b4a8f06d0eb59460cc08e8da019f12a))
+* add watchMode ([c98b7f1](https://github.com/tak-bro/aicommit2/commit/c98b7f1c0e8ac2a443eab4fae75888e83a665e6d))
+* update terminal rendering ([ce78347](https://github.com/tak-bro/aicommit2/commit/ce783478ad47b8177286249cb40b4e13182a3b8a))
+
 ## [2.1.11](https://github.com/tak-bro/aicommit2/compare/v2.1.10...v2.1.11) (2024-11-29)
 
 ## [2.1.10](https://github.com/tak-bro/aicommit2/compare/v2.1.9...v2.1.10) (2024-11-29)
