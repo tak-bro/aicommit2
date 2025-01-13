@@ -1,0 +1,335 @@
+# The configurations that used for the recording, feel free to edit them
+config:
+
+  # Specify a command to be executed
+  # like `/bin/bash -l`, `ls`, or any other commands
+  # the default is bash for Linux
+  # or powershell.exe for Windows
+  command: zsh
+
+  # Specify the current working directory path
+  # the default is the current working directory path
+  cwd: /Users/tak/workspace/tak-bro/tmp/my-ink-cli
+
+  # Export additional ENV variables
+  env:
+    recording: true
+
+  # Explicitly set the number of columns
+  # or use `auto` to take the current
+  # number of columns of your shell
+  cols: 105
+
+  # Explicitly set the number of rows
+  # or use `auto` to take the current
+  # number of rows of your shell
+  rows: 20
+
+  # Amount of times to repeat GIF
+  # If value is -1, play once
+  # If value is 0, loop indefinitely
+  # If value is a positive number, loop n times
+  repeat: 0
+
+  # Quality
+  # 1 - 100
+  quality: 100
+
+  # Delay between frames in ms
+  # If the value is `auto` use the actual recording delays
+  frameDelay: auto
+
+  # Maximum delay between frames in ms
+  # Ignored if the `frameDelay` isn't set to `auto`
+  # Set to `auto` to prevent limiting the max idle time
+  maxIdleTime: 2000
+
+  # The surrounding frame box
+  # The `type` can be null, window, floating, or solid`
+  # To hide the title use the value null
+  # Don't forget to add a backgroundColor style with a null as type
+  frameBox:
+    type: floating
+    title: AICommit2
+    style:
+      border: 0px black solid
+      # boxShadow: none
+      # margin: 0px
+
+  # Add a watermark image to the rendered gif
+  # You need to specify an absolute path for
+  # the image on your machine or a URL, and you can also
+  # add your own CSS styles
+  watermark:
+    imagePath: null
+    style:
+      position: absolute
+      right: 15px
+      bottom: 15px
+      width: 100px
+      opacity: 0.9
+
+  # Cursor style can be one of
+  # `block`, `underline`, or `bar`
+  cursorStyle: block
+
+  # Font family
+  # You can use any font that is installed on your machine
+  # in CSS-like syntax
+  fontFamily: "Monaco, Lucida Console, Ubuntu Mono, Monospace"
+
+  # The size of the font
+  fontSize: 12
+
+  # The height of lines
+  lineHeight: 1
+
+  # The spacing between letters
+  letterSpacing: 0
+
+  # Theme
+  theme:
+    background: "transparent"
+    foreground: "#afafaf"
+    cursor: "#c7c7c7"
+    black: "#232628"
+    red: "#fc4384"
+    green: "#b3e33b"
+    yellow: "#ffa727"
+    blue: "#75dff2"
+    magenta: "#ae89fe"
+    cyan: "#708387"
+    white: "#d5d5d0"
+    brightBlack: "#626566"
+    brightRed: "#ff7fac"
+    brightGreen: "#c8ed71"
+    brightYellow: "#ebdf86"
+    brightBlue: "#75dff2"
+    brightMagenta: "#ae89fe"
+    brightCyan: "#b1c6ca"
+    brightWhite: "#f9f9f4"
+
+# Records, feel free to edit them
+records:
+  - delay: 476
+    content: "\e[?1l\e>\e[?2004l\e[?25l\r\r\e[A\e[0m\e[27m\e[24m\e[J\e[0m\e[49m\e[27m\e[24m\e[38;5;76m❯\e[0m\e[38;5;76m\e[49m\e[39m\e[27m\e[24m \e[32m./../../aicommit2/dist/cli.mjs\e[39m --watch-commit\e[K\e[?25h\r\r\n\e]697;OSCLock=9613b85de7734830ba983ef1c44883b8\a\e]697;PreExec\a\e]2;./../../aicommit2/dist/cli.mjs --watch-commit\a\e]1;./../../aicommit2/dist/cli.mjs\a"
+  - delay: 494
+    content: "       _                    _ _   ___ \r\n  __ _(_)__ ___ _ __  _ __ (_) |_|_  )\r\n / _` | / _/ _ \\ '  \\| '  \\| |  _|/ / \r\n \\__,_|_\\__\\___/_|_|_|_|_|_|_|\\__/___|\r\n                                      \r\n"
+  - delay: 15
+    content: "\r\n\e[1m\e[32m✔\e[39m\e[22m \e[1mGit post-commit hook has been set up\e[22m\r\n"
+  - delay: 1781
+    content: "\ec"
+  - delay: 20
+    content: "\e[1m\e[32m✔ \e[39m\e[22m\e[1mDetected 1 staged file:\e[22m\r\n     test.ts\r\n\r\n"
+  - delay: 5
+    content: "\e[?25l\e[33m⚠ No code reviews were generated\e[39m\e[32D\e[32C\e[?25l\e[1G\e[1G\e[36m⠋\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠙\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠹\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠸\e[39m AI is performing a code review"
+  - delay: 82
+    content: "\e[1G\e[0K\e[36m⠼\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠴\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠴\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠦\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠧\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠇\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠏\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠋\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠙\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠹\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠸\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠼\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠋\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠙\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠹\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠸\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠼\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠴\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠦\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠧\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠇\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠏\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠋\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠙\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠹\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠸\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠼\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠴\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠦\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠧\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠇\e[39m AI is performing a code review"
+  - delay: 82
+    content: "\e[1G\e[0K\e[36m⠙\e[39m AI is performing a code review"
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠹\e[39m AI is performing a code review"
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠸\e[39m AI is performing a code review"
+  - delay: 49
+    content: "\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPlease check code reviews: \e[22m\e[1m\e[0m \e[0m\e[22m\e[2m  (Use ↑↓ arrows to move)\e[22m\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;255;255;255m\e[38;2;0;0;0m\e[1m[Llama3.2]\e[22m\e[1m\e[39m\e[36m\e[49m ### Review of `test.ts` fileThe...\e[39m\e[22m\r\n\r\n\e[32m\e[1m### Review of \e[33mtest.ts\e[39m\e[32m file\e[22m\e[39m\r\n\r\n\e[0mThe provided diff shows a refactored version of the \e[33mtest.ts\e[39m file, which removes unused styles. The \r\nchanges made by the author are mostly related to removing unnecessary code and optimizing the structure \r\nof the class.\e[0m\r\n\r\n\e[32m\e[1m#### Suggestions for improvement:\e[22m\e[39m\r\n\r\n    1. \e[0m**Code organization**: The `OpenAICompatibleService` class is quite long and has many \r\nresponsibilities. Consider breaking it down into smaller classes or services that each handle a specific \r\naspect of the functionality.\e[0m\r\n    2. \e[0m**Constant variables**: Many values are hardcoded in the code, such as `DEFAULT_PROMPT_OPTIONS`. \r\nConsider defining these values as constants at the top of the file to improve readability and \r\nmaintainability.\e[0m\r\n    3. \e[0m**Type annotations**: Some function parameters and return types are not annotated with their \r\nexpected types. Add type annotations where necessary to improve code clarity and help catch type-related \r\nerrors.\e[0m\r\n    4. \e[0m**Naming conventions**: Some variable names, such as `requestType` and `params.config`, could be \r\nmore descriptive. Consider following a consistent naming convention throughout the codebase.\e[0m\r\n    5. \e[0m**Magic numbers**: The value `0900` in the commit message is a magic number. Consider defining it \r\nas a named constant to improve readability.\e[0m\r\n\r\n\e[32m\e[1m### Code examples for suggestions:\e[22m\e[39m\r\n\r\n    \e[32m// Define constants at the top of the file\e[39m\r\n    \e[34mconst\e[39m DEFAULT_PROMPT_OPTIONS = {\r\n        \e[32m// ...\e[39m\r\n    };\e[2m\e[22m\r\n\e[2m\e[22m\r\n\e[2m(Page \e[1m\e[36m1\e[39m\e[22m\e[2m/\e[36m4\e[39m. Use PgUp/PgDn to scroll)\e[22m\r\n\r\n\e[0D"
+  - delay: 31
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 80
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 79
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 79
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 80
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 80
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 80
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 82
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 80
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 7
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPlease check code reviews: \e[22m\e[1m\e[0m \e[0m\e[22m\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;255;255;255m\e[38;2;0;0;0m\e[1m[Llama3.2]\e[22m\e[1m\e[39m\e[36m\e[49m ### Review of `test.ts` fileThe...\e[39m\e[22m\r\n\r\n    \r\n    \e[34minterface\e[39m PromptOptions {\r\n        \e[36mlocale\e[39m: \e[36mstring\e[39m;\r\n        maxLength: \e[36mnumber\e[39m;\r\n        \e[34mtype\e[39m: \e[36mstring\e[39m;\r\n        generate: \e[36mboolean\e[39m;\r\n        systemPrompt: \e[36mstring\e[39m;\r\n        systemPromptPath: \e[36mstring\e[39m;\r\n        codeReviewPromptPath: \e[36mstring\e[39m;\r\n    }\r\n    \r\n    \e[34m\e[34mclass\e[39m\e[34m OpenAICompatibleService \e[39m{\r\n        \e[34masync\e[39m generateCommitMessage(\r\n            url: \e[36mstring\e[39m,\r\n            \e[36mpath\e[39m: \e[36mstring\e[39m,\r\n            \e[36mkey\e[39m: \e[36mstring\e[39m,\r\n            \e[36mmodel\e[39m: \e[36mstring\e[39m,\r\n            \e[36mdiff\e[39m: \e[36mstring\e[39m,\r\n            timeout?: \e[36mnumber\e[39m,\r\n            maxTokens?: \e[36mnumber\e[39m,\e[2m\e[22m\r\n\e[2m\e[22m\r\n\e[2m(Page \e[1m\e[36m2\e[39m\e[22m\e[2m/\e[36m4\e[39m. Use PgUp/PgDn to scroll)\e[22m\r\n\r\n\e[0D"
+  - delay: 73
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 80
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 80
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 80
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 20
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPlease check code reviews: \e[22m\e[1m\e[0m \e[0m\e[22m\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;255;255;255m\e[38;2;0;0;0m\e[1m[Llama3.2]\e[22m\e[1m\e[39m\e[36m\e[49m ### Review of `test.ts` fileThe...\e[39m\e[22m\r\n\r\n            temperature?: \e[36mnumber\e[39m,\r\n            topP?: \e[36mnumber\e[39m,\r\n            \e[36mgeneratedSystemPrompt\e[39m: \e[36mstring\e[39m,\r\n            logging?: \e[36mboolean\e[39m,\r\n            \e[36mrequestType\e[39m: \e[31m'review'\e[39m | \e[31m'generate'\e[39m,\r\n            proxy?: \e[36many\e[39m\r\n        ): \e[36mPromise\e[39m<\e[36many\e[39m> {\r\n            \e[32m// ...\e[39m\r\n        }\r\n    \r\n        parseMessage(\r\n            value: \e[36many\e[39m,\r\n            \e[36mtype\e[39m: \e[36mstring\e[39m,\r\n            \e[36mgenerate\e[39m: \e[36mboolean\e[39m\r\n        ): \e[36many\e[39m {\r\n            \e[32m// ...\e[39m\r\n        }\r\n    }\r\n\r\n\e[32m\e[1m### Code smells and anti-patterns:\e[22m\e[39m\e[2m\e[22m\r\n\e[2m\e[22m\r\n\e[2m(Page \e[1m\e[36m3\e[39m\e[22m\e[2m/\e[36m4\e[39m. Use PgUp/PgDn to scroll)\e[22m\r\n\r\n\e[0D"
+  - delay: 60
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 80
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 80
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 82
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 80
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 56
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPlease check code reviews: \e[22m\e[1m\e[0m \e[0m\e[22m\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;255;255;255m\e[38;2;0;0;0m\e[1m[Llama3.2]\e[22m\e[1m\e[39m\e[36m\e[49m ### Review of `test.ts` fileThe...\e[39m\e[22m\r\n\r\n\r\n    * \e[0mThe `OpenAICompatibleService` class has a large number of responsibilities, making it hard to \r\nmaintain and extend.\e[0m\r\n    * \e[0mThe use of magic numbers and hardcoded values can make the code harder to understand and modify.\e[0m\r\n\r\n\e[0mBy addressing these suggestions, you can improve the readability, maintainability, and scalability of the\r\n \e[33mtest.ts\e[39m file.\e[0m\r\n\r\n\e[2m\e[22m\r\n\e[2m\e[22m\r\n\e[2m(Page \e[1m\e[36m4\e[39m\e[22m\e[2m/\e[36m4\e[39m. Use PgUp/PgDn to scroll)\e[22m\r\n\r\n\e[0D"
+  - delay: 24
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 82
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 82
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 80
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 81
+    content: "\e[1G\e[0K\e[32m✔\e[39m \e[1mCode review completed\e[22m"
+  - delay: 1072
+    content: "\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[1A\e[2K\e[G\e[1m\e[32m?\e[39m \e[1mPlease check code reviews: \e[22m\e[1m\e[0m \e[0m\e[22m\e[36m### Review of `test.ts` fileThe...\e[39m\r\n  \e[36m❯\e[39m \e[1m\e[36m\e[48;2;255;255;255m\e[38;2;0;0;0m\e[1m[Llama3.2]\e[22m\e[1m\e[39m\e[36m\e[49m ### Review of `test.ts` fileThe...\e[39m\e[22m\r\n\r\n\r\n    * \e[0mThe `OpenAICompatibleService` class has a large number of responsibilities, making it hard to \r\nmaintain and extend.\e[0m\r\n    * \e[0mThe use of magic numbers and hardcoded values can make the code harder to understand and modify.\e[0m\r\n\r\n\e[0mBy addressing these suggestions, you can improve the readability, maintainability, and scalability of the\r\n \e[33mtest.ts\e[39m file.\e[0m\r\n\r\n\e[2m\e[22m\r\n\e[2m\e[22m\r\n\e[2m(Page \e[1m\e[36m4\e[39m\e[22m\e[2m/\e[36m4\e[39m. Use PgUp/PgDn to scroll)\e[22m\r\n\r\n\e[0D\e[1G\e[0K\e[?25h\e[1G\r\n\e[?25h\e[1G\e[?25h\ec\e[?25l\e[1G\e[1G\e[36m⠋\e[39m Watching for new Git commits..."
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠙\e[39m Watching for new Git commits..."
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠹\e[39m Watching for new Git commits..."
+  - delay: 82
+    content: "\e[1G\e[0K\e[36m⠸\e[39m Watching for new Git commits..."
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠼\e[39m Watching for new Git commits..."
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠴\e[39m Watching for new Git commits..."
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠦\e[39m Watching for new Git commits..."
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠧\e[39m Watching for new Git commits..."
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠇\e[39m Watching for new Git commits..."
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠏\e[39m Watching for new Git commits..."
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠋\e[39m Watching for new Git commits..."
+  - delay: 82
+    content: "\e[1G\e[0K\e[36m⠙\e[39m Watching for new Git commits..."
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠹\e[39m Watching for new Git commits..."
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠸\e[39m Watching for new Git commits..."
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠼\e[39m Watching for new Git commits..."
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠴\e[39m Watching for new Git commits..."
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠦\e[39m Watching for new Git commits..."
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠧\e[39m Watching for new Git commits..."
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠇\e[39m Watching for new Git commits..."
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠏\e[39m Watching for new Git commits..."
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠋\e[39m Watching for new Git commits..."
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠙\e[39m Watching for new Git commits..."
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠹\e[39m Watching for new Git commits..."
+  - delay: 80
+    content: "\e[1G\e[0K\e[36m⠸\e[39m Watching for new Git commits..."
+  - delay: 81
+    content: "\e[1G\e[0K\e[36m⠼\e[39m Watching for new Git commits..."
+  - delay: 71
+    content: "\e[?25h"
+  - delay: 15
+    content: "\r\n\e[1m\e[7m%\e[27m\e[1m\e[0m                                                                                                        \r \r\e]2;tak@louis-lemon:~/workspace/tak-bro/tmp/my-ink-cli\a\e]1;..mp/my-ink-cli\a\e]7;file://louis-lemon.local/Users/tak/workspace/tak-bro/tmp/my-ink-cli\e\\"
+  - delay: 72
+    content: "\e]697;OSCUnlock=9613b85de7734830ba983ef1c44883b8\a\e]697;Dir=/Users/tak/workspace/tak-bro/tmp/my-ink-cli\a\e]697;Shell=zsh\a\e]697;ShellPath=/opt/homebrew/Cellar/zsh/5.9/bin/zsh\a\e]697;PID=70402\a\e]697;ExitCode=130\a\e]697;TTY=/dev/ttys018\a\e]697;Log=\a\e]697;ZshAutosuggestionColor=fg=245\a\e]697;FigAutosuggestionColor=\a\e]697;User=tak\a\r\e[0m\e[27m\e[24m\e[J\e]697;StartPrompt\a\e[0m\e[49m\e[39m\r\n\r\n\e[A\e[0m\e[49m\e[39m\e[0m\e[49m\e[39m\e[0m\e[49m \e[0m\e[49m\e[38;5;31m \e[1m\e[38;5;31m\e[38;5;39m~\e[0m\e[38;5;39m\e[49m\e[38;5;31m/workspace/tak-bro/tmp/\e[1m\e[38;5;31m\e[38;5;39mmy-ink-cli\e[0m\e[38;5;39m\e[49m\e[38;5;31m\e[0m\e[38;5;31m\e[49m\e[38;5;31m\e[0m\e[38;5;31m\e[49m \e[0m\e[38;5;31m\e[49m\e[38;5;76m \e[38;5;76m master \e[38;5;76m⇡4\e[0m\e[38;5;76m\e[49m\e[38;5;76m\e[0m\e[38;5;76m\e[49m\e[30m \e[0m\e[30m\e[49m\e[39m\e[38;5;238m··················\e[0m\e[38;5;238m\e[49m\e[30m \e[0m\e[30m\e[49m\e[38;5;160m✘ INT\e[0m\e[38;5;160m\e[49m\e[38;5;160m\e[0m\e[38;5;160m\e[49m\e[38;5;160m\e[0m\e[38;5;160m\e[49m\e[38;5;101m  17s\e[0m\e[38;5;101m\e[49m\e[38;5;101m\e[0m\e[38;5;101m\e[49m\e[38;5;101m\e[0m\e[38;5;101m\e[49m\e[38;5;70m  20.10.0\e[0m\e[38;5;70m\e[49m\e[38;5;70m\e[0m\e[38;5;70m\e[49m\e[38;5;70m\e[0m\e[38;5;70m\e[49m\e[38;5;66m  15:14:51\e[0m\e[38;5;66m\e[49m\e[38;5;66m\e[0m\e[38;5;66m\e[49m\e[38;5;66m\e[0m\e[38;5;66m\e[49m\e[39m\r\n\e[0m\e[49m\e[39m\e[0m\e[49m\e[38;5;196m❯\e[0m\e[38;5;196m\e[49m\e[38;5;196m\e[0m\e[38;5;196m\e[49m\e[30m\e[0m\e[30m\e[49m\e[39m \e[0m\e[49m\e[39m\e]697;EndPrompt\a\e]697;NewCmd=9613b85de7734830ba983ef1c44883b8\a\e[K\e[102C\e]697;StartPrompt\a\e]697;EndPrompt\a\e[102D\e[?1h\e=\e[?2004h"

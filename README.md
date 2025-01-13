@@ -877,6 +877,8 @@ Ollama does not support the following options in General Settings.
 
 ## Watch Commit Mode
 
+![watch-commit-gif](https://github.com/tak-bro/aicommit2/blob/main/img/watch-commit-min.gif?raw=true)
+
 Watch Commit mode allows you to monitor Git commits in real-time and automatically perform AI code reviews using the `--watch-commit` flag.
 
 ```sh
@@ -889,11 +891,6 @@ This feature only works within Git repository directories and automatically trig
 3. Displays results in real-time
 
 > For detailed configuration of the code review feature, please refer to the [codeReview](#codereview) section. The settings in that section are shared with this feature.
-
-Example:
-```sh
-aicommit2 --watch-commit
-```
 
 ⚠️ **CAUTION**
 
