@@ -18,6 +18,7 @@ export class OllamaService extends AIService {
     private host = DEFAULT_OLLAMA_HOST;
     private model = '';
     private key = '';
+    private auth = '';
     private ollama: Ollama;
 
     constructor(private readonly params: AIServiceParams) {

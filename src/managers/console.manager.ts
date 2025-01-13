@@ -8,9 +8,23 @@ import { getDetectedMessage } from '../utils/git.js';
 
 export class ConsoleManager {
     private title = 'aicommit2';
+    private loader: Ora | undefined;
 
     printTitle() {
         console.log(figlet.textSync(this.title, { font: 'Small' }));
+    }
+
+    showLoader(text: string) {
+        if (this.loader) {
+            this.loader.text = text;
+            return;
+        }
+        this.loader = ora(text).start();
+    }
+
+    stopLoader() {
+        this.loader?.stop();
+        this.loader = undefined;
     }
 
     displaySpinner(text: string): Ora {
@@ -47,9 +61,18 @@ export class ConsoleManager {
         console.log(`\n${chalk.bold.yellow('⚠')} ${chalk.yellow('Commit cancelled')}`);
     }
 
-    printErrorMessage(message: string) {
+    printError(message: string) {
         console.log(`\n${chalk.bold.red('✖')} ${chalk.red(`${message}`)}`);
     }
+
+    printWarning(message: string) {
+        console.log(`\n${chalk.bold.yellow('⚠')} ${chalk.red(`${message}`)}`);
+    }
+
+    printSetupGitEvent(event: string) {
+        console.log(`\n${chalk.bold.green('✔')} ${chalk.bold(`Git ${event} hook has been set up`)}`);
+    }
+
     moveCursorUp() {
         const rl = readline.createInterface({
             input: process.stdin,
@@ -64,7 +87,7 @@ export class ConsoleManager {
             input: process.stdin,
             output: process.stdout,
         });
-        readline.moveCursor(process.stdout, 0, 1);
+        readline.moveCursor(process.stdout, 0, 2);
         rl.close();
     }
 }

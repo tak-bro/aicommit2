@@ -434,7 +434,6 @@ aicommit2 config set codeReview=true
 aicommit2 config set codeReviewPromptPath="/path/to/user/prompt.txt"
 ```
 
-
 ## Available General Settings by Model
 |                      | timeout | temperature | maxTokens |  topP  |
 |:--------------------:|:-------:|:-----------:|:---------:|:------:|
@@ -876,6 +875,34 @@ Ollama does not support the following options in General Settings.
 
 - maxTokens
 
+## Watch Commit Mode
+
+![watch-commit-gif](https://github.com/tak-bro/aicommit2/blob/main/img/watch-commit-min.gif?raw=true)
+
+Watch Commit mode allows you to monitor Git commits in real-time and automatically perform AI code reviews using the `--watch-commit` flag.
+
+```sh
+aicommit2 --watch-commit
+```
+
+This feature only works within Git repository directories and automatically triggers whenever a commit event occurs. When a new commit is detected, it automatically:
+1. Analyzes commit changes
+2. Performs AI code review
+3. Displays results in real-time
+
+> For detailed configuration of the code review feature, please refer to the [codeReview](#codereview) section. The settings in that section are shared with this feature.
+
+⚠️ **CAUTION**
+
+- The Watch Commit feature is currently **experimental**
+- This feature performs AI analysis for each commit, which **consumes a significant number of API tokens**
+- API costs can increase substantially if there are many commits
+- It is recommended to **carefully monitor your token usage** when using this feature
+- To use this feature, you must enable watch mode for at least one AI model:
+  ```sh
+  aicommit2 config set [MODEL].watchMode="true"
+  ```
+
 ## Upgrading
 
 Check the installed version with:
@@ -1029,7 +1056,12 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/bhodrolok"><img src="https://avatars.githubusercontent.com/bhodrolok" width="100px;" alt=""/><br /><sub><b>@bhodrolok</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=bhodrolok" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/ryicoh"><img src="https://avatars.githubusercontent.com/ryicoh" width="100px;" alt=""/><br /><sub><b>@ryicoh</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=ryicoh" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/noamsto"><img src="https://avatars.githubusercontent.com/noamsto" width="100px;" alt=""/><br /><sub><b>@noamsto</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=noamsto" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/tdabasinskas"><img src="https://avatars.githubusercontent.com/tdabasinskas" width="100px;" alt=""/><br /><sub><b>@tdabasinskas</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=tdabasinskas" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/gnpaone"><img src="https://avatars.githubusercontent.com/gnpaone" width="100px;" alt=""/><br /><sub><b>@gnpaone</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=gnpaone" title="Code">💻</a></td>
   </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/devxpain"><img src="https://avatars.githubusercontent.com/devxpain" width="100px;" alt=""/><br /><sub><b>@devxpain</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=devxpain" title="Code">💻</a></td>
+  </tr>  
 </table>
 <!-- markdownlint-restore -->
 <!-- prettier-ignore-end -->

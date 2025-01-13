@@ -5,6 +5,7 @@ import configCommand from './commands/config.js';
 import hookCommand, { isCalledFromGitHook } from './commands/hook.js';
 import logCommand from './commands/log.js';
 import prepareCommitMessageHook from './commands/prepare-commit-msg-hook.js';
+import watchGit from './commands/watch-git.js';
 import { description, version } from '../package.json';
 
 const rawArgv = process.argv.slice(2);
@@ -62,6 +63,10 @@ cli(
                 description: 'Custom prompt to let users fine-tune provided prompt',
                 alias: 'p',
             },
+            'watch-commit': {
+                type: Boolean,
+                default: false,
+            },
         },
 
         commands: [configCommand, hookCommand, logCommand],
@@ -75,6 +80,10 @@ cli(
     argv => {
         if (isCalledFromGitHook) {
             prepareCommitMessageHook();
+            return;
+        }
+        if (argv.flags['watch-commit']) {
+            watchGit(argv.flags.locale, argv.flags.generate, argv.flags.exclude, argv.flags.prompt, rawArgv);
             return;
         }
         aicommit2(

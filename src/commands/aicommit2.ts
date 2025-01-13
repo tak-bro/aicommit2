@@ -1,6 +1,3 @@
-import fs from 'fs';
-import path from 'path';
-
 import { execa } from 'execa';
 import inquirer from 'inquirer';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
@@ -19,6 +16,7 @@ import { ModelName, RawConfig, ValidConfig, getConfig, modelNames } from '../uti
 import { KnownError, handleCliError } from '../utils/error.js';
 import { assertGitRepo, getStagedDiff } from '../utils/git.js';
 import { RequestType } from '../utils/log.js';
+import { validateSystemPrompt } from '../utils/prompt.js';
 
 const consoleManager = new ConsoleManager();
 
@@ -105,28 +103,10 @@ export default async (
         }
         process.exit();
     })().catch(error => {
-        consoleManager.printErrorMessage(error.message);
+        consoleManager.printError(error.message);
         handleCliError(error);
         process.exit(1);
     });
-
-async function validateSystemPrompt(config: ValidConfig) {
-    if (config.systemPromptPath) {
-        try {
-            fs.readFileSync(path.resolve(config.systemPromptPath), 'utf-8');
-        } catch (error) {
-            throw new KnownError(`Error reading system prompt file: ${config.systemPromptPath}`);
-        }
-    }
-
-    if (config.codeReview && config.codeReviewPromptPath) {
-        try {
-            fs.readFileSync(path.resolve(config.codeReviewPromptPath), 'utf-8');
-        } catch (error) {
-            throw new KnownError(`Error reading code review prompt file: ${config.codeReviewPromptPath}`);
-        }
-    }
-}
 
 function getAvailableAIs(config: ValidConfig, requestType: RequestType): ModelName[] {
     return Object.entries(config)

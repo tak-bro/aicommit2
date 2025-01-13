@@ -41,6 +41,7 @@ export class ReactivePromptManager {
     private loader$: BehaviorSubject<ReactiveListLoader>;
     private destroyed$: ReplaySubject<boolean> = new ReplaySubject(1);
     private stopMessage = 'Changes analyzed';
+    inquirerInstance: any = null;
 
     constructor(loader: ReactiveListLoader) {
         this.loader$ = new BehaviorSubject<ReactiveListLoader>(loader);
@@ -50,15 +51,24 @@ export class ReactivePromptManager {
         this.stopMessage = options.stopMessage;
 
         inquirer.registerPrompt('reactiveListPrompt', ReactiveListPrompt);
-        return inquirer.prompt({
-            ...options,
+        this.inquirerInstance = inquirer.prompt({
             choices$: this.choices$,
             loader$: this.loader$,
+            ...options,
         });
+
+        return this.inquirerInstance;
     }
 
     startLoader() {
         this.loader$.next({ isLoading: true });
+    }
+
+    clearLoader() {
+        if (!this.inquirerInstance) {
+            return;
+        }
+        this.loader$.next({ isLoading: false, clear: true });
     }
 
     refreshChoices(choice: ReactiveListChoice) {
@@ -69,7 +79,7 @@ export class ReactivePromptManager {
         this.choices$.next([...this.currentChoices, choice].sort(sortByDisabled));
     }
 
-    checkErrorOnChoices() {
+    checkErrorOnChoices(shouldExit = true) {
         const isAllError = this.choices$
             .getValue()
             .map(choice => choice as ReactiveListChoice)
@@ -78,7 +88,7 @@ export class ReactivePromptManager {
         if (isAllError) {
             this.alertNoGeneratedMessage();
             this.logEmptyCommitMessage();
-            process.exit(1);
+            shouldExit && process.exit(1);
             return;
         }
         this.stopLoaderOnSuccess();
@@ -89,6 +99,19 @@ export class ReactivePromptManager {
         this.loader$.complete();
         this.destroyed$.next(true);
         this.destroyed$.complete();
+    }
+
+    closeInquirerInstance() {
+        if (!this.inquirerInstance) {
+            return;
+        }
+        this.inquirerInstance.ui.close();
+    }
+
+    cancel() {
+        if (this.inquirerInstance?.ui?.activePrompt) {
+            (this.inquirerInstance.ui.activePrompt as ReactiveListPrompt<any>).abortPrompt();
+        }
     }
 
     private alertNoGeneratedMessage() {
