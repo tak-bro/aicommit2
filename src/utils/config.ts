@@ -19,7 +19,7 @@ const { hasOwnProperty } = Object.prototype;
 
 export const hasOwn = (object: unknown, key: PropertyKey) => hasOwnProperty.call(object, key);
 
-export const modelNames = [
+export const BUILTIN_SERVICES = [
     'OPENAI',
     'OLLAMA',
     'HUGGINGFACE',
@@ -32,7 +32,26 @@ export const modelNames = [
     'PERPLEXITY',
     'DEEPSEEK',
 ] as const;
-export type ModelName = (typeof modelNames)[number];
+export type BuiltinService = (typeof BUILTIN_SERVICES)[number];
+
+const findAllServices = (config: RawConfig): string[] => {
+    const sections = Object.keys(config);
+
+    // 내장 서비스와 추가된 섹션들을 모두 포함
+    const allServices = new Set([
+        ...BUILTIN_SERVICES,
+        ...sections.filter(section =>
+            // 설정 섹션 이름 규칙 검증 (대문자와 언더스코어만 허용)
+            /^[A-Z][A-Z0-9_]*$/.test(section)
+        ),
+    ]);
+
+    return Array.from(allServices);
+};
+
+// @ts-ignore ignore
+export const modelNames = (config: RawConfig) => findAllServices(config) as const;
+export type ModelName = ReturnType<typeof modelNames>[number];
 
 const parseAssert = (name: string, condition: any, message: string) => {
     if (!condition) {
@@ -677,6 +696,8 @@ export const getConfig = async (cliConfig: RawConfig, rawArgv: string[] = []): P
     const mergedCliConfig = { ...cliConfig, ...parsedCliArgs };
     const parsedConfig: Record<string, unknown> = {};
 
+    const services = findAllServices(config);
+
     // Helper function to get the value with priority
     const getValueWithPriority = (modelName: string, key: string) => {
         const cliValue = mergedCliConfig[`${modelName}.${key}`] ?? (mergedCliConfig[modelName] as Record<string, any>)?.[key];
@@ -691,9 +712,11 @@ export const getConfig = async (cliConfig: RawConfig, rawArgv: string[] = []): P
         parsedConfig[key] = parser(value as any);
     }
 
-    // Parse model-specific configs
-    for (const [modelName, modelParsers] of Object.entries(modelConfigParsers)) {
+    // Parse model-specific configs for all services
+    for (const modelName of services) {
         parsedConfig[modelName] = {};
+        const modelParsers = modelConfigParsers[modelName as BuiltinService] || createConfigParser(modelName);
+
         for (const [key, parser] of Object.entries(modelParsers)) {
             const value = getValueWithPriority(modelName, key);
             (parsedConfig[modelName] as Record<string, any>)[key] = parser(value);
@@ -708,22 +731,51 @@ export const setConfigs = async (keyValues: [key: string, value: any][]) => {
 
     for (const [key, value] of keyValues) {
         const [modelName, modelKey] = key.split('.');
-        if (modelName in modelConfigParsers) {
-            if (!config[modelName]) {
-                config[modelName] = {};
-            }
-            const parser = modelConfigParsers[modelName as ModelName][modelKey];
-            if (!parser) {
-                throw new KnownError(`Invalid config property: ${key}`);
-            }
-            (config[modelName] as Record<string, any>)[modelKey] = parser(value);
-        } else {
+
+        // 일반 설정 키인 경우 (모델 이름이 없는 경우)
+        if (!modelKey) {
             const parser = generalConfigParsers[key as keyof typeof generalConfigParsers];
             if (!parser) {
                 throw new KnownError(`Invalid config property: ${key}`);
             }
-            // @ts-ignore ignore
             config[key] = parser(value);
+            continue;
+        }
+
+        // 모델 관련 설정인 경우
+        if (!config[modelName]) {
+            config[modelName] = {};
+        }
+
+        // 내장 서비스인 경우
+        if (BUILTIN_SERVICES.includes(modelName as BuiltinService)) {
+            const parser = modelConfigParsers[modelName as BuiltinService][modelKey];
+            if (!parser) {
+                throw new KnownError(`Invalid config property: ${key}`);
+            }
+            (config[modelName] as Record<string, any>)[modelKey] = parser(value);
+            continue;
+        }
+
+        // 커스텀 서비스인 경우
+        const isValidServiceName = /^[A-Z][A-Z0-9_]*$/.test(modelName);
+        if (!isValidServiceName) {
+            throw new KnownError(`Invalid service name: ${modelName}. Service names must be uppercase letters, numbers, and underscores.`);
+        }
+
+        // 커스텀 서비스의 parser 가져오기
+        const customParser = createConfigParser(modelName);
+        if (!customParser[modelKey]) {
+            throw new KnownError(`Invalid config property for custom service: ${key}`);
+        }
+
+        try {
+            (config[modelName] as Record<string, any>)[modelKey] = customParser[modelKey](value);
+        } catch (error) {
+            if (error instanceof KnownError) {
+                throw error;
+            }
+            throw new KnownError(`Invalid value for ${key}: ${error.message}`);
         }
     }
 
@@ -735,22 +787,103 @@ export const addConfigs = async (keyValues: [key: string, value: any][]) => {
 
     for (const [key, value] of keyValues) {
         const [modelName, modelKey] = key.split('.');
+        const modelConfig = config[modelName];
 
+        // OLLAMA.model은 기존 로직 유지
+        if (modelName === 'OLLAMA' && modelKey === 'model') {
+            if (!modelConfig) {
+                config[modelName] = {};
+            }
+            const originModels = (config[modelName] as Record<string, any>)[modelKey] || [];
+            (config[modelName] as Record<string, any>)[modelKey] = flattenDeep([...originModels, value]);
+            continue;
+        }
+
+        // compatible=true인 서비스에 대한 처리 추가
+        const isCompatible = modelConfig && modelConfig.compatible === true;
+        if (isCompatible) {
+            if (!modelConfig) {
+                config[modelName] = {};
+            }
+
+            // 설정 파서로 값 검증
+            const parser = createConfigParser(modelName);
+            if (!parser[modelKey]) {
+                throw new KnownError(`Invalid config property: ${key}`);
+            }
+
+            try {
+                (config[modelName] as Record<string, any>)[modelKey] = parser[modelKey](value);
+            } catch (error) {
+                if (error instanceof KnownError) {
+                    throw error;
+                }
+                throw new KnownError(`Invalid value for ${key}: ${error.message}`);
+            }
+            continue;
+        }
+
+        // 내장 서비스에 대한 기존 로직
         if (modelName in modelConfigParsers) {
+            if (!modelConfig) {
+                config[modelName] = {};
+            }
+            const parser = modelConfigParsers[modelName as keyof typeof modelConfigParsers][modelKey];
+            if (!parser) {
+                throw new KnownError(`Invalid config property: ${key}`);
+            }
+            (config[modelName] as Record<string, any>)[modelKey] = parser(value);
+        } else {
+            // 새로운 서비스에 대한 기본 파서 사용
+            const parser = createConfigParser(modelName);
+            if (!parser[modelKey]) {
+                throw new KnownError(`Invalid config property: ${key}`);
+            }
             if (!config[modelName]) {
                 config[modelName] = {};
             }
-            const isOllamaModel = modelName === 'OLLAMA' && modelKey === 'model';
-            const parser = modelConfigParsers[modelName as ModelName][modelKey];
-            if (!parser || !isOllamaModel) {
-                throw new KnownError(`Invalid config property: ${key}. Only supports OLLAMA.model`);
-            }
-            const originModels = (config[modelName] as Record<string, any>)[modelKey] || [];
-            (config[modelName] as Record<string, any>)[modelKey] = flattenDeep([...originModels, parser(value)]);
-        } else {
-            throw new KnownError(`Invalid config property: ${key}. Only supports OLLAMA.model`);
+            (config[modelName] as Record<string, any>)[modelKey] = parser[modelKey](value);
         }
     }
 
     await fs.writeFile(configPath, ini.stringify(config), 'utf8');
 };
+
+const createConfigParser = (serviceName: string) => ({
+    compatible: (compatible?: string | boolean) => {
+        if (typeof compatible === 'boolean') {
+            return compatible;
+        }
+        if (compatible === undefined || compatible === null) {
+            return false;
+        }
+        parseAssert('compatible', /^(?:true|false)$/.test(compatible), 'Must be a boolean(true or false)');
+        return compatible === 'true';
+    },
+    url: (url?: string) => {
+        if (!url) {
+            return '';
+        }
+        parseAssert(`${serviceName}.url`, /^https?:\/\//.test(url), 'Must be a valid URL');
+        return url;
+    },
+    path: (path?: string) => path || '/v1/chat/completions',
+    key: (key?: string) => key || '',
+    model: (model?: string) => model || '',
+    systemPrompt: generalConfigParsers.systemPrompt,
+    systemPromptPath: generalConfigParsers.systemPromptPath,
+    codeReviewPromptPath: generalConfigParsers.codeReviewPromptPath,
+    timeout: generalConfigParsers.timeout,
+    temperature: generalConfigParsers.temperature,
+    maxTokens: generalConfigParsers.maxTokens,
+    logging: generalConfigParsers.logging,
+    locale: generalConfigParsers.locale,
+    generate: generalConfigParsers.generate,
+    type: generalConfigParsers.type,
+    maxLength: generalConfigParsers.maxLength,
+    includeBody: generalConfigParsers.includeBody,
+    topP: generalConfigParsers.topP,
+    codeReview: generalConfigParsers.codeReview,
+    disabled: generalConfigParsers.disabled,
+    watchMode: generalConfigParsers.watchMode,
+});
