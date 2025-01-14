@@ -141,6 +141,7 @@ const createChatCompletion = async (
 export const sanitizeMessage = (message: string) => message.trim();
 
 export const generateCommitMessage = async (
+    serviceName: string,
     url: string,
     path: string,
     apiKey: string,
@@ -176,7 +177,7 @@ export const generateCommitMessage = async (
             .filter(choice => choice.message?.content)
             .map(choice => sanitizeMessage(choice.message!.content as string))
             .join();
-        logging && createLogResponse('OPENAI', diff, systemPrompt, fullText, requestType);
+        logging && createLogResponse(serviceName, diff, systemPrompt, fullText, requestType);
 
         return completion.choices
             .filter(choice => choice.message?.content)

@@ -10,17 +10,15 @@ import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt
 import { capitalizeFirstLetter, flattenDeep, generateColors } from '../../utils/utils.js';
 
 export class OpenAICompatibleService extends AIService {
-    private model = 'OPENAI';
-
     constructor(private readonly params: AIServiceParams) {
         super(params);
-        this.model = this.params.keyName;
-        this.colors = generateColors(this.model);
+        const keyName = this.params.keyName || 'OPENAI_COMPATIBLE';
+        this.colors = generateColors(keyName);
         this.serviceName = chalk
             .bgHex(this.colors.primary)
             .hex(this.colors.secondary)
-            .bold(`[${capitalizeFirstLetter(this.model)}]`);
-        this.errorPrefix = chalk.red.bold(`[${capitalizeFirstLetter(this.model)}]`);
+            .bold(`[${capitalizeFirstLetter(keyName)}]`);
+        this.errorPrefix = chalk.red.bold(`[${capitalizeFirstLetter(keyName)}]`);
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
@@ -120,7 +118,7 @@ export class OpenAICompatibleService extends AIService {
             if (!this.params.config.url) {
                 const errorObj = {
                     code: 'NO_URL',
-                    message: `Invalid url for ${this.model}. Please set the url via the 'aicommit2 config set ${this.model}.url='`,
+                    message: `Invalid url for ${this.params.keyName}. Please set the url via the 'aicommit2 config set ${this.params.keyName}.url='`,
                 };
                 throw new Error(JSON.stringify(errorObj));
             }
@@ -128,13 +126,14 @@ export class OpenAICompatibleService extends AIService {
             if (!this.params.config.model) {
                 const errorObj = {
                     code: 'NO_MODEL',
-                    message: `Invalid model for ${this.model}. Please set the url via the 'aicommit2 config set ${this.model}.model='`,
+                    message: `Invalid model for ${this.params.keyName}. Please set the url via the 'aicommit2 config set ${this.params.keyName}.model='`,
                 };
                 throw new Error(JSON.stringify(errorObj));
             }
         }
 
         const results = await generateCommitMessage(
+            this.params.keyName,
             this.params.config.url,
             this.params.config.path,
             this.params.config.key,
