@@ -55,8 +55,16 @@ export class OpenAICompatibleService extends AIService {
         let simpleMessage = 'An error occurred';
         if (error.message) {
             simpleMessage = error.message.split('\n')[0];
-            const errorJson = this.extractJSONFromError(error.message);
-            simpleMessage += `: ${errorJson.error.message}`;
+            if (simpleMessage.includes('NO_URL') || simpleMessage.includes('NO_MODEL')) {
+                try {
+                    simpleMessage = JSON.parse(error.message).message;
+                } catch (e) {
+                    simpleMessage += '';
+                }
+            } else {
+                const errorJson = this.extractJSONFromError(error.message);
+                simpleMessage += `: ${errorJson.error.message}`;
+            }
         }
         return of({
             name: `${this.errorPrefix} ${simpleMessage}`,
@@ -94,6 +102,7 @@ export class OpenAICompatibleService extends AIService {
             proxy,
             maxTokens,
             timeout,
+            compatible,
         } = this.params.config;
         const promptOptions: PromptOptions = {
             ...DEFAULT_PROMPT_OPTIONS,
@@ -106,6 +115,24 @@ export class OpenAICompatibleService extends AIService {
             codeReviewPromptPath,
         };
         const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
+
+        if (compatible) {
+            if (!this.params.config.url) {
+                const errorObj = {
+                    code: 'NO_URL',
+                    message: `Invalid url for ${this.model}. Please set the url via the 'aicommit2 config set ${this.model}.url='`,
+                };
+                throw new Error(JSON.stringify(errorObj));
+            }
+
+            if (!this.params.config.model) {
+                const errorObj = {
+                    code: 'NO_MODEL',
+                    message: `Invalid model for ${this.model}. Please set the url via the 'aicommit2 config set ${this.model}.model='`,
+                };
+                throw new Error(JSON.stringify(errorObj));
+            }
+        }
 
         const results = await generateCommitMessage(
             this.params.config.url,

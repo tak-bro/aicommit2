@@ -127,7 +127,7 @@ function getAvailableAIs(config: ValidConfig, requestType: RequestType): ModelNa
                     }
                     // OpenAI 호환 서비스나 다른 서비스들
                     if (value.compatible) {
-                        return !!value.url && !!value.key;
+                        return !!value.key;
                     }
                     // @ts-ignore ignore
                     return !!value.key && value.key.length > 0;
@@ -141,7 +141,7 @@ function getAvailableAIs(config: ValidConfig, requestType: RequestType): ModelNa
                     }
                     // OpenAI 호환 서비스나 다른 서비스들
                     if (value.compatible) {
-                        return !!value.url && !!value.key && codeReview;
+                        return !!value.key && codeReview;
                     }
                     // @ts-ignore ignore
                     return !!value.key && value.key.length > 0 && codeReview;

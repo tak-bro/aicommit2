@@ -33,7 +33,7 @@ export class AIRequestManager {
                     return AIServiceFactory.create(OpenAICompatibleService, {
                         config: {
                             ...config,
-                            url: config.url || 'https://api.openai.com',
+                            url: config.url || '',
                             path: config.path || '/v1/chat/completions',
                         },
                         stagedDiff: this.stagedDiff,
