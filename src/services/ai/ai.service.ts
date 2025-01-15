@@ -62,47 +62,44 @@ export abstract class AIService {
 
     protected parseMessage(generatedText: string, type: CommitType, maxCount: number): AIResponse[] {
         try {
-            const commitMessages: RawCommitMessage[] = JSON.parse(generatedText);
-            const filteredMessages = commitMessages
-                .map(data => this.extractMessageAsType(data, type))
-                .map((data: RawCommitMessage) => {
-                    return {
-                        title: `${data.subject}`,
-                        value: `${data.subject}${data.body ? `\n\n${data.body}` : ''}${data.footer ? `\n\n${data.footer}` : ''}`,
-                    };
-                });
+            let commitMessages: RawCommitMessage[];
 
-            if (filteredMessages.length > maxCount) {
-                return filteredMessages.slice(0, maxCount);
-            }
-            return filteredMessages;
-        } catch (error) {
-            const jsonPattern = /\[[\s\S]*?\]/;
             try {
+                const parsed = JSON.parse(generatedText);
+                if (Array.isArray(parsed)) {
+                    commitMessages = parsed;
+                } else {
+                    commitMessages = [parsed];
+                }
+            } catch (initialError) {
+                const jsonPattern = /(\[[\s\S]*?\])|(\{[\s\S]*?\})/;
                 const jsonMatch = generatedText.match(jsonPattern);
+
                 if (!jsonMatch) {
-                    // No valid JSON array found in the response
                     return [];
                 }
-                const jsonStr = jsonMatch[0];
-                const commitMessages: RawCommitMessage[] = JSON.parse(jsonStr);
-                const filteredMessages = commitMessages
-                    .map(data => this.extractMessageAsType(data, type))
-                    .map((data: RawCommitMessage) => {
-                        return {
-                            title: `${data.subject}`,
-                            value: `${data.subject}${data.body ? `\n\n${data.body}` : ''}${data.footer ? `\n\n${data.footer}` : ''}`,
-                        };
-                    });
 
-                if (filteredMessages.length > maxCount) {
-                    return filteredMessages.slice(0, maxCount);
-                }
-                return filteredMessages;
-            } catch (e) {
-                // Error parsing JSON
+                const jsonStr = jsonMatch[0];
+                const parsed = JSON.parse(jsonStr);
+
+                commitMessages = Array.isArray(parsed) ? parsed : [parsed];
+            }
+
+            if (!commitMessages.length || !commitMessages.every(msg => typeof msg.subject === 'string')) {
                 return [];
             }
+
+            const filteredMessages = commitMessages
+                .map(data => this.extractMessageAsType(data, type))
+                .map((data: RawCommitMessage) => ({
+                    title: `${data.subject}`,
+                    value: `${data.subject}${data.body ? `\n\n${data.body}` : ''}${data.footer ? `\n\n${data.footer}` : ''}`,
+                }));
+
+            return filteredMessages.slice(0, maxCount);
+        } catch (error) {
+            console.error('Error parsing commit message:', error);
+            return [];
         }
     }
 
