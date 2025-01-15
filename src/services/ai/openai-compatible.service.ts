@@ -1,15 +1,17 @@
 import chalk from 'chalk';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
+import OpenAI from 'openai';
 import { Observable, catchError, concatMap, from, map, of } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
-import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
-import { RequestType } from '../../utils/log.js';
-import { generateCommitMessage } from '../../utils/openai.js';
+import { AIResponse, AIService, AIServiceParams } from './ai.service.js';
+import { RequestType, createLogResponse } from '../../utils/log.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
-import { capitalizeFirstLetter, flattenDeep, generateColors } from '../../utils/utils.js';
+import { capitalizeFirstLetter, generateColors } from '../../utils/utils.js';
 
 export class OpenAICompatibleService extends AIService {
+    private openAI: OpenAI;
+
     constructor(private readonly params: AIServiceParams) {
         super(params);
         const keyName = this.params.keyName || 'OPENAI_COMPATIBLE';
@@ -19,6 +21,11 @@ export class OpenAICompatibleService extends AIService {
             .hex(this.colors.secondary)
             .bold(`[${capitalizeFirstLetter(keyName)}]`);
         this.errorPrefix = chalk.red.bold(`[${capitalizeFirstLetter(keyName)}]`);
+
+        this.openAI = new OpenAI({
+            apiKey: this.params.config.key,
+            baseURL: `${this.params.config.url}${this.params.config.path}`,
+        });
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
@@ -49,109 +56,70 @@ export class OpenAICompatibleService extends AIService {
         );
     }
 
-    handleError$ = (error: AIServiceError) => {
-        let simpleMessage = 'An error occurred';
-        if (error.message) {
-            simpleMessage = error.message.split('\n')[0];
-            if (simpleMessage.includes('NO_URL') || simpleMessage.includes('NO_MODEL')) {
-                try {
-                    simpleMessage = JSON.parse(error.message).message;
-                } catch (e) {
-                    simpleMessage += '';
-                }
-            } else {
-                const errorJson = this.extractJSONFromError(error.message);
-                simpleMessage += `: ${errorJson.error.message}`;
-            }
+    handleError$ = (error: Error) => {
+        let status = 'N/A';
+        let simpleMessage = error.message;
+        if (error instanceof OpenAI.APIError) {
+            status = `${error.status}`;
+            simpleMessage = error.name;
         }
+        const message = `${status} ${simpleMessage}`;
         return of({
-            name: `${this.errorPrefix} ${simpleMessage}`,
+            name: `${this.errorPrefix} ${message}`,
             value: simpleMessage,
             isError: true,
             disabled: true,
         });
     };
 
-    private extractJSONFromError(error: string) {
-        const regex = /[{[]{1}([,:{}[\]0-9.\-+Eaeflnr-u \n\r\t]|".*?")+[}\]]{1}/gis;
-        const matches = error.match(regex);
-        if (matches) {
-            return Object.assign({}, ...matches.map((m: any) => JSON.parse(m)));
-        }
-        return {
-            error: {
-                message: 'Unknown error',
-            },
-        };
-    }
-
     private async generateMessage(requestType: RequestType): Promise<AIResponse[]> {
-        const diff = this.params.stagedDiff.diff;
-        const {
-            systemPrompt,
-            systemPromptPath,
-            codeReviewPromptPath,
-            temperature,
-            logging,
-            locale,
-            generate,
-            type,
-            maxLength,
-            proxy,
-            maxTokens,
-            timeout,
-            compatible,
-        } = this.params.config;
-        const promptOptions: PromptOptions = {
-            ...DEFAULT_PROMPT_OPTIONS,
-            locale,
-            maxLength,
-            type,
-            generate,
-            systemPrompt,
-            systemPromptPath,
-            codeReviewPromptPath,
-        };
-        const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
+        try {
+            const diff = this.params.stagedDiff.diff;
+            const { systemPrompt, systemPromptPath, codeReviewPromptPath, logging, locale, temperature, generate, type, maxLength } =
+                this.params.config;
+            const maxTokens = this.params.config.maxTokens;
+            const promptOptions: PromptOptions = {
+                ...DEFAULT_PROMPT_OPTIONS,
+                locale,
+                maxLength,
+                type,
+                generate,
+                systemPrompt,
+                systemPromptPath,
+                codeReviewPromptPath,
+            };
+            const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
 
-        if (compatible) {
-            if (!this.params.config.url) {
-                const errorObj = {
-                    code: 'NO_URL',
-                    message: `Invalid url for ${this.params.keyName}. Please set the url via the 'aicommit2 config set ${this.params.keyName}.url='`,
-                };
-                throw new Error(JSON.stringify(errorObj));
+            const chatCompletion: OpenAI.Chat.ChatCompletion = await this.openAI.chat.completions.create(
+                {
+                    messages: [
+                        {
+                            role: 'system',
+                            content: generatedSystemPrompt,
+                        },
+                        {
+                            role: 'user',
+                            content: `Here is the diff: ${diff}`,
+                        },
+                    ],
+                    model: this.params.config.model,
+                    max_tokens: maxTokens,
+                    top_p: this.params.config.topP,
+                    temperature,
+                },
+                {
+                    timeout: this.params.config.timeout,
+                }
+            );
+
+            const result = chatCompletion.choices[0].message.content || '';
+            logging && createLogResponse(this.params.keyName, diff, generatedSystemPrompt, result, requestType);
+            if (requestType === 'review') {
+                return this.sanitizeResponse(result);
             }
-
-            if (!this.params.config.model) {
-                const errorObj = {
-                    code: 'NO_MODEL',
-                    message: `Invalid model for ${this.params.keyName}. Please set the url via the 'aicommit2 config set ${this.params.keyName}.model='`,
-                };
-                throw new Error(JSON.stringify(errorObj));
-            }
+            return this.parseMessage(result, type, generate);
+        } catch (error) {
+            throw error as any;
         }
-
-        const results = await generateCommitMessage(
-            this.params.keyName,
-            this.params.config.url,
-            this.params.config.path,
-            this.params.config.key,
-            this.params.config.model,
-            diff,
-            timeout,
-            maxTokens,
-            temperature,
-            this.params.config.topP,
-            generatedSystemPrompt,
-            logging,
-            requestType,
-            proxy
-        );
-
-        if (requestType === 'review') {
-            return flattenDeep(results.map(value => this.sanitizeResponse(value)));
-        }
-        return flattenDeep(results.map(value => this.parseMessage(value, type, generate)));
     }
 }

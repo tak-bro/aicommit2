@@ -867,7 +867,7 @@ const createConfigParser = (serviceName: string) => ({
         parseAssert(`${serviceName}.url`, /^https?:\/\//.test(url), 'Must be a valid URL');
         return url;
     },
-    path: (path?: string) => path || '/v1/chat/completions',
+    path: (path?: string) => path || '',
     key: (key?: string) => key || '',
     model: (model?: string) => model || '',
     systemPrompt: generalConfigParsers.systemPrompt,

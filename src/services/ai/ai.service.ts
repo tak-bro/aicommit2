@@ -98,7 +98,6 @@ export abstract class AIService {
 
             return filteredMessages.slice(0, maxCount);
         } catch (error) {
-            console.error('Error parsing commit message:', error);
             return [];
         }
     }

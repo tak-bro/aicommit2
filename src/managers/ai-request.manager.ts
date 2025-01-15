@@ -34,7 +34,7 @@ export class AIRequestManager {
                         config: {
                             ...config,
                             url: config.url || '',
-                            path: config.path || '/v1/chat/completions',
+                            path: config.path || '',
                         },
                         stagedDiff: this.stagedDiff,
                         keyName: ai,
@@ -143,8 +143,8 @@ export class AIRequestManager {
                     return AIServiceFactory.create(OpenAIService, {
                         config: {
                             ...config,
-                            url: config.url || 'https://api.openai.com',
-                            path: config.path || '/v1/chat/completions',
+                            url: config.url || '',
+                            path: config.path || '',
                         },
                         stagedDiff: this.stagedDiff,
                         keyName: ai,

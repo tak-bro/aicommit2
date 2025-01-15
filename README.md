@@ -25,8 +25,8 @@ _aicommit2_ is a reactive CLI tool that automatically generates Git commit messa
 
 ## Key Features
 
-- **Multi-AI Support**: Integrates with OpenAI, Anthropic Claude, Google Gemini, Mistral AI, Cohere, Groq and more.
-- **Local Model Support**: Use local AI models via Ollama.
+- **Multi-AI Support**: Integrates with OpenAI, Anthropic Claude, Google Gemini, Mistral AI, Cohere, Groq, Ollama and more.
+- **OpenAI API Compatibility**: Support for any service that implements the OpenAI API specification.
 - **Reactive CLI**: Enables simultaneous requests to multiple AIs and selection of the best commit message.
 - **Git Hook Integration**: Can be used as a prepare-commit-msg hook.
 - **Custom Prompt**: Supports user-defined system prompt templates.
@@ -44,6 +44,7 @@ _aicommit2_ is a reactive CLI tool that automatically generates Git commit messa
 - [Perplexity](https://docs.perplexity.ai/)
 - [DeepSeek](https://www.deepseek.com/)
 - [Huggingface **(Unofficial)**](https://huggingface.co/chat/)
+- [OpenAI API Compatibility](#openai-api-compatible-services)
 
 ### Local
 
@@ -435,19 +436,20 @@ aicommit2 config set codeReviewPromptPath="/path/to/user/prompt.txt"
 ```
 
 ## Available General Settings by Model
-|                      | timeout | temperature | maxTokens |  topP  |
-|:--------------------:|:-------:|:-----------:|:---------:|:------:|
-|      **OpenAI**      |    ✓    |      ✓      |     ✓     |   ✓    |
-| **Anthropic Claude** |         |      ✓      |     ✓     |   ✓    |
-|      **Gemini**      |         |      ✓      |     ✓     |   ✓    |
-|    **Mistral AI**    |    ✓    |      ✓      |     ✓     |   ✓    |
-|    **Codestral**     |    ✓    |      ✓      |     ✓     |   ✓    |
-|      **Cohere**      |         |      ✓      |     ✓     |   ✓    |
-|       **Groq**       |    ✓    |      ✓      |     ✓     |   ✓    |
-|    **Perplexity**    |    ✓    |      ✓      |     ✓     |   ✓    |
-|     **DeepSeek**     |    ✓    |      ✓      |     ✓     |   ✓    |
-|   **Huggingface**    |         |             |           |        |
-|      **Ollama**      |    ✓    |      ✓      |           |   ✓    |
+|                             | timeout | temperature | maxTokens |  topP  |
+|:---------------------------:|:-------:|:-----------:|:---------:|:------:|
+|         **OpenAI**          |    ✓    |      ✓      |     ✓     |   ✓    |
+|    **Anthropic Claude**     |         |      ✓      |     ✓     |   ✓    |
+|         **Gemini**          |         |      ✓      |     ✓     |   ✓    |
+|       **Mistral AI**        |    ✓    |      ✓      |     ✓     |   ✓    |
+|        **Codestral**        |    ✓    |      ✓      |     ✓     |   ✓    |
+|         **Cohere**          |         |      ✓      |     ✓     |   ✓    |
+|          **Groq**           |    ✓    |      ✓      |     ✓     |   ✓    |
+|       **Perplexity**        |    ✓    |      ✓      |     ✓     |   ✓    |
+|        **DeepSeek**         |    ✓    |      ✓      |     ✓     |   ✓    |
+|       **Huggingface**       |         |             |           |        |
+|         **Ollama**          |    ✓    |      ✓      |           |   ✓    |
+| **OpenAI API-Compatible**   |    ✓    |      ✓      |     ✓     |   ✓    |
 
 > All AI support the following options in General Settings.
 > - systemPrompt, systemPromptPath, codeReview, codeReviewPromptPath, exclude, type, locale, generate, logging, includeBody, maxLength
@@ -874,6 +876,49 @@ aicommit2 config set OLLAMA.timeout=<timeout>
 Ollama does not support the following options in General Settings.
 
 - maxTokens
+
+### OpenAI API-Compatible Services
+
+You can configure any OpenAI API-compatible service by adding a configuration section with the `compatible=true` option. This allows you to use services that implement the OpenAI API specification.
+
+```sh
+# together
+aicommit2 config set TOGETHER.compatible=true
+aicommit2 config set TOGETHER.url=https://api.together.xyz
+aicommit2 config set TOGETHER.path=/v1
+aicommit2 config set TOGETHER.model=meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo
+aicommit2 config set TOGETHER.key="your-api-key"
+```
+
+| Setting      | Description                            | Required             | Default |
+|--------------|----------------------------------------|----------------------|---------|
+| `compatible` | Enable OpenAI API compatibility mode   | ✓ (**must be true**) | false   |
+| `url`        | Base URL of the API endpoint           | ✓                    | -       |
+| `path`       | API path for chat completions          |                      | -       |
+| `key`        | API key for authentication             | ✓                    | -       |
+| `model`      | Model identifier to use                | ✓                    | -       |
+
+Example configuration:
+```ini
+[TOGETHER]
+compatible=true
+key=<your-api-key>
+url=https://api.together.xyz/v1
+model=meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo
+
+[GEMINI_COMPATIBILITY]
+compatible=true
+key=<your-api-key>
+url=https://generativelanguage.googleapis.com
+path=/v1beta/openai/
+model=gemini-1.5-flash
+
+[OLLAMA_COMPATIBILITY]
+compatible=true
+key=ollama
+url=http://localhost:11434/v1
+model=llama3.2
+```
 
 ## Watch Commit Mode
 
