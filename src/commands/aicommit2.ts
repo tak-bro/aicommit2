@@ -12,7 +12,7 @@ import {
     commitMsgLoader,
     emptyCodeReview,
 } from '../managers/reactive-prompt.manager.js';
-import { BUILTIN_SERVICES, ModelName, RawConfig, ValidConfig, getConfig } from '../utils/config.js';
+import { BUILTIN_SERVICES, BuiltinService, ModelName, RawConfig, ValidConfig, getConfig } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
 import { assertGitRepo, getStagedDiff } from '../utils/git.js';
 import { RequestType } from '../utils/log.js';
@@ -110,12 +110,9 @@ export default async (
 
 function getAvailableAIs(config: ValidConfig, requestType: RequestType): ModelName[] {
     return Object.entries(config)
-        .filter(([key, value]) => {
-            // 내장 서비스이거나 compatible=true인 서비스
-            return BUILTIN_SERVICES.includes(key as ModelName) || value.compatible === true;
-        })
         .map(([key, value]) => [key, value] as [ModelName, RawConfig])
         .filter(([key, value]) => !value.disabled)
+        .filter(([key, value]) => BUILTIN_SERVICES.includes(key as BuiltinService) || value.compatible === true)
         .filter(([key, value]) => {
             switch (requestType) {
                 case 'commit':
@@ -125,11 +122,6 @@ function getAvailableAIs(config: ValidConfig, requestType: RequestType): ModelNa
                     if (key === 'HUGGINGFACE') {
                         return !!value && !!value.cookie;
                     }
-                    // OpenAI 호환 서비스나 다른 서비스들
-                    if (value.compatible) {
-                        return !!value.key;
-                    }
-                    // @ts-ignore ignore
                     return !!value.key && value.key.length > 0;
                 case 'review':
                     const codeReview = config.codeReview || value.codeReview;
@@ -139,14 +131,8 @@ function getAvailableAIs(config: ValidConfig, requestType: RequestType): ModelNa
                     if (key === 'HUGGINGFACE') {
                         return !!value && !!value.cookie && codeReview;
                     }
-                    // OpenAI 호환 서비스나 다른 서비스들
-                    if (value.compatible) {
-                        return !!value.key && codeReview;
-                    }
-                    // @ts-ignore ignore
                     return !!value.key && value.key.length > 0 && codeReview;
             }
-            return false;
         })
         .map(([key]) => key);
 }

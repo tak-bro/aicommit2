@@ -140,7 +140,7 @@ export class AIRequestManager {
                 const config = this.config[ai];
 
                 if (config.compatible) {
-                    return AIServiceFactory.create(OpenAIService, {
+                    return AIServiceFactory.create(OpenAICompatibleService, {
                         config: {
                             ...config,
                             url: config.url || '',

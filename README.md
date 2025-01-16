@@ -33,8 +33,6 @@ _aicommit2_ is a reactive CLI tool that automatically generates Git commit messa
 
 ## Supported Providers
 
-### Remote
-
 - [OpenAI](https://openai.com/)
 - [Anthropic Claude](https://console.anthropic.com/)
 - [Gemini](https://gemini.google.com/)
@@ -44,11 +42,8 @@ _aicommit2_ is a reactive CLI tool that automatically generates Git commit messa
 - [Perplexity](https://docs.perplexity.ai/)
 - [DeepSeek](https://www.deepseek.com/)
 - [Huggingface **(Unofficial)**](https://huggingface.co/chat/)
-- [OpenAI API Compatibility](#openai-api-compatible-services)
-
-### Local
-
 - [Ollama](https://ollama.com/)
+- [OpenAI API Compatibility](#openai-api-compatible-services)
 
 ## Setup
 
