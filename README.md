@@ -800,13 +800,14 @@ Huggingface does not support the following options in General Settings.
 
 ### Ollama
 
-| Setting   | Description                            | Default                |
-|-----------|----------------------------------------|------------------------|
-| `model`   | Model(s) to use (comma-separated list) | -                      |
-| `host`    | Ollama host URL                        | http://localhost:11434 |
-| `auth`    | Authentication type                    | Bearer                 |
-| `key`     | Authentication key                     | -                      |
-| `timeout` | Request timeout (milliseconds)         | 100_000 (100sec)       |
+| Setting    | Description                                                 | Default                |
+|------------|-------------------------------------------------------------|------------------------|
+| `model`    | Model(s) to use (comma-separated list)                      | -                      |
+| `host`     | Ollama host URL                                             | http://localhost:11434 |
+| `auth`     | Authentication type                                         | Bearer                 |
+| `key`      | Authentication key                                          | -                      |
+| `timeout`  | Request timeout (milliseconds)                              | 100_000 (100sec)       |
+| `numCtx`   | The maximum number of tokens the model can process at once  | 2048                   |
 
 ##### OLLAMA.model
 
@@ -848,6 +849,7 @@ aicommit2 config set OLLAMA.key=<key>
 ```
 
 Few examples of authentication methods:
+
 | **Authentication Method** | **OLLAMA.auth**              | **OLLAMA.key**                        |
 |---------------------------|------------------------------|---------------------------------------|
 | Bearer                    | `Bearer`                     | `<API key>`                           |
@@ -864,6 +866,15 @@ Request timeout for the Ollama.
 
 ```sh
 aicommit2 config set OLLAMA.timeout=<timeout>
+```
+
+##### OLLAMA.numCtx
+
+The maximum number of tokens the model can process at once, determining its context length and memory usage.
+It is recommended to set it to 4096 or higher.
+
+```sh
+aicommit2 config set OLLAMA.numCtx=4096
 ```
 
 ##### Unsupported Options
