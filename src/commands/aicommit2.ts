@@ -12,7 +12,7 @@ import {
     commitMsgLoader,
     emptyCodeReview,
 } from '../managers/reactive-prompt.manager.js';
-import { ModelName, RawConfig, ValidConfig, getConfig, modelNames } from '../utils/config.js';
+import { BUILTIN_SERVICES, BuiltinService, ModelName, RawConfig, ValidConfig, getConfig } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
 import { assertGitRepo, getStagedDiff } from '../utils/git.js';
 import { RequestType } from '../utils/log.js';
@@ -110,9 +110,9 @@ export default async (
 
 function getAvailableAIs(config: ValidConfig, requestType: RequestType): ModelName[] {
     return Object.entries(config)
-        .filter(([key]) => modelNames.includes(key as ModelName))
         .map(([key, value]) => [key, value] as [ModelName, RawConfig])
         .filter(([key, value]) => !value.disabled)
+        .filter(([key, value]) => BUILTIN_SERVICES.includes(key as BuiltinService) || value.compatible === true)
         .filter(([key, value]) => {
             switch (requestType) {
                 case 'commit':
@@ -122,7 +122,6 @@ function getAvailableAIs(config: ValidConfig, requestType: RequestType): ModelNa
                     if (key === 'HUGGINGFACE') {
                         return !!value && !!value.cookie;
                     }
-                    // @ts-ignore ignore
                     return !!value.key && value.key.length > 0;
                 case 'review':
                     const codeReview = config.codeReview || value.codeReview;
@@ -132,10 +131,8 @@ function getAvailableAIs(config: ValidConfig, requestType: RequestType): ModelNa
                     if (key === 'HUGGINGFACE') {
                         return !!value && !!value.cookie && codeReview;
                     }
-                    // @ts-ignore ignore
                     return !!value.key && value.key.length > 0 && codeReview;
             }
-            return false;
         })
         .map(([key]) => key);
 }

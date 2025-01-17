@@ -9,7 +9,7 @@ import { takeUntil } from 'rxjs/operators';
 import { AIRequestManager } from '../managers/ai-request.manager.js';
 import { ConsoleManager } from '../managers/console.manager.js';
 import { DEFAULT_INQUIRER_OPTIONS, ReactivePromptManager, codeReviewLoader, emptyCodeReview } from '../managers/reactive-prompt.manager.js';
-import { ModelName, RawConfig, ValidConfig, getConfig, modelNames } from '../utils/config.js';
+import { BUILTIN_SERVICES, ModelName, RawConfig, ValidConfig, getConfig } from '../utils/config.js';
 import { handleCliError } from '../utils/error.js';
 import { assertGitRepo, getCommitDiff } from '../utils/git.js';
 import { validateSystemPrompt } from '../utils/prompt.js';
@@ -91,7 +91,10 @@ const initLogFile = () => {
 
 const getAvailableAIs = (config: ValidConfig): ModelName[] => {
     return Object.entries(config)
-        .filter(([key]) => modelNames.includes(key as ModelName))
+        .filter(([key, value]) => {
+            // 내장 서비스이거나 compatible=true인 서비스
+            return BUILTIN_SERVICES.includes(key as ModelName) || value.compatible === true;
+        })
         .map(([key, value]) => [key, value] as [ModelName, RawConfig])
         .filter(([_, value]) => !value.disabled)
         .filter(([key, value]) => isAIAvailable(key as ModelName, value, config))
@@ -105,6 +108,9 @@ const isAIAvailable = (key: ModelName, value: RawConfig, config: ValidConfig) =>
     }
     if (key === 'HUGGINGFACE') {
         return !!value && !!value.cookie && watchMode;
+    }
+    if (value.compatible) {
+        return !!value.url && !!value.key && watchMode;
     }
     return !!value.key && value.key.length > 0 && watchMode;
 };

@@ -5,7 +5,7 @@ import { filter, lastValueFrom, map, toArray } from 'rxjs';
 
 import { AIRequestManager } from '../managers/ai-request.manager.js';
 import { ConsoleManager } from '../managers/console.manager.js';
-import { ModelName, RawConfig, getConfig, modelNames } from '../utils/config.js';
+import { BUILTIN_SERVICES, ModelName, RawConfig, getConfig } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
 import { getStagedDiff } from '../utils/git.js';
 
@@ -41,7 +41,7 @@ export default () =>
         }
 
         const availableAIs: ModelName[] = Object.entries(config)
-            .filter(([key]) => modelNames.includes(key as ModelName))
+            .filter(([key]) => BUILTIN_SERVICES.includes(key as ModelName))
             .map(([key, value]) => [key, value] as [ModelName, RawConfig])
             .filter(([key, value]) => !value.disabled)
             .filter(([key, value]) => {

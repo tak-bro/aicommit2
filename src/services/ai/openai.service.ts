@@ -105,6 +105,7 @@ export class OpenAIService extends AIService {
         const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
 
         const results = await generateCommitMessage(
+            'ChatGPT',
             this.params.config.url,
             this.params.config.path,
             this.params.config.key,

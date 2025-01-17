@@ -12,6 +12,7 @@ import { GroqService } from '../services/ai/groq.service.js';
 import { HuggingFaceService } from '../services/ai/hugging-face.service.js';
 import { MistralService } from '../services/ai/mistral.service.js';
 import { OllamaService } from '../services/ai/ollama.service.js';
+import { OpenAICompatibleService } from '../services/ai/openai-compatible.service.js';
 import { OpenAIService } from '../services/ai/openai.service.js';
 import { PerplexityService } from '../services/ai/perplexity.service.js';
 import { ModelName, ValidConfig } from '../utils/config.js';
@@ -26,6 +27,20 @@ export class AIRequestManager {
     createCommitMsgRequests$(modelNames: ModelName[]): Observable<ReactiveListChoice> {
         return from(modelNames).pipe(
             mergeMap(ai => {
+                const config = this.config[ai];
+
+                if (config.compatible) {
+                    return AIServiceFactory.create(OpenAICompatibleService, {
+                        config: {
+                            ...config,
+                            url: config.url || '',
+                            path: config.path || '',
+                        },
+                        stagedDiff: this.stagedDiff,
+                        keyName: ai,
+                    }).generateCommitMessage$();
+                }
+
                 switch (ai) {
                     case 'OPENAI':
                         return AIServiceFactory.create(OpenAIService, {
@@ -122,6 +137,20 @@ export class AIRequestManager {
     createCodeReviewRequests$(modelNames: ModelName[]): Observable<ReactiveListChoice> {
         return from(modelNames).pipe(
             mergeMap(ai => {
+                const config = this.config[ai];
+
+                if (config.compatible) {
+                    return AIServiceFactory.create(OpenAICompatibleService, {
+                        config: {
+                            ...config,
+                            url: config.url || '',
+                            path: config.path || '',
+                        },
+                        stagedDiff: this.stagedDiff,
+                        keyName: ai,
+                    }).generateCodeReview$();
+                }
+
                 switch (ai) {
                     case 'OPENAI':
                         return AIServiceFactory.create(OpenAIService, {

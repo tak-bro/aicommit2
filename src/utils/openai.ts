@@ -122,14 +122,14 @@ const createChatCompletion = async (
     );
 
     if (!response.statusCode || response.statusCode < 200 || response.statusCode > 299) {
-        let errorMessage = `OpenAI API Error: ${response.statusCode} - ${response.statusMessage}`;
+        let errorMessage = `API Error: ${response.statusCode} - ${response.statusMessage}`;
 
         if (data) {
             errorMessage += `\n\n${data}`;
         }
 
         if (response.statusCode === 500) {
-            errorMessage += '\n\nCheck the API status: https://status.openai.com';
+            errorMessage += `\n\nCheck the API status: ${url}`;
         }
 
         throw new KnownError(errorMessage);
@@ -141,6 +141,7 @@ const createChatCompletion = async (
 export const sanitizeMessage = (message: string) => message.trim();
 
 export const generateCommitMessage = async (
+    serviceName: string,
     url: string,
     path: string,
     apiKey: string,
@@ -176,7 +177,7 @@ export const generateCommitMessage = async (
             .filter(choice => choice.message?.content)
             .map(choice => sanitizeMessage(choice.message!.content as string))
             .join();
-        logging && createLogResponse('OPENAI', diff, systemPrompt, fullText, requestType);
+        logging && createLogResponse(serviceName, diff, systemPrompt, fullText, requestType);
 
         return completion.choices
             .filter(choice => choice.message?.content)
