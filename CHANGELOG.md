@@ -1,3 +1,18 @@
+## [2.2.1](https://github.com/tak-bro/aicommit2/compare/v2.2.0...v2.2.1) (2025-01-17)
+
+
+### Bug Fixes
+
+* improve JSON parsing for commit messages ([31fb168](https://github.com/tak-bro/aicommit2/commit/31fb1681e9eee036819992004d1c8b525575079d))
+* update model name to use keyName ([e56c138](https://github.com/tak-bro/aicommit2/commit/e56c1384c0d997504e970674876bef1990d3ef55))
+* validate OpenAI service config ([0624bc0](https://github.com/tak-bro/aicommit2/commit/0624bc009fce3f3029529ec595b7667335de77bc))
+
+
+### Features
+
+* add OpenAI compatible service ([c4c8aed](https://github.com/tak-bro/aicommit2/commit/c4c8aed874d82f44e14c4dc5a6aae4d82d02a71f))
+* support OpenAI API compatible services ([755f2b6](https://github.com/tak-bro/aicommit2/commit/755f2b6087178f703b3e05d0637afdb82e3e1e7b))
+
 # [2.2.0](https://github.com/tak-bro/aicommit2/compare/v2.1.11...v2.2.0) (2025-01-13)
 
 
