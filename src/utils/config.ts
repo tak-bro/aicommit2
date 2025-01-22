@@ -303,9 +303,9 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         key: (key?: string) => key || '',
         model: (model?: string) => {
             if (!model || model.length === 0) {
-                return 'gemini-1.5-pro';
+                return 'gemini-2.0-flash-exp';
             }
-            const supportModels = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-1.5-pro-exp-0801'];
+            const supportModels = [`gemini-2.0-flash-exp`, `gemini-1.5-flash`, `gemini-1.5-flash-8b`, `gemini-1.5-pro`];
             parseAssert('GEMINI.model', supportModels.includes(model), 'Invalid model type of Gemini');
             return model;
         },
