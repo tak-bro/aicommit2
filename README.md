@@ -639,10 +639,19 @@ The Cohere API key. If you don't have one, please sign up and get the API key in
 Default: `command`
 
 Supported models:
+- `command-r7b-12-2024`
+- `command-r-plus-08-2024`
+- `command-r-plus-04-2024`
+- `command-r-plus`
+- `command-r-08-2024`
+- `command-r-03-2024`
+- `command-r`
 - `command`
 - `command-nightly`
 - `command-light`
 - `command-light-nightly`
+- `c4ai-aya-expanse-8b`
+- `c4ai-aya-expanse-32b`
 
 ```sh
 aicommit2 config set COHERE.model="command-nightly"
@@ -697,10 +706,10 @@ aicommit2 config set GROQ.model="llama3-8b-8192"
 
 ### Perplexity
 
-| Setting  | Description      | Default                           |
-|----------|------------------|-----------------------------------|
-| `key`    | API key          | -                                 |
-| `model`  | Model to use     | `llama-3.1-sonar-small-128k-chat` |
+| Setting  | Description      | Default  |
+|----------|------------------|----------|
+| `key`    | API key          | -        |
+| `model`  | Model to use     | `sonar`  |
 
 ##### PERPLEXITY.key
 
@@ -708,22 +717,19 @@ The Perplexity API key. If you don't have one, please sign up and get the API ke
 
 ##### PERPLEXITY.model
 
-Default: `llama-3.1-sonar-small-128k-chat`
+Default: `sonar`
 
 Supported:
-- `llama-3.1-sonar-small-128k-chat`
-- `llama-3.1-sonar-large-128k-chat`
-- `llama-3.1-sonar-large-128k-online`
+- `sonar-pro`
+- `sonar`
 - `llama-3.1-sonar-small-128k-online`
-- `llama-3.1-8b-instruct`
-- `llama-3.1-70b-instruct`
-- `llama-3.1-8b`
-- `llama-3.1-70b`
+- `llama-3.1-sonar-large-128k-online`
+- `llama-3.1-sonar-huge-128k-online`
 
 > The models mentioned above are subject to change.
 
 ```sh
-aicommit2 config set PERPLEXITY.model="llama-3.1-70b"
+aicommit2 config set PERPLEXITY.model="sonar-pro"
 ```
 
 ### DeepSeek

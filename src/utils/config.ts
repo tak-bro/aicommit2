@@ -481,7 +481,21 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
             if (!model || model.length === 0) {
                 return 'command';
             }
-            const supportModels = ['command', `command-nightly`, `command-light`, `command-light-nightly`];
+            const supportModels = [
+                `command-r7b-12-2024`,
+                `command-r-plus-08-2024`,
+                `command-r-plus-04-2024`,
+                `command-r-plus`,
+                `command-r-08-2024`,
+                `command-r-03-2024`,
+                `command-r`,
+                `command`,
+                `command-nightly`,
+                `command-light`,
+                `command-light-nightly`,
+                `c4ai-aya-expanse-8b`,
+                `c4ai-aya-expanse-32b`,
+            ];
             parseAssert('COHERE.model', supportModels.includes(model), 'Invalid model type of Cohere');
             return model;
         },
@@ -554,17 +568,16 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         key: (key?: string) => key || '',
         model: (model?: string) => {
             if (!model || model.length === 0) {
-                return 'llama-3.1-sonar-small-128k-chat';
+                return 'sonar';
             }
 
-            // https://docs.perplexity.ai/docs/model-cards
+            // https://docs.perplexity.ai/guides/model-cards
             const supportModels = [
-                'llama-3.1-sonar-small-128k-online',
-                'llama-3.1-sonar-small-128k-chat',
-                'llama-3.1-sonar-large-128k-online',
-                'llama-3.1-sonar-large-128k-chat',
-                'llama-3.1-8b-instruct',
-                'llama-3.1-70b-instruct',
+                `sonar-pro`,
+                `sonar`,
+                `llama-3.1-sonar-small-128k-online`,
+                `llama-3.1-sonar-large-128k-online`,
+                `llama-3.1-sonar-huge-128k-online`,
             ];
 
             parseAssert('PERPLEXITY.model', supportModels.includes(model), 'Invalid model type of Perplexity');
