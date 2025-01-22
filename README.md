@@ -511,10 +511,10 @@ aicommit2 config set OPENAI.topP=0.2
 
 ### Anthropic
 
-| Setting     | Description    | Default                   |
-|-------------|----------------|---------------------------|
-| `key`       | API key        | -                         |
-| `model`     | Model to use   | `claude-3-haiku-20240307` |
+| Setting     | Description    | Default                     |
+|-------------|----------------|-----------------------------|
+| `key`       | API key        | -                           | 
+| `model`     | Model to use   | `claude-3-5-haiku-20241022` |
 
 ##### ANTHROPIC.key
 
@@ -543,10 +543,10 @@ Anthropic does not support the following options in General Settings.
 
 ### Gemini
 
-| Setting            | Description            | Default           |
-|--------------------|------------------------|-------------------|
-| `key`              | API key                | -                 |
-| `model`            | Model to use           | `gemini-1.5-pro`  |
+| Setting            | Description            | Default                |
+|--------------------|------------------------|------------------------|
+| `key`              | API key                | -                      |
+| `model`            | Model to use           | `gemini-2.0-flash-exp` |
 
 ##### GEMINI.key
 
@@ -578,10 +578,10 @@ Gemini does not support the following options in General Settings.
 
 ### Mistral
 
-| Setting  | Description      | Default        |
-|----------|------------------|----------------|
-| `key`    | API key          | -              |
-| `model`  | Model to use     | `mistral-tiny` |
+| Setting  | Description      | Default            |
+|----------|------------------|--------------------|
+| `key`    | API key          | -                  |
+| `model`  | Model to use     | `pixtral-12b-2409` |
 
 ##### MISTRAL.key
 
@@ -589,23 +589,16 @@ The Mistral API key. If you don't have one, please sign up and subscribe in [Mis
 
 ##### MISTRAL.model
 
-Default: `mistral-tiny`
+Default: `pixtral-12b-2409`
 
 Supported:
-- `open-mistral-7b`
-- `mistral-tiny-2312`
-- `mistral-tiny`
-- `open-mixtral-8x7b`
-- `mistral-small-2312`
-- `mistral-small`
-- `mistral-small-2402`
-- `mistral-small-latest`
-- `mistral-medium-latest`
-- `mistral-medium-2312`
-- `mistral-medium`
+- `codestral-latest`
 - `mistral-large-latest`
-- `mistral-large-2402`
+- `pixtral-large-latest`
+- `ministral-8b-latest`
+- `mistral-small-latest`
 - `mistral-embed`
+- `mistral-moderation-latest`
 
 ### Codestral
 
@@ -624,10 +617,10 @@ Default: `codestral-latest`
 
 Supported:
 - `codestral-latest`
-- `codestral-2405`
+- `codestral-2501`
 
 ```sh
-aicommit2 config set CODESTRAL.model="codestral-2405"
+aicommit2 config set CODESTRAL.model="codestral-2501"
 ```
 
 ### Cohere

@@ -361,23 +361,16 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         key: (key?: string) => key || '',
         model: (model?: string) => {
             if (!model || model.length === 0) {
-                return 'mistral-tiny';
+                return 'pixtral-12b-2409';
             }
             const supportModels = [
-                'open-mistral-7b',
-                'mistral-tiny-2312',
-                'mistral-tiny',
-                'open-mixtral-8x7b',
-                'mistral-small-2312',
-                'mistral-small',
-                'mistral-small-2402',
-                'mistral-small-latest',
-                'mistral-medium-latest',
-                'mistral-medium-2312',
-                'mistral-medium',
-                'mistral-large-latest',
-                'mistral-large-2402',
-                'mistral-embed',
+                `codestral-latest`,
+                `mistral-large-latest`,
+                `pixtral-large-latest`,
+                `ministral-8b-latest`,
+                `mistral-small-latest`,
+                `mistral-embed`,
+                `mistral-moderation-latest`,
             ];
 
             parseAssert('MISTRAL.model', supportModels.includes(model), 'Invalid model type of Mistral AI');
@@ -406,7 +399,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
             if (!model || model.length === 0) {
                 return 'codestral-latest';
             }
-            const supportModels = ['codestral-latest', 'codestral-2405'];
+            const supportModels = ['codestral-latest', 'codestral-2501'];
 
             parseAssert('CODESTRAL.model', supportModels.includes(model), 'Invalid model type of Codestral');
             return model;

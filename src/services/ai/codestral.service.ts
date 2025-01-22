@@ -98,7 +98,7 @@ export class CodestralService extends AIService {
     };
 
     private checkAvailableModels() {
-        const supportModels = ['codestral-latest', 'codestral-2405'];
+        const supportModels = ['codestral-latest', 'codestral-2501'];
 
         if (supportModels.includes(this.params.config.model)) {
             return true;
