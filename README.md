@@ -82,7 +82,7 @@ You can also use your model for free with [Ollama](https://ollama.com/) and it i
 ollama run llama3.2 # model you want use. ex) codellama, deepseek-coder
 ```
 
-3. Set the host, model and numCtx. (The default numCtx value in Ollama is 2048. It is recommended to set it to 4096 or higher.)
+3. Set the host, model and numCtx. (The default numCtx value in Ollama is 2048. It is recommended to set it to `4096` or higher.)
 ```sh
 aicommit2 config set OLLAMA.host=<your host>
 aicommit2 config set OLLAMA.model=<your model>
@@ -522,14 +522,14 @@ The Anthropic API key. To get started with Anthropic Claude, request access to t
 
 ##### ANTHROPIC.model
 
-Default: `claude-3-haiku-20240307`
+Default: `claude-3-5-haiku-20241022`
 
 Supported:
-- `claude-3-haiku-20240307`
-- `claude-3-sonnet-20240229`
-- `claude-3-opus-20240229`
-- `claude-3-5-sonnet-20240620`
 - `claude-3-5-sonnet-20241022`
+- `claude-3-5-haiku-20241022`
+- `claude-3-opus-20240229`
+- `claude-3-sonnet-20240229`
+- `claude-3-haiku-20240307`
 
 ```sh
 aicommit2 config set ANTHROPIC.model="claude-3-5-sonnet-20240620"

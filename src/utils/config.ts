@@ -329,16 +329,14 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         key: (key?: string) => key || '',
         model: (model?: string) => {
             if (!model || model.length === 0) {
-                return 'claude-3-haiku-20240307';
+                return 'claude-3-5-haiku-20241022';
             }
             const supportModels = [
-                `claude-3-haiku-20240307`,
-                `claude-3-sonnet-20240229`,
-                `claude-3-opus-20240229`,
-                `claude-3-opus-latest`,
-                `claude-3-5-sonnet-20240620`,
                 `claude-3-5-sonnet-20241022`,
-                `claude-3-5-sonnet-latest`,
+                `claude-3-5-haiku-20241022`,
+                `claude-3-opus-20240229`,
+                `claude-3-sonnet-20240229`,
+                `claude-3-haiku-20240307`,
             ];
             parseAssert('ANTHROPIC.model', supportModels.includes(model), 'Invalid model type of Anthropic');
             return model;
