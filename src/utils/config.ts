@@ -600,9 +600,10 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         key: (key?: string) => key || '',
         model: (model?: string) => {
             if (!model || model.length === 0) {
-                return `deepseek-coder`;
+                return `deepseek-chat`;
             }
-            const supportModels = [`deepseek-coder`, `deepseek-chat`];
+            console.log(model);
+            const supportModels = [`deepseek-reasoner`, `deepseek-chat`];
 
             parseAssert('DEEPSEEK.model', supportModels.includes(model), 'Invalid model type of DeepSeek');
             return model;

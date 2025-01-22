@@ -737,7 +737,7 @@ aicommit2 config set PERPLEXITY.model="llama-3.1-70b"
 | Setting | Description      | Default            |
 |---------|------------------|--------------------|
 | `key`   | API key          | -                  |
-| `model` | Model to use     | `deepseek-coder`   |
+| `model` | Model to use     | `deepseek-chat`    |
 
 ##### DEEPSEEK.key
 
@@ -745,14 +745,14 @@ The DeepSeek API key. If you don't have one, please sign up and subscribe in [De
 
 ##### DEEPSEEK.model
 
-Default: `deepseek-coder`
+Default: `deepseek-chat`
 
 Supported:
-- `deepseek-coder`
 - `deepseek-chat`
+- `deepseek-reasoner`
 
 ```sh
-aicommit2 config set DEEPSEEK.model="deepseek-chat"
+aicommit2 config set DEEPSEEK.model="deepseek-reasoner"
 ```
 
 ### HuggingFace
