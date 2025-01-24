@@ -303,9 +303,9 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         key: (key?: string) => key || '',
         model: (model?: string) => {
             if (!model || model.length === 0) {
-                return 'gemini-1.5-pro';
+                return 'gemini-2.0-flash-exp';
             }
-            const supportModels = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-1.5-pro-exp-0801'];
+            const supportModels = [`gemini-2.0-flash-exp`, `gemini-1.5-flash`, `gemini-1.5-flash-8b`, `gemini-1.5-pro`];
             parseAssert('GEMINI.model', supportModels.includes(model), 'Invalid model type of Gemini');
             return model;
         },
@@ -329,16 +329,14 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         key: (key?: string) => key || '',
         model: (model?: string) => {
             if (!model || model.length === 0) {
-                return 'claude-3-haiku-20240307';
+                return 'claude-3-5-haiku-20241022';
             }
             const supportModels = [
-                `claude-3-haiku-20240307`,
-                `claude-3-sonnet-20240229`,
-                `claude-3-opus-20240229`,
-                `claude-3-opus-latest`,
-                `claude-3-5-sonnet-20240620`,
                 `claude-3-5-sonnet-20241022`,
-                `claude-3-5-sonnet-latest`,
+                `claude-3-5-haiku-20241022`,
+                `claude-3-opus-20240229`,
+                `claude-3-sonnet-20240229`,
+                `claude-3-haiku-20240307`,
             ];
             parseAssert('ANTHROPIC.model', supportModels.includes(model), 'Invalid model type of Anthropic');
             return model;
@@ -363,23 +361,16 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         key: (key?: string) => key || '',
         model: (model?: string) => {
             if (!model || model.length === 0) {
-                return 'mistral-tiny';
+                return 'pixtral-12b-2409';
             }
             const supportModels = [
-                'open-mistral-7b',
-                'mistral-tiny-2312',
-                'mistral-tiny',
-                'open-mixtral-8x7b',
-                'mistral-small-2312',
-                'mistral-small',
-                'mistral-small-2402',
-                'mistral-small-latest',
-                'mistral-medium-latest',
-                'mistral-medium-2312',
-                'mistral-medium',
-                'mistral-large-latest',
-                'mistral-large-2402',
-                'mistral-embed',
+                `codestral-latest`,
+                `mistral-large-latest`,
+                `pixtral-large-latest`,
+                `ministral-8b-latest`,
+                `mistral-small-latest`,
+                `mistral-embed`,
+                `mistral-moderation-latest`,
             ];
 
             parseAssert('MISTRAL.model', supportModels.includes(model), 'Invalid model type of Mistral AI');
@@ -408,7 +399,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
             if (!model || model.length === 0) {
                 return 'codestral-latest';
             }
-            const supportModels = ['codestral-latest', 'codestral-2405'];
+            const supportModels = ['codestral-latest', 'codestral-2501'];
 
             parseAssert('CODESTRAL.model', supportModels.includes(model), 'Invalid model type of Codestral');
             return model;
@@ -490,7 +481,21 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
             if (!model || model.length === 0) {
                 return 'command';
             }
-            const supportModels = ['command', `command-nightly`, `command-light`, `command-light-nightly`];
+            const supportModels = [
+                `command-r7b-12-2024`,
+                `command-r-plus-08-2024`,
+                `command-r-plus-04-2024`,
+                `command-r-plus`,
+                `command-r-08-2024`,
+                `command-r-03-2024`,
+                `command-r`,
+                `command`,
+                `command-nightly`,
+                `command-light`,
+                `command-light-nightly`,
+                `c4ai-aya-expanse-8b`,
+                `c4ai-aya-expanse-32b`,
+            ];
             parseAssert('COHERE.model', supportModels.includes(model), 'Invalid model type of Cohere');
             return model;
         },
@@ -563,17 +568,16 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         key: (key?: string) => key || '',
         model: (model?: string) => {
             if (!model || model.length === 0) {
-                return 'llama-3.1-sonar-small-128k-chat';
+                return 'sonar';
             }
 
-            // https://docs.perplexity.ai/docs/model-cards
+            // https://docs.perplexity.ai/guides/model-cards
             const supportModels = [
-                'llama-3.1-sonar-small-128k-online',
-                'llama-3.1-sonar-small-128k-chat',
-                'llama-3.1-sonar-large-128k-online',
-                'llama-3.1-sonar-large-128k-chat',
-                'llama-3.1-8b-instruct',
-                'llama-3.1-70b-instruct',
+                `sonar-pro`,
+                `sonar`,
+                `llama-3.1-sonar-small-128k-online`,
+                `llama-3.1-sonar-large-128k-online`,
+                `llama-3.1-sonar-huge-128k-online`,
             ];
 
             parseAssert('PERPLEXITY.model', supportModels.includes(model), 'Invalid model type of Perplexity');
@@ -600,9 +604,10 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         key: (key?: string) => key || '',
         model: (model?: string) => {
             if (!model || model.length === 0) {
-                return `deepseek-coder`;
+                return `deepseek-chat`;
             }
-            const supportModels = [`deepseek-coder`, `deepseek-chat`];
+            console.log(model);
+            const supportModels = [`deepseek-reasoner`, `deepseek-chat`];
 
             parseAssert('DEEPSEEK.model', supportModels.includes(model), 'Invalid model type of DeepSeek');
             return model;

@@ -82,7 +82,7 @@ You can also use your model for free with [Ollama](https://ollama.com/) and it i
 ollama run llama3.2 # model you want use. ex) codellama, deepseek-coder
 ```
 
-3. Set the host, model and numCtx. (The default numCtx value in Ollama is 2048. It is recommended to set it to 4096 or higher.)
+3. Set the host, model and numCtx. (The default numCtx value in Ollama is 2048. It is recommended to set it to `4096` or higher.)
 ```sh
 aicommit2 config set OLLAMA.host=<your host>
 aicommit2 config set OLLAMA.model=<your model>
@@ -511,10 +511,10 @@ aicommit2 config set OPENAI.topP=0.2
 
 ### Anthropic
 
-| Setting     | Description    | Default                   |
-|-------------|----------------|---------------------------|
-| `key`       | API key        | -                         |
-| `model`     | Model to use   | `claude-3-haiku-20240307` |
+| Setting     | Description    | Default                     |
+|-------------|----------------|-----------------------------|
+| `key`       | API key        | -                           | 
+| `model`     | Model to use   | `claude-3-5-haiku-20241022` |
 
 ##### ANTHROPIC.key
 
@@ -522,14 +522,14 @@ The Anthropic API key. To get started with Anthropic Claude, request access to t
 
 ##### ANTHROPIC.model
 
-Default: `claude-3-haiku-20240307`
+Default: `claude-3-5-haiku-20241022`
 
 Supported:
-- `claude-3-haiku-20240307`
-- `claude-3-sonnet-20240229`
-- `claude-3-opus-20240229`
-- `claude-3-5-sonnet-20240620`
 - `claude-3-5-sonnet-20241022`
+- `claude-3-5-haiku-20241022`
+- `claude-3-opus-20240229`
+- `claude-3-sonnet-20240229`
+- `claude-3-haiku-20240307`
 
 ```sh
 aicommit2 config set ANTHROPIC.model="claude-3-5-sonnet-20240620"
@@ -543,10 +543,10 @@ Anthropic does not support the following options in General Settings.
 
 ### Gemini
 
-| Setting            | Description            | Default           |
-|--------------------|------------------------|-------------------|
-| `key`              | API key                | -                 |
-| `model`            | Model to use           | `gemini-1.5-pro`  |
+| Setting            | Description            | Default                |
+|--------------------|------------------------|------------------------|
+| `key`              | API key                | -                      |
+| `model`            | Model to use           | `gemini-2.0-flash-exp` |
 
 ##### GEMINI.key
 
@@ -558,15 +558,16 @@ aicommit2 config set GEMINI.key="your api key"
 
 ##### GEMINI.model
 
-Default: `gemini-1.5-pro`
+Default: `gemini-2.0-flash-exp`
 
 Supported:
-- `gemini-1.5-pro`
+- `gemini-2.0-flash-exp`
 - `gemini-1.5-flash`
-- `gemini-1.5-pro-exp-0801`
+- `gemini-1.5-flash-8b`
+- `gemini-1.5-pro`
 
 ```sh
-aicommit2 config set GEMINI.model="gemini-1.5-pro-exp-0801"
+aicommit2 config set GEMINI.model="gemini-1.5-flash"
 ```
 
 ##### Unsupported Options
@@ -577,10 +578,10 @@ Gemini does not support the following options in General Settings.
 
 ### Mistral
 
-| Setting  | Description      | Default        |
-|----------|------------------|----------------|
-| `key`    | API key          | -              |
-| `model`  | Model to use     | `mistral-tiny` |
+| Setting  | Description      | Default            |
+|----------|------------------|--------------------|
+| `key`    | API key          | -                  |
+| `model`  | Model to use     | `pixtral-12b-2409` |
 
 ##### MISTRAL.key
 
@@ -588,23 +589,16 @@ The Mistral API key. If you don't have one, please sign up and subscribe in [Mis
 
 ##### MISTRAL.model
 
-Default: `mistral-tiny`
+Default: `pixtral-12b-2409`
 
 Supported:
-- `open-mistral-7b`
-- `mistral-tiny-2312`
-- `mistral-tiny`
-- `open-mixtral-8x7b`
-- `mistral-small-2312`
-- `mistral-small`
-- `mistral-small-2402`
-- `mistral-small-latest`
-- `mistral-medium-latest`
-- `mistral-medium-2312`
-- `mistral-medium`
+- `codestral-latest`
 - `mistral-large-latest`
-- `mistral-large-2402`
+- `pixtral-large-latest`
+- `ministral-8b-latest`
+- `mistral-small-latest`
 - `mistral-embed`
+- `mistral-moderation-latest`
 
 ### Codestral
 
@@ -623,10 +617,10 @@ Default: `codestral-latest`
 
 Supported:
 - `codestral-latest`
-- `codestral-2405`
+- `codestral-2501`
 
 ```sh
-aicommit2 config set CODESTRAL.model="codestral-2405"
+aicommit2 config set CODESTRAL.model="codestral-2501"
 ```
 
 ### Cohere
@@ -645,10 +639,19 @@ The Cohere API key. If you don't have one, please sign up and get the API key in
 Default: `command`
 
 Supported models:
+- `command-r7b-12-2024`
+- `command-r-plus-08-2024`
+- `command-r-plus-04-2024`
+- `command-r-plus`
+- `command-r-08-2024`
+- `command-r-03-2024`
+- `command-r`
 - `command`
 - `command-nightly`
 - `command-light`
 - `command-light-nightly`
+- `c4ai-aya-expanse-8b`
+- `c4ai-aya-expanse-32b`
 
 ```sh
 aicommit2 config set COHERE.model="command-nightly"
@@ -703,10 +706,10 @@ aicommit2 config set GROQ.model="llama3-8b-8192"
 
 ### Perplexity
 
-| Setting  | Description      | Default                           |
-|----------|------------------|-----------------------------------|
-| `key`    | API key          | -                                 |
-| `model`  | Model to use     | `llama-3.1-sonar-small-128k-chat` |
+| Setting  | Description      | Default  |
+|----------|------------------|----------|
+| `key`    | API key          | -        |
+| `model`  | Model to use     | `sonar`  |
 
 ##### PERPLEXITY.key
 
@@ -714,22 +717,19 @@ The Perplexity API key. If you don't have one, please sign up and get the API ke
 
 ##### PERPLEXITY.model
 
-Default: `llama-3.1-sonar-small-128k-chat`
+Default: `sonar`
 
 Supported:
-- `llama-3.1-sonar-small-128k-chat`
-- `llama-3.1-sonar-large-128k-chat`
-- `llama-3.1-sonar-large-128k-online`
+- `sonar-pro`
+- `sonar`
 - `llama-3.1-sonar-small-128k-online`
-- `llama-3.1-8b-instruct`
-- `llama-3.1-70b-instruct`
-- `llama-3.1-8b`
-- `llama-3.1-70b`
+- `llama-3.1-sonar-large-128k-online`
+- `llama-3.1-sonar-huge-128k-online`
 
 > The models mentioned above are subject to change.
 
 ```sh
-aicommit2 config set PERPLEXITY.model="llama-3.1-70b"
+aicommit2 config set PERPLEXITY.model="sonar-pro"
 ```
 
 ### DeepSeek
@@ -737,7 +737,7 @@ aicommit2 config set PERPLEXITY.model="llama-3.1-70b"
 | Setting | Description      | Default            |
 |---------|------------------|--------------------|
 | `key`   | API key          | -                  |
-| `model` | Model to use     | `deepseek-coder`   |
+| `model` | Model to use     | `deepseek-chat`    |
 
 ##### DEEPSEEK.key
 
@@ -745,14 +745,14 @@ The DeepSeek API key. If you don't have one, please sign up and subscribe in [De
 
 ##### DEEPSEEK.model
 
-Default: `deepseek-coder`
+Default: `deepseek-chat`
 
 Supported:
-- `deepseek-coder`
 - `deepseek-chat`
+- `deepseek-reasoner`
 
 ```sh
-aicommit2 config set DEEPSEEK.model="deepseek-chat"
+aicommit2 config set DEEPSEEK.model="deepseek-reasoner"
 ```
 
 ### HuggingFace

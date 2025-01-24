@@ -1,6 +1,7 @@
 import { expect, testSuite } from 'manten';
 
 import { generateCommitMessage } from '../../../src/utils/openai.js';
+import { generatePrompt } from '../../../src/utils/prompt.js';
 import { getDiff } from '../../utils.js';
 
 import type { ValidConfig } from '../../../src/utils/config.js';
@@ -20,6 +21,7 @@ export default testSuite(({ describe }) => {
 
             const gitDiff = await getDiff('new-feature.diff');
 
+            // @ts-ignore ignore
             const commitMessage = await runGenerateCommitMessage(gitDiff, {
                 locale: 'ja',
             });
@@ -127,28 +129,28 @@ export default testSuite(({ describe }) => {
             console.log('Generated message:', commitMessage);
         });
 
-        async function runGenerateCommitMessage(
-            gitDiff: string,
-            configOverrides: Partial<ValidConfig> = {}
-        ): Promise<string> {
+        async function runGenerateCommitMessage(gitDiff: string, configOverrides: Partial<ValidConfig> = {}): Promise<string> {
             const config = {
                 locale: 'en',
                 type: 'conventional',
                 generate: 1,
                 'max-length': 50,
                 ...configOverrides,
-            } as ValidConfig;
+            } as unknown as ValidConfig;
             const commitMessages = await generateCommitMessage(
+                'ChatGPT',
+                'https://api.openai.com',
+                '/v1/chat/completions',
                 OPENAI_KEY!,
                 'gpt-3.5-turbo',
-                config.locale,
                 gitDiff,
-                config.generate,
-                config['max-length'],
-                config.type,
-                7000,
-                config['max-tokens'],
-                config.temperature
+                100000,
+                1024,
+                0.7,
+                0.9,
+                generatePrompt({ locale: config.locale, type: config.type, generate: config.generate, maxLength: config.maxLength }),
+                false,
+                'commit'
             );
 
             return commitMessages[0];

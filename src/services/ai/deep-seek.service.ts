@@ -100,7 +100,7 @@ export class DeepSeekService extends AIService {
     };
 
     private checkAvailableModels() {
-        const supportModels = [`deepseek-coder`, `deepseek-chat`];
+        const supportModels = [`deepseek-reasoner`, `deepseek-chat`];
         if (supportModels.includes(this.params.config.model)) {
             return true;
         }
