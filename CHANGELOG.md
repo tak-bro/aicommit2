@@ -1,3 +1,18 @@
+## [2.2.2](https://github.com/tak-bro/aicommit2/compare/v2.2.1...v2.2.2) (2025-01-24)
+
+
+### Bug Fixes
+
+* update model defaults for Codestral and Mistral services ([0b6359c](https://github.com/tak-bro/aicommit2/commit/0b6359c8621a6bcc09b1b97dc4e261e3fb89585f))
+
+
+### Features
+
+* update Anthropic model list ([a4f023b](https://github.com/tak-bro/aicommit2/commit/a4f023b33f47d8c94f9cda597e90bca84bdb1b04))
+* update DeepSeek supported models and default configuration ([423eb7a](https://github.com/tak-bro/aicommit2/commit/423eb7a8cb94a54eb0b91a69154ad409b91ca890))
+* update default GEMINI model ([2446f96](https://github.com/tak-bro/aicommit2/commit/2446f96c80cfb4dc14aab0fd2bd64b6ec74bf21b))
+* update supported Cohere models ([a8c7952](https://github.com/tak-bro/aicommit2/commit/a8c7952c38ee06647c25f6abb3bd281b252694d4))
+
 ## [2.2.1](https://github.com/tak-bro/aicommit2/compare/v2.2.0...v2.2.1) (2025-01-17)
 
 
