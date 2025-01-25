@@ -1,3 +1,10 @@
+## [2.2.3](https://github.com/tak-bro/aicommit2/compare/v2.2.2...v2.2.3) (2025-01-25)
+
+
+### Features
+
+* update supported GROQ models ([197ecfe](https://github.com/tak-bro/aicommit2/commit/197ecfeb4077fed4ebf40dec1a9ad9601398c25b))
+
 ## [2.2.2](https://github.com/tak-bro/aicommit2/compare/v2.2.1...v2.2.2) (2025-01-24)
 
 
