@@ -513,7 +513,7 @@ aicommit2 config set OPENAI.topP=0.2
 
 | Setting     | Description    | Default                     |
 |-------------|----------------|-----------------------------|
-| `key`       | API key        | -                           | 
+| `key`       | API key        | -                           |
 | `model`     | Model to use   | `claude-3-5-haiku-20241022` |
 
 ##### ANTHROPIC.key
@@ -525,6 +525,7 @@ The Anthropic API key. To get started with Anthropic Claude, request access to t
 Default: `claude-3-5-haiku-20241022`
 
 Supported:
+- `claude-3-7-sonnet-20250219`
 - `claude-3-5-sonnet-20241022`
 - `claude-3-5-haiku-20241022`
 - `claude-3-opus-20240229`
@@ -863,7 +864,6 @@ Request timeout for the Ollama.
 ```sh
 aicommit2 config set OLLAMA.timeout=<timeout>
 ```
-
 ##### OLLAMA.numCtx
 
 The maximum number of tokens the model can process at once, determining its context length and memory usage.
@@ -1108,7 +1108,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   </tr>
   <tr>
     <td align="center"><a href="https://github.com/devxpain"><img src="https://avatars.githubusercontent.com/devxpain" width="100px;" alt=""/><br /><sub><b>@devxpain</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=devxpain" title="Code">💻</a></td>
-  </tr>  
+  </tr>
 </table>
 <!-- markdownlint-restore -->
 <!-- prettier-ignore-end -->
