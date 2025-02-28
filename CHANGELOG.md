@@ -1,3 +1,10 @@
+## [2.2.4](https://github.com/tak-bro/aicommit2/compare/v2.2.3...v2.2.4) (2025-02-28)
+
+
+### Features
+
+* **config:** add claude-3-7-sonnet model to supported models list ([2f24e78](https://github.com/tak-bro/aicommit2/commit/2f24e780259d5633f618e1c0e83198eef63a9885))
+
 ## [2.2.3](https://github.com/tak-bro/aicommit2/compare/v2.2.2...v2.2.3) (2025-01-25)
 
 
