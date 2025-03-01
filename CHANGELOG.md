@@ -1,3 +1,10 @@
+## [2.2.5](https://github.com/tak-bro/aicommit2/compare/v2.2.4...v2.2.5) (2025-03-01)
+
+
+### Features
+
+* add new Gemini models support ([d6aead7](https://github.com/tak-bro/aicommit2/commit/d6aead7ce3886ab3b19f05a4a83f425191a870b0))
+
 ## [2.2.4](https://github.com/tak-bro/aicommit2/compare/v2.2.3...v2.2.4) (2025-02-28)
 
 
