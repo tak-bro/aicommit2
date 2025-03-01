@@ -559,16 +559,20 @@ aicommit2 config set GEMINI.key="your api key"
 
 ##### GEMINI.model
 
-Default: `gemini-2.0-flash-exp`
+Default: `gemini-2.0-flash`
 
 Supported:
+- `gemini-2.0-flash`
+- `gemini-2.0-flash-lite`
+- `gemini-2.0-pro-exp-02-05`
+- `gemini-2.0-flash-thinking-exp-01-21`
 - `gemini-2.0-flash-exp`
 - `gemini-1.5-flash`
 - `gemini-1.5-flash-8b`
 - `gemini-1.5-pro`
 
 ```sh
-aicommit2 config set GEMINI.model="gemini-1.5-flash"
+aicommit2 config set GEMINI.model="gemini-2.0-flash"
 ```
 
 ##### Unsupported Options
