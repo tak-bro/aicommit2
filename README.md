@@ -51,8 +51,16 @@ _aicommit2_ is a reactive CLI tool that automatically generates Git commit messa
 
 1. Install _aicommit2_:
 
+**Directly from npm**:
 ```sh
 npm install -g aicommit2
+```
+**Alternatively, from source**:
+```sh
+git clone https://github.com/tak-bro/aicommit2.git
+cd aicommit2
+npm run build
+npm install -g .
 ```
 
 2. Set up API keys (**at least ONE key must be set**):
@@ -547,7 +555,7 @@ Anthropic does not support the following options in General Settings.
 | Setting            | Description            | Default                |
 |--------------------|------------------------|------------------------|
 | `key`              | API key                | -                      |
-| `model`            | Model to use           | `gemini-2.0-flash-exp` |
+| `model`            | Model to use           | `gemini-2.0-flash`     |
 
 ##### GEMINI.key
 
@@ -670,10 +678,10 @@ Cohere does not support the following options in General Settings.
 
 ### Groq
 
-| Setting            | Description            | Default        |
-|--------------------|------------------------|----------------|
-| `key`              | API key                | -              |
-| `model`            | Model to use           | `gemma2-9b-it` |
+| Setting            | Description            | Default                         |
+|--------------------|------------------------|---------------------------------|
+| `key`              | API key                | -                               |
+| `model`            | Model to use           | `deepseek-r1-distill-llama-70b` |
 
 ##### GROQ.key
 
@@ -681,9 +689,13 @@ The Groq API key. If you don't have one, please sign up and get the API key in [
 
 ##### GROQ.model
 
-Default: `gemma2-9b-it`
+Default: `deepseek-r1-distill-llama-70b`
 
 Supported:
+- `qwen-2.5-32b`
+- `qwen-2.5-coder-32b`
+- `deepseek-r1-distill-qwen-32b`
+- `deepseek-r1-distill-llama-70b`
 - `distil-whisper-large-v3-en`
 - `gemma2-9b-it`
 - `llama-3.3-70b-versatile`
@@ -702,7 +714,7 @@ Supported:
 
 
 ```sh
-aicommit2 config set GROQ.model="llama-3.3-70b-versatile"
+aicommit2 config set GROQ.model="deepseek-r1-distill-llama-70b"
 ```
 
 ### Perplexity
