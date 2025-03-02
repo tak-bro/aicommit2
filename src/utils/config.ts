@@ -303,7 +303,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         key: (key?: string) => key || '',
         model: (model?: string) => {
             if (!model || model.length === 0) {
-                return 'gemini-2.0-flash-exp';
+                return 'gemini-2.0-flash';
             }
             const supportModels = [
                 `gemini-2.0-flash`,
