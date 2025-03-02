@@ -529,9 +529,13 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         key: (key?: string) => key || '',
         model: (model?: string) => {
             if (!model || model.length === 0) {
-                return 'gemma2-9b-it';
+                return 'deepseek-r1-distill-llama-70b';
             }
             const supportModels = [
+                `qwen-2.5-32b`,
+                `qwen-2.5-coder-32b`,
+                `deepseek-r1-distill-qwen-32b`,
+                `deepseek-r1-distill-llama-70b`,
                 `distil-whisper-large-v3-en`,
                 `gemma2-9b-it`,
                 `llama-3.3-70b-versatile`,
@@ -540,6 +544,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
                 `llama3-70b-8192`,
                 `llama3-8b-8192`,
                 `mixtral-8x7b-32768`,
+                `distil-whisper-large-v3-en`,
                 `whisper-large-v3`,
                 `whisper-large-v3-turbo`,
                 `llama-3.3-70b-specdec`,
