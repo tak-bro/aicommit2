@@ -1,3 +1,16 @@
+## [2.2.6](https://github.com/tak-bro/aicommit2/compare/v2.2.5...v2.2.6) (2025-03-04)
+
+
+### Bug Fixes
+
+* remove duplicate model name in modelConfigParsers ([9230394](https://github.com/tak-bro/aicommit2/commit/9230394a5c2bc6caa02c3eddcd4585a8cc46fbe7))
+* set default model to gemini-2.0-flash ([a48f4dd](https://github.com/tak-bro/aicommit2/commit/a48f4ddc969cfd99384916e9c35b45d4e7958ff0))
+
+
+### Features
+
+* add new GROQ models support ([956eec1](https://github.com/tak-bro/aicommit2/commit/956eec1295ad6e80f1ace63bba07b0ccc3de3e92))
+
 ## [2.2.5](https://github.com/tak-bro/aicommit2/compare/v2.2.4...v2.2.5) (2025-03-01)
 
 
