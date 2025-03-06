@@ -41,7 +41,6 @@ _aicommit2_ is a reactive CLI tool that automatically generates Git commit messa
 - [Groq](https://groq.com/)
 - [Perplexity](https://docs.perplexity.ai/)
 - [DeepSeek](https://www.deepseek.com/)
-- [Huggingface **(Unofficial)**](https://huggingface.co/chat/)
 - [Ollama](https://ollama.com/)
 - [OpenAI API Compatibility](#openai-api-compatible-services)
 
@@ -450,7 +449,6 @@ aicommit2 config set codeReviewPromptPath="/path/to/user/prompt.txt"
 |          **Groq**           |    ✓    |      ✓      |     ✓     |   ✓    |
 |       **Perplexity**        |    ✓    |      ✓      |     ✓     |   ✓    |
 |        **DeepSeek**         |    ✓    |      ✓      |     ✓     |   ✓    |
-|       **Huggingface**       |         |             |           |        |
 |         **Ollama**          |    ✓    |      ✓      |           |   ✓    |
 | **OpenAI API-Compatible**   |    ✓    |      ✓      |     ✓     |   ✓    |
 
@@ -768,49 +766,6 @@ Supported:
 aicommit2 config set DEEPSEEK.model="deepseek-reasoner"
 ```
 
-### HuggingFace
-
-| Setting            | Description                | Default                                |
-|--------------------|----------------------------|----------------------------------------|
-| `cookie`           | Authentication cookie      | -                                      |
-| `model`            | Model to use               | `CohereForAI/c4ai-command-r-plus`      |
-
-##### HUGGINGFACE.cookie
-
-The [Huggingface Chat](https://huggingface.co/chat/) Cookie. Please check [how to get cookie](https://github.com/tak-bro/aicommit2?tab=readme-ov-file#how-to-get-cookieunofficial-api)
-
-```sh
-# Please be cautious of Escape characters(\", \') in browser cookie string
-aicommit2 config set HUGGINGFACE.cookie="your-cooke"
-```
-
-##### HUGGINGFACE.model
-
-Default: `CohereForAI/c4ai-command-r-plus`
-
-Supported:
-- `CohereForAI/c4ai-command-r-plus`
-- `meta-llama/Meta-Llama-3-70B-Instruct`
-- `HuggingFaceH4/zephyr-orpo-141b-A35b-v0.1`
-- `mistralai/Mixtral-8x7B-Instruct-v0.1`
-- `NousResearch/Nous-Hermes-2-Mixtral-8x7B-DPO`
-- `01-ai/Yi-1.5-34B-Chat`
-- `mistralai/Mistral-7B-Instruct-v0.2`
-- `microsoft/Phi-3-mini-4k-instruct`
-
-```sh
-aicommit2 config set HUGGINGFACE.model="mistralai/Mistral-7B-Instruct-v0.2"
-```
-
-##### Unsupported Options
-
-Huggingface does not support the following options in General Settings.
-
-- maxTokens
-- timeout
-- temperature
-- topP
-
 ### Ollama
 
 | Setting    | Description                                                 | Default                |
@@ -1083,19 +1038,6 @@ aicommit2
 ```
 
 > Note that this feature is available starting from Ollama version [**0.1.33**](https://github.com/ollama/ollama/releases/tag/v0.1.33) and _aicommit2_ version [**1.9.5**](https://www.npmjs.com/package/aicommit2/v/1.9.5).
-
-## How to get Cookie(**Unofficial API**)
-
-* Login to the site you want
-* You can get cookie from the browser's developer tools network tab
-* See for any requests check out the Cookie, **Copy whole value**
-* Check below image for the format of cookie
-
-> When setting cookies with long string values, ensure to **escape characters** like ", ', and others properly.
-> - For double quotes ("), use \\"
-> - For single quotes ('), use \\'
-
-![how-to-get-cookie](https://github.com/tak-bro/aicommit2/assets/7614353/66f2994d-23d9-4c88-a113-f2d3dc5c0669)
 
 ## Disclaimer and Risks
 
