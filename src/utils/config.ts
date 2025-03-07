@@ -714,32 +714,16 @@ export const getConfig = async (cliConfig: RawConfig, rawArgv: string[] = []): P
 
     // Check environment variables for API keys
     const envConfig: RawConfig = {};
-    if (process.env.OPENAI_API_KEY) {
-        envConfig.OPENAI = { key: process.env.OPENAI_API_KEY };
-    }
-    if (process.env.ANTHROPIC_API_KEY) {
-        envConfig.ANTHROPIC = { key: process.env.ANTHROPIC_API_KEY };
-    }
-    if (process.env.GEMINI_API_KEY) {
-        envConfig.GEMINI = { key: process.env.GEMINI_API_KEY };
-    }
-    if (process.env.MISTRAL_API_KEY) {
-        envConfig.MISTRAL = { key: process.env.MISTRAL_API_KEY };
-    }
-    if (process.env.CODESTRAL_API_KEY) {
-        envConfig.CODESTRAL = { key: process.env.CODESTRAL_API_KEY };
-    }
-    if (process.env.COHERE_API_KEY) {
-        envConfig.COHERE = { key: process.env.COHERE_API_KEY };
-    }
-    if (process.env.GROQ_API_KEY) {
-        envConfig.GROQ = { key: process.env.GROQ_API_KEY };
-    }
-    if (process.env.PERPLEXITY_API_KEY) {
-        envConfig.PERPLEXITY = { key: process.env.PERPLEXITY_API_KEY };
-    }
-    if (process.env.DEEPSEEK_API_KEY) {
-        envConfig.DEEPSEEK = { key: process.env.DEEPSEEK_API_KEY };
+    const apiKeyMapping = BUILTIN_SERVICES.map(service => ({
+        service,
+        envKey: `${service}_API_KEY`,
+    }));
+
+    for (const { service, envKey } of apiKeyMapping) {
+        const apiKey = process.env[envKey];
+        if (apiKey) {
+            envConfig[service] = { key: apiKey };
+        }
     }
 
     // Helper function to get the value with priority
