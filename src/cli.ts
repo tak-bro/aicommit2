@@ -67,6 +67,11 @@ cli(
                 type: Boolean,
                 default: false,
             },
+            'hook-mode': {
+                type: Boolean,
+                description: 'Run in git hook mode, allowing chaining with other hooks',
+                default: false,
+            },
         },
 
         commands: [configCommand, hookCommand, logCommand],
@@ -78,7 +83,7 @@ cli(
         ignoreArgv: type => type === 'unknown-flag' || type === 'argument',
     },
     argv => {
-        if (isCalledFromGitHook) {
+        if (argv.flags['hook-mode'] || isCalledFromGitHook) {
             prepareCommitMessageHook();
             return;
         }
