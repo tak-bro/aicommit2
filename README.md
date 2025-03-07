@@ -54,6 +54,7 @@ _aicommit2_ is a reactive CLI tool that automatically generates Git commit messa
 ```sh
 npm install -g aicommit2
 ```
+
 **Alternatively, from source**:
 ```sh
 git clone https://github.com/tak-bro/aicommit2.git
@@ -144,8 +145,11 @@ aicommit2 --all # or -a
 - `--exclude` or `-x`: Files to exclude from AI analysis
 - `--hook-mode`: Run as a Git hook, typically used with prepare-commit-msg hook (default: **false**)
   - This mode is automatically enabled when running through the Git hook system
-  - Can be manually enabled for testing hook behavior
-
+  - See [Git hook](#git-hook) section for more details
+- `--pre-commit`: Run in [pre-commit](https://pre-commit.com/) framework mode (default: **false**)
+  - This option is specifically for use with the pre-commit framework
+  - See [Integration with pre-commit framework](#integration-with-pre-commit-framework) section for setup instructions
+   
 Example:
 ```sh
 aicommit2 --locale "jp" --all --type "conventional" --generate 3 --clipboard --exclude "*.json" --exclude "*.ts"
@@ -1039,6 +1043,30 @@ The response should be valid JSON that can be parsed without errors.
 ```
 
 This ensures that the output is consistently formatted as a JSON array, regardless of the custom template used.
+
+## Integration with pre-commit framework
+
+If you're using the [pre-commit](https://pre-commit.com/) framework, you can add _aicommit2_ to your `.pre-commit-config.yaml`:
+
+```yaml
+repos:
+  - repo: local
+    hooks:
+      - id: aicommit2
+        name: AI Commit Message Generator
+        entry: aicommit2 --pre-commit
+        language: node
+        stages: [prepare-commit-msg]
+        always_run: true
+```
+
+Make sure you have:
+
+1. Installed pre-commit: `brew install pre-commit`
+2. Installed aicommit2 globally: `npm install -g aicommit2`
+3. Run `pre-commit install --hook-type prepare-commit-msg` to set up the hook
+
+> **Note** : The `--pre-commit` flag is specifically designed for use with the pre-commit framework and ensures proper integration with other pre-commit hooks.
 
 ## Loading Multiple Ollama Models
 
