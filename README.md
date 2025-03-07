@@ -182,6 +182,25 @@ aicommit2 config get GEMINI.key
 aicommit2 config set OPENAI.generate=3 GEMINI.temperature=0.5
 ```
 
+#### Environment Variables
+
+You can configure API keys using environment variables:
+
+- `OPENAI_API_KEY`: OpenAI API key
+- `ANTHROPIC_API_KEY`: Anthropic API key
+- `GEMINI_API_KEY`: Gemini API key
+- `MISTRAL_API_KEY`: Mistral API key
+- `CODESTRAL_API_KEY`: Codestral API key
+- `COHERE_API_KEY`: Cohere API key
+- `GROQ_API_KEY`: Groq API key
+- `PERPLEXITY_API_KEY`: Perplexity API key
+- `DEEPSEEK_API_KEY`: Deepseek API key
+
+Example:
+```sh
+OPENAI_API_KEY="your-openai-key" ANTHROPIC_API_KEY="your-anthropic-key" aicommit2
+```
+
 #### How to Configure in detail
 
 1. Command-line arguments: **use the format** `--[Model].[Key]=value`
@@ -215,7 +234,7 @@ model[]=llama3.2
 model[]=codestral
 ```
 
-> The priority of settings is: **Command-line Arguments > Model-Specific Settings > General Settings > Default Values**.
+> The priority of settings is: **Command-line Arguments > Environment Variables > Model-Specific Settings > General Settings > Default Values**.
 
 ## General Settings
 

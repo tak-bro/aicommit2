@@ -712,12 +712,45 @@ export const getConfig = async (cliConfig: RawConfig, rawArgv: string[] = []): P
 
     const services = findAllServices(config);
 
+    // Check environment variables for API keys
+    const envConfig: RawConfig = {};
+    if (process.env.OPENAI_API_KEY) {
+        envConfig.OPENAI = { key: process.env.OPENAI_API_KEY };
+    }
+    if (process.env.ANTHROPIC_API_KEY) {
+        envConfig.ANTHROPIC = { key: process.env.ANTHROPIC_API_KEY };
+    }
+    if (process.env.GEMINI_API_KEY) {
+        envConfig.GEMINI = { key: process.env.GEMINI_API_KEY };
+    }
+    if (process.env.MISTRAL_API_KEY) {
+        envConfig.MISTRAL = { key: process.env.MISTRAL_API_KEY };
+    }
+    if (process.env.CODESTRAL_API_KEY) {
+        envConfig.CODESTRAL = { key: process.env.CODESTRAL_API_KEY };
+    }
+    if (process.env.COHERE_API_KEY) {
+        envConfig.COHERE = { key: process.env.COHERE_API_KEY };
+    }
+    if (process.env.GROQ_API_KEY) {
+        envConfig.GROQ = { key: process.env.GROQ_API_KEY };
+    }
+    if (process.env.PERPLEXITY_API_KEY) {
+        envConfig.PERPLEXITY = { key: process.env.PERPLEXITY_API_KEY };
+    }
+    if (process.env.DEEPSEEK_API_KEY) {
+        envConfig.DEEPSEEK = { key: process.env.DEEPSEEK_API_KEY };
+    }
+
     // Helper function to get the value with priority
     const getValueWithPriority = (modelName: string, key: string) => {
+        // Priority: CLI > Environment Variables > Model-specific > General
         const cliValue = mergedCliConfig[`${modelName}.${key}`] ?? (mergedCliConfig[modelName] as Record<string, any>)?.[key];
+        const envValue = (envConfig[modelName] as Record<string, any>)?.[key];
         const modelValue = (config[modelName] as Record<string, any>)?.[key];
         const generalValue = mergedCliConfig[key] ?? config[key];
-        return cliValue !== undefined ? cliValue : modelValue !== undefined ? modelValue : generalValue;
+
+        return cliValue !== undefined ? cliValue : envValue !== undefined ? envValue : modelValue !== undefined ? modelValue : generalValue;
     };
 
     // Parse general configs
