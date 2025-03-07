@@ -142,6 +142,9 @@ aicommit2 --all # or -a
 - `--generate` or `-g`: Number of messages to generate (default: **1**)
   - **Warning**: This uses more tokens, meaning it costs more.
 - `--exclude` or `-x`: Files to exclude from AI analysis
+- `--hook-mode`: Run as a Git hook, typically used with prepare-commit-msg hook (default: **false**)
+  - This mode is automatically enabled when running through the Git hook system
+  - Can be manually enabled for testing hook behavior
 
 Example:
 ```sh
@@ -152,12 +155,28 @@ aicommit2 --locale "jp" --all --type "conventional" --generate 3 --clipboard --e
 
 You can also integrate _aicommit2_ with Git via the [`prepare-commit-msg`](https://git-scm.com/docs/githooks#_prepare_commit_msg) hook. This lets you use Git like you normally would, and edit the commit message before committing.
 
-#### Install
+#### Automatic Installation
 
 In the Git repository you want to install the hook in:
 
 ```sh
 aicommit2 hook install
+```
+
+#### Manual Installation
+
+if you prefer to set up the hook manually, create or edit the `.git/hooks/prepare-commit-msg` file:
+
+```sh
+#!/bin/sh
+# your-other-hook "$@"
+aicommit2 --hook-mode "$@"
+ ```
+
+Make the hook executable:
+
+```sh
+chmod +x .git/hooks/prepare-commit-msg
 ```
 
 #### Uninstall
@@ -167,6 +186,8 @@ In the Git repository you want to uninstall the hook from:
 ```sh
 aicommit2 hook uninstall
 ```
+
+Or manually delete the `.git/hooks/prepare-commit-msg` file.
 
 ### Configuration
 
