@@ -1,3 +1,18 @@
+## [2.2.7](https://github.com/tak-bro/aicommit2/compare/v2.2.6...v2.2.7) (2025-03-08)
+
+
+### Bug Fixes
+
+* robustify JSON parsing from AI response ([7b23554](https://github.com/tak-bro/aicommit2/commit/7b23554c845945a3e35c963ed612c0167ef5ce64))
+
+
+### Features
+
+* add hook-mode flag and improve hook execution ([7e59fe4](https://github.com/tak-bro/aicommit2/commit/7e59fe4de3ebc6f715936a1e25b3d6250af64208))
+* improve prompt guidelines for clarity ([f225f3a](https://github.com/tak-bro/aicommit2/commit/f225f3a09da652c23a1d8e5ce09a33c2c0114613))
+* **pre-commit:** add pre-commit hook integration with documentation ([d0dd2fc](https://github.com/tak-bro/aicommit2/commit/d0dd2fc0118c86f0afb009f2001c9aa24fa62997))
+* support API key configuration via environment variables ([8141e73](https://github.com/tak-bro/aicommit2/commit/8141e732895e99886add97e1897abee2b685a451))
+
 ## [2.2.6](https://github.com/tak-bro/aicommit2/compare/v2.2.5...v2.2.6) (2025-03-04)
 
 
