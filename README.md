@@ -19,11 +19,23 @@
 
 ---
 
-## Introduction
+## 🚀 Quick Start
+
+```bash
+# Install globally
+npm install -g aicommit2
+# Set up at least one AI provider
+aicommit2 config set OPENAI.key=<your-key>
+# Use in your git repository
+git add .
+aicommit2
+```
+
+## 📖 Introduction
 
 _aicommit2_ is a reactive CLI tool that automatically generates Git commit messages using various AI models. It supports simultaneous requests to multiple AI providers, allowing users to select the most suitable commit message. The core functionalities and architecture of this project are inspired by [AICommits](https://github.com/Nutlope/aicommits).
 
-## Key Features
+## ✨ Key Features
 
 - **Multi-AI Support**: Integrates with OpenAI, Anthropic Claude, Google Gemini, Mistral AI, Cohere, Groq, Ollama and more.
 - **OpenAI API Compatibility**: Support for any service that implements the OpenAI API specification.
@@ -31,7 +43,7 @@ _aicommit2_ is a reactive CLI tool that automatically generates Git commit messa
 - **Git Hook Integration**: Can be used as a prepare-commit-msg hook.
 - **Custom Prompt**: Supports user-defined system prompt templates.
 
-## Supported Providers
+## 🤖 Supported Providers
 
 - [OpenAI](https://openai.com/)
 - [Anthropic Claude](https://console.anthropic.com/)
@@ -46,7 +58,7 @@ _aicommit2_ is a reactive CLI tool that automatically generates Git commit messa
 
 ## Setup
 
-> The minimum supported version of Node.js is the v18. Check your Node.js version with `node --version`.
+> ⚠️ The minimum supported version of Node.js is the v18. Check your Node.js version with `node --version`.
 
 1. Install _aicommit2_:
 
@@ -209,22 +221,32 @@ aicommit2 config set OPENAI.generate=3 GEMINI.temperature=0.5
 
 #### Environment Variables
 
-You can configure API keys using environment variables:
+You can configure API keys using environment variables. This is particularly useful for CI/CD environments or when you don't want to store keys in the configuration file.
 
-- `OPENAI_API_KEY`: OpenAI API key
-- `ANTHROPIC_API_KEY`: Anthropic API key
-- `GEMINI_API_KEY`: Gemini API key
-- `MISTRAL_API_KEY`: Mistral API key
-- `CODESTRAL_API_KEY`: Codestral API key
-- `COHERE_API_KEY`: Cohere API key
-- `GROQ_API_KEY`: Groq API key
-- `PERPLEXITY_API_KEY`: Perplexity API key
-- `DEEPSEEK_API_KEY`: Deepseek API key
+```bash
+# OpenAI
+OPENAI_API_KEY="your-openai-key"
+# Anthropic
+ANTHROPIC_API_KEY="your-anthropic-key"
+# Google
+GEMINI_API_KEY="your-gemini-key"
+# Mistral AI
+MISTRAL_API_KEY="your-mistral-key"
+CODESTRAL_API_KEY="your-codestral-key"
+# Other Providers
+COHERE_API_KEY="your-cohere-key"
+GROQ_API_KEY="your-groq-key"
+PERPLEXITY_API_KEY="your-perplexity-key"
+DEEPSEEK_API_KEY="your-deepseek-key"
+```
 
-Example:
+Usage Example:
+
 ```sh
 OPENAI_API_KEY="your-openai-key" ANTHROPIC_API_KEY="your-anthropic-key" aicommit2
 ```
+
+> **Note**: Environment variables take precedence over configuration file settings. 
 
 #### How to Configure in detail
 
