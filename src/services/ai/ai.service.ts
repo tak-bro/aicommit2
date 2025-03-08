@@ -64,25 +64,35 @@ export abstract class AIService {
         try {
             let commitMessages: RawCommitMessage[];
 
-            try {
-                const parsed = JSON.parse(generatedText);
-                if (Array.isArray(parsed)) {
-                    commitMessages = parsed;
-                } else {
-                    commitMessages = [parsed];
-                }
-            } catch (initialError) {
-                const jsonPattern = /(\[[\s\S]*?\])|(\{[\s\S]*?\})/;
-                const jsonMatch = generatedText.match(jsonPattern);
+            const cleanJsonString = (str: string) => {
+                // eslint-disable-next-line no-control-regex
+                return str.replace(/[\u0000-\u001F\u007F-\u009F]/g, '').replace(/\\(?!["\\/bfnrtu])/g, '\\\\');
+            };
 
-                if (!jsonMatch) {
+            const arrayPattern = /\[\s*\{[\s\S]*?\}\s*\]/;
+            const arrayMatch = generatedText.match(arrayPattern);
+
+            if (arrayMatch) {
+                try {
+                    const parsed = JSON.parse(cleanJsonString(arrayMatch[0]));
+                    commitMessages = Array.isArray(parsed) ? parsed : [parsed];
+                } catch (error) {
+                    return [];
+                }
+            } else {
+                const objectPattern = /\{[\s\S]*?\}/;
+                const objectMatch = generatedText.match(objectPattern);
+
+                if (!objectMatch) {
                     return [];
                 }
 
-                const jsonStr = jsonMatch[0];
-                const parsed = JSON.parse(jsonStr);
-
-                commitMessages = Array.isArray(parsed) ? parsed : [parsed];
+                try {
+                    const parsed = JSON.parse(cleanJsonString(objectMatch[0]));
+                    commitMessages = [parsed];
+                } catch (error) {
+                    return [];
+                }
             }
 
             if (!commitMessages.length || !commitMessages.every(msg => typeof msg.subject === 'string')) {

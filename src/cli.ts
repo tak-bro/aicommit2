@@ -4,6 +4,7 @@ import aicommit2 from './commands/aicommit2.js';
 import configCommand from './commands/config.js';
 import hookCommand, { isCalledFromGitHook } from './commands/hook.js';
 import logCommand from './commands/log.js';
+import preCommitHook from './commands/pre-commit-hook.js';
 import prepareCommitMessageHook from './commands/prepare-commit-msg-hook.js';
 import watchGit from './commands/watch-git.js';
 import { description, version } from '../package.json';
@@ -67,6 +68,16 @@ cli(
                 type: Boolean,
                 default: false,
             },
+            'hook-mode': {
+                type: Boolean,
+                description: 'Run in git hook mode, allowing chaining with other hooks',
+                default: false,
+            },
+            'pre-commit': {
+                type: Boolean,
+                description: 'Run in pre-commit Framework, allowing chaining with other hooks',
+                default: false,
+            },
         },
 
         commands: [configCommand, hookCommand, logCommand],
@@ -78,14 +89,21 @@ cli(
         ignoreArgv: type => type === 'unknown-flag' || type === 'argument',
     },
     argv => {
-        if (isCalledFromGitHook) {
+        if (argv.flags['pre-commit']) {
+            preCommitHook();
+            return;
+        }
+
+        if (argv.flags['hook-mode'] || isCalledFromGitHook) {
             prepareCommitMessageHook();
             return;
         }
+
         if (argv.flags['watch-commit']) {
             watchGit(argv.flags.locale, argv.flags.generate, argv.flags.exclude, argv.flags.prompt, rawArgv);
             return;
         }
+
         aicommit2(
             argv.flags.locale,
             argv.flags.generate,

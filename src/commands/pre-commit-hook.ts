@@ -15,9 +15,7 @@ const [messageFilePath, commitSource] = args;
 export default () =>
     (async () => {
         if (!messageFilePath) {
-            throw new KnownError(
-                'Commit message file path is missing. This file should be called from the "prepare-commit-msg" git hook or with --hook-mode flag'
-            );
+            throw new KnownError('Commit message file path is missing. This file should be called from the "pre-commit framework"');
         }
 
         // If a commit message is passed in, ignore
@@ -66,7 +64,6 @@ export default () =>
         }
 
         const aiRequestManager = new AIRequestManager(config, staged);
-        const spinner = consoleManager.displaySpinner('The AI is analyzing your changes');
         let messages: string[];
         try {
             messages = await lastValueFrom(
@@ -77,8 +74,6 @@ export default () =>
                 )
             );
         } finally {
-            spinner.stop();
-            spinner.clear();
             consoleManager.printAnalyzed();
         }
 

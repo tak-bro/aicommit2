@@ -19,11 +19,23 @@
 
 ---
 
-## Introduction
+## 🚀 Quick Start
+
+```bash
+# Install globally
+npm install -g aicommit2
+# Set up at least one AI provider
+aicommit2 config set OPENAI.key=<your-key>
+# Use in your git repository
+git add .
+aicommit2
+```
+
+## 📖 Introduction
 
 _aicommit2_ is a reactive CLI tool that automatically generates Git commit messages using various AI models. It supports simultaneous requests to multiple AI providers, allowing users to select the most suitable commit message. The core functionalities and architecture of this project are inspired by [AICommits](https://github.com/Nutlope/aicommits).
 
-## Key Features
+## ✨ Key Features
 
 - **Multi-AI Support**: Integrates with OpenAI, Anthropic Claude, Google Gemini, Mistral AI, Cohere, Groq, Ollama and more.
 - **OpenAI API Compatibility**: Support for any service that implements the OpenAI API specification.
@@ -31,7 +43,7 @@ _aicommit2_ is a reactive CLI tool that automatically generates Git commit messa
 - **Git Hook Integration**: Can be used as a prepare-commit-msg hook.
 - **Custom Prompt**: Supports user-defined system prompt templates.
 
-## Supported Providers
+## 🤖 Supported Providers
 
 - [OpenAI](https://openai.com/)
 - [Anthropic Claude](https://console.anthropic.com/)
@@ -41,13 +53,12 @@ _aicommit2_ is a reactive CLI tool that automatically generates Git commit messa
 - [Groq](https://groq.com/)
 - [Perplexity](https://docs.perplexity.ai/)
 - [DeepSeek](https://www.deepseek.com/)
-- [Huggingface **(Unofficial)**](https://huggingface.co/chat/)
 - [Ollama](https://ollama.com/)
 - [OpenAI API Compatibility](#openai-api-compatible-services)
 
 ## Setup
 
-> The minimum supported version of Node.js is the v18. Check your Node.js version with `node --version`.
+> ⚠️ The minimum supported version of Node.js is the v18. Check your Node.js version with `node --version`.
 
 1. Install _aicommit2_:
 
@@ -55,6 +66,7 @@ _aicommit2_ is a reactive CLI tool that automatically generates Git commit messa
 ```sh
 npm install -g aicommit2
 ```
+
 **Alternatively, from source**:
 ```sh
 git clone https://github.com/tak-bro/aicommit2.git
@@ -143,7 +155,13 @@ aicommit2 --all # or -a
 - `--generate` or `-g`: Number of messages to generate (default: **1**)
   - **Warning**: This uses more tokens, meaning it costs more.
 - `--exclude` or `-x`: Files to exclude from AI analysis
-
+- `--hook-mode`: Run as a Git hook, typically used with prepare-commit-msg hook (default: **false**)
+  - This mode is automatically enabled when running through the Git hook system
+  - See [Git hook](#git-hook) section for more details
+- `--pre-commit`: Run in [pre-commit](https://pre-commit.com/) framework mode (default: **false**)
+  - This option is specifically for use with the pre-commit framework
+  - See [Integration with pre-commit framework](#integration-with-pre-commit-framework) section for setup instructions
+   
 Example:
 ```sh
 aicommit2 --locale "jp" --all --type "conventional" --generate 3 --clipboard --exclude "*.json" --exclude "*.ts"
@@ -153,12 +171,28 @@ aicommit2 --locale "jp" --all --type "conventional" --generate 3 --clipboard --e
 
 You can also integrate _aicommit2_ with Git via the [`prepare-commit-msg`](https://git-scm.com/docs/githooks#_prepare_commit_msg) hook. This lets you use Git like you normally would, and edit the commit message before committing.
 
-#### Install
+#### Automatic Installation
 
 In the Git repository you want to install the hook in:
 
 ```sh
 aicommit2 hook install
+```
+
+#### Manual Installation
+
+if you prefer to set up the hook manually, create or edit the `.git/hooks/prepare-commit-msg` file:
+
+```sh
+#!/bin/sh
+# your-other-hook "$@"
+aicommit2 --hook-mode "$@"
+ ```
+
+Make the hook executable:
+
+```sh
+chmod +x .git/hooks/prepare-commit-msg
 ```
 
 #### Uninstall
@@ -168,6 +202,8 @@ In the Git repository you want to uninstall the hook from:
 ```sh
 aicommit2 hook uninstall
 ```
+
+Or manually delete the `.git/hooks/prepare-commit-msg` file.
 
 ### Configuration
 
@@ -182,6 +218,35 @@ aicommit2 config get OPENAI
 aicommit2 config get GEMINI.key
 aicommit2 config set OPENAI.generate=3 GEMINI.temperature=0.5
 ```
+
+#### Environment Variables
+
+You can configure API keys using environment variables. This is particularly useful for CI/CD environments or when you don't want to store keys in the configuration file.
+
+```bash
+# OpenAI
+OPENAI_API_KEY="your-openai-key"
+# Anthropic
+ANTHROPIC_API_KEY="your-anthropic-key"
+# Google
+GEMINI_API_KEY="your-gemini-key"
+# Mistral AI
+MISTRAL_API_KEY="your-mistral-key"
+CODESTRAL_API_KEY="your-codestral-key"
+# Other Providers
+COHERE_API_KEY="your-cohere-key"
+GROQ_API_KEY="your-groq-key"
+PERPLEXITY_API_KEY="your-perplexity-key"
+DEEPSEEK_API_KEY="your-deepseek-key"
+```
+
+Usage Example:
+
+```sh
+OPENAI_API_KEY="your-openai-key" ANTHROPIC_API_KEY="your-anthropic-key" aicommit2
+```
+
+> **Note**: Environment variables take precedence over configuration file settings. 
 
 #### How to Configure in detail
 
@@ -216,7 +281,7 @@ model[]=llama3.2
 model[]=codestral
 ```
 
-> The priority of settings is: **Command-line Arguments > Model-Specific Settings > General Settings > Default Values**.
+> The priority of settings is: **Command-line Arguments > Environment Variables > Model-Specific Settings > General Settings > Default Values**.
 
 ## General Settings
 
@@ -450,7 +515,6 @@ aicommit2 config set codeReviewPromptPath="/path/to/user/prompt.txt"
 |          **Groq**           |    ✓    |      ✓      |     ✓     |   ✓    |
 |       **Perplexity**        |    ✓    |      ✓      |     ✓     |   ✓    |
 |        **DeepSeek**         |    ✓    |      ✓      |     ✓     |   ✓    |
-|       **Huggingface**       |         |             |           |        |
 |         **Ollama**          |    ✓    |      ✓      |           |   ✓    |
 | **OpenAI API-Compatible**   |    ✓    |      ✓      |     ✓     |   ✓    |
 
@@ -768,49 +832,6 @@ Supported:
 aicommit2 config set DEEPSEEK.model="deepseek-reasoner"
 ```
 
-### HuggingFace
-
-| Setting            | Description                | Default                                |
-|--------------------|----------------------------|----------------------------------------|
-| `cookie`           | Authentication cookie      | -                                      |
-| `model`            | Model to use               | `CohereForAI/c4ai-command-r-plus`      |
-
-##### HUGGINGFACE.cookie
-
-The [Huggingface Chat](https://huggingface.co/chat/) Cookie. Please check [how to get cookie](https://github.com/tak-bro/aicommit2?tab=readme-ov-file#how-to-get-cookieunofficial-api)
-
-```sh
-# Please be cautious of Escape characters(\", \') in browser cookie string
-aicommit2 config set HUGGINGFACE.cookie="your-cooke"
-```
-
-##### HUGGINGFACE.model
-
-Default: `CohereForAI/c4ai-command-r-plus`
-
-Supported:
-- `CohereForAI/c4ai-command-r-plus`
-- `meta-llama/Meta-Llama-3-70B-Instruct`
-- `HuggingFaceH4/zephyr-orpo-141b-A35b-v0.1`
-- `mistralai/Mixtral-8x7B-Instruct-v0.1`
-- `NousResearch/Nous-Hermes-2-Mixtral-8x7B-DPO`
-- `01-ai/Yi-1.5-34B-Chat`
-- `mistralai/Mistral-7B-Instruct-v0.2`
-- `microsoft/Phi-3-mini-4k-instruct`
-
-```sh
-aicommit2 config set HUGGINGFACE.model="mistralai/Mistral-7B-Instruct-v0.2"
-```
-
-##### Unsupported Options
-
-Huggingface does not support the following options in General Settings.
-
-- maxTokens
-- timeout
-- temperature
-- topP
-
 ### Ollama
 
 | Setting    | Description                                                 | Default                |
@@ -1045,6 +1066,30 @@ The response should be valid JSON that can be parsed without errors.
 
 This ensures that the output is consistently formatted as a JSON array, regardless of the custom template used.
 
+## Integration with pre-commit framework
+
+If you're using the [pre-commit](https://pre-commit.com/) framework, you can add _aicommit2_ to your `.pre-commit-config.yaml`:
+
+```yaml
+repos:
+  - repo: local
+    hooks:
+      - id: aicommit2
+        name: AI Commit Message Generator
+        entry: aicommit2 --pre-commit
+        language: node
+        stages: [prepare-commit-msg]
+        always_run: true
+```
+
+Make sure you have:
+
+1. Installed pre-commit: `brew install pre-commit`
+2. Installed aicommit2 globally: `npm install -g aicommit2`
+3. Run `pre-commit install --hook-type prepare-commit-msg` to set up the hook
+
+> **Note** : The `--pre-commit` flag is specifically designed for use with the pre-commit framework and ensures proper integration with other pre-commit hooks.
+
 ## Loading Multiple Ollama Models
 
 <img src="https://github.com/tak-bro/aicommit2/blob/main/img/ollama_parallel.gif?raw=true" alt="OLLAMA_PARALLEL" />
@@ -1083,19 +1128,6 @@ aicommit2
 ```
 
 > Note that this feature is available starting from Ollama version [**0.1.33**](https://github.com/ollama/ollama/releases/tag/v0.1.33) and _aicommit2_ version [**1.9.5**](https://www.npmjs.com/package/aicommit2/v/1.9.5).
-
-## How to get Cookie(**Unofficial API**)
-
-* Login to the site you want
-* You can get cookie from the browser's developer tools network tab
-* See for any requests check out the Cookie, **Copy whole value**
-* Check below image for the format of cookie
-
-> When setting cookies with long string values, ensure to **escape characters** like ", ', and others properly.
-> - For double quotes ("), use \\"
-> - For single quotes ('), use \\'
-
-![how-to-get-cookie](https://github.com/tak-bro/aicommit2/assets/7614353/66f2994d-23d9-4c88-a113-f2d3dc5c0669)
 
 ## Disclaimer and Risks
 

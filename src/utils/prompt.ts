@@ -24,8 +24,6 @@ export const DEFAULT_PROMPT_OPTIONS: PromptOptions = {
     codeReviewPromptPath: '',
 };
 
-const MAX_COMMIT_LENGTH = 80;
-
 const commitTypeFormats: Record<CommitType, string> = {
     '': '<commit message>',
     conventional: `<type>(<optional scope>): <description>
@@ -183,7 +181,17 @@ const defaultPrompt = (promptOptions: PromptOptions) => {
         `2. Format: follow the ${type} Commits format:`,
         `${commitTypeFormats[type]}`,
         `3. Types: use one of the following types:${commitTypes[type]}`,
-        '4. Exclude anything unnecessary such as translation. Your entire response will be passed directly into git commit.',
+        '4. Guidelines for writing commit messages:',
+        '   - Be specific about what changes were made',
+        '   - Use imperative mood ("add feature" not "added feature")',
+        `   - Keep subject line under ${maxLength} characters`,
+        '   - Do not end the subject line with a period',
+        '   - Use the body to explain what and why vs. how',
+        '5. Focus on:',
+        '   - What problem this commit solves',
+        '   - Why this change was necessary',
+        '   - Any important technical details',
+        '6. Exclude anything unnecessary such as translation or implementation details.',
     ]
         .filter(Boolean)
         .join('\n');
@@ -197,7 +205,7 @@ const finalPrompt = (type: CommitType, generate: number) => {
                 .map(
                     (_, index) => `
   {
-    "subject": "fix: fix bug in user authentication process",
+    "subject": "fix(auth): fix bug in user authentication process",
     "body": "- Update login function to handle edge cases\\n- Add additional error logging for debugging",
     "footer": ""
   }`
@@ -209,8 +217,8 @@ const finalPrompt = (type: CommitType, generate: number) => {
             .map(
                 (_, index) => `
   {
-    "subject": "🖼️ Add profile picture upload feature",
-    "body": "- Implement server-side handling of file uploads\\n- Add client-side image preview and cropping",
+    "subject": ":sparkles: Add real-time chat feature",
+    "body": "- Implement WebSocket connection\\n- Add message encryption\\n- Include typing indicators",
     "footer": ""
   }`
             )

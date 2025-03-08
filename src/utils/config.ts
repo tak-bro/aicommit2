@@ -712,12 +712,29 @@ export const getConfig = async (cliConfig: RawConfig, rawArgv: string[] = []): P
 
     const services = findAllServices(config);
 
+    // Check environment variables for API keys
+    const envConfig: RawConfig = {};
+    const apiKeyMapping = BUILTIN_SERVICES.map(service => ({
+        service,
+        envKey: `${service}_API_KEY`,
+    }));
+
+    for (const { service, envKey } of apiKeyMapping) {
+        const apiKey = process.env[envKey];
+        if (apiKey) {
+            envConfig[service] = { key: apiKey };
+        }
+    }
+
     // Helper function to get the value with priority
     const getValueWithPriority = (modelName: string, key: string) => {
+        // Priority: CLI > Environment Variables > Model-specific > General
         const cliValue = mergedCliConfig[`${modelName}.${key}`] ?? (mergedCliConfig[modelName] as Record<string, any>)?.[key];
+        const envValue = (envConfig[modelName] as Record<string, any>)?.[key];
         const modelValue = (config[modelName] as Record<string, any>)?.[key];
         const generalValue = mergedCliConfig[key] ?? config[key];
-        return cliValue !== undefined ? cliValue : modelValue !== undefined ? modelValue : generalValue;
+
+        return cliValue !== undefined ? cliValue : envValue !== undefined ? envValue : modelValue !== undefined ? modelValue : generalValue;
     };
 
     // Parse general configs
