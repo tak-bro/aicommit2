@@ -1,3 +1,11 @@
+## [2.2.8](https://github.com/tak-bro/aicommit2/compare/v2.2.7...v2.2.8) (2025-03-17)
+
+
+### Bug Fixes
+
+* filter out specific flags in hook scripts ([bbd9164](https://github.com/tak-bro/aicommit2/commit/bbd9164d786fee433fe5cf4a5949f7033c9d3aaa))
+* fix prepare-commit-msg-hook ([57f7c09](https://github.com/tak-bro/aicommit2/commit/57f7c094dc2e9e109d2630d921931518c3acd76a))
+
 ## [2.2.7](https://github.com/tak-bro/aicommit2/compare/v2.2.6...v2.2.7) (2025-03-08)
 
 
