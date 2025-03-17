@@ -9,7 +9,7 @@ import { BUILTIN_SERVICES, ModelName, RawConfig, getConfig } from '../utils/conf
 import { KnownError, handleCliError } from '../utils/error.js';
 import { getStagedDiff } from '../utils/git.js';
 
-const args = process.argv.slice(2).filter(arg => !arg.startsWith('--'));
+const args = process.argv.slice(2).filter(arg => !arg.startsWith('--hook-mode'));
 const [messageFilePath, commitSource] = args;
 
 export default () =>
@@ -124,7 +124,6 @@ export default () =>
 
         const currentContent = await fs.readFile(messageFilePath, 'utf8');
         const newContent = instructions + '\n' + currentContent;
-
         await fs.writeFile(messageFilePath, newContent);
         consoleManager.printSavedCommitMessage();
     })().catch(error => {
