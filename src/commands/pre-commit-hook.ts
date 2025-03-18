@@ -19,7 +19,7 @@ export default () =>
         }
 
         // If a commit message is passed in, ignore
-        if (commitSource && ['message', 'template', 'merge', 'squash'].includes(commitSource)) {
+        if (commitSource) {
             console.log(`Skipping aicommit2 message generation for ${commitSource} commit`);
             return;
         }
