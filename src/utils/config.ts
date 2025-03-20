@@ -675,13 +675,19 @@ const parseCliArgs = (rawArgv: string[] = []): RawConfig => {
     return cliConfig;
 };
 
-const readConfigFile = async (): Promise<RawConfig> => {
+// Read config file and merge with CLI arguments
+const getConfigFileContent = async (): Promise<string> => {
     const configExists = await fileExists(configPath);
     if (!configExists) {
         return Object.create(null);
     }
 
     const configString = await fs.readFile(configPath, 'utf8');
+    return configString;
+}
+
+const readConfigFile = async (): Promise<RawConfig> => {
+    const configString = await getConfigFileContent();
     let config = ini.parse(configString);
     const hasOllamaModel = hasOwn(config, 'OLLAMA') && hasOwn(config['OLLAMA'], 'model');
     if (hasOllamaModel) {
@@ -880,6 +886,11 @@ export const addConfigs = async (keyValues: [key: string, value: any][]) => {
     await fs.writeFile(configPath, ini.stringify(config), 'utf8');
 };
 
+export const listConfigs = async () => {
+    const configContent = await getConfigFileContent();
+    console.log(configContent);
+}
+
 const createConfigParser = (serviceName: string) => ({
     compatible: (compatible?: string | boolean) => {
         if (typeof compatible === 'boolean') {
@@ -890,6 +901,16 @@ const createConfigParser = (serviceName: string) => ({
         }
         parseAssert('compatible', /^(?:true|false)$/.test(compatible), 'Must be a boolean(true or false)');
         return compatible === 'true';
+    },
+    stream: (stream?: boolean) => {
+        if (typeof stream === 'boolean') {
+            return stream;
+        }
+        if (stream === undefined || stream === null) {
+            return false;
+        }
+        parseAssert('stream', /^(?:true|false)$/.test(stream), 'Must be a boolean(true or false)');
+        return stream === 'true';
     },
     url: (url?: string) => {
         if (!url) {
