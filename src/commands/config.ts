@@ -1,13 +1,21 @@
 import { command } from 'cleye';
 
 import { ConsoleManager } from '../managers/console.manager.js';
-import { BUILTIN_SERVICES, ModelName, addConfigs, getConfig, hasOwn, setConfigs } from '../utils/config.js';
+import { BUILTIN_SERVICES, ModelName, addConfigs, getConfig, hasOwn, setConfigs, listConfigs } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
 
 export default command(
     {
         name: 'config',
-        parameters: ['<mode>', '<key=value...>'],
+        parameters: ['<mode>', '[key=value...]'],
+        help: {
+            usage: [
+                'aic2 config set <key>=<value> [<key>=<value> ...]',
+                'aic2 config get [<key> [<key> ...]]',
+                'aic2 config add <key>=<value> [<key>=<value> ...]',
+                'aic2 config list',
+              ].join('\n'),
+        }
     },
     argv => {
         (async () => {
@@ -36,6 +44,11 @@ export default command(
 
             if (mode === 'add') {
                 await addConfigs(keyValues.map(keyValue => keyValue.split('=') as [string, string]));
+                return;
+            }
+
+            if (mode === 'list') {
+                await listConfigs();
                 return;
             }
 

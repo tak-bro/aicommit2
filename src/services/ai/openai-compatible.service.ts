@@ -59,7 +59,9 @@ export class OpenAICompatibleService extends AIService {
     handleError$ = (error: Error) => {
         let status = 'N/A';
         let simpleMessage = error.message;
-        if (error instanceof OpenAI.APIError) {
+        if (error instanceof OpenAI.APIConnectionTimeoutError) {
+            simpleMessage = `Connection timeout: ${error.message}`;
+        } else if (error instanceof OpenAI.APIError) {
             status = `${error.status}`;
             simpleMessage = error.name;
         }
@@ -75,8 +77,19 @@ export class OpenAICompatibleService extends AIService {
     private async generateMessage(requestType: RequestType): Promise<AIResponse[]> {
         try {
             const diff = this.params.stagedDiff.diff;
-            const { systemPrompt, systemPromptPath, codeReviewPromptPath, logging, locale, temperature, generate, type, maxLength } =
-                this.params.config;
+            const {
+                systemPrompt,
+                systemPromptPath,
+                codeReviewPromptPath,
+                logging,
+                locale,
+                temperature,
+                generate,
+                type,
+                maxLength,
+                timeout,
+                stream = false,
+            } = this.params.config;
             const maxTokens = this.params.config.maxTokens;
             const promptOptions: PromptOptions = {
                 ...DEFAULT_PROMPT_OPTIONS,
@@ -90,7 +103,7 @@ export class OpenAICompatibleService extends AIService {
             };
             const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
 
-            const chatCompletion: OpenAI.Chat.ChatCompletion = await this.openAI.chat.completions.create(
+            const chatCompletion = await this.openAI.chat.completions.create(
                 {
                     messages: [
                         {
@@ -103,22 +116,37 @@ export class OpenAICompatibleService extends AIService {
                         },
                     ],
                     model: this.params.config.model,
+                    stream,
                     max_tokens: maxTokens,
                     top_p: this.params.config.topP,
                     temperature,
                 },
                 {
-                    timeout: this.params.config.timeout,
+                    timeout,
                 }
             );
 
-            const result = chatCompletion.choices[0].message.content || '';
+
+            let result = '';
+            if (stream && chatCompletion) {
+                const chatCompletionStream = chatCompletion as unknown as AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>;
+                for await (const chunk of chatCompletionStream) {
+                    // 适配DeepSeek的响应格式
+                    const content = chunk.choices[0]?.delta?.content || '';
+                    const reasoning = chunk.choices[0]?.delta?.reasoning_content || '';
+                    const chunkText = `${content}${reasoning}`;
+                    result += chunkText;
+                }
+            } else {
+                result = chatCompletion.choices[0].message.content || '';
+            }
             logging && createLogResponse(this.params.keyName, diff, generatedSystemPrompt, result, requestType);
             if (requestType === 'review') {
                 return this.sanitizeResponse(result);
             }
             return this.parseMessage(result, type, generate);
         } catch (error) {
+            console.error('generateMessage error >>>', error);
             throw error as any;
         }
     }
