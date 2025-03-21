@@ -183,7 +183,6 @@ async function handleCodeReview(aiRequestManager: AIRequestManager, availableAIs
 }
 
 async function handleCommitMessage(aiRequestManager: AIRequestManager, availableAIs: ModelName[]) {
-
     const commitMsgPromptManager = new ReactivePromptManager(commitMsgLoader);
     const commitMsgInquirer = commitMsgPromptManager.initPrompt();
 
