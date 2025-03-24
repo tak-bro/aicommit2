@@ -1,3 +1,10 @@
+## [2.2.9](https://github.com/tak-bro/aicommit2/compare/v2.2.8...v2.2.9) (2025-03-24)
+
+
+### Features
+
+* **config:** add list command and AI stream support ([78043a6](https://github.com/tak-bro/aicommit2/commit/78043a6f1ee6f602cfe05b2d51b1f791b916f1b8))
+
 ## [2.2.8](https://github.com/tak-bro/aicommit2/compare/v2.2.7...v2.2.8) (2025-03-17)
 
 
