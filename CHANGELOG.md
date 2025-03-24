@@ -1,3 +1,10 @@
+## [2.2.10](https://github.com/tak-bro/aicommit2/compare/v2.2.9...v2.2.10) (2025-03-24)
+
+
+### Bug Fixes
+
+* **config:** validate and parse configuration key-value pairs ([7ffbdbf](https://github.com/tak-bro/aicommit2/commit/7ffbdbf7b500ea931b5c803f052ac965a79ca311))
+
 ## [2.2.9](https://github.com/tak-bro/aicommit2/compare/v2.2.8...v2.2.9) (2025-03-24)
 
 
