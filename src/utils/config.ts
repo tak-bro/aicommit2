@@ -679,15 +679,19 @@ const parseCliArgs = (rawArgv: string[] = []): RawConfig => {
 const getConfigFileContent = async (): Promise<string> => {
     const configExists = await fileExists(configPath);
     if (!configExists) {
-        return Object.create(null);
+        return '';
     }
 
     const configString = await fs.readFile(configPath, 'utf8');
     return configString;
-}
+};
 
 const readConfigFile = async (): Promise<RawConfig> => {
     const configString = await getConfigFileContent();
+    if (!configString) {
+        return Object.create(null);
+    }
+
     let config = ini.parse(configString);
     const hasOllamaModel = hasOwn(config, 'OLLAMA') && hasOwn(config['OLLAMA'], 'model');
     if (hasOllamaModel) {
@@ -889,7 +893,7 @@ export const addConfigs = async (keyValues: [key: string, value: any][]) => {
 export const listConfigs = async () => {
     const configContent = await getConfigFileContent();
     console.log(configContent);
-}
+};
 
 const createConfigParser = (serviceName: string) => ({
     compatible: (compatible?: string | boolean) => {
