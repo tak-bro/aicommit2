@@ -1,3 +1,10 @@
+## [2.2.11](https://github.com/tak-bro/aicommit2/compare/v2.2.10...v2.2.11) (2025-03-25)
+
+
+### Bug Fixes
+
+* **config:** validate config key-value pairs ([e15dcbb](https://github.com/tak-bro/aicommit2/commit/e15dcbbaa08e7a5ebe999ec4fd3827c84d5f5409))
+
 ## [2.2.10](https://github.com/tak-bro/aicommit2/compare/v2.2.9...v2.2.10) (2025-03-24)
 
 
