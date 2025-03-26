@@ -83,6 +83,7 @@
         "groq-sdk": "^0.7.0",
         "inquirer": "9.2.8",
         "inquirer-reactive-list-prompt": "^1.0.15",
+        "node-fetch": "^3.3.2",
         "ollama": "^0.5.14",
         "openai": "^4.67.3",
         "ora": "^8.0.1",
