@@ -1,5 +1,6 @@
 import chalk from 'chalk';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
+import fetch from 'node-fetch';
 import { Ollama } from 'ollama';
 import { Observable, catchError, concatMap, from, map, of } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
@@ -38,6 +39,7 @@ export class OllamaService extends AIService {
         this.key = this.params.config.key || '';
         this.ollama = new Ollama({
             host: this.host,
+            fetch: fetch as any,
             ...(this.key && { headers: { Authorization: `${this.auth} ${this.key}` } }),
         });
     }
@@ -158,6 +160,7 @@ export class OllamaService extends AIService {
                 },
             ],
             stream: false,
+            keep_alive: this.params.config.timeout,
             options: {
                 num_ctx: this.params.config.numCtx,
                 temperature: this.params.config.temperature,

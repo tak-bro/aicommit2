@@ -10,6 +10,8 @@ import { RequestType, createLogResponse } from '../../utils/log.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 import { getRandomNumber } from '../../utils/utils.js';
 
+const DEFAULT_TIMEOUT = 2 * 60 * 1000; // 2 minutes in milliseconds
+
 export class CohereService extends AIService {
     private cohere: CohereClient;
 
@@ -68,8 +70,6 @@ export class CohereService extends AIService {
                 type,
                 maxLength,
                 maxTokens,
-                topP,
-                model,
             } = this.params.config;
             const promptOptions: PromptOptions = {
                 ...DEFAULT_PROMPT_OPTIONS,
@@ -83,16 +83,23 @@ export class CohereService extends AIService {
             };
             const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
 
-            const prediction = await this.cohere.chat({
-                chatHistory: generatedSystemPrompt ? [{ role: 'SYSTEM', message: generatedSystemPrompt }] : [],
-                message: `Here is the diff: ${diff}`,
-                connectors: [{ id: 'web-search' }],
-                maxTokens,
-                temperature,
-                model: this.params.config.model,
-                seed: getRandomNumber(10, 1000),
-                p: this.params.config.topP,
-            });
+            const prediction = await this.cohere.chat(
+                {
+                    chatHistory: generatedSystemPrompt ? [{ role: 'SYSTEM', message: generatedSystemPrompt }] : [],
+                    message: `Here is the diff: ${diff}`,
+                    connectors: [{ id: 'web-search' }],
+                    maxTokens,
+                    temperature,
+                    model: this.params.config.model,
+                    seed: getRandomNumber(10, 1000),
+                    p: this.params.config.topP,
+                },
+                {
+                    ...(this.params.config.timeout > DEFAULT_TIMEOUT && {
+                        timeoutInSeconds: Math.floor(this.params.config.timeout / 1000),
+                    }),
+                }
+            );
 
             logging && createLogResponse('Cohere', diff, generatedSystemPrompt, prediction.text, requestType);
             if (requestType === 'review') {

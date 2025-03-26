@@ -17,6 +17,8 @@ export interface AnthropicServiceError extends AIServiceError {
     };
 }
 
+const DEFAULT_TIMEOUT = 10 * 60 * 1000; // 10 minutes in milliseconds
+
 export class AnthropicService extends AIService {
     private anthropic: Anthropic;
 
@@ -28,7 +30,10 @@ export class AnthropicService extends AIService {
         };
         this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold('[Anthropic]');
         this.errorPrefix = chalk.red.bold(`[Anthropic]`);
-        this.anthropic = new Anthropic({ apiKey: this.params.config.key });
+        this.anthropic = new Anthropic({
+            apiKey: this.params.config.key,
+            ...(this.params.config.timeout > DEFAULT_TIMEOUT && { timeout: this.params.config.timeout }),
+        });
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
