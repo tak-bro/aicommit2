@@ -68,8 +68,6 @@ export class CohereService extends AIService {
                 type,
                 maxLength,
                 maxTokens,
-                topP,
-                model,
             } = this.params.config;
             const promptOptions: PromptOptions = {
                 ...DEFAULT_PROMPT_OPTIONS,
@@ -83,16 +81,21 @@ export class CohereService extends AIService {
             };
             const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
 
-            const prediction = await this.cohere.chat({
-                chatHistory: generatedSystemPrompt ? [{ role: 'SYSTEM', message: generatedSystemPrompt }] : [],
-                message: `Here is the diff: ${diff}`,
-                connectors: [{ id: 'web-search' }],
-                maxTokens,
-                temperature,
-                model: this.params.config.model,
-                seed: getRandomNumber(10, 1000),
-                p: this.params.config.topP,
-            });
+            const prediction = await this.cohere.chat(
+                {
+                    chatHistory: generatedSystemPrompt ? [{ role: 'SYSTEM', message: generatedSystemPrompt }] : [],
+                    message: `Here is the diff: ${diff}`,
+                    connectors: [{ id: 'web-search' }],
+                    maxTokens,
+                    temperature,
+                    model: this.params.config.model,
+                    seed: getRandomNumber(10, 1000),
+                    p: this.params.config.topP,
+                },
+                {
+                    timeoutInSeconds: Math.floor(this.params.config.timeout / 1000),
+                }
+            );
 
             logging && createLogResponse('Cohere', diff, generatedSystemPrompt, prediction.text, requestType);
             if (requestType === 'review') {

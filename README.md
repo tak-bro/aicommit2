@@ -431,6 +431,8 @@ Default: `10_000` (10 seconds)
 aicommit2 config set timeout=20000 # 20s
 ```
 
+> **Note**: Each AI provider has its own default timeout value, and if the configured timeout is less than the provider's default, the setting will be ignored.
+
 ##### temperature
 
 The temperature (0.0-2.0) is used to control the randomness of the output
@@ -507,15 +509,15 @@ aicommit2 config set codeReviewPromptPath="/path/to/user/prompt.txt"
 |                             | timeout | temperature | maxTokens |  topP  |
 |:---------------------------:|:-------:|:-----------:|:---------:|:------:|
 |         **OpenAI**          |    ✓    |      ✓      |     ✓     |   ✓    |
-|    **Anthropic Claude**     |         |      ✓      |     ✓     |   ✓    |
+|    **Anthropic Claude**     |    ✓    |      ✓      |     ✓     |   ✓    |
 |         **Gemini**          |         |      ✓      |     ✓     |   ✓    |
 |       **Mistral AI**        |    ✓    |      ✓      |     ✓     |   ✓    |
 |        **Codestral**        |    ✓    |      ✓      |     ✓     |   ✓    |
-|         **Cohere**          |         |      ✓      |     ✓     |   ✓    |
+|         **Cohere**          |    ✓    |      ✓      |     ✓     |   ✓    |
 |          **Groq**           |    ✓    |      ✓      |     ✓     |   ✓    |
 |       **Perplexity**        |    ✓    |      ✓      |     ✓     |   ✓    |
 |        **DeepSeek**         |    ✓    |      ✓      |     ✓     |   ✓    |
-|         **Ollama**          |    ✓    |      ✓      |           |   ✓    |
+|         **Ollama**          |         |      ✓      |           |   ✓    |
 | **OpenAI API-Compatible**   |    ✓    |      ✓      |     ✓     |   ✓    |
 
 > All AI support the following options in General Settings.
@@ -607,12 +609,6 @@ Supported:
 ```sh
 aicommit2 config set ANTHROPIC.model="claude-3-5-sonnet-20240620"
 ```
-
-##### Unsupported Options
-
-Anthropic does not support the following options in General Settings.
-
-- timeout
 
 ### Gemini
 
@@ -734,12 +730,6 @@ Supported models:
 aicommit2 config set COHERE.model="command-nightly"
 ```
 
-##### Unsupported Options
-
-Cohere does not support the following options in General Settings.
-
-- timeout
-
 ### Groq
 
 | Setting            | Description            | Default                         |
@@ -840,7 +830,6 @@ aicommit2 config set DEEPSEEK.model="deepseek-reasoner"
 | `host`     | Ollama host URL                                             | http://localhost:11434 |
 | `auth`     | Authentication type                                         | Bearer                 |
 | `key`      | Authentication key                                          | -                      |
-| `timeout`  | Request timeout (milliseconds)                              | 100_000 (100sec)       |
 | `numCtx`   | The maximum number of tokens the model can process at once  | 2048                   |
 
 ##### OLLAMA.model
@@ -892,15 +881,6 @@ Few examples of authentication methods:
 | OAuth 2.0                 | `Bearer`                     | `<Access Token>`                      |
 | HMAC-SHA256               | `HMAC`                       | `<Base64 Encoded clientId:signature>` |
 
-##### OLLAMA.timeout
-
-Default: `100_000` (100 seconds)
-
-Request timeout for the Ollama.
-
-```sh
-aicommit2 config set OLLAMA.timeout=<timeout>
-```
 ##### OLLAMA.numCtx
 
 The maximum number of tokens the model can process at once, determining its context length and memory usage.
@@ -915,6 +895,7 @@ aicommit2 config set OLLAMA.numCtx=4096
 Ollama does not support the following options in General Settings.
 
 - maxTokens
+- timeout
 
 ### OpenAI API-Compatible Services
 

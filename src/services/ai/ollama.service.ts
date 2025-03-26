@@ -158,6 +158,7 @@ export class OllamaService extends AIService {
                 },
             ],
             stream: false,
+            keep_alive: this.params.config.timeout,
             options: {
                 num_ctx: this.params.config.numCtx,
                 temperature: this.params.config.temperature,
