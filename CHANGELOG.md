@@ -1,3 +1,12 @@
+## [2.2.12](https://github.com/tak-bro/aicommit2/compare/v2.2.11...v2.2.12) (2025-03-26)
+
+
+### Features
+
+* **ai:** add timeout configuration for AI providers ([f207ac6](https://github.com/tak-bro/aicommit2/commit/f207ac6b88a5c774346afc235c930f6efe87dc4a))
+* **cohere:** add timeout configuration for API calls ([a04921e](https://github.com/tak-bro/aicommit2/commit/a04921e2c75a1dda0bd00e493672d212a0698347))
+* **ollama:** add node-fetch for ollama ([6058cf5](https://github.com/tak-bro/aicommit2/commit/6058cf522b90cbd4425aaf203ce9556b7dd3bc70))
+
 ## [2.2.11](https://github.com/tak-bro/aicommit2/compare/v2.2.10...v2.2.11) (2025-03-25)
 
 
