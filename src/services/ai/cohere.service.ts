@@ -10,6 +10,8 @@ import { RequestType, createLogResponse } from '../../utils/log.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 import { getRandomNumber } from '../../utils/utils.js';
 
+const DEFAULT_TIMEOUT = 2 * 60 * 1000; // 2 minutes in milliseconds
+
 export class CohereService extends AIService {
     private cohere: CohereClient;
 
@@ -93,7 +95,9 @@ export class CohereService extends AIService {
                     p: this.params.config.topP,
                 },
                 {
-                    timeoutInSeconds: Math.floor(this.params.config.timeout / 1000),
+                    ...(this.params.config.timeout > DEFAULT_TIMEOUT && {
+                        timeoutInSeconds: Math.floor(this.params.config.timeout / 1000),
+                    }),
                 }
             );
 
