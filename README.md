@@ -517,7 +517,7 @@ aicommit2 config set codeReviewPromptPath="/path/to/user/prompt.txt"
 |          **Groq**           |    ✓    |      ✓      |     ✓     |   ✓    |
 |       **Perplexity**        |    ✓    |      ✓      |     ✓     |   ✓    |
 |        **DeepSeek**         |    ✓    |      ✓      |     ✓     |   ✓    |
-|         **Ollama**          |         |      ✓      |           |   ✓    |
+|         **Ollama**          |    ✓    |      ✓      |           |   ✓    |
 | **OpenAI API-Compatible**   |    ✓    |      ✓      |     ✓     |   ✓    |
 
 > All AI support the following options in General Settings.
@@ -895,7 +895,6 @@ aicommit2 config set OLLAMA.numCtx=4096
 Ollama does not support the following options in General Settings.
 
 - maxTokens
-- timeout
 
 ### OpenAI API-Compatible Services
 

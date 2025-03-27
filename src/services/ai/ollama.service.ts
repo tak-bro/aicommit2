@@ -1,9 +1,9 @@
 import chalk from 'chalk';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
-import fetch from 'node-fetch';
 import { Ollama } from 'ollama';
 import { Observable, catchError, concatMap, from, map, of } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
+import { Agent, fetch } from 'undici';
 
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
 import { DEFAULT_OLLAMA_HOST } from '../../utils/config.js';
@@ -14,6 +14,7 @@ import { capitalizeFirstLetter, getRandomNumber } from '../../utils/utils.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
 
 export interface OllamaServiceError extends AIServiceError {}
+
 
 export class OllamaService extends AIService {
     private host = DEFAULT_OLLAMA_HOST;
@@ -37,9 +38,10 @@ export class OllamaService extends AIService {
         this.host = this.params.config.host || DEFAULT_OLLAMA_HOST;
         this.auth = this.params.config.auth || 'Bearer';
         this.key = this.params.config.key || '';
+
         this.ollama = new Ollama({
             host: this.host,
-            fetch: fetch as any,
+            fetch: this.setupFetch,
             ...(this.key && { headers: { Authorization: `${this.auth} ${this.key}` } }),
         });
     }
@@ -147,6 +149,8 @@ export class OllamaService extends AIService {
     }
 
     private async createChatCompletions(systemPrompt: string, userMessage: string) {
+        const isStream = this.params.config.stream || false;
+
         const response = await this.ollama.chat({
             model: this.model,
             messages: [
@@ -159,7 +163,7 @@ export class OllamaService extends AIService {
                     content: userMessage,
                 },
             ],
-            stream: false,
+            stream: isStream,
             keep_alive: this.params.config.timeout,
             options: {
                 num_ctx: this.params.config.numCtx,
@@ -168,6 +172,25 @@ export class OllamaService extends AIService {
                 seed: getRandomNumber(10, 1000),
             },
         });
+
+        if (isStream) {
+            let result = '';
+            if (response) {
+                for await (const part of response) {
+                    result += part.message.content;
+                }
+            }
+            return result;
+        }
+
         return response.message.content;
     }
+
+    // TODO: add proper type
+    private setupFetch = (input: any, init: any = {}): any => {
+        return fetch(input as string | URL, {
+            ...init,
+            dispatcher: new Agent({ headersTimeout: this.params.config.timeout }),
+        });
+    };
 }
