@@ -1,3 +1,10 @@
+## [2.2.13](https://github.com/tak-bro/aicommit2/compare/v2.2.12...v2.2.13) (2025-03-27)
+
+
+### Bug Fixes
+
+* use undici fetch for tiemout in Ollama ([c939e8a](https://github.com/tak-bro/aicommit2/commit/c939e8a859c4248bb23f68680c33595402cfc6c5))
+
 ## [2.2.12](https://github.com/tak-bro/aicommit2/compare/v2.2.11...v2.2.12) (2025-03-26)
 
 
