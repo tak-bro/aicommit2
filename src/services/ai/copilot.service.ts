@@ -9,23 +9,22 @@ import { CreateChatCompletionsResponse } from './mistral.service.js';
 import { KnownError } from '../../utils/error.js';
 import { RequestType, createLogResponse } from '../../utils/log.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
-import { getRandomNumber } from '../../utils/utils.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
 
-export interface CodestralServiceError extends AIServiceError {}
+export interface CopilotServiceError extends AIServiceError {}
 
-export class CodestralService extends AIService {
-    private host = 'https://codestral.mistral.ai';
+export class CopilotService extends AIService {
+    private host = 'https://api.githubcopilot.com';
     private apiKey = '';
 
     constructor(private readonly params: AIServiceParams) {
         super(params);
         this.colors = {
-            primary: '#e28c58',
+            primary: '#2FBCFB',
             secondary: '#fff',
         };
-        this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold(`[Codestral]`);
-        this.errorPrefix = chalk.red.bold(`[Codestral]`);
+        this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold(`[Copilot]`);
+        this.errorPrefix = chalk.red.bold(`[Copilot]`);
         this.apiKey = this.params.config.key;
     }
 
@@ -88,7 +87,7 @@ export class CodestralService extends AIService {
         }
     }
 
-    handleError$ = (error: CodestralServiceError) => {
+    handleError$ = (error: CopilotServiceError) => {
         const simpleMessage = error.message?.replace(/(\r\n|\n|\r)/gm, '') || 'An error occurred';
         return of({
             name: `${this.errorPrefix} ${simpleMessage}`,
@@ -99,18 +98,35 @@ export class CodestralService extends AIService {
     };
 
     private checkAvailableModels() {
-        const supportModels = ['codestral-latest', 'codestral-2501'];
+        const supportModels = ['GPT-4o', 'Claude Sonnet 3.5', 'Claude Sonnet 3.7', 'o1', 'o3-mini', 'Gemini 2.0 Flash'];
 
         if (supportModels.includes(this.params.config.model)) {
             return true;
         }
-        throw new Error(`Invalid model type of Codestral AI`);
+        throw new Error(`Invalid model type of Copilot`);
+    }
+
+    async whoami(req: any) {
+        const response = await fetch(
+            // The GitHub API endpoint for the authenticated user
+            'https://api.github.com/user',
+            {
+                headers: {
+                    Authorization: `Bearer ${this.apiKey}`,
+                },
+            }
+        );
+
+        const user = await response.json();
+        return user;
     }
 
     private async createChatCompletions(systemPrompt: string, requestType: RequestType) {
+        console.log(this.apiKey);
+        console.log(await this.whoami(this.apiKey));
         const requestBuilder = new HttpRequestBuilder({
             method: 'POST',
-            baseURL: `${this.host}/v1/chat/completions`,
+            baseURL: `${this.host}/chat/completions`,
             timeout: this.params.config.timeout,
         })
             .setHeaders({
@@ -118,7 +134,6 @@ export class CodestralService extends AIService {
                 'content-type': 'application/json',
             })
             .setBody({
-                model: this.params.config.model,
                 messages: [
                     {
                         role: 'system',
@@ -133,8 +148,6 @@ export class CodestralService extends AIService {
                 top_p: this.params.config.topP,
                 max_tokens: this.params.config.maxTokens,
                 stream: false,
-                safe_prompt: false,
-                random_seed: getRandomNumber(10, 1000),
             });
 
         if (requestType === 'commit') {
@@ -145,7 +158,10 @@ export class CodestralService extends AIService {
             });
         }
 
-        const response: AxiosResponse<CreateChatCompletionsResponse> = await requestBuilder.execute();
+        const response: AxiosResponse<CreateChatCompletionsResponse> = await requestBuilder.execute().catch(error => {
+            console.log(error);
+            throw new Error(`Error on createChatCompletions: ${error}`);
+        });
         const result: CreateChatCompletionsResponse = response.data;
         const hasNoChoices = !result.choices || result.choices.length === 0;
         if (hasNoChoices || !result.choices[0].message?.content) {

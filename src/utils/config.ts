@@ -31,6 +31,7 @@ export const BUILTIN_SERVICES = [
     'GROQ',
     'PERPLEXITY',
     'DEEPSEEK',
+    'COPILOT',
 ] as const;
 export type BuiltinService = (typeof BUILTIN_SERVICES)[number];
 
@@ -619,6 +620,34 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
             const supportModels = [`deepseek-reasoner`, `deepseek-chat`];
 
             parseAssert('DEEPSEEK.model', supportModels.includes(model), 'Invalid model type of DeepSeek');
+            return model;
+        },
+        topP: generalConfigParsers.topP,
+        systemPrompt: generalConfigParsers.systemPrompt,
+        systemPromptPath: generalConfigParsers.systemPromptPath,
+        codeReviewPromptPath: generalConfigParsers.codeReviewPromptPath,
+        timeout: generalConfigParsers.timeout,
+        temperature: generalConfigParsers.temperature,
+        maxTokens: generalConfigParsers.maxTokens,
+        logging: generalConfigParsers.logging,
+        locale: generalConfigParsers.locale,
+        generate: generalConfigParsers.generate,
+        type: generalConfigParsers.type,
+        maxLength: generalConfigParsers.maxLength,
+        includeBody: generalConfigParsers.includeBody,
+        codeReview: generalConfigParsers.codeReview,
+        disabled: generalConfigParsers.disabled,
+        watchMode: generalConfigParsers.watchMode,
+    },
+    COPILOT: {
+        key: (key?: string) => key || '',
+        model: (model?: string) => {
+            if (!model || model.length === 0) {
+                return 'GPT-4o';
+            }
+            const supportModels = ['GPT-4o', 'Claude Sonnet 3.5', 'Claude Sonnet 3.7', 'o1', 'o3-mini', 'Gemini 2.0 Flash'];
+
+            parseAssert('COPILOT.model', supportModels.includes(model), 'Invalid model type of Copilot');
             return model;
         },
         topP: generalConfigParsers.topP,

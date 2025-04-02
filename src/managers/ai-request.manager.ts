@@ -6,6 +6,7 @@ import { AIServiceFactory } from '../services/ai/ai-service.factory.js';
 import { AnthropicService } from '../services/ai/anthropic.service.js';
 import { CodestralService } from '../services/ai/codestral.service.js';
 import { CohereService } from '../services/ai/cohere.service.js';
+import { CopilotService } from '../services/ai/copilot.service.js';
 import { DeepSeekService } from '../services/ai/deep-seek.service.js';
 import { GeminiService } from '../services/ai/gemini.service.js';
 import { GroqService } from '../services/ai/groq.service.js';
@@ -109,6 +110,12 @@ export class AIRequestManager {
                     case 'DEEPSEEK':
                         return AIServiceFactory.create(DeepSeekService, {
                             config: this.config.DEEPSEEK,
+                            stagedDiff: this.stagedDiff,
+                            keyName: ai,
+                        }).generateCommitMessage$();
+                    case 'COPILOT':
+                        return AIServiceFactory.create(CopilotService, {
+                            config: this.config.COPILOT,
                             stagedDiff: this.stagedDiff,
                             keyName: ai,
                         }).generateCommitMessage$();
@@ -219,6 +226,12 @@ export class AIRequestManager {
                     case 'DEEPSEEK':
                         return AIServiceFactory.create(DeepSeekService, {
                             config: this.config.DEEPSEEK,
+                            stagedDiff: this.stagedDiff,
+                            keyName: ai,
+                        }).generateCodeReview$();
+                    case 'COPILOT':
+                        return AIServiceFactory.create(CopilotService, {
+                            config: this.config.COPILOT,
                             stagedDiff: this.stagedDiff,
                             keyName: ai,
                         }).generateCodeReview$();
