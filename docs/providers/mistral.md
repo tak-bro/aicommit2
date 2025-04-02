@@ -1,4 +1,4 @@
-# Mistral & Codestral
+# [Mistral](https://mistral.ai/) & [Codestral](https://mistral.ai/news/codestral)
 
 ## 📌 Important Note
 

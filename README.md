@@ -37,39 +37,29 @@ _aicommit2_ is a reactive CLI tool that automatically generates Git commit messa
 
 ## ✨ Key Features
 
-- **Multi-AI Support**: Integrates with OpenAI, Anthropic Claude, Google Gemini, Mistral AI, Cohere, Groq, Ollama and more.
-- **OpenAI API Compatibility**: Support for any service that implements the OpenAI API specification.
-- **Reactive CLI**: Enables simultaneous requests to multiple AIs and selection of the best commit message.
-- **Git Hook Integration**: Can be used as a prepare-commit-msg hook.
-- **Custom Prompt**: Supports user-defined system prompt templates.
+- **[Multi-AI Support](#cloud-ai-services)**: Integrates with OpenAI, Anthropic Claude, Google Gemini, Mistral AI, Cohere, Groq, Ollama and more.
+- **[OpenAI API Compatibility](docs/providers/compatible.md)**: Support for any service that implements the OpenAI API specification.
+- **[Reactive CLI](#usage)**: Enables simultaneous requests to multiple AIs and selection of the best commit message.
+- **[Git Hook Integration](#git-hook)**: Can be used as a prepare-commit-msg hook.
+- **[Custom Prompt](#custom-prompt-template)**: Supports user-defined system prompt templates.
 
 ## 🤖 Supported Providers
 
 ### Cloud AI Services
 
-- [OpenAI](https://openai.com/) 
-  - [Configuration](docs/providers/openai.md)
-- [Anthropic Claude](https://console.anthropic.com/)
-  - [Configuration](docs/providers/anthropic.md)
-- [Gemini](https://gemini.google.com/)
-  - [Configuration](docs/providers/gemini.md)
-- [Mistral AI](https://mistral.ai/) (including [Codestral](https://mistral.ai/news/codestral/))
-  - [Configuration](docs/providers/mistral.md)
-- [Cohere](https://cohere.com/)
-  - [Configuration](docs/providers/cohere.md)
-- [Groq](https://groq.com/)
-  - [Configuration](docs/providers/groq.md)
-- [Perplexity](https://docs.perplexity.ai/)
-  - [Configuration](docs/providers/perplexity.md)
-- [DeepSeek](https://www.deepseek.com/)
-  - [Configuration](docs/providers/deepseek.md)
-- OpenAI API Compatibility
-  - [Configuration](docs/providers/compatible.md)
+- [OpenAI](docs/providers/openai.md)
+- [Anthropic Claude](docs/providers/anthropic.md)
+- [Gemini](docs/providers/gemini.md)
+- [Mistral & Codestral](docs/providers/mistral.md)
+- [Cohere](docs/providers/cohere.md)
+- [Groq](docs/providers/groq.md)
+- [Perplexity](docs/providers/perplexity.md)
+- [DeepSeek](docs/providers/deepseek.md)
+- [OpenAI API Compatibility](docs/providers/compatible.md)
 
 ### Local AI Services
 
-- [Ollama](https://ollama.com/) 
-  - [Configuration](docs/providers/ollama.md)
+- [Ollama](docs/providers/ollama.md) 
 
 ## Setup
 
@@ -194,6 +184,31 @@ Make the hook executable:
 ```sh
 chmod +x .git/hooks/prepare-commit-msg
 ```
+
+#### Integration with pre-commit Framework
+
+If you're using the [pre-commit](https://pre-commit.com/) framework, you can add _aicommit2_ to your `.pre-commit-config.yaml`:
+
+```yaml
+repos:
+  - repo: local
+    hooks:
+      - id: aicommit2
+        name: AI Commit Message Generator
+        entry: aicommit2 --pre-commit
+        language: node
+        stages: [prepare-commit-msg]
+        always_run: true
+```
+
+Make sure you have:
+
+1. Installed pre-commit: `brew install pre-commit`
+2. Installed aicommit2 globally: `npm install -g aicommit2`
+3. Run `pre-commit install --hook-type prepare-commit-msg` to set up the hook
+
+> **Note** : The `--pre-commit` flag is specifically designed for use with the pre-commit framework and ensures proper integration with other pre-commit hooks.
+
 
 #### Uninstall
 
@@ -550,34 +565,6 @@ aicommit2 config set \
 > - [OpenAI API Compatibility](docs/providers/compatible.md)
 > - [Ollama](docs/providers/ollama.md) 
  
-## Watch Commit Mode
-
-![watch-commit-gif](https://github.com/tak-bro/aicommit2/blob/main/img/watch-commit-min.gif?raw=true)
-
-Watch Commit mode allows you to monitor Git commits in real-time and automatically perform AI code reviews using the `--watch-commit` flag.
-
-```sh
-aicommit2 --watch-commit
-```
-
-This feature only works within Git repository directories and automatically triggers whenever a commit event occurs. When a new commit is detected, it automatically:
-1. Analyzes commit changes
-2. Performs AI code review
-3. Displays results in real-time
-
-> For detailed configuration of the code review feature, please refer to the [codeReview](#codereview) section. The settings in that section are shared with this feature.
-
-⚠️ **CAUTION**
-
-- The Watch Commit feature is currently **experimental**
-- This feature performs AI analysis for each commit, which **consumes a significant number of API tokens**
-- API costs can increase substantially if there are many commits
-- It is recommended to **carefully monitor your token usage** when using this feature
-- To use this feature, you must enable watch mode for at least one AI model:
-  ```sh
-  aicommit2 config set [MODEL].watchMode="true"
-  ```
-
 ## Custom Prompt Template
 
 _aicommit2_ supports custom prompt templates through the `systemPromptPath` option. This feature allows you to define your own prompt structure, giving you more control over the commit message generation process.
@@ -643,29 +630,34 @@ The response should be valid JSON that can be parsed without errors.
 
 This ensures that the output is consistently formatted as a JSON array, regardless of the custom template used.
 
-## Integration with pre-commit framework
 
-If you're using the [pre-commit](https://pre-commit.com/) framework, you can add _aicommit2_ to your `.pre-commit-config.yaml`:
+## Watch Commit Mode
 
-```yaml
-repos:
-  - repo: local
-    hooks:
-      - id: aicommit2
-        name: AI Commit Message Generator
-        entry: aicommit2 --pre-commit
-        language: node
-        stages: [prepare-commit-msg]
-        always_run: true
+![watch-commit-gif](https://github.com/tak-bro/aicommit2/blob/main/img/watch-commit-min.gif?raw=true)
+
+Watch Commit mode allows you to monitor Git commits in real-time and automatically perform AI code reviews using the `--watch-commit` flag.
+
+```sh
+aicommit2 --watch-commit
 ```
 
-Make sure you have:
+This feature only works within Git repository directories and automatically triggers whenever a commit event occurs. When a new commit is detected, it automatically:
+1. Analyzes commit changes
+2. Performs AI code review
+3. Displays results in real-time
 
-1. Installed pre-commit: `brew install pre-commit`
-2. Installed aicommit2 globally: `npm install -g aicommit2`
-3. Run `pre-commit install --hook-type prepare-commit-msg` to set up the hook
+> For detailed configuration of the code review feature, please refer to the [codeReview](#codereview) section. The settings in that section are shared with this feature.
 
-> **Note** : The `--pre-commit` flag is specifically designed for use with the pre-commit framework and ensures proper integration with other pre-commit hooks.
+⚠️ **CAUTION**
+
+- The Watch Commit feature is currently **experimental**
+- This feature performs AI analysis for each commit, which **consumes a significant number of API tokens**
+- API costs can increase substantially if there are many commits
+- It is recommended to **carefully monitor your token usage** when using this feature
+- To use this feature, you must enable watch mode for at least one AI model:
+  ```sh
+  aicommit2 config set [MODEL].watchMode="true"
+  ```
 
 ## Upgrading
 

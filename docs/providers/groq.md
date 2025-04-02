@@ -1,4 +1,4 @@
-# Groq
+# [Groq](https://groq.com/)
 
 ## 📌 Important Note
 

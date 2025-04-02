@@ -1,4 +1,4 @@
-# Gemini
+# [Gemini](https://gemini.google.com/)
 
 ## 📌 Important Note
 

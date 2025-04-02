@@ -1,4 +1,4 @@
-# Cohere 
+# [Cohere](https://cohere.com/)
 
 ## 📌 Important Note
 

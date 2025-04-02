@@ -1,4 +1,4 @@
-# Deepseek
+# [Deepseek](https://www.deepseek.com/)
 
 ## 📌 Important Note
 

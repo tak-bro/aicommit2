@@ -1,4 +1,4 @@
-# OpenAI
+# [OpenAI](https://openai.com/)
 
 ## 📌 Important Note
 

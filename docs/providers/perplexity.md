@@ -1,4 +1,4 @@
-# Perplexity
+# [Perplexity](https://docs.perplexity.ai/)
 
 ## 📌 Important Note
 
