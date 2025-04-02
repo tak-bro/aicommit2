@@ -75,6 +75,17 @@ npm run build
 npm install -g .
 ```
 
+**Via vscode devcontainer**:
+
+Add [feature](https://github.com/kvokka/features/tree/main/src/aicommit2) to
+your `devcontainer.json` file:
+
+```json
+"features": {
+    "ghcr.io/kvokka/features/aicommit2:1": {}
+}
+```
+
 2. Set up API keys (**at least ONE key must be set**):
 
 ```sh
