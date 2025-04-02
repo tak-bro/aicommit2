@@ -523,21 +523,17 @@ aicommit2 config set codeReviewPromptPath="/path/to/user/prompt.txt"
 > All AI support the following options in General Settings.
 > - systemPrompt, systemPromptPath, codeReview, codeReviewPromptPath, exclude, type, locale, generate, logging, includeBody, maxLength
 
-## Model-Specific Settings
-
-> Some models mentioned below are subject to change.
-
-- [OpenAI](docs/providers/openai.md)
-- [Anthropic Claude](docs/providers/anthropic.md)
-- [Gemini](docs/providers/gemini.md)
-- [Mistral & Codestral](docs/providers/mistral.md)
-- [Cohere](docs/providers/cohere.md)
-- [Groq](docs/providers/groq.md)
-- [Perplexity](docs/providers/perplexity.md)
-- [DeepSeek](docs/providers/deepseek.md)
-- [OpenAI API Compatibility](docs/providers/compatible.md)
-- [Ollama](docs/providers/ollama.md) 
-
+> 🔍 **Detailed Support Info**: Check each provider's documentation for specific limits and behaviors:
+> - [OpenAI](docs/providers/openai.md)
+> - [Anthropic Claude](docs/providers/anthropic.md)
+> - [Gemini](docs/providers/gemini.md)
+> - [Mistral & Codestral](docs/providers/mistral.md)
+> - [Cohere](docs/providers/cohere.md)
+> - [Groq](docs/providers/groq.md)
+> - [Perplexity](docs/providers/perplexity.md)
+> - [DeepSeek](docs/providers/deepseek.md)
+> - [OpenAI API Compatibility](docs/providers/compatible.md)
+> - [Ollama](docs/providers/ollama.md) 
 
 ## Watch Commit Mode
 

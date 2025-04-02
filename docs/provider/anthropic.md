@@ -6,6 +6,25 @@
 - [Configuration Guide](../../README.md#configuration) - How to configure providers
 - [General Settings](../../README.md#general-settings) - Common settings applicable to all providers
 
+## Example Configuration
+
+### Basic Setup
+```sh
+aicommit2 config set ANTHROPIC.key="your-api-key"
+aicommit2 config set ANTHROPIC.model="claude-3-5-haiku-20241022"
+```
+
+### Advanced Setup
+```sh
+aicommit2 config set ANTHROPIC.key="your-api-key" \
+  ANTHROPIC.model="claude-3-5-haiku-20241022" \
+  ANTHROPIC.temperature=0.7 \
+  ANTHROPIC.maxTokens=4000 \
+  ANTHROPIC.locale="en" \
+  ANTHROPIC.generate=3 \
+  ANTHROPIC.topP=0.9
+```
+
 ## Settings
 
 | Setting     | Description    | Default                     |

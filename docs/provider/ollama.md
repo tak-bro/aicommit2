@@ -33,7 +33,25 @@ aicommit2
 **Before configuring, please review:**
 - [Configuration Guide](../../README.md#configuration) - How to configure providers
 - [General Settings](../../README.md#general-settings) - Common settings applicable to all providers
-- 
+
+## Example Configuration
+
+### Basic Setup
+```sh
+aicommit2 config set OLLAMA.model="llama3.2"
+```
+
+### Advanced Setup
+```sh
+aicommit2 config set OLLAMA.model="codellama" \
+  OLLAMA.numCtx=4096 \
+  OLLAMA.temperature=0.7 \
+  OLLAMA.maxTokens=4000 \
+  OLLAMA.locale="en" \
+  OLLAMA.generate=3 \
+  OLLAMA.topP=0.9
+```
+
 ## Settings
 
 | Setting    | Description                                                 | Default                |

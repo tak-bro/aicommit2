@@ -6,6 +6,25 @@
 - [Configuration Guide](../../README.md#configuration) - How to configure providers
 - [General Settings](../../README.md#general-settings) - Common settings applicable to all providers
 
+## Example Configuration
+
+### Basic Setup
+```sh
+aicommit2 config set GROQ.key="your-api-key"
+aicommit2 config set GROQ.model="gemma2-9b-it"
+```
+
+### Advanced Setup
+```sh
+aicommit2 config set GROQ.key="your-api-key" \
+  GROQ.model="gemma2-9b-it" \
+  GROQ.temperature=0.7 \
+  GROQ.maxTokens=4000 \
+  GROQ.locale="en" \
+  GROQ.generate=3 \
+  GROQ.topP=0.9
+```
+
 ## Settings
 
 | Setting            | Description            | Default                         |

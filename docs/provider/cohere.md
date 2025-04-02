@@ -6,6 +6,25 @@
 - [Configuration Guide](../../README.md#configuration) - How to configure providers
 - [General Settings](../../README.md#general-settings) - Common settings applicable to all providers
 
+## Example Configuration
+
+### Basic Setup
+```sh
+aicommit2 config set COHERE.key="your-api-key"
+aicommit2 config set COHERE.model="command"
+```
+
+### Advanced Setup
+```sh
+aicommit2 config set COHERE.key="your-api-key" \
+  COHERE.model="command-nightly" \
+  COHERE.temperature=0.7 \
+  COHERE.maxTokens=4000 \
+  COHERE.locale="en" \
+  COHERE.generate=3 \
+  COHERE.topP=0.9
+```
+
 ## Settings
 
 | Setting            | Description  | Default     |

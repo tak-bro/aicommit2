@@ -6,6 +6,25 @@
 - [Configuration Guide](../../README.md#configuration) - How to configure providers
 - [General Settings](../../README.md#general-settings) - Common settings applicable to all providers
 
+## Example Configuration
+
+### Basic Setup
+```sh
+aicommit2 config set MISTRAL.key="your-api-key"
+aicommit2 config set MISTRAL.model="codestral-latest"
+```
+
+### Advanced Setup
+```sh
+aicommit2 config set MISTRAL.key="your-api-key" \
+  MISTRAL.model="codestral-latest" \
+  MISTRAL.temperature=0.7 \
+  MISTRAL.maxTokens=4000 \
+  MISTRAL.locale="en" \
+  MISTRAL.generate=3 \
+  MISTRAL.topP=0.9
+```
+
 ## Mistral Settings
 
 | Setting  | Description      | Default            |
