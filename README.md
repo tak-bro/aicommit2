@@ -47,19 +47,29 @@ _aicommit2_ is a reactive CLI tool that automatically generates Git commit messa
 
 ### Cloud AI Services
 
-- [OpenAI](https://openai.com/) - Configuration
+- [OpenAI](https://openai.com/) 
+  - [Configuration](docs/providers/openai.md)
 - [Anthropic Claude](https://console.anthropic.com/)
+  - [Configuration](docs/providers/anthropic.md)
 - [Gemini](https://gemini.google.com/)
+  - [Configuration](docs/providers/gemini.md)
 - [Mistral AI](https://mistral.ai/) (including [Codestral](https://mistral.ai/news/codestral/))
+  - [Configuration](docs/providers/mistral.md)
 - [Cohere](https://cohere.com/)
+  - [Configuration](docs/providers/cohere.md)
 - [Groq](https://groq.com/)
+  - [Configuration](docs/providers/groq.md)
 - [Perplexity](https://docs.perplexity.ai/)
+  - [Configuration](docs/providers/perplexity.md)
 - [DeepSeek](https://www.deepseek.com/)
-- [OpenAI API Compatibility](#openai-api-compatible-services)
+  - [Configuration](docs/providers/deepseek.md)
+- OpenAI API Compatibility
+  - [Configuration](docs/providers/compatible.md)
 
 ### Local AI Services
 
 - [Ollama](https://ollama.com/) 
+  - [Configuration](docs/providers/ollama.md)
 
 ## Setup
 
@@ -108,34 +118,6 @@ your `devcontainer.json` file:
     "ghcr.io/kvokka/features/aicommit2:1": {}
 }
 ```
-
-## Using Ollama
-
-You can also use your model for free with [Ollama](https://ollama.com/) and it is available to use both Ollama and remote providers **simultaneously**.
-
-1. Install Ollama from [https://ollama.com](https://ollama.com/)
-
-2. Start it with your model
-```shell
-ollama run llama3.2 # model you want use. ex) codellama, deepseek-coder
-```
-
-3. Set the host, model and numCtx. (The default numCtx value in Ollama is 2048. It is recommended to set it to `4096` or higher.)
-```sh
-aicommit2 config set OLLAMA.host=<your host>
-aicommit2 config set OLLAMA.model=<your model>
-aicommit2 config set OLLAMA.numCtx=4096
-```
-
-> If you want to use Ollama, you must set **OLLAMA.model**.
-
-4. Run _aicommit2_ with your staged in git repository
-```shell
-git add <files...>
-aicommit2
-```
-
-> 👉 **Tip:** Ollama can run LLMs **in parallel** from v0.1.33. Please see [this section](#loading-multiple-ollama-models).
 
 ## How it works
 
@@ -545,417 +527,17 @@ aicommit2 config set codeReviewPromptPath="/path/to/user/prompt.txt"
 
 > Some models mentioned below are subject to change.
 
-### OpenAI
+- [OpenAI](docs/providers/openai.md)
+- [Anthropic Claude](docs/providers/anthropic.md)
+- [Gemini](docs/providers/gemini.md)
+- [Mistral & Codestral](docs/providers/mistral.md)
+- [Cohere](docs/providers/cohere.md)
+- [Groq](docs/providers/groq.md)
+- [Perplexity](docs/providers/perplexity.md)
+- [DeepSeek](docs/providers/deepseek.md)
+- [OpenAI API Compatibility](docs/providers/compatible.md)
+- [Ollama](docs/providers/ollama.md) 
 
-| Setting | Description        | Default                |
-|---------|--------------------|------------------------|
-| `key`   | API key            | -                      |
-| `model` | Model to use       | `gpt-4o-mini`          |
-| `url`   | API endpoint URL   | https://api.openai.com |
-| `path`  | API path           | /v1/chat/completions   |
-| `proxy` | Proxy settings     | -                      |
-
-##### OPENAI.key
-
-The OpenAI API key. You can retrieve it from [OpenAI API Keys page](https://platform.openai.com/account/api-keys).
-
-```sh
-aicommit2 config set OPENAI.key="your api key"
-```
-
-##### OPENAI.model
-
-Default: `gpt-4o-mini`
-
-The Chat Completions (`/v1/chat/completions`) model to use. Consult the list of models available in the [OpenAI Documentation](https://platform.openai.com/docs/models/model-endpoint-compatibility).
-
-```sh
-aicommit2 config set OPENAI.model=gpt-4o
-```
-
-##### OPENAI.url
-
-Default: `https://api.openai.com`
-
-The OpenAI URL. Both https and http protocols supported. It allows to run local OpenAI-compatible server.
-
-```sh
-aicommit2 config set OPENAI.url="<your-host>"
-```
-
-##### OPENAI.path
-
-Default: `/v1/chat/completions`
-
-The OpenAI Path.
-
-##### OPENAI.topP
-
-Default: `0.9`
-
-The `top_p` parameter selects tokens whose combined probability meets a threshold. Please see [detail](https://platform.openai.com/docs/api-reference/chat/create#chat-create-top_p).
-
-```sh
-aicommit2 config set OPENAI.topP=0.2
-```
-
-> NOTE: If `topP` is less than 0, it does not deliver the `top_p` parameter to the request.
-
-### Anthropic
-
-| Setting     | Description    | Default                     |
-|-------------|----------------|-----------------------------|
-| `key`       | API key        | -                           |
-| `model`     | Model to use   | `claude-3-5-haiku-20241022` |
-
-##### ANTHROPIC.key
-
-The Anthropic API key. To get started with Anthropic Claude, request access to their API at [anthropic.com/earlyaccess](https://www.anthropic.com/earlyaccess).
-
-##### ANTHROPIC.model
-
-Default: `claude-3-5-haiku-20241022`
-
-Supported:
-- `claude-3-7-sonnet-20250219`
-- `claude-3-5-sonnet-20241022`
-- `claude-3-5-haiku-20241022`
-- `claude-3-opus-20240229`
-- `claude-3-sonnet-20240229`
-- `claude-3-haiku-20240307`
-
-```sh
-aicommit2 config set ANTHROPIC.model="claude-3-5-sonnet-20240620"
-```
-
-### Gemini
-
-| Setting            | Description            | Default                |
-|--------------------|------------------------|------------------------|
-| `key`              | API key                | -                      |
-| `model`            | Model to use           | `gemini-2.0-flash`     |
-
-##### GEMINI.key
-
-The Gemini API key. If you don't have one, create a key in [Google AI Studio](https://aistudio.google.com/app/apikey).
-
-```sh
-aicommit2 config set GEMINI.key="your api key"
-```
-
-##### GEMINI.model
-
-Default: `gemini-2.0-flash`
-
-Supported:
-- `gemini-2.0-flash`
-- `gemini-2.0-flash-lite`
-- `gemini-2.0-pro-exp-02-05`
-- `gemini-2.0-flash-thinking-exp-01-21`
-- `gemini-2.0-flash-exp`
-- `gemini-1.5-flash`
-- `gemini-1.5-flash-8b`
-- `gemini-1.5-pro`
-
-```sh
-aicommit2 config set GEMINI.model="gemini-2.0-flash"
-```
-
-##### Unsupported Options
-
-Gemini does not support the following options in General Settings.
-
-- timeout
-
-### Mistral
-
-| Setting  | Description      | Default            |
-|----------|------------------|--------------------|
-| `key`    | API key          | -                  |
-| `model`  | Model to use     | `pixtral-12b-2409` |
-
-##### MISTRAL.key
-
-The Mistral API key. If you don't have one, please sign up and subscribe in [Mistral Console](https://console.mistral.ai/).
-
-##### MISTRAL.model
-
-Default: `pixtral-12b-2409`
-
-Supported:
-- `codestral-latest`
-- `mistral-large-latest`
-- `pixtral-large-latest`
-- `ministral-8b-latest`
-- `mistral-small-latest`
-- `mistral-embed`
-- `mistral-moderation-latest`
-
-### Codestral
-
-| Setting | Description      | Default            |
-|---------|------------------|--------------------|
-| `key`   | API key          | -                  |
-| `model` | Model to use     | `codestral-latest` |
-
-##### CODESTRAL.key
-
-The Codestral API key. If you don't have one, please sign up and subscribe in [Mistral Console](https://console.mistral.ai/codestral).
-
-##### CODESTRAL.model
-
-Default: `codestral-latest`
-
-Supported:
-- `codestral-latest`
-- `codestral-2501`
-
-```sh
-aicommit2 config set CODESTRAL.model="codestral-2501"
-```
-
-### Cohere
-
-| Setting            | Description  | Default     |
-|--------------------|--------------|-------------|
-| `key`              | API key      | -           |
-| `model`            | Model to use | `command`   |
-
-##### COHERE.key
-
-The Cohere API key. If you don't have one, please sign up and get the API key in [Cohere Dashboard](https://dashboard.cohere.com/).
-
-##### COHERE.model
-
-Default: `command`
-
-Supported models:
-- `command-r7b-12-2024`
-- `command-r-plus-08-2024`
-- `command-r-plus-04-2024`
-- `command-r-plus`
-- `command-r-08-2024`
-- `command-r-03-2024`
-- `command-r`
-- `command`
-- `command-nightly`
-- `command-light`
-- `command-light-nightly`
-- `c4ai-aya-expanse-8b`
-- `c4ai-aya-expanse-32b`
-
-```sh
-aicommit2 config set COHERE.model="command-nightly"
-```
-
-### Groq
-
-| Setting            | Description            | Default                         |
-|--------------------|------------------------|---------------------------------|
-| `key`              | API key                | -                               |
-| `model`            | Model to use           | `deepseek-r1-distill-llama-70b` |
-
-##### GROQ.key
-
-The Groq API key. If you don't have one, please sign up and get the API key in [Groq Console](https://console.groq.com).
-
-##### GROQ.model
-
-Default: `deepseek-r1-distill-llama-70b`
-
-Supported:
-- `qwen-2.5-32b`
-- `qwen-2.5-coder-32b`
-- `deepseek-r1-distill-qwen-32b`
-- `deepseek-r1-distill-llama-70b`
-- `distil-whisper-large-v3-en`
-- `gemma2-9b-it`
-- `llama-3.3-70b-versatile`
-- `llama-3.1-8b-instant`
-- `llama-guard-3-8b`
-- `llama3-70b-8192`
-- `llama3-8b-8192`
-- `mixtral-8x7b-32768`
-- `whisper-large-v3`
-- `whisper-large-v3-turbo`
-- `llama-3.3-70b-specdec`
-- `llama-3.2-1b-preview`
-- `llama-3.2-3b-preview`
-- `llama-3.2-11b-vision-preview`
-- `llama-3.2-90b-vision-preview`
-
-
-```sh
-aicommit2 config set GROQ.model="deepseek-r1-distill-llama-70b"
-```
-
-### Perplexity
-
-| Setting  | Description      | Default  |
-|----------|------------------|----------|
-| `key`    | API key          | -        |
-| `model`  | Model to use     | `sonar`  |
-
-##### PERPLEXITY.key
-
-The Perplexity API key. If you don't have one, please sign up and get the API key in [Perplexity](https://docs.perplexity.ai/)
-
-##### PERPLEXITY.model
-
-Default: `sonar`
-
-Supported:
-- `sonar-pro`
-- `sonar`
-- `llama-3.1-sonar-small-128k-online`
-- `llama-3.1-sonar-large-128k-online`
-- `llama-3.1-sonar-huge-128k-online`
-
-> The models mentioned above are subject to change.
-
-```sh
-aicommit2 config set PERPLEXITY.model="sonar-pro"
-```
-
-### DeepSeek
-
-| Setting | Description      | Default            |
-|---------|------------------|--------------------|
-| `key`   | API key          | -                  |
-| `model` | Model to use     | `deepseek-chat`    |
-
-##### DEEPSEEK.key
-
-The DeepSeek API key. If you don't have one, please sign up and subscribe in [DeepSeek Platform](https://platform.deepseek.com/).
-
-##### DEEPSEEK.model
-
-Default: `deepseek-chat`
-
-Supported:
-- `deepseek-chat`
-- `deepseek-reasoner`
-
-```sh
-aicommit2 config set DEEPSEEK.model="deepseek-reasoner"
-```
-
-### Ollama
-
-| Setting    | Description                                                 | Default                |
-|------------|-------------------------------------------------------------|------------------------|
-| `model`    | Model(s) to use (comma-separated list)                      | -                      |
-| `host`     | Ollama host URL                                             | http://localhost:11434 |
-| `auth`     | Authentication type                                         | Bearer                 |
-| `key`      | Authentication key                                          | -                      |
-| `numCtx`   | The maximum number of tokens the model can process at once  | 2048                   |
-
-##### OLLAMA.model
-
-The Ollama Model. Please see [a list of models available](https://ollama.com/library)
-
-```sh
-aicommit2 config set OLLAMA.model="llama3.1"
-aicommit2 config set OLLAMA.model="llama3,codellama" # for multiple models
-
-aicommit2 config add OLLAMA.model="gemma2" # Only Ollama.model can be added.
-```
-
-> OLLAMA.model is **string array** type to support multiple Ollama. Please see [this section](#loading-multiple-ollama-models).
-
-##### OLLAMA.host
-
-Default: `http://localhost:11434`
-
-The Ollama host
-
-```sh
-aicommit2 config set OLLAMA.host=<host>
-```
-
-##### OLLAMA.auth
-
-Not required. Use when your Ollama server requires authentication. Please see [this issue](https://github.com/tak-bro/aicommit2/issues/90).
-
-```sh
-aicommit2 config set OLLAMA.auth=<auth>
-```
-
-##### OLLAMA.key
-
-Not required. Use when your Ollama server requires authentication. Please see [this issue](https://github.com/tak-bro/aicommit2/issues/90).
-
-```sh
-aicommit2 config set OLLAMA.key=<key>
-```
-
-Few examples of authentication methods:
-
-| **Authentication Method** | **OLLAMA.auth**              | **OLLAMA.key**                        |
-|---------------------------|------------------------------|---------------------------------------|
-| Bearer                    | `Bearer`                     | `<API key>`                           |
-| Basic                     | `Basic`                      | `<Base64 Encoded username:password>`  |
-| JWT                       | `Bearer`                     | `<JWT Token>`                         |
-| OAuth 2.0                 | `Bearer`                     | `<Access Token>`                      |
-| HMAC-SHA256               | `HMAC`                       | `<Base64 Encoded clientId:signature>` |
-
-##### OLLAMA.numCtx
-
-The maximum number of tokens the model can process at once, determining its context length and memory usage.
-It is recommended to set it to 4096 or higher.
-
-```sh
-aicommit2 config set OLLAMA.numCtx=4096
-```
-
-##### Unsupported Options
-
-Ollama does not support the following options in General Settings.
-
-- maxTokens
-
-### OpenAI API-Compatible Services
-
-You can configure any OpenAI API-compatible service by adding a configuration section with the `compatible=true` option. This allows you to use services that implement the OpenAI API specification.
-
-```sh
-# together
-aicommit2 config set TOGETHER.compatible=true
-aicommit2 config set TOGETHER.url=https://api.together.xyz
-aicommit2 config set TOGETHER.path=/v1
-aicommit2 config set TOGETHER.model=meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo
-aicommit2 config set TOGETHER.key="your-api-key"
-```
-
-| Setting      | Description                            | Required             | Default |
-|--------------|----------------------------------------|----------------------|---------|
-| `compatible` | Enable OpenAI API compatibility mode   | ✓ (**must be true**) | false   |
-| `url`        | Base URL of the API endpoint           | ✓                    | -       |
-| `path`       | API path for chat completions          |                      | -       |
-| `key`        | API key for authentication             | ✓                    | -       |
-| `model`      | Model identifier to use                | ✓                    | -       |
-
-Example configuration:
-```ini
-[TOGETHER]
-compatible=true
-key=<your-api-key>
-url=https://api.together.xyz/v1
-model=meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo
-
-[GEMINI_COMPATIBILITY]
-compatible=true
-key=<your-api-key>
-url=https://generativelanguage.googleapis.com
-path=/v1beta/openai/
-model=gemini-1.5-flash
-
-[OLLAMA_COMPATIBILITY]
-compatible=true
-key=ollama
-url=http://localhost:11434/v1
-model=llama3.2
-```
 
 ## Watch Commit Mode
 
@@ -984,20 +566,6 @@ This feature only works within Git repository directories and automatically trig
   ```sh
   aicommit2 config set [MODEL].watchMode="true"
   ```
-
-## Upgrading
-
-Check the installed version with:
-
-```
-aicommit2 --version
-```
-
-If it's not the [latest version](https://github.com/tak-bro/aicommit2/releases/latest), run:
-
-```sh
-npm update -g aicommit2
-```
 
 ## Custom Prompt Template
 
@@ -1088,44 +656,19 @@ Make sure you have:
 
 > **Note** : The `--pre-commit` flag is specifically designed for use with the pre-commit framework and ensures proper integration with other pre-commit hooks.
 
-## Loading Multiple Ollama Models
+## Upgrading
 
-<img src="https://github.com/tak-bro/aicommit2/blob/main/img/ollama_parallel.gif?raw=true" alt="OLLAMA_PARALLEL" />
+Check the installed version with:
 
-You can load and make simultaneous requests to multiple models using Ollama's experimental feature, the `OLLAMA_MAX_LOADED_MODELS` option.
-- `OLLAMA_MAX_LOADED_MODELS`: Load multiple models simultaneously
-
-#### Setup Guide
-
-Follow these steps to set up and utilize multiple models simultaneously:
-
-##### 1. Running Ollama Server
-
-First, launch the Ollama server with the `OLLAMA_MAX_LOADED_MODELS` environment variable set. This variable specifies the maximum number of models to be loaded simultaneously.
-For example, to load up to 3 models, use the following command:
-
-```shell
-OLLAMA_MAX_LOADED_MODELS=3 ollama serve
 ```
-> Refer to [configuration](https://github.com/ollama/ollama/blob/main/docs/faq.md#how-do-i-configure-ollama-server) for detailed instructions.
-
-##### 2. Configuring _aicommit2_
-
-Next, set up _aicommit2_ to specify multiple models. You can assign a list of models, separated by **commas(`,`)**, to the OLLAMA.model environment variable. Here's how you do it:
-
-```shell
-aicommit2 config set OLLAMA.model="mistral,dolphin-llama3"
+aicommit2 --version
 ```
 
-With this command, _aicommit2_ is instructed to utilize both the "mistral" and "dolphin-llama3" models when making requests to the Ollama server.
+If it's not the [latest version](https://github.com/tak-bro/aicommit2/releases/latest), run:
 
-##### 3. Run _aicommit2_
-
-```shell
-aicommit2
+```sh
+npm update -g aicommit2
 ```
-
-> Note that this feature is available starting from Ollama version [**0.1.33**](https://github.com/ollama/ollama/releases/tag/v0.1.33) and _aicommit2_ version [**1.9.5**](https://www.npmjs.com/package/aicommit2/v/1.9.5).
 
 ## Disclaimer and Risks
 
