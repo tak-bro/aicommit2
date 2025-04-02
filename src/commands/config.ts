@@ -9,13 +9,49 @@ export default command(
         name: 'config',
         parameters: ['<mode>', '[key=value...]'],
         help: {
-            usage: [
+            description: 'Manage configuration settings',
+            examples: [
                 'aic2 config set <key>=<value> [<key>=<value> ...]',
                 'aic2 config get [<key> [<key> ...]]',
                 'aic2 config add <key>=<value> [<key>=<value> ...]',
                 'aic2 config list',
-            ].join('\n'),
+            ],
         },
+        commands: [
+            command({
+                name: 'set',
+                parameters: ['<key>=<value>', '[<key>=<value> ...]'],
+                help: {
+                    description: 'Set configuration values. Multiple key-value pairs can be set at once.',
+                    examples: ['aic2 config set OPENAI.key=<your key>', 'aic2 config set ANTHROPIC.topP=0.8 ANTHROPIC.generate=2'],
+                },
+            }),
+            command({
+                name: 'get',
+                parameters: ['[<key>', '[<key> ...]]'],
+                help: {
+                    description: 'Retrieve configuration values for specified AI provider.',
+                    examples: ['aic2 config get OPENAI', 'aic2 config get ANTHROPIC'],
+                },
+            }),
+            command({
+                name: 'add',
+                parameters: ['<key>=<value>', '[<key>=<value> ...]'],
+                help: {
+                    description: 'Add new model to existing configuration. Only Ollama.model can be added.',
+                    examples: ['aic2 config add OLLAMA.model="gemma2"'],
+                },
+            }),
+
+            command({
+                name: 'list',
+                parameters: [],
+                help: {
+                    description: 'Display all configuration keys and their values.',
+                    examples: ['aic2 config list'],
+                },
+            }),
+        ],
     },
     argv => {
         (async () => {

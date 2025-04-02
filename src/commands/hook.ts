@@ -28,6 +28,10 @@ export default command(
     {
         name: 'hook',
         parameters: ['<install/uninstall>'],
+        help: {
+            description: 'Install or uninstall the Git prepare-commit-msg hook',
+            examples: ['aic2 hook install', 'aic2 hook uninstall'],
+        },
     },
     argv => {
         (async () => {
