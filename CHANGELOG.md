@@ -1,3 +1,10 @@
+## [2.2.14](https://github.com/tak-bro/aicommit2/compare/v2.2.13...v2.2.14) (2025-04-02)
+
+
+### Features
+
+* enhance CLI with config, hook, log commands ([fa2824b](https://github.com/tak-bro/aicommit2/commit/fa2824bb9544e8b1d8ac2dffeb36178493965816))
+
 ## [2.2.13](https://github.com/tak-bro/aicommit2/compare/v2.2.12...v2.2.13) (2025-03-27)
 
 
