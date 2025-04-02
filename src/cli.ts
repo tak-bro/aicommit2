@@ -11,6 +11,9 @@ import { description, version } from '../package.json';
 
 const rawArgv = process.argv.slice(2);
 
+// NOTE: Suppress "The `punycode` module is deprecated" message (temporary solution)
+process.noDeprecation = true;
+
 cli(
     {
         name: 'aicommit2',
