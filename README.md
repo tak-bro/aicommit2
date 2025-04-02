@@ -45,7 +45,9 @@ _aicommit2_ is a reactive CLI tool that automatically generates Git commit messa
 
 ## 🤖 Supported Providers
 
-- [OpenAI](https://openai.com/)
+### Cloud AI Services
+
+- [OpenAI](https://openai.com/) - Configuration
 - [Anthropic Claude](https://console.anthropic.com/)
 - [Gemini](https://gemini.google.com/)
 - [Mistral AI](https://mistral.ai/) (including [Codestral](https://mistral.ai/news/codestral/))
@@ -53,8 +55,11 @@ _aicommit2_ is a reactive CLI tool that automatically generates Git commit messa
 - [Groq](https://groq.com/)
 - [Perplexity](https://docs.perplexity.ai/)
 - [DeepSeek](https://www.deepseek.com/)
-- [Ollama](https://ollama.com/)
 - [OpenAI API Compatibility](#openai-api-compatible-services)
+
+### Local AI Services
+
+- [Ollama](https://ollama.com/) 
 
 ## Setup
 
@@ -62,28 +67,8 @@ _aicommit2_ is a reactive CLI tool that automatically generates Git commit messa
 
 1. Install _aicommit2_:
 
-**Directly from npm**:
 ```sh
 npm install -g aicommit2
-```
-
-**Alternatively, from source**:
-```sh
-git clone https://github.com/tak-bro/aicommit2.git
-cd aicommit2
-npm run build
-npm install -g .
-```
-
-**Via vscode devcontainer**:
-
-Add [feature](https://github.com/kvokka/features/tree/main/src/aicommit2) to
-your `devcontainer.json` file:
-
-```json
-"features": {
-    "ghcr.io/kvokka/features/aicommit2:1": {}
-}
 ```
 
 2. Set up API keys (**at least ONE key must be set**):
@@ -102,7 +87,29 @@ aicommit2
 
 > 👉 **Tip:** Use the `aic2` alias if `aicommit2` is too long for you.
 
-## Using Locally
+### Alternative Installation Methods
+
+#### From Source
+
+```sh
+git clone https://github.com/tak-bro/aicommit2.git
+cd aicommit2
+npm run build
+npm install -g .
+```
+
+#### Via VSCode Devcontainer
+
+Add [feature](https://github.com/kvokka/features/tree/main/src/aicommit2) to
+your `devcontainer.json` file:
+
+```json
+"features": {
+    "ghcr.io/kvokka/features/aicommit2:1": {}
+}
+```
+
+## Using Ollama
 
 You can also use your model for free with [Ollama](https://ollama.com/) and it is available to use both Ollama and remote providers **simultaneously**.
 
@@ -1148,6 +1155,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   <tr>
     <td align="center"><a href="https://github.com/devxpain"><img src="https://avatars.githubusercontent.com/devxpain" width="100px;" alt=""/><br /><sub><b>@devxpain</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=devxpain" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/delenzhang"><img src="https://avatars.githubusercontent.com/delenzhang" width="100px;" alt=""/><br /><sub><b>@delenzhang</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=delenzhang" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/kvokka"><img src="https://avatars.githubusercontent.com/kvokka" width="100px;" alt=""/><br /><sub><b>@kvokka</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=kvokka" title="Documentation">📖</a></td>
   </tr>
 </table>
 <!-- markdownlint-restore -->
