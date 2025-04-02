@@ -523,6 +523,21 @@ aicommit2 config set codeReviewPromptPath="/path/to/user/prompt.txt"
 > All AI support the following options in General Settings.
 > - systemPrompt, systemPromptPath, codeReview, codeReviewPromptPath, exclude, type, locale, generate, logging, includeBody, maxLength
 
+
+## Configuration Examples
+
+```
+aicommit2 config set \
+  generate=2 \
+  topP=0.8 \
+  maxTokens=1024 \
+  temperature=0.7 \
+  OPENAI.key="sk-..." OPENAI.model="gpt-4o" OPENAI.temperature=0.5 \
+  ANTHROPIC.key="sk-..." ANTHROPIC.model="claude-3-haiku" ANTHROPIC.maxTokens=2000 \
+  MISTRAL.key="your-key" MISTRAL.model="codestral-latest"  \
+  OLLAMA.model="llama3.2" OLLAMA.numCtx=4096 OLLAMA.watchMode=true
+```
+
 > 🔍 **Detailed Support Info**: Check each provider's documentation for specific limits and behaviors:
 > - [OpenAI](docs/providers/openai.md)
 > - [Anthropic Claude](docs/providers/anthropic.md)
@@ -534,7 +549,7 @@ aicommit2 config set codeReviewPromptPath="/path/to/user/prompt.txt"
 > - [DeepSeek](docs/providers/deepseek.md)
 > - [OpenAI API Compatibility](docs/providers/compatible.md)
 > - [Ollama](docs/providers/ollama.md) 
-
+ 
 ## Watch Commit Mode
 
 ![watch-commit-gif](https://github.com/tak-bro/aicommit2/blob/main/img/watch-commit-min.gif?raw=true)
