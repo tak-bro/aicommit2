@@ -1,5 +1,11 @@
 # Anthropic 
 
+## 📌 Important Note
+
+**Before configuring, please review:**
+- [Configuration Guide](../../README.md#configuration) - How to configure providers
+- [General Settings](../../README.md#general-settings) - Common settings applicable to all providers
+
 ## Settings
 
 | Setting     | Description    | Default                     |

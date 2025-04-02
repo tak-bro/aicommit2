@@ -1,5 +1,13 @@
 # OpenAI API-Compatible Services
 
+## 📌 Important Note
+
+**Before configuring, please review:**
+- [Configuration Guide](../../README.md#configuration) - How to configure providers
+- [General Settings](../../README.md#general-settings) - Common settings applicable to all providers
+
+## Configuration
+
 You can configure any OpenAI API-compatible service by adding a configuration section with the `compatible=true` option. This allows you to use services that implement the OpenAI API specification.
 
 ```sh
