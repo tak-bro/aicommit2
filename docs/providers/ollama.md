@@ -1,4 +1,4 @@
-# Ollama 
+# <a href="https://ollama.com/" target="_blank">Ollama</a> 
 
 ## Setup 
 

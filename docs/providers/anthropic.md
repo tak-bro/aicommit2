@@ -1,4 +1,4 @@
-# [Anthropic](https://console.anthropic.com/)
+# <a href="https://console.anthropic.com/" target="_blank">Anthropic</a>
 
 ## 📌 Important Note
 

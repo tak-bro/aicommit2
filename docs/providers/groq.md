@@ -1,4 +1,4 @@
-# [Groq](https://groq.com/)
+# <a href="https://groq.com/" target="_blank">Groq</a>
 
 ## 📌 Important Note
 

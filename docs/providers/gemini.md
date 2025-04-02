@@ -1,4 +1,4 @@
-# [Gemini](https://gemini.google.com/)
+# <a href="https://gemini.google.com/" target="_blank">Gemini</a>
 
 ## 📌 Important Note
 

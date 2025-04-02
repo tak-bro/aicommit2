@@ -1,4 +1,4 @@
-# [Cohere](https://cohere.com/)
+# <a href="https://cohere.com/" target="_blank">Cohere</a>
 
 ## 📌 Important Note
 

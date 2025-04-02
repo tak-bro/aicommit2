@@ -1,4 +1,4 @@
-# [Perplexity](https://docs.perplexity.ai/)
+# <a href="https://docs.perplexity.ai/" target="_blank">Perplexity</a> 
 
 ## 📌 Important Note
 

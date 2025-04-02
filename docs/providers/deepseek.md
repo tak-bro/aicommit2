@@ -1,4 +1,4 @@
-# [Deepseek](https://www.deepseek.com/)
+# <a href="https://www.deepseek.com/" target="_blank">Deepseek</a>
 
 ## 📌 Important Note
 

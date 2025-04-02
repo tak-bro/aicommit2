@@ -1,4 +1,4 @@
-# [OpenAI](https://openai.com/)
+# <a href="https://openai.com/" target="_blank">OpenAI</a> 
 
 ## 📌 Important Note
 

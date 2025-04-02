@@ -1,4 +1,4 @@
-# [Mistral](https://mistral.ai/) & [Codestral](https://mistral.ai/news/codestral)
+# <a href="https://mistral.ai/" target="_blank">Mistral</a> & <a href="https://mistral.ai/news/codestral" target="_blank">Codestral</a>
 
 ## 📌 Important Note
 
