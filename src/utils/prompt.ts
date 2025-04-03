@@ -147,6 +147,8 @@ const commitTypes: Record<CommitType, string> = {
      * https://github.com/conventional-changelog/conventional-changelog/blob/d0e5d5926c8addba74bc962553dd8bcfba90e228/packages/conventional-changelog-conventionalcommits/writer-opts.js#L182-L193
      */
     conventional: `\n${Object.entries({
+        feat: 'A new feature',
+        fix: 'A bug fix',
         docs: 'Documentation only changes',
         style: 'Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)',
         refactor: 'A code change that neither fixes a bug nor adds a feature',
@@ -156,8 +158,6 @@ const commitTypes: Record<CommitType, string> = {
         ci: 'Changes to CI configuration files, scripts',
         chore: "Other changes that don't modify src or test files",
         revert: 'Reverts a previous commit',
-        feat: 'A new feature',
-        fix: 'A bug fix',
     })
         .map(([key, value]) => `  - ${key}: ${value}`)
         .join('\n')}`,
@@ -180,7 +180,7 @@ const defaultPrompt = (promptOptions: PromptOptions) => {
         `1. Message Language: ${locale}`,
         `2. Format: follow the ${type} Commits format:`,
         `${commitTypeFormats[type]}`,
-        `3. Types: use one of the following types:${commitTypes[type]}`,
+        `3. Commit Types: use one of the following types based on the nature of the changes:${commitTypes[type]}`,
         '4. Guidelines for writing commit messages:',
         '   - Be specific about what changes were made',
         '   - Use imperative mood ("add feature" not "added feature")',
@@ -205,8 +205,8 @@ const finalPrompt = (type: CommitType, generate: number) => {
                 .map(
                     (_, index) => `
   {
-    "subject": "fix(auth): fix bug in user authentication process",
-    "body": "- Update login function to handle edge cases\\n- Add additional error logging for debugging",
+    "subject": "fix(auth): resolve token validation issue in login flow",
+    "body": "- Update token validation logic to handle expired tokens\\n- Add comprehensive error handling for authentication edge cases",
     "footer": ""
   }`
                 )
@@ -226,12 +226,14 @@ const finalPrompt = (type: CommitType, generate: number) => {
     };
 
     return [
-        `\nLastly, Provide your response as a JSON array containing exactly ${generate} object${generate !== 1 ? 's' : ''}, each with the following keys:`,
+        `\nOutput Format:`,
+        `Provide the commit message as a JSON array containing exactly ${generate} object${generate !== 1 ? 's' : ''} with the following keys:`,
         `- "subject": The main commit message using the ${type} style. It should be a concise summary of the changes.`,
-        `- "body": An optional detailed explanation of the changes. If not needed, use an empty string.`,
-        `- "footer": An optional footer for metadata like BREAKING CHANGES. If not needed, use an empty string.`,
+        `- "body": An optional detailed explanation of the changes (If needed, otherwise use an empty string).`,
+        `- "footer": An optional footer for metadata like BREAKING CHANGES (If needed, otherwise use an empty string).`,
         `The array must always contain ${generate} element${generate !== 1 ? 's' : ''}, no more and no less.`,
-        `Example response format: \n[${example(type)}\n]`,
+        `Example output format:`,
+        `\`\`\`json\n[${example(type)}\n]\n\`\`\``,
         `Ensure you generate exactly ${generate} commit message${generate !== 1 ? 's' : ''}, even if it requires creating slightly varied versions for similar changes.`,
         `The response should be valid JSON that can be parsed without errors.`,
     ]

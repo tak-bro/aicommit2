@@ -611,7 +611,8 @@ Remember to follow these guidelines:
 Please note that the following text will **ALWAYS** be appended to the end of your custom prompt:
 
 ```
-Lastly, Provide your response as a JSON array containing exactly {generate} object, each with the following keys:
+Output Format:
+Provide the commit message as a JSON array containing exactly {generate} object, each with the following keys:
 - "subject": The main commit message using the {type} style. It should be a concise summary of the changes.
 - "body": An optional detailed explanation of the changes. If not needed, use an empty string.
 - "footer": An optional footer for metadata like BREAKING CHANGES. If not needed, use an empty string.
@@ -619,8 +620,8 @@ The array must always contain {generate} element, no more and no less.
 Example response format:
 [
   {
-    "subject": "fix: fix bug in user authentication process",
-    "body": "- Update login function to handle edge cases\n- Add additional error logging for debugging",
+    "subject": "fix(auth): resolve token validation issue in login flow",
+    "body": "- Update token validation logic to handle expired tokens\n- Add comprehensive error handling for authentication edge cases",
     "footer": ""
   }
 ]
