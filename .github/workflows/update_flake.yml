@@ -1,0 +1,59 @@
+name: Update Flake Version
+
+on:
+  workflow_dispatch:
+  release:
+    types: [created]
+
+jobs:
+  update-flake:
+    name: Update version and hash in flake.nix
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v26
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+
+      - name: Update version in flake.nix
+        run: |
+          sed -i "s/version = \"[0-9]*\.[0-9]*\.[0-9]*\";/version = \"$GITHUB_REF\";/" flake.nix
+          echo "Updated version in flake.nix to $GITHUB_REF"
+
+      - name: Calculate hash
+        id: npm_hash
+        run: |
+          # Create a temporary directory to prevent polluting the source
+          mkdir -p temp-npm-calc
+          cp package.json package-lock.json temp-npm-calc/
+          cd temp-npm-calc
+
+          # Use prefetch-npm-deps from nixpkgs to calculate the correct hash
+          HASH=$(nix build 2>&1 | grep -Po 'got:\s*\K\S+')
+          echo "HASH=$HASH" >> $GITHUB_ENV
+          echo "New hash: $HASH"
+          cd ..
+          rm -rf temp-npm-calc
+
+      - name: Update hash in flake.nix
+        run: |
+          sed -i "s|hash = \"sha256-[A-Za-z0-9+/]*=\";|hash = \"$HASH\";|" flake.nix
+          echo "Updated hash in flake.nix"
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: "Update flake.nix to version ${{ env.VERSION }} with new hash"
+          title: "Update flake.nix to version ${{ env.VERSION }}"
+          body: |
+            This PR updates flake.nix with:
+            - New version: ${{ env.VERSION }}
+            - New hash: ${{ env.HASH }}
+
+            This update was performed automatically by a GitHub workflow.
+          branch: update-flake-version-${{ env.VERSION }}
+          base: main  # Specify the base branch
+          delete-branch: true
