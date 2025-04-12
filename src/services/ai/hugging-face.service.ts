@@ -106,7 +106,7 @@ export class HuggingFaceService extends AIService {
 
     private async generateMessage(requestType: RequestType): Promise<AIResponse[]> {
         try {
-            await this.intialize();
+            await this.initialize();
 
             const diff = this.params.stagedDiff.diff;
             const { systemPrompt, systemPromptPath, codeReviewPromptPath, logging, locale, generate, type, maxLength } = this.params.config;
@@ -146,7 +146,7 @@ export class HuggingFaceService extends AIService {
      * @async
      * @returns {Promise<void>}
      */
-    private async intialize(): Promise<void> {
+    private async initialize(): Promise<void> {
         const models = await this.getRemoteLlms();
         const model = models.find(model => model.name?.toLowerCase() === this.params.config.model.toLowerCase())!;
         if (model) {
@@ -357,7 +357,7 @@ export class HuggingFaceService extends AIService {
         }
 
         if (!currentConversionId && !this.currentConversionID) {
-            await this.getNewChat(); // if no chat is avilable
+            await this.getNewChat(); // if no chat is available
         } else if (currentConversionId) {
             this.currentConversionID = currentConversionId;
             await this.getConversationHistory(currentConversionId);
@@ -390,10 +390,10 @@ export class HuggingFaceService extends AIService {
             method: 'POST',
         });
 
-        function parseResponse(chunck: string) {
+        function parseResponse(chunk: string) {
             try {
                 // check if chunk contains multiple jsons
-                const _jsonArr = chunck.split('\n');
+                const _jsonArr = chunk.split('\n');
                 const newJsonArray: any[] = [];
 
                 for (const val of _jsonArr) {
@@ -403,8 +403,8 @@ export class HuggingFaceService extends AIService {
                 }
                 return newJsonArray;
             } catch (error) {
-                if (chunck) {
-                    // console.error("Error parsing JSON:", chunck);
+                if (chunk) {
+                    // console.error("Error parsing JSON:", chunk);
                 }
                 return [{}];
             }

@@ -72,7 +72,7 @@ Publish your current branch to a `npm/*` branch on your GitHub repository:
 $ pnpm dlx git-publish
 
 ✔ Successfully published branch! Install with command:
-  → npm i 'tak-bro/aicommit2#npm/develop'
+→ npm i 'tak-bro/aicommit2#npm/develop'
 ```
 
 > Note: The `tak-bro/aicommit2` will be replaced with your fork's URL.

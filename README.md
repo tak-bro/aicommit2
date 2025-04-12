@@ -17,7 +17,7 @@
 
 </div>
 
----
+______________________________________________________________________
 
 ## 🚀 Quick Start
 
@@ -59,7 +59,7 @@ _aicommit2_ is a reactive CLI tool that automatically generates Git commit messa
 
 ### Local AI Services
 
-- [Ollama](docs/providers/ollama.md) 
+- [Ollama](docs/providers/ollama.md)
 
 ## Setup
 
@@ -80,6 +80,7 @@ aicommit2 config set ANTHROPIC.key=<your key>
 ```
 
 3. Run _aicommit2_ with your staged files in git repository:
+
 ```shell
 git add <files...>
 aicommit2
@@ -151,8 +152,9 @@ aicommit2 --all # or -a
 - `--pre-commit`: Run in [pre-commit](https://pre-commit.com/) framework mode (default: **false**)
   - This option is specifically for use with the pre-commit framework
   - See [Integration with pre-commit framework](#integration-with-pre-commit-framework) section for setup instructions
-   
+
 Example:
+
 ```sh
 aicommit2 --locale "jp" --all --type "conventional" --generate 3 --clipboard --exclude "*.json" --exclude "*.ts"
 ```
@@ -177,7 +179,7 @@ if you prefer to set up the hook manually, create or edit the `.git/hooks/prepar
 #!/bin/sh
 # your-other-hook "$@"
 aicommit2 --hook-mode "$@"
- ```
+```
 
 Make the hook executable:
 
@@ -209,7 +211,6 @@ Make sure you have:
 
 > **Note** : The `--pre-commit` flag is specifically designed for use with the pre-commit framework and ensures proper integration with other pre-commit hooks.
 
-
 #### Uninstall
 
 In the Git repository you want to uninstall the hook from:
@@ -228,6 +229,7 @@ Or manually delete the `.git/hooks/prepare-commit-msg` file.
 - SET: `aicommit2 config set <key>=<value>`
 
 Example:
+
 ```sh
 aicommit2 config get OPENAI
 aicommit2 config get GEMINI.key
@@ -261,17 +263,19 @@ Usage Example:
 OPENAI_API_KEY="your-openai-key" ANTHROPIC_API_KEY="your-anthropic-key" aicommit2
 ```
 
-> **Note**: Environment variables take precedence over configuration file settings. 
+> **Note**: Environment variables take precedence over configuration file settings.
 
 #### How to Configure in detail
 
 1. Command-line arguments: **use the format** `--[Model].[Key]=value`
+
 ```sh
 aicommit2 --OPENAI.locale="jp" --GEMINI.temperatue="0.5"
 ```
 
 2. Configuration file: **use INI format in the `~/.aicommit2` file or use `set` command**.
    Example `~/.aicommit2`:
+
 ```ini
 # General Settings
 logging=true
@@ -304,7 +308,7 @@ The following settings can be applied to most models, but support may vary.
 Please check the documentation for each specific model to confirm which settings are supported.
 
 | Setting                | Description                                                         | Default      |
-|------------------------|---------------------------------------------------------------------|--------------|
+| ---------------------- | ------------------------------------------------------------------- | ------------ |
 | `systemPrompt`         | System Prompt text                                                  | -            |
 | `systemPromptPath`     | Path to system prompt file                                          | -            |
 | `exclude`              | Files to exclude from AI analysis                                   | -            |
@@ -323,6 +327,7 @@ Please check the documentation for each specific model to confirm which settings
 | `disabled`             | Whether a specific model is enabled or disabled                     | false        |
 
 > 👉 **Tip:** To set the General Settings for each model, use the following command.
+>
 > ```shell
 > aicommit2 config set OPENAI.locale="jp"
 > aicommit2 config set CODESTRAL.type="gitmoji"
@@ -330,6 +335,7 @@ Please check the documentation for each specific model to confirm which settings
 > ```
 
 ##### systemPrompt
+
 - Allow users to specify a custom system prompt
 
 ```sh
@@ -339,6 +345,7 @@ aicommit2 config set systemPrompt="Generate git commit message."
 > `systemPrompt` takes precedence over `systemPromptPath` and does not apply at the same time.
 
 ##### systemPromptPath
+
 - Allow users to specify a custom file path for their own system prompt template
 - Please see [Custom Prompt Template](#custom-prompt-template)
 
@@ -401,7 +408,7 @@ The log files will be stored in the `~/.aicommit2_log` directory(user's home).
 
 ![log-path](https://github.com/tak-bro/aicommit2/blob/main/img/log_path.png?raw=true)
 
-- You can remove all logs below comamnd.
+- You can remove all logs below command.
 
 ```sh
 aicommit2 log removeAll
@@ -418,7 +425,6 @@ aicommit2 config set includeBody="true"
 ```
 
 ![ignore_body_false](https://github.com/tak-bro/aicommit2/blob/main/img/demo_body_min.gif?raw=true)
-
 
 ```sh
 aicommit2 config set includeBody="false"
@@ -514,6 +520,7 @@ aicommit2 config set codeReview=true
 - **The code review process consumes a large number of tokens.**
 
 ##### codeReviewPromptPath
+
 - Allow users to specify a custom file path for code review
 
 ```sh
@@ -521,23 +528,24 @@ aicommit2 config set codeReviewPromptPath="/path/to/user/prompt.txt"
 ```
 
 ## Available General Settings by Model
-|                             | timeout | temperature | maxTokens |  topP  |
-|:---------------------------:|:-------:|:-----------:|:---------:|:------:|
-|         **OpenAI**          |    ✓    |      ✓      |     ✓     |   ✓    |
-|    **Anthropic Claude**     |    ✓    |      ✓      |     ✓     |   ✓    |
-|         **Gemini**          |         |      ✓      |     ✓     |   ✓    |
-|       **Mistral AI**        |    ✓    |      ✓      |     ✓     |   ✓    |
-|        **Codestral**        |    ✓    |      ✓      |     ✓     |   ✓    |
-|         **Cohere**          |    ✓    |      ✓      |     ✓     |   ✓    |
-|          **Groq**           |    ✓    |      ✓      |     ✓     |   ✓    |
-|       **Perplexity**        |    ✓    |      ✓      |     ✓     |   ✓    |
-|        **DeepSeek**         |    ✓    |      ✓      |     ✓     |   ✓    |
-|         **Ollama**          |    ✓    |      ✓      |           |   ✓    |
-| **OpenAI API-Compatible**   |    ✓    |      ✓      |     ✓     |   ✓    |
+
+|                           | timeout | temperature | maxTokens | topP |
+| :-----------------------: | :-----: | :---------: | :-------: | :--: |
+|        **OpenAI**         |    ✓    |      ✓      |     ✓     |  ✓   |
+|   **Anthropic Claude**    |    ✓    |      ✓      |     ✓     |  ✓   |
+|        **Gemini**         |         |      ✓      |     ✓     |  ✓   |
+|      **Mistral AI**       |    ✓    |      ✓      |     ✓     |  ✓   |
+|       **Codestral**       |    ✓    |      ✓      |     ✓     |  ✓   |
+|        **Cohere**         |    ✓    |      ✓      |     ✓     |  ✓   |
+|         **Groq**          |    ✓    |      ✓      |     ✓     |  ✓   |
+|      **Perplexity**       |    ✓    |      ✓      |     ✓     |  ✓   |
+|       **DeepSeek**        |    ✓    |      ✓      |     ✓     |  ✓   |
+|        **Ollama**         |    ✓    |      ✓      |           |  ✓   |
+| **OpenAI API-Compatible** |    ✓    |      ✓      |     ✓     |  ✓   |
 
 > All AI support the following options in General Settings.
+>
 > - systemPrompt, systemPromptPath, codeReview, codeReviewPromptPath, exclude, type, locale, generate, logging, includeBody, maxLength
-
 
 ## Configuration Examples
 
@@ -554,6 +562,7 @@ aicommit2 config set \
 ```
 
 > 🔍 **Detailed Support Info**: Check each provider's documentation for specific limits and behaviors:
+>
 > - [OpenAI](docs/providers/openai.md)
 > - [Anthropic Claude](docs/providers/anthropic.md)
 > - [Gemini](docs/providers/gemini.md)
@@ -563,13 +572,14 @@ aicommit2 config set \
 > - [Perplexity](docs/providers/perplexity.md)
 > - [DeepSeek](docs/providers/deepseek.md)
 > - [OpenAI API Compatibility](docs/providers/compatible.md)
-> - [Ollama](docs/providers/ollama.md) 
- 
+> - [Ollama](docs/providers/ollama.md)
+
 ## Custom Prompt Template
 
 _aicommit2_ supports custom prompt templates through the `systemPromptPath` option. This feature allows you to define your own prompt structure, giving you more control over the commit message generation process.
 
 ### Using the systemPromptPath Option
+
 To use a custom prompt template, specify the path to your template file when running the tool:
 
 ```
@@ -630,7 +640,6 @@ The response should be valid JSON that can be parsed without errors.
 
 This ensures that the output is consistently formatted as a JSON array, regardless of the custom template used.
 
-
 ## Watch Commit Mode
 
 ![watch-commit-gif](https://github.com/tak-bro/aicommit2/blob/main/img/watch-commit-min.gif?raw=true)
@@ -642,6 +651,7 @@ aicommit2 --watch-commit
 ```
 
 This feature only works within Git repository directories and automatically triggers whenever a commit event occurs. When a new commit is detected, it automatically:
+
 1. Analyzes commit changes
 2. Performs AI code review
 3. Displays results in real-time
@@ -686,8 +696,11 @@ For bug fixes or feature implementations, please check the [Contribution Guide](
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+
 <!-- prettier-ignore-start -->
+
 <!-- markdownlint-disable -->
+
 <table>
   <tr>
     <td align="center"><a href="https://github.com/eltociear"><img src="https://avatars.githubusercontent.com/eltociear" width="100px;" alt=""/><br /><sub><b>@eltociear</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=eltociear" title="Documentation">📖</a></td>
@@ -708,7 +721,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <!-- prettier-ignore-end -->
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
----
+______________________________________________________________________
 
 If this project has been helpful, please consider giving it a Star ⭐️!
 
