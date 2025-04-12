@@ -210,30 +210,6 @@ Make sure you have:
 > **Note** : The `--pre-commit` flag is specifically designed for use with the pre-commit framework and ensures proper integration with other pre-commit hooks.
 
 
-The configuration below will run aicommit2 only when available on the system and includes workaround for passing on the commit message:
-
-
-```yaml
-repos:
-  - repo: local
-    hooks:
-      - id: aicommit2
-        name: AI Commit Message Generator
-        entry: |
-          python -c "
-          import shutil, sys, subprocess
-          if shutil.which('aicommit2'):
-              msg_path = sys.argv[1] if len(sys.argv) > 1 else '.git/COMMIT_EDITMSG'
-              subprocess.run(['aicommit2', '--pre-commit', msg_path] + sys.argv[2:], check=True)
-          else:
-              print('aicommit2 is not available. Skipping AI Commit Message Generator.')
-          "
-        language: python
-        stages: [prepare-commit-msg]
-        always_run: true
-```
-
-
 #### Uninstall
 
 In the Git repository you want to uninstall the hook from:
