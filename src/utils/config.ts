@@ -529,28 +529,28 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         key: (key?: string) => key || '',
         model: (model?: string) => {
             if (!model || model.length === 0) {
-                return 'deepseek-r1-distill-llama-70b';
+                return 'llama-3.3-70b-versatile';
             }
             const supportModels = [
-                `qwen-2.5-32b`,
-                `qwen-2.5-coder-32b`,
-                `deepseek-r1-distill-qwen-32b`,
+                `allam-2-7b`,
+                `compound-beta`,
+                `compound-beta-mini`,
                 `deepseek-r1-distill-llama-70b`,
+                `distil-whisper-large-v3-en`,
                 `gemma2-9b-it`,
-                `llama-3.3-70b-versatile`,
                 `llama-3.1-8b-instant`,
+                `llama-3.3-70b-versatile`,
                 `llama-guard-3-8b`,
                 `llama3-70b-8192`,
                 `llama3-8b-8192`,
-                `mixtral-8x7b-32768`,
-                `distil-whisper-large-v3-en`,
+                `meta-llama/llama-4-maverick-17b-128e-instruct`,
+                `meta-llama/llama-4-scout-17b-16e-instruct`,
+                `mistral-saba-24b`,
+                `playai-tts`,
+                `playai-tts-arabic`,
+                `qwen-qwq-32b`,
                 `whisper-large-v3`,
                 `whisper-large-v3-turbo`,
-                `llama-3.3-70b-specdec`,
-                `llama-3.2-1b-preview`,
-                `llama-3.2-3b-preview`,
-                `llama-3.2-11b-vision-preview`,
-                `llama-3.2-90b-vision-preview`,
             ];
 
             parseAssert('GROQ.model', supportModels.includes(model), 'Invalid model type of Groq');
