@@ -1,0 +1,82 @@
+name: Update Flake Version
+
+on:
+  workflow_dispatch:
+  release:
+    types: [created]
+
+jobs:
+  update-flake:
+    name: Update version and hash in flake.nix
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v26
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+
+      - name: Extract release tag version
+        run: echo "VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
+
+      - name: Update version in flake.nix
+        run: |
+          sed -i "s/version = \".*\";/version = \"${VERSION}\";/" flake.nix
+          echo "✅ Updated version in flake.nix to ${VERSION}"
+
+      - name: Calculate correct pnpmDeps hash
+        id: calc_hash
+        run: |
+          # Step 1: Force a known bad hash
+          sed -i 's|hash = "sha256-.*";|hash = "sha256-INVALIDHASHPLACEHOLDER000000000000000000000=";|' flake.nix
+
+          # Step 2: Run the build to trigger mismatch
+          nix_prefetch_output=$(nix build --print-out-paths .#packages.x86_64-linux.default 2>&1 || true)
+
+          # Step 3: Extract the correct hash from output
+          HASH=$(echo "$nix_prefetch_output" | grep -o 'got:.*' | awk '{print $2}')
+
+          if [[ -z "$HASH" || "$HASH" == *"INVALIDHASHPLACEHOLDER"* ]]; then
+            echo "❌ Failed to extract a valid hash from Nix build output."
+            echo "Full output:"
+            echo "$output"
+            exit 1
+          fi
+
+          echo "✅ Got new hash: $HASH"
+          echo "HASH=$HASH" >> $GITHUB_ENV
+
+      - name: Update hash in flake.nix
+        run: |
+          sed -i "s|hash = \"sha256-.*\";|hash = \"${HASH}\";|" flake.nix
+          echo "✅ Updated hash in flake.nix to ${HASH}"
+
+      - name: Check for changes
+        id: git_diff
+        run: |
+          if git diff --quiet flake.nix; then
+            echo "No changes in flake.nix"
+            echo "SKIP_PR=true" >> $GITHUB_ENV
+          else
+            echo "Changes detected"
+            echo "SKIP_PR=false" >> $GITHUB_ENV
+          fi
+
+      - name: Create Pull Request
+        if: env.SKIP_PR == 'false'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: "Update flake.nix to version ${{ env.VERSION }} with new hash"
+          title: "Update flake.nix to version ${{ env.VERSION }}"
+          body: |
+            This PR updates flake.nix with:
+            - New version: ${{ env.VERSION }}
+            - New hash: ${{ env.HASH }}
+
+            This update was performed automatically by a GitHub workflow.
+          branch: update-flake-version-${{ env.VERSION }}
+          base: main
+          delete-branch: true
