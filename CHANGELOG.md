@@ -1,3 +1,15 @@
+## [2.2.15](https://github.com/tak-bro/aicommit2/compare/v2.2.14...v2.2.15) (2025-05-06)
+
+
+### Bug Fixes
+
+* **utils:** fallback for missing git comment char ([899cbe6](https://github.com/tak-bro/aicommit2/commit/899cbe66430ec255cb2c3046f6c111f875f7508d))
+
+
+### Features
+
+* **prepare-commit-msg-hook:** add support for custom comment character ([181a8e9](https://github.com/tak-bro/aicommit2/commit/181a8e918b6bf4559ba6dfbbdd4c72fa3125d323))
+
 ## [2.2.14](https://github.com/tak-bro/aicommit2/compare/v2.2.13...v2.2.14) (2025-04-02)
 
 
