@@ -14,6 +14,7 @@
 [![license](https://img.shields.io/badge/license-MIT-211A4C.svg?logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGZpbGw9Im5vbmUiIHN0cm9rZT0iI0ZGRiIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS13aWR0aD0iMiIgZD0ibTMgNiAzIDFtMCAwLTMgOWE1IDUgMCAwIDAgNi4wMDEgME02IDdsMyA5TTYgN2w2LTJtNiAyIDMtMW0tMyAxLTMgOWE1IDUgMCAwIDAgNi4wMDEgME0xOCA3bDMgOW0tMy05LTYtMm0wLTJ2Mm0wIDE2VjVtMCAxNkg5bTMgMGgzIi8+PC9zdmc+)](https://github.com/tak-bro/aicommit2/blob/main/LICENSE)
 [![version](https://img.shields.io/npm/v/aicommit2?logo=semanticrelease&label=release&color=A51C2D)](https://www.npmjs.com/package/aicommit2)
 [![downloads](https://img.shields.io/npm/dt/aicommit2?color=F33535&logo=npm)](https://www.npmjs.com/package/aicommit2)
+[![Nix](https://img.shields.io/badge/Nix-5277C3?logo=nixos&logoColor=fff)](#nix-installation)
 
 </div>
 
@@ -88,6 +89,54 @@ aicommit2
 > 👉 **Tip:** Use the `aic2` alias if `aicommit2` is too long for you.
 
 ### Alternative Installation Methods
+
+#### Nix Installation
+
+If you use the Nix package manager, aicommit2 can be installed directly using the provided flake:
+
+```sh
+# Install temporarily in your current shell
+nix run github:tak-bro/aicommit2
+
+# Install permanently to your profile
+nix profile install github:tak-bro/aicommit2
+
+# Use the shorter alias
+nix run github:tak-bro/aic2 -- --help
+```
+
+##### Using in a Flake-based Project
+
+Add aicommit2 to your flake inputs:
+
+```nix
+{
+  # flake.nix configuration file
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    aicommit2.url = "github:tak-bro/aicommit2";
+  };
+  # Rest of your flake.nix file
+}
+
+  # Somewhere where you define your packages
+  {pkgs, inputs, ...}:{
+
+  environment.systemPackages = [inputs.aicommit2.packages.x86_64-linux.default];
+  # Or home packages
+  home.packages = [inputs.aicommit2.packages.x86_64-linux.default];
+  }
+```
+
+##### Development Environment
+
+To enter a development shell with all dependencies:
+
+```sh
+nix develop github:tak-bro/aicommit2
+```
+
+After setting up with Nix, you'll still need to configure API keys as described in the [Setup](#setup) section.
 
 #### From Source
 
