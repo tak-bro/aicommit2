@@ -88,3 +88,12 @@ export const getCommitDiff = async (commitHash: string, excludeFiles?: string[],
 
 export const getDetectedCommit = (files: string[]) =>
     `Detected ${files.length.toLocaleString()} changed file${files.length > 1 ? 's' : ''}`;
+
+export const getCommentChar = async (): Promise<string> => {
+    try {
+        const { stdout } = await execa('git', ['config', '--get', 'core.commentChar']);
+        return stdout;
+    } catch {
+        return '#';
+    }
+};
