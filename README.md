@@ -273,13 +273,19 @@ Or manually delete the `.git/hooks/prepare-commit-msg` file.
 
 #### Reading and Setting Configuration
 
-- READ: `aicommit2 config get <key>`
+- READ: `aicommit2 config get [<key> [<key> ...]]`
 - SET: `aicommit2 config set <key>=<value>`
 
 Example:
 ```sh
+# Get all configurations
+aicommit2 config get
+
+# Get specific configuration
 aicommit2 config get OPENAI
 aicommit2 config get GEMINI.key
+
+# Set configurations
 aicommit2 config set OPENAI.generate=3 GEMINI.temperature=0.5
 ```
 
@@ -371,7 +377,7 @@ Please check the documentation for each specific model to confirm which settings
 | `codeReviewPromptPath` | Path to code review prompt file                                     | -            |
 | `disabled`             | Whether a specific model is enabled or disabled                     | false        |
 
-> 👉 **Tip:** To set the General Settings for each model, use the following command.
+> 👉 **Tip:** To set the General Settings for each model, use the following command.
 > ```shell
 > aicommit2 config set OPENAI.locale="jp"
 > aicommit2 config set CODESTRAL.type="gitmoji"
