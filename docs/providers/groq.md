@@ -30,10 +30,10 @@ aicommit2 config set GROQ.key="your-api-key" \
 
 ## Settings
 
-| Setting | Description  | Default                         |
-| ------- | ------------ | ------------------------------- |
-| `key`   | API key      | -                               |
-| `model` | Model to use | `deepseek-r1-distill-llama-70b` |
+| Setting | Description  | Default                   |
+| ------- | ------------ | ------------------------- |
+| `key`   | API key      | -                         |
+| `model` | Model to use | `llama-3.3-70b-versatile` |
 
 ## Configuration
 
@@ -68,5 +68,5 @@ Supported:
 - `whisper-large-v3-turbo`,
 
 ```sh
-aicommit2 config set GROQ.model="deepseek-r1-distill-llama-70b"
+aicommit2 config set GROQ.model="llama-3.3-70b-versatile"
 ```
