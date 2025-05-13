@@ -59,9 +59,16 @@ export default command(
 
             if (mode === 'get') {
                 const config = await getConfig({}, []);
+                // If no keys are provided, print all configs
+                if (keyValues.length === 0) {
+                    for (const [key, value] of Object.entries(config)) {
+                        console.log(key, value);
+                    }
+                    return;
+                }
+                // Otherwise print only the requested keys
                 for (const key of keyValues) {
                     if (hasOwn(config, key)) {
-                        // Print all configs in the same format
                         console.log(key, config[key as keyof typeof config]);
                     }
                 }
