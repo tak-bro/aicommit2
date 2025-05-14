@@ -32,8 +32,14 @@ export default testSuite(({ describe }) => {
         // });
 
         await test('set config file', async () => {
-            const { fixture, aicommit2 } = await createFixture();
-            const configPath = path.join(fixture.path, '.aicommit2');
+            const { fixture, aicommit2 } = await createFixture({
+                '.config': {
+                    aicommit2: {
+                        'config.ini': '',
+                    },
+                },
+            });
+            const configPath = path.join(fixture.path, '.config', 'aicommit2', 'config.ini');
             await aicommit2(['config', 'set', openAiToken]);
 
             const configFile = await fs.readFile(configPath, 'utf8');
@@ -42,8 +48,14 @@ export default testSuite(({ describe }) => {
         });
 
         await test('get config file', async () => {
-            const { fixture, aicommit2 } = await createFixture();
-            const configPath = path.join(fixture.path, '.aicommit2');
+            const { fixture, aicommit2 } = await createFixture({
+                '.config': {
+                    aicommit2: {
+                        'config.ini': '',
+                    },
+                },
+            });
+            const configPath = path.join(fixture.path, '.config', 'aicommit2', 'config.ini');
             // Set the config first for the get test
             await aicommit2(['config', 'set', openAiToken]);
             // Check config file content after setting
@@ -57,8 +69,14 @@ export default testSuite(({ describe }) => {
         });
 
         await test('reading unknown config', async () => {
-            const { fixture, aicommit2 } = await createFixture();
-            const configPath = path.join(fixture.path, '.aicommit2');
+            const { fixture, aicommit2 } = await createFixture({
+                '.config': {
+                    aicommit2: {
+                        'config.ini': '',
+                    },
+                },
+            });
+            const configPath = path.join(fixture.path, '.config', 'aicommit2', 'config.ini');
             await fs.appendFile(configPath, 'UNKNOWN=1');
 
             const { stdout, stderr } = await aicommit2(['config', 'get', 'UNKNOWN'], {
@@ -73,8 +91,14 @@ export default testSuite(({ describe }) => {
 
         await describe('timeout', ({ test }) => {
             test('setting invalid timeout config', async () => {
-                const { fixture, aicommit2 } = await createFixture();
-                const configPath = path.join(fixture.path, '.aicommit2');
+                const { fixture, aicommit2 } = await createFixture({
+                    '.config': {
+                        aicommit2: {
+                            'config.ini': '',
+                        },
+                    },
+                });
+                const configPath = path.join(fixture.path, '.config', 'aicommit2', 'config.ini');
                 const { stdout } = await aicommit2(['config', 'set', 'timeout=abc'], {
                     reject: false,
                 });
@@ -84,8 +108,14 @@ export default testSuite(({ describe }) => {
             });
 
             test('setting valid timeout config', async () => {
-                const { fixture, aicommit2 } = await createFixture();
-                const configPath = path.join(fixture.path, '.aicommit2');
+                const { fixture, aicommit2 } = await createFixture({
+                    '.config': {
+                        aicommit2: {
+                            'config.ini': '',
+                        },
+                    },
+                });
+                const configPath = path.join(fixture.path, '.config', 'aicommit2', 'config.ini');
                 const timeout = 'timeout=20000';
                 await aicommit2(['config', 'set', timeout]);
 
@@ -101,8 +131,14 @@ export default testSuite(({ describe }) => {
 
         await describe('maxLength', ({ test }) => {
             test('must be an integer', async () => {
-                const { fixture, aicommit2 } = await createFixture();
-                const configPath = path.join(fixture.path, '.aicommit2');
+                const { fixture, aicommit2 } = await createFixture({
+                    '.config': {
+                        aicommit2: {
+                            'config.ini': '',
+                        },
+                    },
+                });
+                const configPath = path.join(fixture.path, '.config', 'aicommit2', 'config.ini');
                 const { stdout } = await aicommit2(['config', 'set', 'maxLength=abc'], {
                     reject: false,
                 });
@@ -112,8 +148,14 @@ export default testSuite(({ describe }) => {
             });
 
             test('must be at least 20 characters', async () => {
-                const { fixture, aicommit2 } = await createFixture();
-                const configPath = path.join(fixture.path, '.aicommit2');
+                const { fixture, aicommit2 } = await createFixture({
+                    '.config': {
+                        aicommit2: {
+                            'config.ini': '',
+                        },
+                    },
+                });
+                const configPath = path.join(fixture.path, '.config', 'aicommit2', 'config.ini');
                 const { stdout } = await aicommit2(['config', 'set', 'maxLength=10'], {
                     reject: false,
                 });
@@ -123,8 +165,14 @@ export default testSuite(({ describe }) => {
             });
 
             test('updates config', async () => {
-                const { fixture, aicommit2 } = await createFixture();
-                const configPath = path.join(fixture.path, '.aicommit2');
+                const { fixture, aicommit2 } = await createFixture({
+                    '.config': {
+                        aicommit2: {
+                            'config.ini': '',
+                        },
+                    },
+                });
+                const configPath = path.join(fixture.path, '.config', 'aicommit2', 'config.ini');
                 // Set the default config first for the get test
                 await aicommit2(['config', 'set', 'maxLength=50']);
                 // Check config file content after setting
@@ -150,8 +198,14 @@ export default testSuite(({ describe }) => {
 
         await describe('del', async ({ test }) => {
             await test('delete a general property', async () => {
-                const { fixture, aicommit2 } = await createFixture();
-                const configPath = path.join(fixture.path, '.aicommit2');
+                const { fixture, aicommit2 } = await createFixture({
+                    '.config': {
+                        aicommit2: {
+                            'config.ini': '',
+                        },
+                    },
+                });
+                const configPath = path.join(fixture.path, '.config', 'aicommit2', 'config.ini');
                 await aicommit2(['config', 'set', 'logging=false']);
                 let configFile = await fs.readFile(configPath, 'utf8');
                 expect(configFile).toMatch('logging=false');
@@ -163,8 +217,14 @@ export default testSuite(({ describe }) => {
             });
 
             await test('delete a model-specific property', async () => {
-                const { fixture, aicommit2 } = await createFixture();
-                const configPath = path.join(fixture.path, '.aicommit2');
+                const { fixture, aicommit2 } = await createFixture({
+                    '.config': {
+                        aicommit2: {
+                            'config.ini': '',
+                        },
+                    },
+                });
+                const configPath = path.join(fixture.path, '.config', 'aicommit2', 'config.ini');
                 await aicommit2(['config', 'set', 'OPENAI.temperature=0.9']);
                 let configFile = await fs.readFile(configPath, 'utf8');
                 expect(configFile).toMatch('temperature=0.9'); // Check for value presence
@@ -176,8 +236,14 @@ export default testSuite(({ describe }) => {
             });
 
             await test('delete an entire model section', async () => {
-                const { fixture, aicommit2 } = await createFixture();
-                const configPath = path.join(fixture.path, '.aicommit2');
+                const { fixture, aicommit2 } = await createFixture({
+                    '.config': {
+                        aicommit2: {
+                            'config.ini': '',
+                        },
+                    },
+                });
+                const configPath = path.join(fixture.path, '.config', 'aicommit2', 'config.ini');
                 await aicommit2(['config', 'set', 'GEMINI.key=test_key']);
                 let configFile = await fs.readFile(configPath, 'utf8');
                 expect(configFile).toMatch('[GEMINI]');
@@ -191,8 +257,14 @@ export default testSuite(({ describe }) => {
             });
 
             await test('attempt to delete a non-existent config', async () => {
-                const { fixture, aicommit2 } = await createFixture();
-                const configPath = path.join(fixture.path, '.aicommit2');
+                const { fixture, aicommit2 } = await createFixture({
+                    '.config': {
+                        aicommit2: {
+                            'config.ini': '',
+                        },
+                    },
+                });
+                const configPath = path.join(fixture.path, '.config', 'aicommit2', 'config.ini');
                 const { stdout } = await aicommit2(['config', 'del', 'NON_EXISTENT_CONFIG'], {
                     reject: false,
                 });

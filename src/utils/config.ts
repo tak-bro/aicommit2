@@ -663,7 +663,7 @@ export type ModelConfig<Model extends keyof typeof modelConfigParsers> = {
     [Key in keyof (typeof modelConfigParsers)[Model]]: ReturnType<(typeof modelConfigParsers)[Model][Key]>;
 };
 
-const configPath = path.join(os.homedir(), '.aicommit2');
+let loadedConfigPath: string | null = null;
 
 const parseCliArgs = (rawArgv: string[] = []): RawConfig => {
     const cliConfig: RawConfig = {};
@@ -684,47 +684,55 @@ const parseCliArgs = (rawArgv: string[] = []): RawConfig => {
     return cliConfig;
 };
 
-// Read config file and merge with CLI arguments
-const getConfigFileContent = async (): Promise<string> => {
-    const configExists = await fileExists(configPath);
-    if (!configExists) {
-        return '';
-    }
-
-    const configString = await fs.readFile(configPath, 'utf8');
-    return configString;
-};
-
+// Read config file from multiple locations with precedence
 export const readConfigFile = async (): Promise<RawConfig> => {
-    const configString = await getConfigFileContent();
-    if (!configString) {
-        return Object.create(null);
+    const homeDir = os.homedir();
+    const xdgConfigHome = process.env.XDG_CONFIG_HOME || path.join(homeDir, '.config');
+
+    const potentialConfigPaths = [
+        path.join(xdgConfigHome, 'aicommit2', 'config.ini'),
+        path.join(homeDir, '.config', 'aicommit2', 'config.ini'),
+        path.join(homeDir, '.aicommit2'),
+    ];
+
+    for (const configPath of potentialConfigPaths) {
+        const configExists = await fileExists(configPath);
+        if (configExists) {
+            const configString = await fs.readFile(configPath, 'utf8');
+            loadedConfigPath = configPath; // Store the path of the loaded config
+            let config = ini.parse(configString);
+
+            // Handle specific config types that are expected to be arrays
+            const hasOllamaModel = hasOwn(config, 'OLLAMA') && hasOwn(config['OLLAMA'], 'model');
+            if (hasOllamaModel && typeof config['OLLAMA'].model === 'string') {
+                config = {
+                    ...config,
+                    OLLAMA: {
+                        ...config.OLLAMA,
+                        model: [config['OLLAMA'].model],
+                    },
+                };
+            }
+
+            const hasExclude = hasOwn(config, 'exclude');
+            if (hasExclude && typeof config.exclude === 'string') {
+                config = {
+                    ...config,
+                    exclude: [config.exclude],
+                };
+            }
+
+            return config;
+        }
     }
 
-    let config = ini.parse(configString);
-    const hasOllamaModel = hasOwn(config, 'OLLAMA') && hasOwn(config['OLLAMA'], 'model');
-    if (hasOllamaModel) {
-        config = {
-            ...config,
-            OLLAMA: {
-                ...config.OLLAMA,
-                model: typeof config['OLLAMA'].model === 'string' ? [config['OLLAMA'].model] : config['OLLAMA'].model,
-            },
-        };
-    }
-
-    const hasExclude = hasOwn(config, 'exclude');
-    if (hasExclude) {
-        config = {
-            ...config,
-            exclude: typeof config.exclude === 'string' ? [config.exclude] : config.exclude,
-        };
-    }
-    return config;
+    // If no config file is found, return an empty object and set loadedConfigPath to null
+    loadedConfigPath = null;
+    return Object.create(null);
 };
 
 export const getConfig = async (cliConfig: RawConfig, rawArgv: string[] = []): Promise<ValidConfig> => {
-    const config = await readConfigFile();
+    const config = await readConfigFile(); // This will now load from multiple paths
     const parsedCliArgs = parseCliArgs(rawArgv);
     const mergedCliConfig = { ...cliConfig, ...parsedCliArgs };
     const parsedConfig: Record<string, unknown> = {};
@@ -776,13 +784,24 @@ export const getConfig = async (cliConfig: RawConfig, rawArgv: string[] = []): P
     return parsedConfig as ValidConfig;
 };
 
+export const getWriteConfigPath = (): string => {
+    if (loadedConfigPath) {
+        return loadedConfigPath;
+    }
+
+    // If no config was loaded, determine the preferred write path based on XDG
+    const homeDir = os.homedir();
+    const xdgConfigHome = process.env.XDG_CONFIG_HOME || path.join(homeDir, '.config');
+    return path.join(xdgConfigHome, 'aicommit2', 'config.ini');
+};
+
 export const setConfigs = async (keyValues: [key: string, value: any][]) => {
-    const config = await readConfigFile();
+    const config = await readConfigFile(); // Load existing config from any supported path
 
     for (const [key, value] of keyValues) {
         const [modelName, modelKey] = key.split('.');
 
-        // 일반 설정 키인 경우 (모델 이름이 없는 경우)
+        // General config keys
         if (!modelKey) {
             const parser = generalConfigParsers[key as keyof typeof generalConfigParsers];
             if (!parser) {
@@ -792,56 +811,55 @@ export const setConfigs = async (keyValues: [key: string, value: any][]) => {
             continue;
         }
 
-        // 모델 관련 설정인 경우
+        // Model-related config
         if (!config[modelName]) {
             config[modelName] = {};
         }
 
-        // 내장 서비스인 경우
+        // Built-in services
         if (BUILTIN_SERVICES.includes(modelName as BuiltinService)) {
             const parser = modelConfigParsers[modelName as BuiltinService][modelKey];
             if (!parser) {
                 throw new KnownError(`Invalid config property: ${key}`);
             }
-            (config[modelName] as Record<string, any>)[modelKey] = (parser as any)(value); // Add type assertion
+            (config[modelName] as Record<string, any>)[modelKey] = (parser as any)(value);
             continue;
         }
 
-        // 커스텀 서비스인 경우
+        // Custom services
         const isValidServiceName = /^[A-Z][A-Z0-9_]*$/.test(modelName);
         if (!isValidServiceName) {
             throw new KnownError(`Invalid service name: ${modelName}. Service names must be uppercase letters, numbers, and underscores.`);
         }
 
-        // 커스텀 서비스의 parser 가져오기
+        // Get parser for custom service
         const customParser = createConfigParser(modelName);
         if (!(customParser as any)[modelKey]) {
-            // Add type assertion
             throw new KnownError(`Invalid config property for custom service: ${key}`);
         }
 
         try {
-            (config[modelName] as Record<string, any>)[modelKey] = (customParser as any)[modelKey](value); // Add type assertion
+            (config[modelName] as Record<string, any>)[modelKey] = (customParser as any)[modelKey](value);
         } catch (error: unknown) {
-            // Catch error as unknown
             if (error instanceof KnownError) {
                 throw error;
             }
-            throw new KnownError(`Invalid value for ${key}: ${(error as Error).message}`); // Assert error as Error
+            throw new KnownError(`Invalid value for ${key}: ${(error as Error).message}`);
         }
     }
 
-    await fs.writeFile(configPath, ini.stringify(config), 'utf8');
+    const writePath = getWriteConfigPath();
+    await fs.writeFile(writePath, ini.stringify(config), 'utf8');
 };
 
 export const addConfigs = async (keyValues: [key: string, value: any][]) => {
-    const config = await readConfigFile();
+    const config = await readConfigFile(); // Load existing config from any supported path
 
     for (const [key, value] of keyValues) {
         const [modelName, modelKey] = key.split('.');
         const modelConfig = config[modelName];
 
-        // OLLAMA.model은 기존 로जिक 유지
+        // Special handling for OLLAMA.model (array)
         if (modelName === 'OLLAMA' && modelKey === 'model') {
             if (!modelConfig) {
                 config[modelName] = {};
@@ -851,33 +869,31 @@ export const addConfigs = async (keyValues: [key: string, value: any][]) => {
             continue;
         }
 
-        // compatible=true인 서비스에 대한 처리 추가
-        const isCompatible = modelConfig && (modelConfig as any).compatible === true; // Add type assertion
+        // Handling for compatible=true services
+        const isCompatible = modelConfig && (modelConfig as any).compatible === true;
         if (isCompatible) {
             if (!modelConfig) {
                 config[modelName] = {};
             }
 
-            // 설정 파서로 값 검증
+            // Validate value with parser
             const parser = createConfigParser(modelName);
             if (!(parser as any)[modelKey]) {
-                // Add type assertion
                 throw new KnownError(`Invalid config property: ${key}`);
             }
 
             try {
-                (config[modelName] as Record<string, any>)[modelKey] = (parser as any)[modelKey](value); // Add type assertion
+                (config[modelName] as Record<string, any>)[modelKey] = (parser as any)[modelKey](value);
             } catch (error: unknown) {
-                // Catch error as unknown
                 if (error instanceof KnownError) {
                     throw error;
                 }
-                throw new KnownError(`Invalid value for ${key}: ${(error as Error).message}`); // Assert error as Error
+                throw new KnownError(`Invalid value for ${key}: ${(error as Error).message}`);
             }
             continue;
         }
 
-        // 내장 서비스에 대한 기존 로직
+        // Existing logic for built-in services
         if (modelName in modelConfigParsers) {
             if (!modelConfig) {
                 config[modelName] = {};
@@ -886,27 +902,32 @@ export const addConfigs = async (keyValues: [key: string, value: any][]) => {
             if (!parser) {
                 throw new KnownError(`Invalid config property: ${key}`);
             }
-            (config[modelName] as Record<string, any>)[modelKey] = (parser as any)(value); // Add type assertion
+            (config[modelName] as Record<string, any>)[modelKey] = (parser as any)(value);
         } else {
-            // 새로운 서비스에 대한 기본 파서 사용
+            // Default parser for new services
             const parser = createConfigParser(modelName);
             if (!(parser as any)[modelKey]) {
-                // Add type assertion
                 throw new KnownError(`Invalid config property: ${key}`);
             }
             if (!config[modelName]) {
                 config[modelName] = {};
             }
-            (config[modelName] as Record<string, any>)[modelKey] = (parser as any)[modelKey](value); // Add type assertion
+            (config[modelName] as Record<string, any>)[modelKey] = (parser as any)[modelKey](value);
         }
     }
 
-    await fs.writeFile(configPath, ini.stringify(config), 'utf8');
+    const writePath = getWriteConfigPath();
+    await fs.writeFile(writePath, ini.stringify(config), 'utf8');
 };
 
 export const listConfigs = async () => {
-    const configContent = await getConfigFileContent();
-    console.log(configContent);
+    const config = await readConfigFile(); // Load config from any supported path
+    console.log(ini.stringify(config));
+};
+
+export const printConfigPath = async () => {
+    await readConfigFile(); // Ensure loadedConfigPath is populated
+    console.log(loadedConfigPath || 'No configuration file loaded.');
 };
 
 const createConfigParser = (serviceName: string) => ({

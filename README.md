@@ -272,6 +272,29 @@ Or manually delete the `.git/hooks/prepare-commit-msg` file.
 
 ### Configuration
 
+aicommit2 supports configuration via command-line arguments, environment variables, and a configuration file. Settings are resolved in the following order of precedence:
+
+1.  Command-line arguments
+2.  Environment variables
+3.  Configuration file
+4.  Default values
+
+#### Configuration File Location
+
+aicommit2 follows the [XDG Base Directory Specification](https://specifications.freedesktop.org/basedir-spec/latest/index.html). The configuration file is named `config.ini` and is searched for in the following locations, in order of precedence:
+
+1.  `$XDG_CONFIG_HOME/aicommit2/config.ini`
+2.  `~/.config/aicommit2/config.ini`
+3.  `~/.aicommit2` (legacy location for backward compatibility)
+
+The first file found in this order will be used.
+
+You can find the path of the currently loaded configuration file using the `config path` command:
+
+```sh
+aicommit2 config path
+```
+
 #### Reading and Setting Configuration
 
 - READ: `aicommit2 config get [<key> [<key> ...]]`
