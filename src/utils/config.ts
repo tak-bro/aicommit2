@@ -10,6 +10,23 @@ import { flattenDeep } from './utils.js';
 
 import type { TiktokenModel } from '@dqbd/tiktoken';
 
+export const resolvePromptPath = (promptPath: string): string => {
+    if (!promptPath || typeof promptPath !== 'string') {
+        return '';
+    }
+    // Check if it's an absolute path
+    if (path.isAbsolute(promptPath)) {
+        return path.resolve(promptPath);
+    } else if (loadedConfigPath) {
+        // If not absolute, try combining with the config file directory
+        const configDir = path.dirname(loadedConfigPath);
+        const absolutePath = path.join(configDir, promptPath);
+        return path.resolve(absolutePath);
+    } else {
+        return ''; // If no config file loaded and path is relative, ignore
+    }
+};
+
 const commitTypes = ['', 'conventional', 'gitmoji'] as const;
 export type CommitType = (typeof commitTypes)[number];
 
@@ -849,6 +866,8 @@ export const setConfigs = async (keyValues: [key: string, value: any][]) => {
     }
 
     const writePath = getWriteConfigPath();
+    const writeDir = path.dirname(writePath); // Get the directory path
+    await fs.mkdir(writeDir, { recursive: true }); // Create the directory if it doesn't exist
     await fs.writeFile(writePath, ini.stringify(config), 'utf8');
 };
 
@@ -917,6 +936,8 @@ export const addConfigs = async (keyValues: [key: string, value: any][]) => {
     }
 
     const writePath = getWriteConfigPath();
+    const writeDir = path.dirname(writePath); // Get the directory path
+    await fs.mkdir(writeDir, { recursive: true }); // Create the directory if it doesn't exist
     await fs.writeFile(writePath, ini.stringify(config), 'utf8');
 };
 

@@ -435,6 +435,7 @@ aicommit2 config set systemPrompt="Generate git commit message."
 
 - Allow users to specify a custom file path for their own system prompt template
 - Please see [Custom Prompt Template](#custom-prompt-template)
+- **Note**: Paths can be absolute or relative to the configuration file location.
 
 ```sh
 aicommit2 config set systemPromptPath="/path/to/user/prompt.txt"
@@ -609,6 +610,7 @@ aicommit2 config set codeReview=true
 ##### codeReviewPromptPath
 
 - Allow users to specify a custom file path for code review
+- **Note**: Paths can be absolute or relative to the configuration file location.
 
 ```sh
 aicommit2 config set codeReviewPromptPath="/path/to/user/prompt.txt"
