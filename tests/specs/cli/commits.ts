@@ -5,7 +5,7 @@ import { assertOpenAiToken, createFixture, createGit, files } from '../../utils.
 export default testSuite(({ describe }) => {
     if (process.platform === 'win32') {
         // https://github.com/nodejs/node/issues/31409
-        console.warn('Skipping tests on Windows because Node.js spawn cant open TTYs');
+        console.warn("Skipping tests on Windows because Node.js spawn can't open TTYs");
         return;
     }
 

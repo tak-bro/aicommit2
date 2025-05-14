@@ -70,7 +70,7 @@ export default testSuite(({ describe }) => {
             console.log('Generated message:', commitMessage);
         });
 
-        await test('Should use "(ci|build):" conventional commit when change relate to continious integration', async () => {
+        await test('Should use "(ci|build):" conventional commit when change relate to continuous integration', async () => {
             const gitDiff = await getDiff('continous-integration.diff');
 
             const commitMessage = await runGenerateCommitMessage(gitDiff);
