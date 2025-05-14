@@ -1,7 +1,12 @@
+import fs from 'fs/promises';
+import os from 'os';
+import path from 'path';
+
 import { command } from 'cleye';
+import ini from 'ini';
 
 import { ConsoleManager } from '../managers/console.manager.js';
-import { BUILTIN_SERVICES, ModelName, addConfigs, getConfig, hasOwn, listConfigs, setConfigs } from '../utils/config.js';
+import { addConfigs, getConfig, hasOwn, listConfigs, readConfigFile, setConfigs } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
 
 export default command(
@@ -14,6 +19,7 @@ export default command(
                 'aic2 config set <key>=<value> [<key>=<value> ...]',
                 'aic2 config get [<key> [<key> ...]]',
                 'aic2 config add <key>=<value> [<key>=<value> ...]',
+                'aic2 config del <key>',
                 'aic2 config list',
             ],
         },
@@ -51,23 +57,45 @@ export default command(
                     examples: ['aic2 config list'],
                 },
             }),
+            command({
+                name: 'del',
+                parameters: ['<config-name>'],
+                help: {
+                    description: 'Delete a configuration setting or section.',
+                    examples: ['aic2 config del <config-name>', 'aic2 config del OPENAI.key', 'aic2 config del OPENAI'],
+                },
+            }),
         ],
     },
     argv => {
         (async () => {
             const { mode, keyValue: keyValues } = argv._;
+            const configName = argv._[1]; // Assuming config-name is the second parameter
 
             if (mode === 'get') {
                 const config = await getConfig({}, []);
+                // If no keys are provided, print all configs
+                if (keyValues.length === 0) {
+                    console.log(config);
+                    return;
+                }
+                // Otherwise print only the requested keys
                 for (const key of keyValues) {
-                    if (hasOwn(config, key)) {
-                        const isModel = BUILTIN_SERVICES.includes(key as ModelName);
-                        if (isModel) {
-                            // @ts-ignore ignore
-                            console.log(key, config[key]);
-                            return;
+                    const parts = key.split('.');
+                    let currentValue: any = config;
+                    let found = true;
+                    for (const part of parts) {
+                        if (hasOwn(currentValue, part)) {
+                            currentValue = currentValue[part];
+                        } else {
+                            found = false;
+                            break;
                         }
-                        console.log(`${key}=${config[key as keyof typeof config]}`);
+                    }
+                    if (found) {
+                        console.log(key, currentValue);
+                    } else {
+                        console.log(`${key} not found`);
                     }
                 }
                 return;
@@ -108,6 +136,42 @@ export default command(
                 return;
             }
 
+            if (mode === 'del') {
+                if (!configName) {
+                    throw new KnownError('Please provide the config name to delete.');
+                }
+
+                const config = await readConfigFile();
+                const parts = configName.split('.');
+
+                if (parts.length === 2) {
+                    const [section, key] = parts;
+                    if (config[section] && typeof config[section] === 'object' && hasOwn(config[section], key)) {
+                        delete (config[section] as Record<string, any>)[key];
+                        // Optional: remove section if it becomes empty
+                        if (Object.keys(config[section] as Record<string, any>).length === 0) {
+                            delete config[section];
+                        }
+                        await fs.writeFile(configPath, ini.stringify(config), 'utf8');
+                        console.log(`Successfully deleted config: ${configName}`);
+                    } else {
+                        throw new KnownError(`Config not found: ${configName}`);
+                    }
+                } else if (parts.length === 1) {
+                    const key = parts[0];
+                    if (hasOwn(config, key)) {
+                        delete config[key];
+                        await fs.writeFile(configPath, ini.stringify(config), 'utf8');
+                        console.log(`Successfully deleted config: ${configName}`);
+                    } else {
+                        throw new KnownError(`Config not found: ${configName}`);
+                    }
+                } else {
+                    throw new KnownError(`Invalid config name format: ${configName}`);
+                }
+                return;
+            }
+
             throw new KnownError(`Invalid mode: ${mode}`);
         })().catch(error => {
             const commandLineManager = new ConsoleManager();
@@ -117,3 +181,5 @@ export default command(
         });
     }
 );
+
+const configPath = path.join(os.homedir(), '.aicommit2');

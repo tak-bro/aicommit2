@@ -1,39 +1,42 @@
-# <a href="https://openai.com/" target="_blank">OpenAI</a> 
+# <a href="https://openai.com/" target="_blank">OpenAI</a>
 
 ## 📌 Important Note
 
 **Before configuring, please review:**
+
 - [Configuration Guide](../../README.md#configuration) - How to configure providers
 - [General Settings](../../README.md#general-settings) - Common settings applicable to all providers
 
 ## Example Configuration
 
 ### Basic Setup
+
 ```sh
 aicommit2 config set OPENAI.key="your-api-key"
 aicommit2 config set OPENAI.model="gpt-4o"
 ```
 
 ### Advanced Setup
+
 ```sh
 aicommit2 config set OPENAI.key="your-api-key" \
-  OPENAI.model="gpt-4o" \
-  OPENAI.temperature=0.7 \
-  OPENAI.maxTokens=4000 \
-  OPENAI.locale="en" \
-  OPENAI.generate=3 \
-  OPENAI.topP=0.9
+    OPENAI.model="gpt-4o" \
+    OPENAI.temperature=0.7 \
+    OPENAI.maxTokens=4000 \
+    OPENAI.locale="en" \
+    OPENAI.generate=3 \
+    OPENAI.topP=0.9
 ```
 
 ## Settings
 
-| Setting | Description        | Default                |
-|---------|--------------------|------------------------|
-| `key`   | API key            | -                      |
-| `model` | Model to use       | `gpt-4o-mini`          |
-| `url`   | API endpoint URL   | https://api.openai.com |
-| `path`  | API path           | /v1/chat/completions   |
-| `proxy` | Proxy settings     | -                      |
+| Setting | Description      | Default                |
+| ------- | ---------------- | ---------------------- |
+| `key`   | API key          | -                      |
+| `model` | Model to use     | `gpt-4o-mini`          |
+| `url`   | API endpoint URL | https://api.openai.com |
+| `path`  | API path         | /v1/chat/completions   |
+| `proxy` | Proxy settings   | -                      |
 
 ## Configuration
 
