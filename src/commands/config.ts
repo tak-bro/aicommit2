@@ -76,15 +76,26 @@ export default command(
                 const config = await getConfig({}, []);
                 // If no keys are provided, print all configs
                 if (keyValues.length === 0) {
-                    for (const [key, value] of Object.entries(config)) {
-                        console.log(key, value);
-                    }
+                    console.log(config);
                     return;
                 }
                 // Otherwise print only the requested keys
                 for (const key of keyValues) {
-                    if (hasOwn(config, key)) {
-                        console.log(key, config[key as keyof typeof config]);
+                    const parts = key.split('.');
+                    let currentValue: any = config;
+                    let found = true;
+                    for (const part of parts) {
+                        if (hasOwn(currentValue, part)) {
+                            currentValue = currentValue[part];
+                        } else {
+                            found = false;
+                            break;
+                        }
+                    }
+                    if (found) {
+                        console.log(key, currentValue);
+                    } else {
+                        console.log(`${key} not found`);
                     }
                 }
                 return;
