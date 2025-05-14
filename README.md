@@ -275,6 +275,7 @@ Or manually delete the `.git/hooks/prepare-commit-msg` file.
 
 - READ: `aicommit2 config get [<key> [<key> ...]]`
 - SET: `aicommit2 config set <key>=<value>`
+- DELETE: `aicommit2 config del <config-name>`
 
 Example:
 ```sh
@@ -287,6 +288,11 @@ aicommit2 config get GEMINI.key
 
 # Set configurations
 aicommit2 config set OPENAI.generate=3 GEMINI.temperature=0.5
+
+# Delete a configuration setting or section
+aicommit2 config del OPENAI.key
+aicommit2 config del GEMINI
+aicommit2 config del timeout
 ```
 
 #### Environment Variables

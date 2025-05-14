@@ -103,6 +103,52 @@ export default testSuite(({ describe }) => {
             });
         });
 
+        await describe('del', async ({ test }) => {
+            await test('delete a general property', async () => {
+                await aicommit2(['config', 'set', 'logging=false']);
+                let configFile = await fs.readFile(configPath, 'utf8');
+                expect(configFile).toMatch('logging=false');
+
+                await aicommit2(['config', 'del', 'logging']);
+                configFile = await fs.readFile(configPath, 'utf8');
+                expect(configFile).not.toMatch('logging=false');
+            });
+
+            await test('delete a model-specific property', async () => {
+                await aicommit2(['config', 'set', 'OPENAI.temperature=0.9']);
+                let configFile = await fs.readFile(configPath, 'utf8');
+                expect(configFile).toMatch('OPENAI.temperature=0.9');
+
+                await aicommit2(['config', 'del', 'OPENAI.temperature']);
+                configFile = await fs.readFile(configPath, 'utf8');
+                expect(configFile).not.toMatch('OPENAI.temperature=0.9');
+            });
+
+            await test('delete an entire model section', async () => {
+                await aicommit2(['config', 'set', 'GEMINI.key=test_key']);
+                let configFile = await fs.readFile(configPath, 'utf8');
+                expect(configFile).toMatch('[GEMINI]');
+                expect(configFile).toMatch('key=test_key');
+
+                await aicommit2(['config', 'del', 'GEMINI']);
+                configFile = await fs.readFile(configPath, 'utf8');
+                expect(configFile).not.toMatch('[GEMINI]');
+                expect(configFile).not.toMatch('key=test_key');
+            });
+
+            await test('attempt to delete a non-existent config', async () => {
+                const { stderr } = await aicommit2(['config', 'del', 'NON_EXISTENT_CONFIG'], {
+                    reject: false,
+                });
+                expect(stderr).toMatch('Config not found: NON_EXISTENT_CONFIG');
+
+                const { stderr: stderrNested } = await aicommit2(['config', 'del', 'OPENAI.NON_EXISTENT_KEY'], {
+                    reject: false,
+                });
+                expect(stderrNested).toMatch('Config not found: OPENAI.NON_EXISTENT_KEY');
+            });
+        });
+
         await test('set config file', async () => {
             await aicommit2(['config', 'set', openAiToken]);
 
