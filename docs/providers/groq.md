@@ -20,12 +20,12 @@ aicommit2 config set GROQ.model="gemma2-9b-it"
 
 ```sh
 aicommit2 config set GROQ.key="your-api-key" \
-  GROQ.model="gemma2-9b-it" \
-  GROQ.temperature=0.7 \
-  GROQ.maxTokens=4000 \
-  GROQ.locale="en" \
-  GROQ.generate=3 \
-  GROQ.topP=0.9
+    GROQ.model="gemma2-9b-it" \
+    GROQ.temperature=0.7 \
+    GROQ.maxTokens=4000 \
+    GROQ.locale="en" \
+    GROQ.generate=3 \
+    GROQ.topP=0.9
 ```
 
 ## Settings

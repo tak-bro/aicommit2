@@ -3,34 +3,37 @@
 ## 📌 Important Note
 
 **Before configuring, please review:**
+
 - [Configuration Guide](../../README.md#configuration) - How to configure providers
 - [General Settings](../../README.md#general-settings) - Common settings applicable to all providers
 
 ## Example Configuration
 
 ### Basic Setup
+
 ```sh
 aicommit2 config set MISTRAL.key="your-api-key"
 aicommit2 config set MISTRAL.model="codestral-latest"
 ```
 
 ### Advanced Setup
+
 ```sh
 aicommit2 config set MISTRAL.key="your-api-key" \
-  MISTRAL.model="codestral-latest" \
-  MISTRAL.temperature=0.7 \
-  MISTRAL.maxTokens=4000 \
-  MISTRAL.locale="en" \
-  MISTRAL.generate=3 \
-  MISTRAL.topP=0.9
+    MISTRAL.model="codestral-latest" \
+    MISTRAL.temperature=0.7 \
+    MISTRAL.maxTokens=4000 \
+    MISTRAL.locale="en" \
+    MISTRAL.generate=3 \
+    MISTRAL.topP=0.9
 ```
 
 ## Mistral Settings
 
-| Setting  | Description      | Default            |
-|----------|------------------|--------------------|
-| `key`    | API key          | -                  |
-| `model`  | Model to use     | `pixtral-12b-2409` |
+| Setting | Description  | Default            |
+| ------- | ------------ | ------------------ |
+| `key`   | API key      | -                  |
+| `model` | Model to use | `pixtral-12b-2409` |
 
 ## Mistral Configuration
 
@@ -43,6 +46,7 @@ The Mistral API key. If you don't have one, please sign up and subscribe in [Mis
 Default: `pixtral-12b-2409`
 
 Supported:
+
 - `codestral-latest`
 - `mistral-large-latest`
 - `pixtral-large-latest`
@@ -53,10 +57,10 @@ Supported:
 
 ## Codestral Settings
 
-| Setting | Description      | Default            |
-|---------|------------------|--------------------|
-| `key`   | API key          | -                  |
-| `model` | Model to use     | `codestral-latest` |
+| Setting | Description  | Default            |
+| ------- | ------------ | ------------------ |
+| `key`   | API key      | -                  |
+| `model` | Model to use | `codestral-latest` |
 
 ## Codestral Configuration
 
@@ -69,6 +73,7 @@ The Codestral API key. If you don't have one, please sign up and subscribe in [M
 Default: `codestral-latest`
 
 Supported:
+
 - `codestral-latest`
 - `codestral-2501`
 

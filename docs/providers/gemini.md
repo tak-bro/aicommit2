@@ -20,12 +20,12 @@ aicommit2 config set GEMINI.model="gemini-2.0-flash"
 
 ```sh
 aicommit2 config set GEMINI.key="your-api-key" \
-  GEMINI.model="gemini-2.0-flash" \
-  GEMINI.temperature=0.7 \
-  GEMINI.maxTokens=4000 \
-  GEMINI.locale="en" \
-  GEMINI.generate=3 \
-  GEMINI.topP=0.9
+    GEMINI.model="gemini-2.0-flash" \
+    GEMINI.temperature=0.7 \
+    GEMINI.maxTokens=4000 \
+    GEMINI.locale="en" \
+    GEMINI.generate=3 \
+    GEMINI.topP=0.9
 ```
 
 ## Settings

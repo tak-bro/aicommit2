@@ -3,6 +3,7 @@
 ## 📌 Important Note
 
 **Before configuring, please review:**
+
 - [Configuration Guide](../../README.md#configuration) - How to configure providers
 - [General Settings](../../README.md#general-settings) - Common settings applicable to all providers
 
@@ -21,15 +22,16 @@ aicommit2 config set TOGETHER.key="your-api-key"
 
 ## Settings
 
-| Setting      | Description                            | Required             | Default |
-|--------------|----------------------------------------|----------------------|---------|
-| `compatible` | Enable OpenAI API compatibility mode   | ✓ (**must be true**) | false   |
-| `url`        | Base URL of the API endpoint           | ✓                    | -       |
-| `path`       | API path for chat completions          |                      | -       |
-| `key`        | API key for authentication             | ✓                    | -       |
-| `model`      | Model identifier to use                | ✓                    | -       |
+| Setting      | Description                          | Required             | Default |
+| ------------ | ------------------------------------ | -------------------- | ------- |
+| `compatible` | Enable OpenAI API compatibility mode | ✓ (**must be true**) | false   |
+| `url`        | Base URL of the API endpoint         | ✓                    | -       |
+| `path`       | API path for chat completions        |                      | -       |
+| `key`        | API key for authentication           | ✓                    | -       |
+| `model`      | Model identifier to use              | ✓                    | -       |
 
 Example configuration:
+
 ```ini
 [TOGETHER]
 compatible=true

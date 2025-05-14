@@ -25,4 +25,3 @@ index 8741c37..91b2e74 100644
 +        res.status(404).send('User not found');
      }
  });
-
