@@ -22,13 +22,14 @@ aicommit2 config set TOGETHER.key="your-api-key"
 
 ## Settings
 
-| Setting      | Description                          | Required             | Default |
-| ------------ | ------------------------------------ | -------------------- | ------- |
-| `compatible` | Enable OpenAI API compatibility mode | ✓ (**must be true**) | false   |
-| `url`        | Base URL of the API endpoint         | ✓                    | -       |
-| `path`       | API path for chat completions        |                      | -       |
-| `key`        | API key for authentication           | ✓                    | -       |
-| `model`      | Model identifier to use              | ✓                    | -       |
+| Setting      | Description                                      | Required             | Default |
+| ------------ | ------------------------------------------------ | -------------------- | ------- |
+| `compatible` | Enable OpenAI API compatibility mode             | ✓ (**must be true**) | false   |
+| `url`        | Base URL of the API endpoint                     | ✓                    | -       |
+| `path`       | API path for chat completions                    |                      | -       |
+| `key`        | API key for authentication                       | ✓                    | -       |
+| `envKey`     | Custom environment variable name for the API key |                      | -       |
+| `model`      | Model identifier to use                          | ✓                    | -       |
 
 Example configuration:
 
@@ -51,4 +52,16 @@ compatible=true
 key=ollama
 url=http://localhost:11434/v1
 model=llama3.2
+
+[OR_DEEPSEEK_R1]
+compatible=true
+url=https://openrouter.ai/api/v1
+envKey=OPENROUTER_API_KEY
+model=deepseek/deepseek-r1:free
+
+[OR_QWEN3_235B_A22B]
+compatible=true
+url=https://openrouter.ai/api/v1
+envKey=OPENROUTER_API_KEY
+model=qwen/qwen3-235b-a22b:free
 ```

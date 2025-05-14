@@ -239,6 +239,7 @@ const generalConfigParsers = {
 const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>> = {
     OPENAI: {
         key: (key?: string) => key || '',
+        envKey: (envKey?: string) => envKey || '',
         model: (model?: string): TiktokenModel => (model || 'gpt-4o-mini') as TiktokenModel,
         url: (host?: string) => {
             if (!host) {
@@ -301,6 +302,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
     },
     GEMINI: {
         key: (key?: string) => key || '',
+        envKey: (envKey?: string) => envKey || '',
         model: (model?: string) => {
             if (!model || model.length === 0) {
                 return 'gemini-2.0-flash';
@@ -336,6 +338,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
     },
     ANTHROPIC: {
         key: (key?: string) => key || '',
+        envKey: (envKey?: string) => envKey || '',
         model: (model?: string) => {
             if (!model || model.length === 0) {
                 return 'claude-3-5-haiku-20241022';
@@ -369,6 +372,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
     },
     MISTRAL: {
         key: (key?: string) => key || '',
+        envKey: (envKey?: string) => envKey || '',
         model: (model?: string) => {
             if (!model || model.length === 0) {
                 return 'pixtral-12b-2409';
@@ -405,6 +409,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
     },
     CODESTRAL: {
         key: (key?: string) => key || '',
+        envKey: (envKey?: string) => envKey || '',
         model: (model?: string) => {
             if (!model || model.length === 0) {
                 return 'codestral-latest';
@@ -459,6 +464,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         },
         auth: (auth?: string) => auth || '',
         key: (key?: string) => key || '',
+        envKey: (envKey?: string) => envKey || '',
         numCtx: (numCtx?: string) => {
             if (!numCtx) {
                 return 2048;
@@ -487,6 +493,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
     },
     COHERE: {
         key: (key?: string) => key || '',
+        envKey: (envKey?: string) => envKey || '',
         model: (model?: string) => {
             if (!model || model.length === 0) {
                 return 'command';
@@ -527,6 +534,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
     },
     GROQ: {
         key: (key?: string) => key || '',
+        envKey: (envKey?: string) => envKey || '',
         model: (model?: string) => {
             if (!model || model.length === 0) {
                 return 'llama-3.3-70b-versatile';
@@ -611,6 +619,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
     },
     DEEPSEEK: {
         key: (key?: string) => key || '',
+        envKey: (envKey?: string) => envKey || '',
         model: (model?: string) => {
             if (!model || model.length === 0) {
                 return `deepseek-chat`;
@@ -724,12 +733,12 @@ export const getConfig = async (cliConfig: RawConfig, rawArgv: string[] = []): P
 
     // Check environment variables for API keys
     const envConfig: RawConfig = {};
-    const apiKeyMapping = BUILTIN_SERVICES.map(service => ({
-        service,
-        envKey: `${service}_API_KEY`,
-    }));
 
-    for (const { service, envKey } of apiKeyMapping) {
+    for (const service of services) {
+        // Get the envKey from config if available, otherwise use the default pattern
+        const configuredEnvKey = (config[service] as Record<string, any>)?.envKey;
+        const envKey = configuredEnvKey || `${service}_API_KEY`;
+
         const apiKey = process.env[envKey];
         if (apiKey) {
             envConfig[service] = { key: apiKey };
@@ -930,6 +939,7 @@ const createConfigParser = (serviceName: string) => ({
     },
     path: (path?: string) => path || '',
     key: (key?: string) => key || '',
+    envKey: (envKey?: string) => envKey || '',
     model: (model?: string) => model || '',
     systemPrompt: generalConfigParsers.systemPrompt,
     systemPromptPath: generalConfigParsers.systemPromptPath,

@@ -318,6 +318,8 @@ PERPLEXITY_API_KEY="your-perplexity-key"
 DEEPSEEK_API_KEY="your-deepseek-key"
 ```
 
+> **Note**: You can customize the environment variable name used for the API key with the `envKey` configuration property for each service.
+
 Usage Example:
 
 ```sh
@@ -370,6 +372,7 @@ Please check the documentation for each specific model to confirm which settings
 
 | Setting                | Description                                                         | Default      |
 | ---------------------- | ------------------------------------------------------------------- | ------------ |
+| `envKey`               | Custom environment variable name for the API key                    | -            |
 | `systemPrompt`         | System Prompt text                                                  | -            |
 | `systemPromptPath`     | Path to system prompt file                                          | -            |
 | `exclude`              | Files to exclude from AI analysis                                   | -            |
