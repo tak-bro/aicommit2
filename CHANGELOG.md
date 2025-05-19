@@ -1,3 +1,19 @@
+## [2.2.16](https://github.com/tak-bro/aicommit2/compare/v2.2.15...v2.2.16) (2025-05-19)
+
+
+### Bug Fixes
+
+* **config:** support nested keys in get command ([d4885bd](https://github.com/tak-bro/aicommit2/commit/d4885bd0fadf043499bc093570e6b03549b968d5))
+* **spell:** correct various typos ([a2d7f3f](https://github.com/tak-bro/aicommit2/commit/a2d7f3f1078b27dc4ec9522f08dfb468dc7ed8e8))
+
+
+### Features
+
+* **config:** add delete command for configuration ([7da6844](https://github.com/tak-bro/aicommit2/commit/7da68441c818f466d9dec363617c6ed440ed4ea8))
+* **config:** list all keys when 'get' has no args ([be12d8d](https://github.com/tak-bro/aicommit2/commit/be12d8d2bb2fff31b5ca79040ec2c0a16f4c6432))
+* **gemini:** update supported models and documentation ([5a2e170](https://github.com/tak-bro/aicommit2/commit/5a2e170634ebfa097b6d2fbbf3d66452cf7472a9))
+* **groq:** update default model and supported models ([7f162f8](https://github.com/tak-bro/aicommit2/commit/7f162f88bdbd974760f704df69548d16a6537da5))
+
 ## [2.2.15](https://github.com/tak-bro/aicommit2/compare/v2.2.14...v2.2.15) (2025-05-06)
 
 ### Bug Fixes
