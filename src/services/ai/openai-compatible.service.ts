@@ -126,19 +126,18 @@ export class OpenAICompatibleService extends AIService {
                 }
             );
 
-
             let result = '';
             if (stream && chatCompletion) {
                 const chatCompletionStream = chatCompletion as unknown as AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>;
                 for await (const chunk of chatCompletionStream) {
-                    // 适配DeepSeek的响应格式
-                    const content = chunk.choices[0]?.delta?.content || '';
-                    const reasoning = chunk.choices[0]?.delta?.reasoning_content || '';
+                    // Adapt to DeepSeek's response format
+                    const content = chunk.choices?.[0]?.delta?.content || '';
+                    const reasoning = chunk.choices?.[0]?.delta?.reasoning_content || '';
                     const chunkText = `${content}${reasoning}`;
                     result += chunkText;
                 }
             } else {
-                result = chatCompletion.choices[0].message.content || '';
+                result = chatCompletion.choices?.[0]?.message.content || '';
             }
             logging && createLogResponse(this.params.keyName, diff, generatedSystemPrompt, result, requestType);
             if (requestType === 'review') {
@@ -146,7 +145,7 @@ export class OpenAICompatibleService extends AIService {
             }
             return this.parseMessage(result, type, generate);
         } catch (error) {
-            console.error('generateMessage error >>>', error);
+            console.error(' generateMessage error >>>', error);
             throw error as any;
         }
     }
