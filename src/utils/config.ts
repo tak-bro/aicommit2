@@ -306,14 +306,14 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
                 return 'gemini-2.0-flash';
             }
             const supportModels = [
+                `gemini-2.5-flash-preview-04-17`,
+                `gemini-2.5-pro-preview-05-06`,
                 `gemini-2.0-flash`,
                 `gemini-2.0-flash-lite`,
-                `gemini-2.0-pro-exp-02-05`,
-                `gemini-2.0-flash-thinking-exp-01-21`,
-                `gemini-2.0-flash-exp`,
+                `gemini-2.0-flash-preview-image-generation`,
+                `gemini-1.5-pro`,
                 `gemini-1.5-flash`,
                 `gemini-1.5-flash-8b`,
-                `gemini-1.5-pro`,
             ];
             parseAssert('GEMINI.model', supportModels.includes(model), 'Invalid model type of Gemini');
             return model;
@@ -529,28 +529,28 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         key: (key?: string) => key || '',
         model: (model?: string) => {
             if (!model || model.length === 0) {
-                return 'deepseek-r1-distill-llama-70b';
+                return 'llama-3.3-70b-versatile';
             }
             const supportModels = [
-                `qwen-2.5-32b`,
-                `qwen-2.5-coder-32b`,
-                `deepseek-r1-distill-qwen-32b`,
+                `allam-2-7b`,
+                `compound-beta`,
+                `compound-beta-mini`,
                 `deepseek-r1-distill-llama-70b`,
+                `distil-whisper-large-v3-en`,
                 `gemma2-9b-it`,
-                `llama-3.3-70b-versatile`,
                 `llama-3.1-8b-instant`,
+                `llama-3.3-70b-versatile`,
                 `llama-guard-3-8b`,
                 `llama3-70b-8192`,
                 `llama3-8b-8192`,
-                `mixtral-8x7b-32768`,
-                `distil-whisper-large-v3-en`,
+                `meta-llama/llama-4-maverick-17b-128e-instruct`,
+                `meta-llama/llama-4-scout-17b-16e-instruct`,
+                `mistral-saba-24b`,
+                `playai-tts`,
+                `playai-tts-arabic`,
+                `qwen-qwq-32b`,
                 `whisper-large-v3`,
                 `whisper-large-v3-turbo`,
-                `llama-3.3-70b-specdec`,
-                `llama-3.2-1b-preview`,
-                `llama-3.2-3b-preview`,
-                `llama-3.2-11b-vision-preview`,
-                `llama-3.2-90b-vision-preview`,
             ];
 
             parseAssert('GROQ.model', supportModels.includes(model), 'Invalid model type of Groq');
@@ -641,7 +641,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
 };
 
 export type RawConfig = {
-    [key: string]: string | string[] | Record<string, string | string[]> | number;
+    [key: string]: string | string[] | Record<string, string | string[]> | number | boolean;
 };
 
 export type ValidConfig = {
@@ -686,7 +686,7 @@ const getConfigFileContent = async (): Promise<string> => {
     return configString;
 };
 
-const readConfigFile = async (): Promise<RawConfig> => {
+export const readConfigFile = async (): Promise<RawConfig> => {
     const configString = await getConfigFileContent();
     if (!configString) {
         return Object.create(null);
@@ -760,7 +760,7 @@ export const getConfig = async (cliConfig: RawConfig, rawArgv: string[] = []): P
 
         for (const [key, parser] of Object.entries(modelParsers)) {
             const value = getValueWithPriority(modelName, key);
-            (parsedConfig[modelName] as Record<string, any>)[key] = parser(value);
+            (parsedConfig[modelName] as Record<string, any>)[key] = (parser as any)(value); // Add type assertion
         }
     }
 
@@ -794,7 +794,7 @@ export const setConfigs = async (keyValues: [key: string, value: any][]) => {
             if (!parser) {
                 throw new KnownError(`Invalid config property: ${key}`);
             }
-            (config[modelName] as Record<string, any>)[modelKey] = parser(value);
+            (config[modelName] as Record<string, any>)[modelKey] = (parser as any)(value); // Add type assertion
             continue;
         }
 
@@ -806,17 +806,19 @@ export const setConfigs = async (keyValues: [key: string, value: any][]) => {
 
         // 커스텀 서비스의 parser 가져오기
         const customParser = createConfigParser(modelName);
-        if (!customParser[modelKey]) {
+        if (!(customParser as any)[modelKey]) {
+            // Add type assertion
             throw new KnownError(`Invalid config property for custom service: ${key}`);
         }
 
         try {
-            (config[modelName] as Record<string, any>)[modelKey] = customParser[modelKey](value);
-        } catch (error) {
+            (config[modelName] as Record<string, any>)[modelKey] = (customParser as any)[modelKey](value); // Add type assertion
+        } catch (error: unknown) {
+            // Catch error as unknown
             if (error instanceof KnownError) {
                 throw error;
             }
-            throw new KnownError(`Invalid value for ${key}: ${error.message}`);
+            throw new KnownError(`Invalid value for ${key}: ${(error as Error).message}`); // Assert error as Error
         }
     }
 
@@ -830,7 +832,7 @@ export const addConfigs = async (keyValues: [key: string, value: any][]) => {
         const [modelName, modelKey] = key.split('.');
         const modelConfig = config[modelName];
 
-        // OLLAMA.model은 기존 로직 유지
+        // OLLAMA.model은 기존 로जिक 유지
         if (modelName === 'OLLAMA' && modelKey === 'model') {
             if (!modelConfig) {
                 config[modelName] = {};
@@ -841,7 +843,7 @@ export const addConfigs = async (keyValues: [key: string, value: any][]) => {
         }
 
         // compatible=true인 서비스에 대한 처리 추가
-        const isCompatible = modelConfig && modelConfig.compatible === true;
+        const isCompatible = modelConfig && (modelConfig as any).compatible === true; // Add type assertion
         if (isCompatible) {
             if (!modelConfig) {
                 config[modelName] = {};
@@ -849,17 +851,19 @@ export const addConfigs = async (keyValues: [key: string, value: any][]) => {
 
             // 설정 파서로 값 검증
             const parser = createConfigParser(modelName);
-            if (!parser[modelKey]) {
+            if (!(parser as any)[modelKey]) {
+                // Add type assertion
                 throw new KnownError(`Invalid config property: ${key}`);
             }
 
             try {
-                (config[modelName] as Record<string, any>)[modelKey] = parser[modelKey](value);
-            } catch (error) {
+                (config[modelName] as Record<string, any>)[modelKey] = (parser as any)[modelKey](value); // Add type assertion
+            } catch (error: unknown) {
+                // Catch error as unknown
                 if (error instanceof KnownError) {
                     throw error;
                 }
-                throw new KnownError(`Invalid value for ${key}: ${error.message}`);
+                throw new KnownError(`Invalid value for ${key}: ${(error as Error).message}`); // Assert error as Error
             }
             continue;
         }
@@ -873,17 +877,18 @@ export const addConfigs = async (keyValues: [key: string, value: any][]) => {
             if (!parser) {
                 throw new KnownError(`Invalid config property: ${key}`);
             }
-            (config[modelName] as Record<string, any>)[modelKey] = parser(value);
+            (config[modelName] as Record<string, any>)[modelKey] = (parser as any)(value); // Add type assertion
         } else {
             // 새로운 서비스에 대한 기본 파서 사용
             const parser = createConfigParser(modelName);
-            if (!parser[modelKey]) {
+            if (!(parser as any)[modelKey]) {
+                // Add type assertion
                 throw new KnownError(`Invalid config property: ${key}`);
             }
             if (!config[modelName]) {
                 config[modelName] = {};
             }
-            (config[modelName] as Record<string, any>)[modelKey] = parser[modelKey](value);
+            (config[modelName] as Record<string, any>)[modelKey] = (parser as any)[modelKey](value); // Add type assertion
         }
     }
 
