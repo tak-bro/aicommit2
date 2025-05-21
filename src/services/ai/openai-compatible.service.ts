@@ -57,18 +57,13 @@ export class OpenAICompatibleService extends AIService {
     }
 
     handleError$ = (error: Error) => {
-        let status = 'N/A';
-        let simpleMessage = error.message;
+        let message = error.message;
         if (error instanceof OpenAI.APIConnectionTimeoutError) {
-            simpleMessage = `Connection timeout: ${error.message}`;
-        } else if (error instanceof OpenAI.APIError) {
-            status = `${error.status}`;
-            simpleMessage = error.name;
+            message = `Connection timeout: ${error.message}`;
         }
-        const message = `${status} ${simpleMessage}`;
         return of({
             name: `${this.errorPrefix} ${message}`,
-            value: simpleMessage,
+            value: message,
             isError: true,
             disabled: true,
         });
@@ -145,7 +140,7 @@ export class OpenAICompatibleService extends AIService {
             }
             return this.parseMessage(result, type, generate);
         } catch (error) {
-            console.error(' generateMessage error >>>', error);
+            // console.error(' generateMessage error >>>', error);
             throw error as any;
         }
     }
