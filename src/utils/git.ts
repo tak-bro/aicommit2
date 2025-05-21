@@ -55,8 +55,8 @@ export const getStagedDiff = async (excludeFiles?: string[], exclude?: string[])
     };
 };
 
-export const getDetectedMessage = (files: string[]) =>
-    `Detected ${files.length.toLocaleString()} staged file${files.length > 1 ? 's' : ''}`;
+export const getDetectedMessage = (staged: GitDiff) =>
+    `Detected ${staged.files.length.toLocaleString()} staged file${staged.files.length > 1 ? 's' : ''} (${staged.diff.length.toLocaleString()} characters)`;
 
 export const getCommitDiff = async (commitHash: string, excludeFiles?: string[], exclude?: string[]): Promise<GitDiff | null> => {
     const diffCommand = ['diff-tree', '-r', '--no-commit-id', '--name-only', commitHash];
