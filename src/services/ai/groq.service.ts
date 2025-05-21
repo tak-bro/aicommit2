@@ -102,16 +102,16 @@ export class GroqService extends AIService {
     }
 
     handleError$ = (error: Error) => {
-        let status = 'N/A';
-        let simpleMessage = 'An error occurred';
+        let message = error.message ?? 'An unknown error occurred';
         if (error instanceof Groq.APIError) {
-            status = `${error.status}`;
-            simpleMessage = error.name;
+            const messageMatch = error.message.match(/"message":"(.*?)"/);
+            if (messageMatch && messageMatch[1]) {
+                message = `${error.status} ${messageMatch[1]}`;
+            }
         }
-        const message = `${status} ${simpleMessage}`;
         return of({
             name: `${this.errorPrefix} ${message}`,
-            value: simpleMessage,
+            value: message,
             isError: true,
             disabled: true,
         });

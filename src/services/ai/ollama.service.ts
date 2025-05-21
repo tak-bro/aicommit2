@@ -15,7 +15,6 @@ import { HttpRequestBuilder } from '../http/http-request.builder.js';
 
 export interface OllamaServiceError extends AIServiceError {}
 
-
 export class OllamaService extends AIService {
     private host = DEFAULT_OLLAMA_HOST;
     private model = '';
@@ -83,7 +82,7 @@ export class OllamaService extends AIService {
                 disabled: true,
             });
         }
-        const simpleMessage = error.message?.replace(/(\r\n|\n|\r)/gm, '') || 'An error occurred';
+        const simpleMessage = error.message?.replace(/(\r\n|\n|\r)/gm, '') || 'An unknown error occurred';
         return of({
             name: `${this.errorPrefix} ${simpleMessage}`,
             value: simpleMessage,

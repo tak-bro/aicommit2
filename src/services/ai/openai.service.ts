@@ -49,7 +49,7 @@ export class OpenAIService extends AIService {
     }
 
     handleError$ = (error: AIServiceError) => {
-        let simpleMessage = 'An error occurred';
+        let simpleMessage = 'An unknown error occurred';
         if (error.message) {
             simpleMessage = error.message.split('\n')[0];
             const errorJson = this.extractJSONFromError(error.message);

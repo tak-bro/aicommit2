@@ -126,7 +126,7 @@ export class AnthropicService extends AIService {
     }
 
     handleError$ = (anthropicError: AnthropicServiceError) => {
-        const simpleMessage = anthropicError.error?.error?.message?.replace(/(\r\n|\n|\r)/gm, '') || 'An error occurred';
+        const simpleMessage = anthropicError.error?.error?.message?.replace(/(\r\n|\n|\r)/gm, '') || 'An unknown error occurred';
         return of({
             name: `${this.errorPrefix} ${simpleMessage}`,
             value: simpleMessage,

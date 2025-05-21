@@ -48,68 +48,53 @@ export abstract class AIService {
     abstract generateCodeReview$(): Observable<ReactiveListChoice>;
 
     protected handleError$ = (error: AIServiceError): Observable<ReactiveListChoice> => {
-        let simpleMessage = 'An error occurred';
-        if (error.message) {
-            simpleMessage = error.message;
-        }
+        const message = error.message ?? 'An unknown error occurred';
         return of({
-            name: `${this.errorPrefix} ${simpleMessage}`,
-            value: simpleMessage,
+            name: `${this.errorPrefix} ${message}`,
+            value: message,
             isError: true,
             disabled: true,
         });
     };
 
     protected parseMessage(generatedText: string, type: CommitType, maxCount: number): AIResponse[] {
-        try {
-            let commitMessages: RawCommitMessage[];
+        let commitMessages: RawCommitMessage[];
 
-            const cleanJsonString = (str: string) => {
-                // eslint-disable-next-line no-control-regex
-                return str.replace(/[\u0000-\u001F\u007F-\u009F]/g, '').replace(/\\(?!["\\/bfnrtu])/g, '\\\\');
-            };
+        const cleanJsonString = (str: string) => {
+            // eslint-disable-next-line no-control-regex
+            return str.replace(/[\u0000-\u001F\u007F-\u009F]/g, '').replace(/\\(?!["\\/bfnrtu])/g, '\\\\');
+        };
 
-            const arrayPattern = /\[\s*\{[\s\S]*?\}\s*\]/;
-            const arrayMatch = generatedText.match(arrayPattern);
+        const arrayPattern = /\[\s*\{[\s\S]*?\}\s*\]/;
+        const arrayMatch = generatedText.match(arrayPattern);
 
-            if (arrayMatch) {
-                try {
-                    const parsed = JSON.parse(cleanJsonString(arrayMatch[0]));
-                    commitMessages = Array.isArray(parsed) ? parsed : [parsed];
-                } catch (error) {
-                    return [];
-                }
-            } else {
-                const objectPattern = /\{[\s\S]*?\}/;
-                const objectMatch = generatedText.match(objectPattern);
+        if (arrayMatch) {
+            const parsed = JSON.parse(cleanJsonString(arrayMatch[0]));
+            commitMessages = Array.isArray(parsed) ? parsed : [parsed];
+        } else {
+            const objectPattern = /\{[\s\S]*?\}/;
+            const objectMatch = generatedText.match(objectPattern);
 
-                if (!objectMatch) {
-                    return [];
-                }
-
-                try {
-                    const parsed = JSON.parse(cleanJsonString(objectMatch[0]));
-                    commitMessages = [parsed];
-                } catch (error) {
-                    return [];
-                }
+            if (!objectMatch) {
+                throw new Error('No JSON object or array found in generated text.');
             }
 
-            if (!commitMessages.length || !commitMessages.every(msg => typeof msg.subject === 'string')) {
-                return [];
-            }
-
-            const filteredMessages = commitMessages
-                .map(data => this.extractMessageAsType(data, type))
-                .map((data: RawCommitMessage) => ({
-                    title: `${data.subject}`,
-                    value: `${data.subject}${data.body ? `\n\n${data.body}` : ''}${data.footer ? `\n\n${data.footer}` : ''}`,
-                }));
-
-            return filteredMessages.slice(0, maxCount);
-        } catch (error) {
-            return [];
+            const parsed = JSON.parse(cleanJsonString(objectMatch[0]));
+            commitMessages = [parsed];
         }
+
+        if (!commitMessages.length || !commitMessages.every(msg => typeof msg.subject === 'string')) {
+            throw new Error('Invalid commit message format received from AI.');
+        }
+
+        const filteredMessages = commitMessages
+            .map(data => this.extractMessageAsType(data, type))
+            .map((data: RawCommitMessage) => ({
+                title: `${data.subject}`,
+                value: `${data.subject}${data.body ? `\n\n${data.body}` : ''}${data.footer ? `\n\n${data.footer}` : ''}`,
+            }));
+
+        return filteredMessages.slice(0, maxCount);
     }
 
     private extractMessageAsType(data: RawCommitMessage, type: CommitType): RawCommitMessage {

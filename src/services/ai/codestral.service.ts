@@ -88,7 +88,7 @@ export class CodestralService extends AIService {
     }
 
     handleError$ = (error: CodestralServiceError) => {
-        const simpleMessage = error.message?.replace(/(\r\n|\n|\r)/gm, '') || 'An error occurred';
+        const simpleMessage = error.message?.replace(/(\r\n|\n|\r)/gm, '') || 'An unknown error occurred';
         return of({
             name: `${this.errorPrefix} ${simpleMessage}`,
             value: simpleMessage,

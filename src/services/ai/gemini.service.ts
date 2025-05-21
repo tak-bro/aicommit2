@@ -156,7 +156,7 @@ export class GeminiService extends AIService {
         const result: string[] = [];
         matches.forEach(match => result.push(match[1]));
 
-        const message = result[1] || 'An error occurred';
+        const message = result[1] || geminiErrorMessage || 'An unknown error occurred';
         return of({
             name: `${this.errorPrefix} ${message}`,
             value: message,
