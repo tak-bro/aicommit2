@@ -74,18 +74,13 @@ export class OllamaService extends AIService {
     }
 
     handleError$ = (error: OllamaServiceError) => {
+        let message = error.message?.replace(/(\r\n|\n|\r)/gm, '') || 'An unknown error occurred';
         if (!!error.response && error.response.data?.error) {
-            return of({
-                name: `${this.errorPrefix} ${error.response.data?.error}`,
-                value: error.response.data?.error,
-                isError: true,
-                disabled: true,
-            });
+            message = error.response.data?.error;
         }
-        const simpleMessage = error.message?.replace(/(\r\n|\n|\r)/gm, '') || 'An unknown error occurred';
         return of({
-            name: `${this.errorPrefix} ${simpleMessage}`,
-            value: simpleMessage,
+            name: `${this.errorPrefix} ${message}`,
+            value: message,
             isError: true,
             disabled: true,
         });
