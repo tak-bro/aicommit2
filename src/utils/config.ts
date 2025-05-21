@@ -8,7 +8,6 @@ import { KnownError } from './error.js';
 import { fileExists } from './fs.js';
 import { flattenDeep } from './utils.js';
 
-import type { TiktokenModel } from '@dqbd/tiktoken';
 
 export const resolvePromptPath = (promptPath: string): string => {
     if (!promptPath || typeof promptPath !== 'string') {
@@ -54,11 +53,11 @@ export type BuiltinService = (typeof BUILTIN_SERVICES)[number];
 const findAllServices = (config: RawConfig): string[] => {
     const sections = Object.keys(config);
 
-    // 내장 서비스와 추가된 섹션들을 모두 포함
+    // Include all built-in services and added sections
     const allServices = new Set([
         ...BUILTIN_SERVICES,
         ...sections.filter(section =>
-            // 설정 섹션 이름 규칙 검증 (대문자와 언더스코어만 허용)
+            // Validate configuration section name rules (only uppercase letters and underscores allowed)
             /^[A-Z][A-Z0-9_]*$/.test(section)
         ),
     ]);
@@ -257,7 +256,13 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
     OPENAI: {
         key: (key?: string) => key || '',
         envKey: (envKey?: string) => envKey || '',
-        model: (model?: string): TiktokenModel => (model || 'gpt-4o-mini') as TiktokenModel,
+        model: (model?: string | string[]): string[] => {
+            if (!model) {
+                return ['gpt-4o-mini'];
+            }
+            const modelList = typeof model === 'string' ? model?.split(',') : model;
+            return modelList.map(m => m.trim()).filter(m => !!m && m.length > 0);
+        },
         url: (host?: string) => {
             if (!host) {
                 return 'https://api.openai.com';
@@ -286,10 +291,11 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
     },
     HUGGINGFACE: {
         cookie: (cookie?: string) => cookie || '',
-        model: (model?: string): string => {
+        model: (model?: string | string[]): string[] => {
             if (!model) {
-                return `CohereForAI/c4ai-command-r-plus`;
+                return [`CohereForAI/c4ai-command-r-plus`];
             }
+            const modelList = typeof model === 'string' ? model?.split(',') : model;
             const supportModels = [
                 `CohereForAI/c4ai-command-r-plus`,
                 `meta-llama/Meta-Llama-3-70B-Instruct`,
@@ -301,8 +307,12 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
                 `microsoft/Phi-3-mini-4k-instruct`,
             ];
 
-            parseAssert('HUGGINGFACE.model', supportModels.includes(model), 'Invalid model type of HuggingFace chat');
-            return model;
+            // Validate each model in the list
+            for (const m of modelList) {
+                parseAssert('HUGGINGFACE.model', supportModels.includes(m.trim()), `Invalid model type of HuggingFace chat: ${m.trim()}`);
+            }
+
+            return modelList.map(m => m.trim()).filter(m => !!m && m.length > 0);
         },
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
@@ -320,10 +330,11 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
     GEMINI: {
         key: (key?: string) => key || '',
         envKey: (envKey?: string) => envKey || '',
-        model: (model?: string) => {
-            if (!model || model.length === 0) {
-                return 'gemini-2.0-flash';
+        model: (model?: string | string[]): string[] => {
+            if (!model) {
+                return ['gemini-2.0-flash'];
             }
+            const modelList = typeof model === 'string' ? model?.split(',') : model;
             const supportModels = [
                 `gemini-2.5-flash-preview-04-17`,
                 `gemini-2.5-flash-preview-05-20`,
@@ -335,8 +346,11 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
                 `gemini-1.5-flash`,
                 `gemini-1.5-flash-8b`,
             ];
-            parseAssert('GEMINI.model', supportModels.includes(model), 'Invalid model type of Gemini');
-            return model;
+            // Validate each model in the list
+            for (const m of modelList) {
+                parseAssert('GEMINI.model', supportModels.includes(m.trim()), `Invalid model type of Gemini: ${m.trim()}`);
+            }
+            return modelList.map(m => m.trim()).filter(m => !!m && m.length > 0);
         },
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
@@ -357,10 +371,11 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
     ANTHROPIC: {
         key: (key?: string) => key || '',
         envKey: (envKey?: string) => envKey || '',
-        model: (model?: string) => {
-            if (!model || model.length === 0) {
-                return 'claude-3-5-haiku-20241022';
+        model: (model?: string | string[]): string[] => {
+            if (!model) {
+                return ['claude-3-5-haiku-20241022'];
             }
+            const modelList = typeof model === 'string' ? model?.split(',') : model;
             const supportModels = [
                 `claude-3-7-sonnet-20250219`,
                 `claude-3-5-sonnet-20241022`,
@@ -369,8 +384,11 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
                 `claude-3-sonnet-20240229`,
                 `claude-3-haiku-20240307`,
             ];
-            parseAssert('ANTHROPIC.model', supportModels.includes(model), 'Invalid model type of Anthropic');
-            return model;
+            // Validate each model in the list
+            for (const m of modelList) {
+                parseAssert('ANTHROPIC.model', supportModels.includes(m.trim()), `Invalid model type of Anthropic: ${m.trim()}`);
+            }
+            return modelList.map(m => m.trim()).filter(m => !!m && m.length > 0);
         },
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
@@ -391,10 +409,11 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
     MISTRAL: {
         key: (key?: string) => key || '',
         envKey: (envKey?: string) => envKey || '',
-        model: (model?: string) => {
-            if (!model || model.length === 0) {
-                return 'pixtral-12b-2409';
+        model: (model?: string | string[]): string[] => {
+            if (!model) {
+                return ['pixtral-12b-2409'];
             }
+            const modelList = typeof model === 'string' ? model?.split(',') : model;
             const supportModels = [
                 `codestral-latest`,
                 `mistral-large-latest`,
@@ -405,8 +424,12 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
                 `mistral-moderation-latest`,
             ];
 
-            parseAssert('MISTRAL.model', supportModels.includes(model), 'Invalid model type of Mistral AI');
-            return model;
+            // Validate each model in the list
+            for (const m of modelList) {
+                parseAssert('MISTRAL.model', supportModels.includes(m.trim()), `Invalid model type of Mistral AI: ${m.trim()}`);
+            }
+
+            return modelList.map(m => m.trim()).filter(m => !!m && m.length > 0);
         },
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
@@ -428,14 +451,19 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
     CODESTRAL: {
         key: (key?: string) => key || '',
         envKey: (envKey?: string) => envKey || '',
-        model: (model?: string) => {
-            if (!model || model.length === 0) {
-                return 'codestral-latest';
+        model: (model?: string | string[]): string[] => {
+            if (!model) {
+                return ['codestral-latest'];
             }
+            const modelList = typeof model === 'string' ? model?.split(',') : model;
             const supportModels = ['codestral-latest', 'codestral-2501'];
 
-            parseAssert('CODESTRAL.model', supportModels.includes(model), 'Invalid model type of Codestral');
-            return model;
+            // Validate each model in the list
+            for (const m of modelList) {
+                parseAssert('CODESTRAL.model', supportModels.includes(m.trim()), `Invalid model type of Codestral: ${m.trim()}`);
+            }
+
+            return modelList.map(m => m.trim()).filter(m => !!m && m.length > 0);
         },
         topP: generalConfigParsers.topP,
         systemPrompt: generalConfigParsers.systemPrompt,
@@ -512,10 +540,11 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
     COHERE: {
         key: (key?: string) => key || '',
         envKey: (envKey?: string) => envKey || '',
-        model: (model?: string) => {
-            if (!model || model.length === 0) {
-                return 'command';
+        model: (model?: string | string[]): string[] => {
+            if (!model) {
+                return ['command'];
             }
+            const modelList = typeof model === 'string' ? model?.split(',') : model;
             const supportModels = [
                 `command-r7b-12-2024`,
                 `command-r-plus-08-2024`,
@@ -531,8 +560,11 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
                 `c4ai-aya-expanse-8b`,
                 `c4ai-aya-expanse-32b`,
             ];
-            parseAssert('COHERE.model', supportModels.includes(model), 'Invalid model type of Cohere');
-            return model;
+            // Validate each model in the list
+            for (const m of modelList) {
+                parseAssert('COHERE.model', supportModels.includes(m.trim()), `Invalid model type of Cohere: ${m.trim()}`);
+            }
+            return modelList.map(m => m.trim()).filter(m => !!m && m.length > 0);
         },
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
@@ -553,10 +585,11 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
     GROQ: {
         key: (key?: string) => key || '',
         envKey: (envKey?: string) => envKey || '',
-        model: (model?: string) => {
-            if (!model || model.length === 0) {
-                return 'llama-3.3-70b-versatile';
+        model: (model?: string | string[]): string[] => {
+            if (!model) {
+                return ['llama-3.3-70b-versatile'];
             }
+            const modelList = typeof model === 'string' ? model?.split(',') : model;
             const supportModels = [
                 `allam-2-7b`,
                 `compound-beta`,
@@ -579,8 +612,12 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
                 `whisper-large-v3-turbo`,
             ];
 
-            parseAssert('GROQ.model', supportModels.includes(model), 'Invalid model type of Groq');
-            return model;
+            // Validate each model in the list
+            for (const m of modelList) {
+                parseAssert('GROQ.model', supportModels.includes(m.trim()), `Invalid model type of Groq: ${m.trim()}`);
+            }
+
+            return modelList.map(m => m.trim()).filter(m => !!m && m.length > 0);
         },
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
@@ -601,11 +638,11 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
     },
     PERPLEXITY: {
         key: (key?: string) => key || '',
-        model: (model?: string) => {
-            if (!model || model.length === 0) {
-                return 'sonar';
+        model: (model?: string | string[]): string[] => {
+            if (!model) {
+                return ['sonar'];
             }
-
+            const modelList = typeof model === 'string' ? model?.split(',') : model;
             // https://docs.perplexity.ai/guides/model-cards
             const supportModels = [
                 `sonar-pro`,
@@ -615,8 +652,12 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
                 `llama-3.1-sonar-huge-128k-online`,
             ];
 
-            parseAssert('PERPLEXITY.model', supportModels.includes(model), 'Invalid model type of Perplexity');
-            return model;
+            // Validate each model in the list
+            for (const m of modelList) {
+                parseAssert('PERPLEXITY.model', supportModels.includes(m.trim()), `Invalid model type of Perplexity: ${m.trim()}`);
+            }
+
+            return modelList.map(m => m.trim()).filter(m => !!m && m.length > 0);
         },
         topP: generalConfigParsers.topP,
         systemPrompt: generalConfigParsers.systemPrompt,
@@ -638,15 +679,19 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
     DEEPSEEK: {
         key: (key?: string) => key || '',
         envKey: (envKey?: string) => envKey || '',
-        model: (model?: string) => {
-            if (!model || model.length === 0) {
-                return `deepseek-chat`;
+        model: (model?: string | string[]): string[] => {
+            if (!model) {
+                return [`deepseek-chat`];
             }
-            console.log(model);
+            const modelList = typeof model === 'string' ? model?.split(',') : model;
             const supportModels = [`deepseek-reasoner`, `deepseek-chat`];
 
-            parseAssert('DEEPSEEK.model', supportModels.includes(model), 'Invalid model type of DeepSeek');
-            return model;
+            // Validate each model in the list
+            for (const m of modelList) {
+                parseAssert('DEEPSEEK.model', supportModels.includes(m.trim()), `Invalid model type of DeepSeek: ${m.trim()}`);
+            }
+
+            return modelList.map(m => m.trim()).filter(m => !!m && m.length > 0);
         },
         topP: generalConfigParsers.topP,
         systemPrompt: generalConfigParsers.systemPrompt,
@@ -721,23 +766,23 @@ export const readConfigFile = async (): Promise<RawConfig> => {
             let config = ini.parse(configString);
 
             // Handle specific config types that are expected to be arrays
-            const hasOllamaModel = hasOwn(config, 'OLLAMA') && hasOwn(config['OLLAMA'], 'model');
-            if (hasOllamaModel && typeof config['OLLAMA'].model === 'string') {
-                config = {
-                    ...config,
-                    OLLAMA: {
-                        ...config.OLLAMA,
-                        model: [config['OLLAMA'].model],
-                    },
-                };
-            }
-
             const hasExclude = hasOwn(config, 'exclude');
             if (hasExclude && typeof config.exclude === 'string') {
                 config = {
                     ...config,
                     exclude: [config.exclude],
                 };
+            }
+
+            // Handle model property as array for all services
+            for (const serviceName of BUILTIN_SERVICES) {
+                const hasModel = hasOwn(config, serviceName) && hasOwn(config[serviceName], 'model');
+                if (hasModel && typeof (config[serviceName] as Record<string, any>).model === 'string') {
+                    config[serviceName] = {
+                        ...(config[serviceName] as Record<string, any>),
+                        model: [(config[serviceName] as Record<string, any>).model],
+                    };
+                }
             }
 
             return config;
@@ -879,13 +924,21 @@ export const addConfigs = async (keyValues: [key: string, value: any][]) => {
         const [modelName, modelKey] = key.split('.');
         const modelConfig = config[modelName];
 
-        // Special handling for OLLAMA.model (array)
-        if (modelName === 'OLLAMA' && modelKey === 'model') {
+        // Handle model property as array for all services
+        if (modelKey === 'model') {
             if (!modelConfig) {
                 config[modelName] = {};
             }
             const originModels = (config[modelName] as Record<string, any>)[modelKey] || [];
-            (config[modelName] as Record<string, any>)[modelKey] = flattenDeep([...originModels, value]);
+            // Ensure the value being added is also treated as an array if it's a string
+            const valueToAdd =
+                typeof value === 'string'
+                    ? value
+                          .split(',')
+                          .map(v => v.trim())
+                          .filter(v => !!v)
+                    : value;
+            (config[modelName] as Record<string, any>)[modelKey] = flattenDeep([...originModels, ...valueToAdd]);
             continue;
         }
 
