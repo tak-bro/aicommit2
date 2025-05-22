@@ -1,5 +1,7 @@
 import winston from 'winston';
+
 import 'winston-daily-rotate-file';
+import { AICOMMIT_EXCEPTION_LOG_FILE_PATH, AICOMMIT_MAIN_LOG_FILE_PATH } from './config.js';
 
 let loggerInstance: winston.Logger | undefined = undefined;
 
@@ -15,8 +17,8 @@ export async function initializeLogger(options?: {
     }
 
     const logLevel = options?.logLevel || 'info';
-    const logFilePath = options?.logFilePath || 'logs/application-%DATE%.log';
-    const exceptionLogFilePath = options?.exceptionLogFilePath || 'logs/exceptions-%DATE%.log';
+    const logFilePath = options?.logFilePath || AICOMMIT_MAIN_LOG_FILE_PATH;
+    const exceptionLogFilePath = options?.exceptionLogFilePath || AICOMMIT_EXCEPTION_LOG_FILE_PATH;
 
     const logging = options?.logging ?? true; // Default to true
 

@@ -122,8 +122,8 @@ const getXdgBaseDirectory = (type: 'config' | 'data' | 'cache' | 'state'): strin
 export const AICOMMIT_CONFIG_DIR = path.join(getXdgBaseDirectory('config'), 'aicommit2');
 export const AICOMMIT_LOGS_DIR = path.join(getXdgBaseDirectory('state'), 'aicommit2', 'logs');
 export const AICOMMIT_CONFIG_FILE_PATH = path.join(AICOMMIT_CONFIG_DIR, 'config.ini');
-export const AICOMMIT_MAIN_LOG_FILE_PATH = path.join(AICOMMIT_LOGS_DIR, 'aicommit2.log');
-export const AICOMMIT_EXCEPTION_LOG_FILE_PATH = path.join(AICOMMIT_LOGS_DIR, 'exceptions.log');
+export const AICOMMIT_MAIN_LOG_FILE_PATH = path.join(AICOMMIT_LOGS_DIR, 'aicommit2-%DATE%.log');
+export const AICOMMIT_EXCEPTION_LOG_FILE_PATH = path.join(AICOMMIT_LOGS_DIR, 'exceptions-%DATE%.log');
 
 const findAllServices = (config: RawConfig): string[] => {
     const sections = Object.keys(config);
