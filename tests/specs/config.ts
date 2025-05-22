@@ -21,17 +21,6 @@ export default testSuite(({ describe }) => {
             await fixture.rm();
         });
 
-        // test('set invalid OPENAI.key', async () => {
-        //     const { fixture, aicommit2 } = await createFixture();
-        //     const configPath = path.join(fixture.path, '.aicommit2');
-        //     const { stdout } = await aicommit2(['config', 'set', 'OPENAI.key=abc'], {
-        //         reject: false,
-        //     });
-
-        //     expect(stdout).toMatch('\n✖ Invalid value for OPENAI.key');
-        //     await fixture.rm();
-        // });
-
         await test('set config file', async () => {
             const { fixture, aicommit2 } = await createFixture();
             const { stdout } = await aicommit2(['config', 'path']);
