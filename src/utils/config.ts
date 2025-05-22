@@ -1070,8 +1070,7 @@ export const listConfigs = async () => {
 };
 
 export const printConfigPath = async () => {
-    await readConfigFile(); // Ensure loadedConfigPath is populated
-    console.log(loadedConfigPath || 'No configuration file loaded.');
+    console.log(await getConfigPath());
 };
 
 const createConfigParser = (serviceName: string) => ({
