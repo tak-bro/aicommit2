@@ -281,13 +281,13 @@ aicommit2 supports configuration via command-line arguments, environment variabl
 
 #### Configuration File Location
 
-aicommit2 follows the [XDG Base Directory Specification](https://specifications.freedesktop.org/basedir-spec/latest/index.html). The configuration file is named `config.ini` and is searched for in the following locations, in order of precedence:
+aicommit2 follows the [XDG Base Directory Specification](https://specifications.freedesktop.org/basedir-spec/latest/index.html) for its configuration file. The configuration file is named `config.ini` and is in INI format. It is resolved in the following order of precedence:
 
-1.  `$XDG_CONFIG_HOME/aicommit2/config.ini`
-2.  `~/.config/aicommit2/config.ini`
-3.  `~/.aicommit2` (legacy location for backward compatibility)
+1.  **`AICOMMIT_CONFIG_PATH` environment variable**: If this environment variable is set, its value is used as the direct path to the configuration file.
+2.  **`$XDG_CONFIG_HOME/aicommit2/config.ini`**: This is the primary XDG-compliant location. If `$XDG_CONFIG_HOME` is not set, it defaults to `~/.config/aicommit2/config.ini`.
+3.  **`~/.aicommit2`**: This is a legacy location maintained for backward compatibility.
 
-The first file found in this order will be used.
+The first existing file found in this order will be used. If no configuration file is found, aicommit2 will default to creating a new `config.ini` file in the `$XDG_CONFIG_HOME/aicommit2/` directory.
 
 You can find the path of the currently loaded configuration file using the `config path` command:
 
@@ -359,8 +359,7 @@ OPENAI_API_KEY="your-openai-key" ANTHROPIC_API_KEY="your-anthropic-key" aicommit
 aicommit2 --OPENAI.locale="jp" --GEMINI.temperatue="0.5"
 ```
 
-2. Configuration file: **use INI format in the `~/.aicommit2` file or use `set` command**.
-   Example `~/.aicommit2`:
+2. Configuration file: **refer to [Configuration File Location](#configuration-file-location) or use the `set` command**.
 
 ```ini
 # General Settings
@@ -380,6 +379,14 @@ key="<your-api-key>"
 generate=5
 includeBody=true
 
+[OLLAMA]
+temperature=0.7
+model=llama3.2,codestral
+```
+
+Alternatively, for array-like values like `model`, you can also use the `model[]=` syntax:
+
+```ini
 [OLLAMA]
 temperature=0.7
 model[]=llama3.2
@@ -403,6 +410,9 @@ Please check the documentation for each specific model to confirm which settings
 | `locale`               | Locale for the generated commit messages                            | en           |
 | `generate`             | Number of commit messages to generate                               | 1            |
 | `logging`              | Enable logging                                                      | true         |
+| `logLevel`             | Minimum level for logs to be recorded                               | info         |
+| `logFilePath`          | Path to the main log file, supports date patterns                   | logs/app-%DATE%.log |
+| `exceptionLogFilePath` | Path to the exception log file, supports date patterns              | logs/exceptions-%DATE%.log |
 | `includeBody`          | Whether the commit message includes body                            | false        |
 | `maxLength`            | Maximum character length of the Subject of generated commit message | 50           |
 | `timeout`              | Request timeout (milliseconds)                                      | 10000        |
@@ -491,8 +501,7 @@ aicommit2 config set generate=2
 
 Default: `true`
 
-Option that allows users to decide whether to generate a log file capturing the responses.
-The log files will be stored in the `~/.aicommit2_log` directory(user's home).
+Option that allows users to decide whether to generate log files. When enabled, `src/utils/logger.ts` will write general and exception logs to the paths configured by `logFilePath` and `exceptionLogFilePath` respectively. Additionally, `src/utils/ai-log.ts` will generate response logs.
 
 ![log-path](https://github.com/tak-bro/aicommit2/blob/main/img/log_path.png?raw=true)
 
