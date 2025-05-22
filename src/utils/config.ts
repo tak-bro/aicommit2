@@ -213,6 +213,29 @@ const generalConfigParsers = {
         parseAssert('logging', /^(?:true|false)$/.test(enable), 'Must be a boolean(true or false)');
         return enable === 'true';
     },
+    logLevel(logLevel?: string) {
+        if (!logLevel) {
+            return 'info';
+        }
+        parseAssert(
+            'logLevel',
+            /^(?:error|warn|info|http|verbose|debug|silly)$/.test(logLevel),
+            'Must be a valid log level (error, warn, info, http, verbose, debug, silly)'
+        );
+        return logLevel;
+    },
+    logFilePath(logFilePath?: string) {
+        if (!logFilePath) {
+            return AICOMMIT_MAIN_LOG_FILE_PATH;
+        }
+        return logFilePath;
+    },
+    exceptionLogFilePath(exceptionLogFilePath?: string) {
+        if (!exceptionLogFilePath) {
+            return AICOMMIT_EXCEPTION_LOG_FILE_PATH;
+        }
+        return exceptionLogFilePath;
+    },
     locale(locale?: string) {
         if (!locale) {
             return 'en';

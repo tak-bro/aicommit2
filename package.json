@@ -92,7 +92,8 @@
         "rxjs": "^7.8.2",
         "undici": "^7.10.0",
         "uuid": "^9.0.1",
-        "winston": "^3.17.0"
+        "winston": "^3.17.0",
+        "winston-daily-rotate-file": "^5.0.0"
     },
     "devDependencies": {
         "@pvtnbr/eslint-config": "^0.33.0",
