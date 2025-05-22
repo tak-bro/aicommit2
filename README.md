@@ -353,45 +353,43 @@ OPENAI_API_KEY="your-openai-key" ANTHROPIC_API_KEY="your-anthropic-key" aicommit
 
 #### How to Configure in detail
 
-1. Command-line arguments: **use the format** `--[Model].[Key]=value`
+_aicommit2_ offers flexible configuration options for all AI services, including support for specifying multiple models. You can configure settings via command-line arguments, environment variables, or a configuration file.
 
-```sh
-aicommit2 --OPENAI.locale="jp" --GEMINI.temperatue="0.5"
-```
+1.  **Command-line arguments**: Use the format `--[Model].[Key]=value`.
+    To specify multiple models, use the `--[Model].model=model1,model2` format.
 
-2. Configuration file: **refer to [Configuration File Location](#configuration-file-location) or use the `set` command**.
+    ```sh
+    aicommit2 --OPENAI.locale="jp" --GEMINI.temperature="0.5" --OPENAI.model="gpt-4o,gpt-3.5-turbo"
+    ```
 
-```ini
-# General Settings
-logging=true
-generate=2
-temperature=1.0
+2.  **Configuration file**: Refer to [Configuration File Location](#configuration-file-location) or use the `set` command.
+    For array-like values like `model`, you can use either the `model=model1,model2` comma-separated syntax or the `model[]=` syntax for multiple entries. This applies to all AI services.
 
-# Model-Specific Settings
-[OPENAI]
-key="<your-api-key>"
-temperature=0.8
-generate=1
-systemPromptPath="<your-prompt-path>"
+    ```ini
+    # General Settings
+    logging=true
+    generate=2
+    temperature=1.0
 
-[GEMINI]
-key="<your-api-key>"
-generate=5
-includeBody=true
+    # Model-Specific Settings
+    [OPENAI]
+    key="<your-api-key>"
+    temperature=0.8
+    generate=1
+    model="gpt-4o,gpt-3.5-turbo"
+    systemPromptPath="<your-prompt-path>"
 
-[OLLAMA]
-temperature=0.7
-model=llama3.2,codestral
-```
+    [GEMINI]
+    key="<your-api-key>"
+    generate=5
+    includeBody=true
+    model="gemini-pro,gemini-flash"
 
-Alternatively, for array-like values like `model`, you can also use the `model[]=` syntax:
-
-```ini
-[OLLAMA]
-temperature=0.7
-model[]=llama3.2
-model[]=codestral
-```
+    [OLLAMA]
+    temperature=0.7
+    model[]=llama3.2
+    model[]=codestral
+    ```
 
 > The priority of settings is: **Command-line Arguments > Environment Variables > Model-Specific Settings > General Settings > Default Values**.
 
