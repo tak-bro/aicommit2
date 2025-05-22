@@ -1,14 +1,13 @@
 import chalk from 'chalk';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Ollama } from 'ollama';
-import { Observable, catchError, concatMap, from, map, of } from 'rxjs';
+import { Observable, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 import { Agent, fetch } from 'undici';
 
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
 import { RequestType, createLogResponse } from '../../utils/ai-log.js';
 import { DEFAULT_OLLAMA_HOST } from '../../utils/config.js';
-import { KnownError } from '../../utils/error.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 import { capitalizeFirstLetter, getRandomNumber } from '../../utils/utils.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
@@ -73,73 +72,45 @@ export class OllamaService extends AIService {
         );
     }
 
-    handleError$ = (error: OllamaServiceError) => {
-        let message = error.message?.replace(/(\r\n|\n|\r)/gm, '') || 'An unknown error occurred';
-        if (!!error.response && error.response.data?.error) {
-            message = error.response.data?.error;
-        }
-        return of({
-            name: `${this.errorPrefix} ${message}`,
-            value: message,
-            isError: true,
-            disabled: true,
-        });
-    };
-
     private async generateMessage(requestType: RequestType): Promise<AIResponse[]> {
-        try {
-            const diff = this.params.stagedDiff.diff;
-            const { systemPrompt, systemPromptPath, codeReviewPromptPath, logging, locale, generate, type, maxLength } = this.params.config;
-            const promptOptions: PromptOptions = {
-                ...DEFAULT_PROMPT_OPTIONS,
-                locale,
-                maxLength,
-                type,
-                generate,
-                systemPrompt,
-                systemPromptPath,
-                codeReviewPromptPath,
-            };
-            const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
+        const diff = this.params.stagedDiff.diff;
+        const { systemPrompt, systemPromptPath, codeReviewPromptPath, logging, locale, generate, type, maxLength } = this.params.config;
+        const promptOptions: PromptOptions = {
+            ...DEFAULT_PROMPT_OPTIONS,
+            locale,
+            maxLength,
+            type,
+            generate,
+            systemPrompt,
+            systemPromptPath,
+            codeReviewPromptPath,
+        };
+        const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
 
-            await this.checkIsAvailableOllama();
-            const chatResponse = await this.createChatCompletions(generatedSystemPrompt, `Here is the diff: ${diff}`);
-            logging && createLogResponse(`Ollama_${this.model}`, diff, generatedSystemPrompt, chatResponse, requestType);
-            if (requestType === 'review') {
-                return this.sanitizeResponse(chatResponse);
-            }
-            return this.parseMessage(chatResponse, type, generate);
-        } catch (error) {
-            const errorAsAny = error as any;
-            if (errorAsAny.code === 'ENOTFOUND') {
-                throw new KnownError(`Error connecting to ${errorAsAny.hostname} (${errorAsAny.syscall})`);
-            }
-            throw errorAsAny;
+        await this.checkIsAvailableOllama();
+        const chatResponse = await this.createChatCompletions(generatedSystemPrompt, `Here is the diff: ${diff}`);
+        logging && createLogResponse(`Ollama_${this.model}`, diff, generatedSystemPrompt, chatResponse, requestType);
+        if (requestType === 'review') {
+            return this.sanitizeResponse(chatResponse);
         }
+        return this.parseMessage(chatResponse, type, generate);
     }
 
     private async checkIsAvailableOllama() {
-        try {
-            const builder = new HttpRequestBuilder({
-                method: 'GET',
-                baseURL: `${this.host}`,
-                timeout: this.params.config.timeout,
+        const builder = new HttpRequestBuilder({
+            method: 'GET',
+            baseURL: `${this.host}`,
+            timeout: this.params.config.timeout,
+        });
+
+        if (this.key) {
+            builder.setHeaders({
+                Authorization: `${this.auth} ${this.key}`,
             });
-
-            if (this.key) {
-                builder.setHeaders({
-                    Authorization: `${this.auth} ${this.key}`,
-                });
-            }
-
-            const response = await builder.execute();
-            return response.data;
-        } catch (e: any) {
-            if (e.code === 'ECONNREFUSED') {
-                throw new KnownError(`Error connecting to ${this.host}. Please run Ollama or check host`);
-            }
-            throw e;
         }
+
+        const response = await builder.execute();
+        return response.data;
     }
 
     private async createChatCompletions(systemPrompt: string, userMessage: string) {

@@ -5,7 +5,6 @@ import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIResponse, AIService, AIServiceParams } from './ai.service.js';
 import { RequestType, createLogResponse } from '../../utils/ai-log.js';
-import { KnownError } from '../../utils/error.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 
 interface Conversation {
@@ -105,40 +104,32 @@ export class HuggingFaceService extends AIService {
     }
 
     private async generateMessage(requestType: RequestType): Promise<AIResponse[]> {
-        try {
-            await this.initialize();
+        await this.initialize();
 
-            const diff = this.params.stagedDiff.diff;
-            const { systemPrompt, systemPromptPath, codeReviewPromptPath, logging, locale, generate, type, maxLength } = this.params.config;
-            const promptOptions: PromptOptions = {
-                ...DEFAULT_PROMPT_OPTIONS,
-                locale,
-                maxLength,
-                type,
-                generate,
-                systemPrompt,
-                systemPromptPath,
-                codeReviewPromptPath,
-            };
-            const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
+        const diff = this.params.stagedDiff.diff;
+        const { systemPrompt, systemPromptPath, codeReviewPromptPath, logging, locale, generate, type, maxLength } = this.params.config;
+        const promptOptions: PromptOptions = {
+            ...DEFAULT_PROMPT_OPTIONS,
+            locale,
+            maxLength,
+            type,
+            generate,
+            systemPrompt,
+            systemPromptPath,
+            codeReviewPromptPath,
+        };
+        const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
 
-            const conversation = await this.getNewChat(generatedSystemPrompt);
-            const data = await this.sendMessage(`Here is the diff: ${diff}`, conversation.id);
-            const response = await data.completeResponsePromise();
-            await this.deleteConversation(conversation.id);
+        const conversation = await this.getNewChat(generatedSystemPrompt);
+        const data = await this.sendMessage(`Here is the diff: ${diff}`, conversation.id);
+        const response = await data.completeResponsePromise();
+        await this.deleteConversation(conversation.id);
 
-            logging && createLogResponse('HuggingFace', diff, generatedSystemPrompt, response, requestType);
-            if (requestType === 'review') {
-                return this.sanitizeResponse(response);
-            }
-            return this.parseMessage(response, type, generate);
-        } catch (error) {
-            const errorAsAny = error as any;
-            if (errorAsAny.code === 'ENOTFOUND') {
-                throw new KnownError(`Error connecting to ${errorAsAny.hostname} (${errorAsAny.syscall})`);
-            }
-            throw errorAsAny;
+        logging && createLogResponse('HuggingFace', diff, generatedSystemPrompt, response, requestType);
+        if (requestType === 'review') {
+            return this.sanitizeResponse(response);
         }
+        return this.parseMessage(response, type, generate);
     }
 
     /**

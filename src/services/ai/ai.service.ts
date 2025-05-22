@@ -3,6 +3,7 @@ import { Observable, of } from 'rxjs';
 
 import { CommitType, ModelConfig, ModelName } from '../../utils/config.js';
 import { GitDiff } from '../../utils/git.js';
+import { logger } from '../../utils/logger.js';
 import { getFirstWordsFrom } from '../../utils/utils.js';
 
 export interface AIResponse {
@@ -24,6 +25,8 @@ export interface AIServiceParams {
 
 export interface AIServiceError extends Error {
     response?: any;
+    status?: number;
+    code?: string;
 }
 
 export interface Theme {
@@ -47,8 +50,14 @@ export abstract class AIService {
     abstract generateCommitMessage$(): Observable<ReactiveListChoice>;
     abstract generateCodeReview$(): Observable<ReactiveListChoice>;
 
-    protected handleError$ = (error: AIServiceError): Observable<ReactiveListChoice> => {
-        const message = error.message ?? 'An unknown error occurred';
+    handleError$ = (error: AIServiceError) => {
+        let message = error.name ?? 'Unknown Error';
+        logger.error(`${this.errorPrefix} ${error.toString()}`);
+        if (error.status) {
+            message = `${error.status} ${message}`;
+        } else if (error.code) {
+            message = `${error.code} ${message}`;
+        }
         return of({
             name: `${this.errorPrefix} ${message}`,
             value: message,
