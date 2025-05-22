@@ -66,44 +66,39 @@ export abstract class AIService {
         });
     };
 
-    protected parseMessage(generatedText: string, type: CommitType, maxCount: number): AIResponse[] {
-        let commitMessages: RawCommitMessage[];
-
+    protected parseMessage(aiGeneratedText: string, type: CommitType, maxCount: number): AIResponse[] {
         const cleanJsonString = (str: string) => {
             // eslint-disable-next-line no-control-regex
             return str.replace(/[\u0000-\u001F\u007F-\u009F]/g, '').replace(/\\(?!["\\/bfnrtu])/g, '\\\\');
         };
 
-        const arrayPattern = /\[\s*\{[\s\S]*?\}\s*\]/;
-        const arrayMatch = generatedText.match(arrayPattern);
+        const jsonContentPattern = /(\[\s*\{[\s\S]*?\}\s*\]|\{[\s\S]*?\})/;
+        const matchedJsonContent = aiGeneratedText.match(jsonContentPattern);
 
-        if (arrayMatch) {
-            const parsed = JSON.parse(cleanJsonString(arrayMatch[0]));
-            commitMessages = Array.isArray(parsed) ? parsed : [parsed];
-        } else {
-            const objectPattern = /\{[\s\S]*?\}/;
-            const objectMatch = generatedText.match(objectPattern);
-
-            if (!objectMatch) {
-                throw new Error('No JSON object or array found in generated text.');
-            }
-
-            const parsed = JSON.parse(cleanJsonString(objectMatch[0]));
-            commitMessages = [parsed];
+        if (!matchedJsonContent) {
+            const error = new Error('AI response did not contain a valid JSON object or array.');
+            error.name = 'InvalidJsonResponse';
+            throw error;
         }
 
-        if (!commitMessages.length || !commitMessages.every(msg => typeof msg.subject === 'string')) {
-            throw new Error('Invalid commit message format received from AI.');
+        const sanitizedJsonString = cleanJsonString(matchedJsonContent[0]);
+        const parsedContent = JSON.parse(sanitizedJsonString);
+        const rawCommitMessages: RawCommitMessage[] = Array.isArray(parsedContent) ? parsedContent : [parsedContent];
+
+        if (!rawCommitMessages.length || !rawCommitMessages.every(msg => typeof msg.subject === 'string')) {
+            const error = new Error('AI response contained malformed commit message data.');
+            error.name = 'MalformedCommitMessage';
+            throw error;
         }
 
-        const filteredMessages = commitMessages
-            .map(data => this.extractMessageAsType(data, type))
-            .map((data: RawCommitMessage) => ({
-                title: `${data.subject}`,
-                value: `${data.subject}${data.body ? `\n\n${data.body}` : ''}${data.footer ? `\n\n${data.footer}` : ''}`,
+        const formattedCommitMessages = rawCommitMessages
+            .map(rawMessageData => this.extractMessageAsType(rawMessageData, type))
+            .map((rawMessageData: RawCommitMessage) => ({
+                title: `${rawMessageData.subject}`,
+                value: `${rawMessageData.subject}${rawMessageData.body ? `\n\n${rawMessageData.body}` : ''}${rawMessageData.footer ? `\n\n${rawMessageData.footer}` : ''}`,
             }));
 
-        return filteredMessages.slice(0, maxCount);
+        return formattedCommitMessages.slice(0, maxCount);
     }
 
     private extractMessageAsType(data: RawCommitMessage, type: CommitType): RawCommitMessage {
