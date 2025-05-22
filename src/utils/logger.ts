@@ -1,23 +1,12 @@
-import fs from 'fs/promises';
 import path from 'path';
 
 import winston from 'winston';
-
 import 'winston-daily-rotate-file';
+
 import { AICOMMIT_EXCEPTION_LOG_FILE_PATH, AICOMMIT_MAIN_LOG_FILE_PATH } from './config.js';
+import { ensureDirectoryExists } from './utils.js';
 
 let loggerInstance: winston.Logger | undefined = undefined;
-
-const ensureDirectoryExists = async (directoryPath: string) => {
-    try {
-        await fs.mkdir(directoryPath, { recursive: true });
-    } catch (error) {
-        // Ignore if directory already exists
-        if ((error as NodeJS.ErrnoException).code !== 'EEXIST') {
-            throw error;
-        }
-    }
-};
 
 export async function initializeLogger(options?: {
     logLevel?: string;
