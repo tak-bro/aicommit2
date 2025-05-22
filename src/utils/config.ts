@@ -1116,7 +1116,13 @@ const createConfigParser = (serviceName: string) => ({
     path: (path?: string) => path || '',
     key: (key?: string) => key || '',
     envKey: (envKey?: string) => envKey || '',
-    model: (model?: string) => model || '',
+    model: (model?: string | string[]): string[] => {
+        if (!model) {
+            return [];
+        }
+        const modelList = typeof model === 'string' ? model?.split(',') : model;
+        return modelList.map(m => m.trim()).filter(m => !!m && m.length > 0);
+    },
     systemPrompt: generalConfigParsers.systemPrompt,
     systemPromptPath: generalConfigParsers.systemPromptPath,
     codeReviewPromptPath: generalConfigParsers.codeReviewPromptPath,
