@@ -274,18 +274,18 @@ Or manually delete the `.git/hooks/prepare-commit-msg` file.
 
 aicommit2 supports configuration via command-line arguments, environment variables, and a configuration file. Settings are resolved in the following order of precedence:
 
-1.  Command-line arguments
-2.  Environment variables
-3.  Configuration file
-4.  Default values
+1. Command-line arguments
+2. Environment variables
+3. Configuration file
+4. Default values
 
 #### Configuration File Location
 
 aicommit2 follows the [XDG Base Directory Specification](https://specifications.freedesktop.org/basedir-spec/latest/index.html) for its configuration file. The configuration file is named `config.ini` and is in INI format. It is resolved in the following order of precedence:
 
-1.  **`AICOMMIT_CONFIG_PATH` environment variable**: If this environment variable is set, its value is used as the direct path to the configuration file.
-2.  **`$XDG_CONFIG_HOME/aicommit2/config.ini`**: This is the primary XDG-compliant location. If `$XDG_CONFIG_HOME` is not set, it defaults to `~/.config/aicommit2/config.ini`.
-3.  **`~/.aicommit2`**: This is a legacy location maintained for backward compatibility.
+1. **`AICOMMIT_CONFIG_PATH` environment variable**: If this environment variable is set, its value is used as the direct path to the configuration file.
+2. **`$XDG_CONFIG_HOME/aicommit2/config.ini`**: This is the primary XDG-compliant location. If `$XDG_CONFIG_HOME` is not set, it defaults to `~/.config/aicommit2/config.ini`.
+3. **`~/.aicommit2`**: This is a legacy location maintained for backward compatibility.
 
 The first existing file found in this order will be used. If no configuration file is found, aicommit2 will default to creating a new `config.ini` file in the `$XDG_CONFIG_HOME/aicommit2/` directory.
 
@@ -355,41 +355,41 @@ OPENAI_API_KEY="your-openai-key" ANTHROPIC_API_KEY="your-anthropic-key" aicommit
 
 _aicommit2_ offers flexible configuration options for all AI services, including support for specifying multiple models. You can configure settings via command-line arguments, environment variables, or a configuration file.
 
-1.  **Command-line arguments**: Use the format `--[Model].[Key]=value`.
-    To specify multiple models, use the `--[Model].model=model1,model2` format.
+1. **Command-line arguments**: Use the format `--[Model].[Key]=value`.
+   To specify multiple models, use the `--[Model].model=model1,model2` format.
 
-    ```sh
-    aicommit2 --OPENAI.locale="jp" --GEMINI.temperature="0.5" --OPENAI.model="gpt-4o,gpt-3.5-turbo"
-    ```
+   ```sh
+   aicommit2 --OPENAI.locale="jp" --GEMINI.temperature="0.5" --OPENAI.model="gpt-4o,gpt-3.5-turbo"
+   ```
 
-2.  **Configuration file**: Refer to [Configuration File Location](#configuration-file-location) or use the `set` command.
-    For array-like values like `model`, you can use either the `model=model1,model2` comma-separated syntax or the `model[]=` syntax for multiple entries. This applies to all AI services.
+2. **Configuration file**: Refer to [Configuration File Location](#configuration-file-location) or use the `set` command.
+   For array-like values like `model`, you can use either the `model=model1,model2` comma-separated syntax or the `model[]=` syntax for multiple entries. This applies to all AI services.
 
-    ```ini
-    # General Settings
-    logging=true
-    generate=2
-    temperature=1.0
+   ```ini
+   # General Settings
+   logging=true
+   generate=2
+   temperature=1.0
 
-    # Model-Specific Settings
-    [OPENAI]
-    key="<your-api-key>"
-    temperature=0.8
-    generate=1
-    model="gpt-4o,gpt-3.5-turbo"
-    systemPromptPath="<your-prompt-path>"
+   # Model-Specific Settings
+   [OPENAI]
+   key="<your-api-key>"
+   temperature=0.8
+   generate=1
+   model="gpt-4o,gpt-3.5-turbo"
+   systemPromptPath="<your-prompt-path>"
 
-    [GEMINI]
-    key="<your-api-key>"
-    generate=5
-    includeBody=true
-    model="gemini-pro,gemini-flash"
+   [GEMINI]
+   key="<your-api-key>"
+   generate=5
+   includeBody=true
+   model="gemini-pro,gemini-flash"
 
-    [OLLAMA]
-    temperature=0.7
-    model[]=llama3.2
-    model[]=codestral
-    ```
+   [OLLAMA]
+   temperature=0.7
+   model[]=llama3.2
+   model[]=codestral
+   ```
 
 > The priority of settings is: **Command-line Arguments > Environment Variables > Model-Specific Settings > General Settings > Default Values**.
 
@@ -398,28 +398,28 @@ _aicommit2_ offers flexible configuration options for all AI services, including
 The following settings can be applied to most models, but support may vary.
 Please check the documentation for each specific model to confirm which settings are supported.
 
-| Setting                | Description                                                         | Default      |
-| ---------------------- | ------------------------------------------------------------------- | ------------ |
-| `envKey`               | Custom environment variable name for the API key                    | -            |
-| `systemPrompt`         | System Prompt text                                                  | -            |
-| `systemPromptPath`     | Path to system prompt file                                          | -            |
-| `exclude`              | Files to exclude from AI analysis                                   | -            |
-| `type`                 | Type of commit message to generate                                  | conventional |
-| `locale`               | Locale for the generated commit messages                            | en           |
-| `generate`             | Number of commit messages to generate                               | 1            |
-| `logging`              | Enable logging                                                      | true         |
-| `logLevel`             | Minimum level for logs to be recorded                               | info         |
-| `logFilePath`          | Path to the main log file, supports date patterns                   | logs/app-%DATE%.log |
+| Setting                | Description                                                         | Default                    |
+| ---------------------- | ------------------------------------------------------------------- | -------------------------- |
+| `envKey`               | Custom environment variable name for the API key                    | -                          |
+| `systemPrompt`         | System Prompt text                                                  | -                          |
+| `systemPromptPath`     | Path to system prompt file                                          | -                          |
+| `exclude`              | Files to exclude from AI analysis                                   | -                          |
+| `type`                 | Type of commit message to generate                                  | conventional               |
+| `locale`               | Locale for the generated commit messages                            | en                         |
+| `generate`             | Number of commit messages to generate                               | 1                          |
+| `logging`              | Enable logging                                                      | true                       |
+| `logLevel`             | Minimum level for logs to be recorded                               | info                       |
+| `logFilePath`          | Path to the main log file, supports date patterns                   | logs/app-%DATE%.log        |
 | `exceptionLogFilePath` | Path to the exception log file, supports date patterns              | logs/exceptions-%DATE%.log |
-| `includeBody`          | Whether the commit message includes body                            | false        |
-| `maxLength`            | Maximum character length of the Subject of generated commit message | 50           |
-| `timeout`              | Request timeout (milliseconds)                                      | 10000        |
-| `temperature`          | Model's creativity (0.0 - 2.0)                                      | 0.7          |
-| `maxTokens`            | Maximum number of tokens to generate                                | 1024         |
-| `topP`                 | Nucleus sampling                                                    | 0.9          |
-| `codeReview`           | Whether to include an automated code review in the process          | false        |
-| `codeReviewPromptPath` | Path to code review prompt file                                     | -            |
-| `disabled`             | Whether a specific model is enabled or disabled                     | false        |
+| `includeBody`          | Whether the commit message includes body                            | false                      |
+| `maxLength`            | Maximum character length of the Subject of generated commit message | 50                         |
+| `timeout`              | Request timeout (milliseconds)                                      | 10000                      |
+| `temperature`          | Model's creativity (0.0 - 2.0)                                      | 0.7                        |
+| `maxTokens`            | Maximum number of tokens to generate                                | 1024                       |
+| `topP`                 | Nucleus sampling                                                    | 0.9                        |
+| `codeReview`           | Whether to include an automated code review in the process          | false                      |
+| `codeReviewPromptPath` | Path to code review prompt file                                     | -                          |
+| `disabled`             | Whether a specific model is enabled or disabled                     | false                      |
 
 > 👉 **Tip:** To set the General Settings for each model, use the following command.
 >
