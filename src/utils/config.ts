@@ -8,7 +8,6 @@ import { KnownError } from './error.js';
 import { fileExists } from './fs.js';
 import { flattenDeep } from './utils.js';
 
-
 export const resolvePromptPath = (promptPath: string): string => {
     if (!promptPath || typeof promptPath !== 'string') {
         return '';
@@ -49,6 +48,82 @@ export const BUILTIN_SERVICES = [
     'DEEPSEEK',
 ] as const;
 export type BuiltinService = (typeof BUILTIN_SERVICES)[number];
+
+const ensureDirectoryExists = async (directoryPath: string) => {
+    try {
+        await fs.mkdir(directoryPath, { recursive: true });
+    } catch (error) {
+        // Ignore if directory already exists
+        if ((error as NodeJS.ErrnoException).code !== 'EEXIST') {
+            throw error;
+        }
+    }
+};
+
+const getXdgBaseDirectory = (type: 'config' | 'data' | 'cache' | 'state'): string => {
+    const platform = os.platform();
+    const homeDir = os.homedir();
+
+    let xdgVar: string | undefined;
+    let platformFallback: string;
+
+    // Determine the XDG environment variable
+    switch (type) {
+        case 'config':
+            xdgVar = process.env.XDG_CONFIG_HOME;
+            break;
+        case 'data':
+            xdgVar = process.env.XDG_DATA_HOME;
+            break;
+        case 'cache':
+            xdgVar = process.env.XDG_CACHE_HOME;
+            break;
+        case 'state':
+            xdgVar = process.env.XDG_STATE_HOME;
+            break;
+        default:
+            xdgVar = undefined; // Should not happen with strict type
+    }
+
+    // Determine platform-specific fallback
+    if (platform === 'darwin') {
+        // macOS
+        if (type === 'cache') {
+            platformFallback = path.join(homeDir, 'Library', 'Caches');
+        } else {
+            platformFallback = path.join(homeDir, 'Application Support');
+        }
+    } else if (platform === 'win32') {
+        // Windows
+        platformFallback = process.env.LOCALAPPDATA || homeDir;
+    } else {
+        // Linux and others (default XDG fallbacks)
+        switch (type) {
+            case 'config':
+                platformFallback = path.join(homeDir, '.config');
+                break;
+            case 'data':
+                platformFallback = path.join(homeDir, '.local', 'share');
+                break;
+            case 'cache':
+                platformFallback = path.join(homeDir, '.cache');
+                break;
+            case 'state':
+                platformFallback = path.join(homeDir, '.local', 'state');
+                break;
+            default:
+                platformFallback = homeDir; // Should not happen
+        }
+    }
+
+    return xdgVar || platformFallback;
+};
+
+export const AICOMMIT_CONFIG_DIR = path.join(getXdgBaseDirectory('config'), 'aicommit2');
+export const AICOMMIT_LOGS_DIR = path.join(getXdgBaseDirectory('state'), 'aicommit2', 'logs');
+export const AICOMMIT_CONFIG_FILE_PATH = path.join(AICOMMIT_CONFIG_DIR, 'config.ini');
+export const AICOMMIT_MAIN_LOG_FILE_PATH = path.join(AICOMMIT_LOGS_DIR, 'aicommit2.log');
+export const AICOMMIT_EXCEPTION_LOG_FILE_PATH = path.join(AICOMMIT_LOGS_DIR, 'exceptions.log');
 
 const findAllServices = (config: RawConfig): string[] => {
     const sections = Object.keys(config);
@@ -726,7 +801,7 @@ export type ModelConfig<Model extends keyof typeof modelConfigParsers> = {
     [Key in keyof (typeof modelConfigParsers)[Model]]: ReturnType<(typeof modelConfigParsers)[Model][Key]>;
 };
 
-let loadedConfigPath: string | null = null;
+let loadedConfigPath: string | undefined;
 
 const parseCliArgs = (rawArgv: string[] = []): RawConfig => {
     const cliConfig: RawConfig = {};
@@ -748,65 +823,61 @@ const parseCliArgs = (rawArgv: string[] = []): RawConfig => {
 };
 
 // Read config file from multiple locations with precedence
-export const readConfigFile = async (): Promise<RawConfig> => {
+const getGlobalConfigPaths = (): string[] => {
     const homeDir = os.homedir();
-    const xdgConfigHome = process.env.XDG_CONFIG_HOME || path.join(homeDir, '.config');
+    const configPath = process.env.AICOMMIT_CONFIG_PATH;
+    const xdgConfigPath = AICOMMIT_CONFIG_FILE_PATH;
+    const oldConfigPath = path.join(homeDir, '.aicommit2');
 
-    const potentialConfigPaths = [
-        path.join(xdgConfigHome, 'aicommit2', 'config.ini'),
-        path.join(homeDir, '.config', 'aicommit2', 'config.ini'),
-        path.join(homeDir, '.aicommit2'),
-    ];
+    // Order of precedence for config file locations
+    return [
+        configPath, // Highest priority: explicitly set via environment variable
+        xdgConfigPath, // Second priority: XDG-compliant location
+        oldConfigPath, // Third priority: old default location
+    ].filter((p): p is string => !!p);
+};
 
-    for (const configPath of potentialConfigPaths) {
-        const configExists = await fileExists(configPath);
-        if (configExists) {
-            const configString = await fs.readFile(configPath, 'utf8');
-            loadedConfigPath = configPath; // Store the path of the loaded config
-            let config = ini.parse(configString);
-
-            // Handle specific config types that are expected to be arrays
-            const hasExclude = hasOwn(config, 'exclude');
-            if (hasExclude && typeof config.exclude === 'string') {
-                config = {
-                    ...config,
-                    exclude: [config.exclude],
-                };
-            }
-
-            // Handle model property as array for all services
-            for (const serviceName of BUILTIN_SERVICES) {
-                const hasModel = hasOwn(config, serviceName) && hasOwn(config[serviceName], 'model');
-                if (hasModel && typeof (config[serviceName] as Record<string, any>).model === 'string') {
-                    config[serviceName] = {
-                        ...(config[serviceName] as Record<string, any>),
-                        model: [(config[serviceName] as Record<string, any>).model],
-                    };
-                }
-            }
-
-            return config;
+export const getConfigPath = async (): Promise<string> => {
+    const configPaths = getGlobalConfigPaths();
+    for (const p of configPaths) {
+        if (await fileExists(p)) {
+            return p;
         }
     }
+    // If no existing config file is found, return the XDG-compliant path as the default for writing
+    return AICOMMIT_CONFIG_FILE_PATH;
+};
 
-    // If no config file is found, return an empty object and set loadedConfigPath to null
-    loadedConfigPath = null;
-    return Object.create(null);
+export const readConfigFile = async (): Promise<RawConfig> => {
+    const configPath = await getConfigPath(); // Use the shared function to get the path
+
+    loadedConfigPath = configPath;
+    try {
+        const configContent = await fs.readFile(configPath, 'utf8');
+        return ini.parse(configContent);
+    } catch (error) {
+        // If the file doesn't exist or can't be read, return an empty config
+        if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+            loadedConfigPath = undefined;
+            return {};
+        }
+        console.error(`Error reading config file ${configPath}:`, error);
+        loadedConfigPath = undefined;
+        return {};
+    }
 };
 
 export const getConfig = async (cliConfig: RawConfig, rawArgv: string[] = []): Promise<ValidConfig> => {
-    const config = await readConfigFile(); // This will now load from multiple paths
+    const config = await readConfigFile();
     const parsedCliArgs = parseCliArgs(rawArgv);
     const mergedCliConfig = { ...cliConfig, ...parsedCliArgs };
     const parsedConfig: Record<string, unknown> = {};
 
     const services = findAllServices(config);
 
-    // Check environment variables for API keys
     const envConfig: RawConfig = {};
 
     for (const service of services) {
-        // Get the envKey from config if available, otherwise use the default pattern
         const configuredEnvKey = (config[service] as Record<string, any>)?.envKey;
         const envKey = configuredEnvKey || `${service}_API_KEY`;
 
@@ -816,9 +887,7 @@ export const getConfig = async (cliConfig: RawConfig, rawArgv: string[] = []): P
         }
     }
 
-    // Helper function to get the value with priority
     const getValueWithPriority = (modelName: string, key: string) => {
-        // Priority: CLI > Environment Variables > Model-specific > General
         const cliValue = mergedCliConfig[`${modelName}.${key}`] ?? (mergedCliConfig[modelName] as Record<string, any>)?.[key];
         const envValue = (envConfig[modelName] as Record<string, any>)?.[key];
         const modelValue = (config[modelName] as Record<string, any>)?.[key];
@@ -827,7 +896,6 @@ export const getConfig = async (cliConfig: RawConfig, rawArgv: string[] = []): P
         return cliValue !== undefined ? cliValue : envValue !== undefined ? envValue : modelValue !== undefined ? modelValue : generalValue;
     };
 
-    // Parse general configs
     for (const [key, parser] of Object.entries(generalConfigParsers)) {
         const value = mergedCliConfig[key] ?? config[key];
         parsedConfig[key] = parser(value as any);
@@ -845,17 +913,6 @@ export const getConfig = async (cliConfig: RawConfig, rawArgv: string[] = []): P
     }
 
     return parsedConfig as ValidConfig;
-};
-
-export const getWriteConfigPath = (): string => {
-    if (loadedConfigPath) {
-        return loadedConfigPath;
-    }
-
-    // If no config was loaded, determine the preferred write path based on XDG
-    const homeDir = os.homedir();
-    const xdgConfigHome = process.env.XDG_CONFIG_HOME || path.join(homeDir, '.config');
-    return path.join(xdgConfigHome, 'aicommit2', 'config.ini');
 };
 
 export const setConfigs = async (keyValues: [key: string, value: any][]) => {
@@ -911,7 +968,7 @@ export const setConfigs = async (keyValues: [key: string, value: any][]) => {
         }
     }
 
-    const writePath = getWriteConfigPath();
+    const writePath = await getConfigPath();
     const writeDir = path.dirname(writePath); // Get the directory path
     await fs.mkdir(writeDir, { recursive: true }); // Create the directory if it doesn't exist
     await fs.writeFile(writePath, ini.stringify(config), 'utf8');
@@ -989,7 +1046,7 @@ export const addConfigs = async (keyValues: [key: string, value: any][]) => {
         }
     }
 
-    const writePath = getWriteConfigPath();
+    const writePath = await getConfigPath();
     const writeDir = path.dirname(writePath); // Get the directory path
     await fs.mkdir(writeDir, { recursive: true }); // Create the directory if it doesn't exist
     await fs.writeFile(writePath, ini.stringify(config), 'utf8');

@@ -4,16 +4,7 @@ import { command } from 'cleye';
 import ini from 'ini';
 
 import { ConsoleManager } from '../managers/console.manager.js';
-import {
-    addConfigs,
-    getConfig,
-    getWriteConfigPath,
-    hasOwn,
-    listConfigs,
-    printConfigPath,
-    readConfigFile,
-    setConfigs,
-} from '../utils/config.js';
+import { addConfigs, getConfig, getConfigPath, hasOwn, listConfigs, printConfigPath, readConfigFile, setConfigs } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
 
 export default command(
@@ -167,7 +158,7 @@ export default command(
                         if (Object.keys(config[section] as Record<string, any>).length === 0) {
                             delete config[section];
                         }
-                        const writePath = getWriteConfigPath();
+                        const writePath = await getConfigPath();
                         await fs.writeFile(writePath, ini.stringify(config), 'utf8');
                         console.log(`Successfully deleted config: ${configName}`);
                         // Re-read and print the file content for debugging
@@ -182,7 +173,7 @@ export default command(
                     const key = parts[0];
                     if (hasOwn(config, key)) {
                         delete config[key];
-                        const writePath = getWriteConfigPath();
+                        const writePath = await getConfigPath();
                         await fs.writeFile(writePath, ini.stringify(config), 'utf8');
                         console.log(`Successfully deleted config: ${configName}`);
                         // Re-read and print the file content for debugging
