@@ -6,9 +6,9 @@ import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 import { Agent, fetch } from 'undici';
 
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
+import { RequestType, createLogResponse } from '../../utils/ai-log.js';
 import { DEFAULT_OLLAMA_HOST } from '../../utils/config.js';
 import { KnownError } from '../../utils/error.js';
-import { RequestType, createLogResponse } from '../../utils/log.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 import { capitalizeFirstLetter, getRandomNumber } from '../../utils/utils.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';

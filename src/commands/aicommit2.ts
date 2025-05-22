@@ -12,10 +12,10 @@ import {
     commitMsgLoader,
     emptyCodeReview,
 } from '../managers/reactive-prompt.manager.js';
+import { RequestType } from '../utils/ai-log.js';
 import { BUILTIN_SERVICES, BuiltinService, ModelName, RawConfig, ValidConfig, getConfig } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
 import { assertGitRepo, getStagedDiff } from '../utils/git.js';
-import { RequestType } from '../utils/log.js';
 import { validateSystemPrompt } from '../utils/prompt.js';
 
 const consoleManager = new ConsoleManager();

@@ -4,8 +4,8 @@ import https from 'https';
 import { type TiktokenModel } from '@dqbd/tiktoken';
 import createHttpsProxyAgent from 'https-proxy-agent';
 
+import { RequestType, createLogResponse } from './ai-log.js';
 import { KnownError } from './error.js';
-import { RequestType, createLogResponse } from './log.js';
 
 import type { ClientRequest, IncomingMessage } from 'http';
 import type { CreateChatCompletionRequest, CreateChatCompletionResponse } from 'openai';

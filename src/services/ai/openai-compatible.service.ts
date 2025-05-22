@@ -5,7 +5,7 @@ import { Observable, catchError, concatMap, from, map, of } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIResponse, AIService, AIServiceParams } from './ai.service.js';
-import { RequestType, createLogResponse } from '../../utils/log.js';
+import { RequestType, createLogResponse } from '../../utils/ai-log.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 import { capitalizeFirstLetter, generateColors } from '../../utils/utils.js';
 

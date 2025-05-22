@@ -4,7 +4,7 @@ import { Observable, catchError, concatMap, from, map, of } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
-import { RequestType } from '../../utils/log.js';
+import { RequestType } from '../../utils/ai-log.js';
 import { generateCommitMessage } from '../../utils/openai.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 import { flattenDeep } from '../../utils/utils.js';
