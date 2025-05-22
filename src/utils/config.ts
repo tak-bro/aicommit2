@@ -49,17 +49,6 @@ export const BUILTIN_SERVICES = [
 ] as const;
 export type BuiltinService = (typeof BUILTIN_SERVICES)[number];
 
-const ensureDirectoryExists = async (directoryPath: string) => {
-    try {
-        await fs.mkdir(directoryPath, { recursive: true });
-    } catch (error) {
-        // Ignore if directory already exists
-        if ((error as NodeJS.ErrnoException).code !== 'EEXIST') {
-            throw error;
-        }
-    }
-};
-
 const getXdgBaseDirectory = (type: 'config' | 'data' | 'cache' | 'state'): string => {
     const platform = os.platform();
     const homeDir = os.homedir();
