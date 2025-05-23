@@ -398,28 +398,25 @@ _aicommit2_ offers flexible configuration options for all AI services, including
 The following settings can be applied to most models, but support may vary.
 Please check the documentation for each specific model to confirm which settings are supported.
 
-| Setting                | Description                                                         | Default                    |
-| ---------------------- | ------------------------------------------------------------------- | -------------------------- |
-| `envKey`               | Custom environment variable name for the API key                    | -                          |
-| `systemPrompt`         | System Prompt text                                                  | -                          |
-| `systemPromptPath`     | Path to system prompt file                                          | -                          |
-| `exclude`              | Files to exclude from AI analysis                                   | -                          |
-| `type`                 | Type of commit message to generate                                  | conventional               |
-| `locale`               | Locale for the generated commit messages                            | en                         |
-| `generate`             | Number of commit messages to generate                               | 1                          |
-| `logging`              | Enable logging                                                      | true                       |
-| `logLevel`             | Minimum level for logs to be recorded                               | info                       |
-| `logFilePath`          | Path to the main log file, supports date patterns                   | logs/app-%DATE%.log        |
-| `exceptionLogFilePath` | Path to the exception log file, supports date patterns              | logs/exceptions-%DATE%.log |
-| `includeBody`          | Whether the commit message includes body                            | false                      |
-| `maxLength`            | Maximum character length of the Subject of generated commit message | 50                         |
-| `timeout`              | Request timeout (milliseconds)                                      | 10000                      |
-| `temperature`          | Model's creativity (0.0 - 2.0)                                      | 0.7                        |
-| `maxTokens`            | Maximum number of tokens to generate                                | 1024                       |
-| `topP`                 | Nucleus sampling                                                    | 0.9                        |
-| `codeReview`           | Whether to include an automated code review in the process          | false                      |
-| `codeReviewPromptPath` | Path to code review prompt file                                     | -                          |
-| `disabled`             | Whether a specific model is enabled or disabled                     | false                      |
+| Setting                | Description                                                         | Default      |
+| ---------------------- | ------------------------------------------------------------------- | ------------ |
+| `envKey`               | Custom environment variable name for the API key                    | -            |
+| `systemPrompt`         | System Prompt text                                                  | -            |
+| `systemPromptPath`     | Path to system prompt file                                          | -            |
+| `exclude`              | Files to exclude from AI analysis                                   | -            |
+| `type`                 | Type of commit message to generate                                  | conventional |
+| `locale`               | Locale for the generated commit messages                            | en           |
+| `generate`             | Number of commit messages to generate                               | 1            |
+| `logging`              | Enable logging                                                      | true         |
+| `includeBody`          | Whether the commit message includes body                            | false        |
+| `maxLength`            | Maximum character length of the Subject of generated commit message | 50           |
+| `timeout`              | Request timeout (milliseconds)                                      | 10000        |
+| `temperature`          | Model's creativity (0.0 - 2.0)                                      | 0.7          |
+| `maxTokens`            | Maximum number of tokens to generate                                | 1024         |
+| `topP`                 | Nucleus sampling                                                    | 0.9          |
+| `codeReview`           | Whether to include an automated code review in the process          | false        |
+| `codeReviewPromptPath` | Path to code review prompt file                                     | -            |
+| `disabled`             | Whether a specific model is enabled or disabled                     | false        |
 
 > 👉 **Tip:** To set the General Settings for each model, use the following command.
 >
@@ -428,6 +425,18 @@ Please check the documentation for each specific model to confirm which settings
 > aicommit2 config set CODESTRAL.type="gitmoji"
 > aicommit2 config set GEMINI.includeBody=true
 > ```
+
+##### envKey
+
+- Allows users to specify a custom environment variable name for their API key.
+- If `envKey` is not explicitly set, the system defaults to using an environment variable named after the service, followed by `_API_KEY` (e.g., `OPENAI_API_KEY` for OpenAI, `GEMINI_API_KEY` for Gemini).
+- This setting provides flexibility for managing API keys, especially when multiple services are used or when specific naming conventions are required.
+
+```sh
+aicommit2 config set OPENAI.envKey="MY_CUSTOM_OPENAI_KEY"
+```
+
+> `envKey` is used to retrieve the API key from your system's environment variables. Ensure the specified environment variable is set with your API key.
 
 ##### systemPrompt
 
@@ -499,15 +508,10 @@ aicommit2 config set generate=2
 
 Default: `true`
 
-Option that allows users to decide whether to generate log files. When enabled, `src/utils/logger.ts` will write general and exception logs to the paths configured by `logFilePath` and `exceptionLogFilePath` respectively. Additionally, `src/utils/ai-log.ts` will generate response logs.
+This boolean option controls whether the application generates log files. When enabled, both the general application logs and the AI request/response logs are written to their respective paths. For a detailed explanation of all logging settings, including how to enable/disable logging and manage log files, please refer to the main [Logging](#main-logging-section) section.
 
-![log-path](https://github.com/tak-bro/aicommit2/blob/main/img/log_path.png?raw=true)
-
-- You can remove all logs below command.
-
-```sh
-aicommit2 log removeAll
-```
+- **Log File Example**:
+  ![log-path](https://github.com/tak-bro/aicommit2/blob/main/img/log_path.png?raw=true)
 
 ##### includeBody
 
@@ -669,6 +673,52 @@ aicommit2 config set \
 > - [DeepSeek](docs/providers/deepseek.md)
 > - [OpenAI API Compatibility](docs/providers/compatible.md)
 > - [Ollama](docs/providers/ollama.md)
+
+## <a id="main-logging-section"></a>Logging
+
+The application utilizes two distinct logging systems to provide comprehensive insights into its operations:
+
+### 1. Application Logging (Winston)
+
+This system handles general application logs and exceptions. Its behavior can be configured through the following settings in your `config.ini` file:
+
+- **`logLevel`**:
+
+  - **Description**: Specifies the minimum level for logs to be recorded. Messages with a level equal to or higher than the configured `logLevel` will be captured.
+  - **Default**: `info`
+  - **Supported Levels**: `error`, `warn`, `info`, `http`, `verbose`, `debug`, `silly`
+
+- **`logFilePath`**:
+
+  - **Description**: Defines the path to the main application log file. This setting supports date patterns (e.g., `%DATE%`) to automatically rotate log files daily.
+  - **Default**: `logs/aicommit2-%DATE%.log` (relative to the application's state directory, typically `~/.local/state/aicommit2/logs` on Linux or `~/Library/Application Support/aicommit2/logs` on macOS).
+
+- **`exceptionLogFilePath`**:
+
+  - **Description**: Specifies the path to a dedicated log file for recording exceptions. Similar to `logFilePath`, it supports date patterns for daily rotation.
+  - **Default**: `logs/exceptions-%DATE%.log` (relative to the application's state directory, typically `~/.local/state/aicommit2/logs` on Linux or `~/Library/Application Support/aicommit2/logs` on macOS).
+
+### 2. AI Request/Response Logging
+
+This system is specifically designed to log the prompts and responses exchanged with AI models for review and commit generation. These logs are stored in the application's dedicated logs directory.
+
+- **Log Location**: These logs are stored in the same base directory as the application logs, which is determined by the system's state directory (e.g., `~/.local/state/aicommit2/logs` on Linux or `~/Library/Application Support/aicommit2/logs` on macOS).
+- **File Naming**: Each AI log file is uniquely named using a combination of the date (`YYYY-MM-DD_HH-MM-SS`) and a hash of the git diff content, ensuring easy identification and chronological order.
+
+### Enable/Disable Logging
+
+The `logging` setting controls whether log files are generated. It can be configured both globally and for individual AI services:
+
+- **Global `logging` setting**: When set in the general configuration, it controls the overall application logging (handled by Winston) and acts as a default for AI request/response logging.
+- **Service-specific `logging` setting**: You can override the global `logging` setting for a particular AI service. If `logging` is set to `false` for a specific service, AI request/response logs will not be generated for that service, regardless of the global setting.
+
+### Removing All Logs
+
+You can remove all generated log files (both application and AI logs) using the following command:
+
+```sh
+aicommit2 log removeAll
+```
 
 ## Custom Prompt Template
 
