@@ -272,6 +272,29 @@ Or manually delete the `.git/hooks/prepare-commit-msg` file.
 
 ### Configuration
 
+aicommit2 supports configuration via command-line arguments, environment variables, and a configuration file. Settings are resolved in the following order of precedence:
+
+1. Command-line arguments
+2. Environment variables
+3. Configuration file
+4. Default values
+
+#### Configuration File Location
+
+aicommit2 follows the [XDG Base Directory Specification](https://specifications.freedesktop.org/basedir-spec/latest/index.html) for its configuration file. The configuration file is named `config.ini` and is in INI format. It is resolved in the following order of precedence:
+
+1. **`AICOMMIT_CONFIG_PATH` environment variable**: If this environment variable is set, its value is used as the direct path to the configuration file.
+2. **`$XDG_CONFIG_HOME/aicommit2/config.ini`**: This is the primary XDG-compliant location. If `$XDG_CONFIG_HOME` is not set, it defaults to `~/.config/aicommit2/config.ini`.
+3. **`~/.aicommit2`**: This is a legacy location maintained for backward compatibility.
+
+The first existing file found in this order will be used. If no configuration file is found, aicommit2 will default to creating a new `config.ini` file in the `$XDG_CONFIG_HOME/aicommit2/` directory.
+
+You can find the path of the currently loaded configuration file using the `config path` command:
+
+```sh
+aicommit2 config path
+```
+
 #### Reading and Setting Configuration
 
 - READ: `aicommit2 config get [<key> [<key> ...]]`
@@ -318,6 +341,8 @@ PERPLEXITY_API_KEY="your-perplexity-key"
 DEEPSEEK_API_KEY="your-deepseek-key"
 ```
 
+> **Note**: You can customize the environment variable name used for the API key with the `envKey` configuration property for each service.
+
 Usage Example:
 
 ```sh
@@ -328,38 +353,43 @@ OPENAI_API_KEY="your-openai-key" ANTHROPIC_API_KEY="your-anthropic-key" aicommit
 
 #### How to Configure in detail
 
-1. Command-line arguments: **use the format** `--[Model].[Key]=value`
+_aicommit2_ offers flexible configuration options for all AI services, including support for specifying multiple models. You can configure settings via command-line arguments, environment variables, or a configuration file.
 
-```sh
-aicommit2 --OPENAI.locale="jp" --GEMINI.temperatue="0.5"
-```
+1. **Command-line arguments**: Use the format `--[Model].[Key]=value`.
+   To specify multiple models, use the `--[Model].model=model1,model2` format.
 
-2. Configuration file: **use INI format in the `~/.aicommit2` file or use `set` command**.
-   Example `~/.aicommit2`:
+   ```sh
+   aicommit2 --OPENAI.locale="jp" --GEMINI.temperature="0.5" --OPENAI.model="gpt-4o,gpt-3.5-turbo"
+   ```
 
-```ini
-# General Settings
-logging=true
-generate=2
-temperature=1.0
+2. **Configuration file**: Refer to [Configuration File Location](#configuration-file-location) or use the `set` command.
+   For array-like values like `model`, you can use either the `model=model1,model2` comma-separated syntax or the `model[]=` syntax for multiple entries. This applies to all AI services.
 
-# Model-Specific Settings
-[OPENAI]
-key="<your-api-key>"
-temperature=0.8
-generate=1
-systemPromptPath="<your-prompt-path>"
+   ```ini
+   # General Settings
+   logging=true
+   generate=2
+   temperature=1.0
 
-[GEMINI]
-key="<your-api-key>"
-generate=5
-includeBody=true
+   # Model-Specific Settings
+   [OPENAI]
+   key="<your-api-key>"
+   temperature=0.8
+   generate=1
+   model="gpt-4o,gpt-3.5-turbo"
+   systemPromptPath="<your-prompt-path>"
 
-[OLLAMA]
-temperature=0.7
-model[]=llama3.2
-model[]=codestral
-```
+   [GEMINI]
+   key="<your-api-key>"
+   generate=5
+   includeBody=true
+   model="gemini-pro,gemini-flash"
+
+   [OLLAMA]
+   temperature=0.7
+   model[]=llama3.2
+   model[]=codestral
+   ```
 
 > The priority of settings is: **Command-line Arguments > Environment Variables > Model-Specific Settings > General Settings > Default Values**.
 
@@ -370,6 +400,7 @@ Please check the documentation for each specific model to confirm which settings
 
 | Setting                | Description                                                         | Default      |
 | ---------------------- | ------------------------------------------------------------------- | ------------ |
+| `envKey`               | Custom environment variable name for the API key                    | -            |
 | `systemPrompt`         | System Prompt text                                                  | -            |
 | `systemPromptPath`     | Path to system prompt file                                          | -            |
 | `exclude`              | Files to exclude from AI analysis                                   | -            |
@@ -395,6 +426,18 @@ Please check the documentation for each specific model to confirm which settings
 > aicommit2 config set GEMINI.includeBody=true
 > ```
 
+##### envKey
+
+- Allows users to specify a custom environment variable name for their API key.
+- If `envKey` is not explicitly set, the system defaults to using an environment variable named after the service, followed by `_API_KEY` (e.g., `OPENAI_API_KEY` for OpenAI, `GEMINI_API_KEY` for Gemini).
+- This setting provides flexibility for managing API keys, especially when multiple services are used or when specific naming conventions are required.
+
+```sh
+aicommit2 config set OPENAI.envKey="MY_CUSTOM_OPENAI_KEY"
+```
+
+> `envKey` is used to retrieve the API key from your system's environment variables. Ensure the specified environment variable is set with your API key.
+
 ##### systemPrompt
 
 - Allow users to specify a custom system prompt
@@ -409,6 +452,7 @@ aicommit2 config set systemPrompt="Generate git commit message."
 
 - Allow users to specify a custom file path for their own system prompt template
 - Please see [Custom Prompt Template](#custom-prompt-template)
+- **Note**: Paths can be absolute or relative to the configuration file location.
 
 ```sh
 aicommit2 config set systemPromptPath="/path/to/user/prompt.txt"
@@ -464,16 +508,10 @@ aicommit2 config set generate=2
 
 Default: `true`
 
-Option that allows users to decide whether to generate a log file capturing the responses.
-The log files will be stored in the `~/.aicommit2_log` directory(user's home).
+This boolean option controls whether the application generates log files. When enabled, both the general application logs and the AI request/response logs are written to their respective paths. For a detailed explanation of all logging settings, including how to enable/disable logging and manage log files, please refer to the main [Logging](#main-logging-section) section.
 
-![log-path](https://github.com/tak-bro/aicommit2/blob/main/img/log_path.png?raw=true)
-
-- You can remove all logs below command.
-
-```sh
-aicommit2 log removeAll
-```
+- **Log File Example**:
+  ![log-path](https://github.com/tak-bro/aicommit2/blob/main/img/log_path.png?raw=true)
 
 ##### includeBody
 
@@ -583,6 +621,7 @@ aicommit2 config set codeReview=true
 ##### codeReviewPromptPath
 
 - Allow users to specify a custom file path for code review
+- **Note**: Paths can be absolute or relative to the configuration file location.
 
 ```sh
 aicommit2 config set codeReviewPromptPath="/path/to/user/prompt.txt"
@@ -634,6 +673,52 @@ aicommit2 config set \
 > - [DeepSeek](docs/providers/deepseek.md)
 > - [OpenAI API Compatibility](docs/providers/compatible.md)
 > - [Ollama](docs/providers/ollama.md)
+
+## <a id="main-logging-section"></a>Logging
+
+The application utilizes two distinct logging systems to provide comprehensive insights into its operations:
+
+### 1. Application Logging (Winston)
+
+This system handles general application logs and exceptions. Its behavior can be configured through the following settings in your `config.ini` file:
+
+- **`logLevel`**:
+
+  - **Description**: Specifies the minimum level for logs to be recorded. Messages with a level equal to or higher than the configured `logLevel` will be captured.
+  - **Default**: `info`
+  - **Supported Levels**: `error`, `warn`, `info`, `http`, `verbose`, `debug`, `silly`
+
+- **`logFilePath`**:
+
+  - **Description**: Defines the path to the main application log file. This setting supports date patterns (e.g., `%DATE%`) to automatically rotate log files daily.
+  - **Default**: `logs/aicommit2-%DATE%.log` (relative to the application's state directory, typically `~/.local/state/aicommit2/logs` on Linux or `~/Library/Application Support/aicommit2/logs` on macOS).
+
+- **`exceptionLogFilePath`**:
+
+  - **Description**: Specifies the path to a dedicated log file for recording exceptions. Similar to `logFilePath`, it supports date patterns for daily rotation.
+  - **Default**: `logs/exceptions-%DATE%.log` (relative to the application's state directory, typically `~/.local/state/aicommit2/logs` on Linux or `~/Library/Application Support/aicommit2/logs` on macOS).
+
+### 2. AI Request/Response Logging
+
+This system is specifically designed to log the prompts and responses exchanged with AI models for review and commit generation. These logs are stored in the application's dedicated logs directory.
+
+- **Log Location**: These logs are stored in the same base directory as the application logs, which is determined by the system's state directory (e.g., `~/.local/state/aicommit2/logs` on Linux or `~/Library/Application Support/aicommit2/logs` on macOS).
+- **File Naming**: Each AI log file is uniquely named using a combination of the date (`YYYY-MM-DD_HH-MM-SS`) and a hash of the git diff content, ensuring easy identification and chronological order.
+
+### Enable/Disable Logging
+
+The `logging` setting controls whether log files are generated. It can be configured both globally and for individual AI services:
+
+- **Global `logging` setting**: When set in the general configuration, it controls the overall application logging (handled by Winston) and acts as a default for AI request/response logging.
+- **Service-specific `logging` setting**: You can override the global `logging` setting for a particular AI service. If `logging` is set to `false` for a specific service, AI request/response logs will not be generated for that service, regardless of the global setting.
+
+### Removing All Logs
+
+You can remove all generated log files (both application and AI logs) using the following command:
+
+```sh
+aicommit2 log removeAll
+```
 
 ## Custom Prompt Template
 

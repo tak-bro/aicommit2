@@ -1,4 +1,17 @@
+import fs from 'fs/promises';
+
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
+
+export const ensureDirectoryExists = async (directoryPath: string) => {
+    try {
+        await fs.mkdir(directoryPath, { recursive: true });
+    } catch (error) {
+        // Ignore if directory already exists
+        if ((error as NodeJS.ErrnoException).code !== 'EEXIST') {
+            throw error;
+        }
+    }
+};
 
 export const createAsyncDelay = (duration: number) => {
     return new Promise<void>(resolve => setTimeout(() => resolve(), duration));

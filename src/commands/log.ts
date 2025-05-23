@@ -4,8 +4,8 @@ import chalk from 'chalk';
 import { command } from 'cleye';
 
 import { ConsoleManager } from '../managers/console.manager.js';
+import { AICOMMIT_LOGS_DIR } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
-import { logPath } from '../utils/log.js';
 
 export default command(
     {
@@ -21,7 +21,7 @@ export default command(
             const { removeAll } = argv._;
 
             if (removeAll === 'removeAll') {
-                await rm(logPath, { recursive: true, force: true });
+                await rm(AICOMMIT_LOGS_DIR, { recursive: true, force: true });
                 console.log(`${chalk.green('✔')} All Log files are removed!`);
                 return;
             }

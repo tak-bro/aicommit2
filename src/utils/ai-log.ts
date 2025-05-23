@@ -1,10 +1,9 @@
 import fs from 'fs';
-import os from 'os';
 import path from 'path';
 
 import { xxh64 } from '@pacote/xxhash';
 
-export const logPath = path.join(os.homedir(), '.aicommit2_log');
+import { AICOMMIT_LOGS_DIR } from './config.js';
 
 const now = new Date();
 
@@ -13,7 +12,7 @@ export type RequestType = 'review' | 'commit';
 export const createLogResponse = (aiName: string, diff: string, prompt: string, response: string, requestType: RequestType) => {
     const title = `[${aiName}]`;
     const fileName = generateLogFileName(now, diff, requestType);
-    const fullPath = `${logPath}/${fileName}`;
+    const fullPath = `${AICOMMIT_LOGS_DIR}/${fileName}`;
     const systemPrompt = `- System Prompt\n${prompt}`;
     const aiResponse = `- Response\n${response}`;
     const diffContent = `[Git Diff]\n${diff}`;

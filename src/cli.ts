@@ -1,5 +1,6 @@
 import { cli } from 'cleye';
 
+import pkg from '../package.json';
 import aicommit2 from './commands/aicommit2.js';
 import configCommand from './commands/config.js';
 import hookCommand, { isCalledFromGitHook } from './commands/hook.js';
@@ -7,12 +8,11 @@ import logCommand from './commands/log.js';
 import preCommitHook from './commands/pre-commit-hook.js';
 import prepareCommitMessageHook from './commands/prepare-commit-msg-hook.js';
 import watchGit from './commands/watch-git.js';
-import { description, version } from '../package.json';
+import { getConfig } from './utils/config.js';
+import { initializeLogger, logger } from './utils/logger.js';
 
 const rawArgv = process.argv.slice(2);
-
-// NOTE: Suppress "The `punycode` module is deprecated" message (temporary solution)
-process.noDeprecation = true;
+const { version, description } = pkg;
 
 cli(
     {
@@ -91,7 +91,10 @@ cli(
 
         ignoreArgv: type => type === 'unknown-flag' || type === 'argument',
     },
-    argv => {
+    async argv => {
+        const config = await getConfig({});
+        await initializeLogger(config);
+        logger.info(`aicommit2 version: ${version}`);
         if (argv.flags['pre-commit']) {
             preCommitHook();
             return;

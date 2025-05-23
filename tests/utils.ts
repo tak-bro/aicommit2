@@ -60,12 +60,11 @@ export const files = Object.freeze({
     'data.json': Array.from({ length: 10 }, (_, i) => `${i}. Lorem ipsum dolor sit amet`).join('\n'),
 });
 
-export const assertOpenAiToken = () => {
+export const assertOpenAiKey = () => {
     if (!process.env.OPENAI_KEY) {
         throw new Error('⚠️  process.env.OPENAI_KEY is necessary to run these tests. Skipping...');
     }
 };
 
 // See ./diffs/README.md in order to generate diff files
-export const getDiff = async (diffName: string): Promise<string> =>
-    fs.readFile(new URL(`fixtures/${diffName}`, import.meta.url), 'utf8');
+export const getDiff = async (diffName: string): Promise<string> => fs.readFile(new URL(`fixtures/${diffName}`, import.meta.url), 'utf8');

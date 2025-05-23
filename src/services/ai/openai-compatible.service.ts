@@ -1,11 +1,11 @@
 import chalk from 'chalk';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import OpenAI from 'openai';
-import { Observable, catchError, concatMap, from, map, of } from 'rxjs';
+import { Observable, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIResponse, AIService, AIServiceParams } from './ai.service.js';
-import { RequestType, createLogResponse } from '../../utils/log.js';
+import { RequestType, createLogResponse } from '../../utils/ai-log.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 import { capitalizeFirstLetter, generateColors } from '../../utils/utils.js';
 
@@ -56,98 +56,74 @@ export class OpenAICompatibleService extends AIService {
         );
     }
 
-    handleError$ = (error: Error) => {
-        let status = 'N/A';
-        let simpleMessage = error.message;
-        if (error instanceof OpenAI.APIConnectionTimeoutError) {
-            simpleMessage = `Connection timeout: ${error.message}`;
-        } else if (error instanceof OpenAI.APIError) {
-            status = `${error.status}`;
-            simpleMessage = error.name;
-        }
-        const message = `${status} ${simpleMessage}`;
-        return of({
-            name: `${this.errorPrefix} ${message}`,
-            value: simpleMessage,
-            isError: true,
-            disabled: true,
-        });
-    };
-
     private async generateMessage(requestType: RequestType): Promise<AIResponse[]> {
-        try {
-            const diff = this.params.stagedDiff.diff;
-            const {
-                systemPrompt,
-                systemPromptPath,
-                codeReviewPromptPath,
-                logging,
-                locale,
+        const diff = this.params.stagedDiff.diff;
+        const {
+            systemPrompt,
+            systemPromptPath,
+            codeReviewPromptPath,
+            logging,
+            locale,
+            temperature,
+            generate,
+            type,
+            maxLength,
+            timeout,
+            stream = false,
+        } = this.params.config;
+        const maxTokens = this.params.config.maxTokens;
+        const promptOptions: PromptOptions = {
+            ...DEFAULT_PROMPT_OPTIONS,
+            locale,
+            maxLength,
+            type,
+            generate,
+            systemPrompt,
+            systemPromptPath,
+            codeReviewPromptPath,
+        };
+        const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
+
+        const chatCompletion = await this.openAI.chat.completions.create(
+            {
+                messages: [
+                    {
+                        role: 'system',
+                        content: generatedSystemPrompt,
+                    },
+                    {
+                        role: 'user',
+                        content: `Here is the diff: ${diff}`,
+                    },
+                ],
+                model: this.params.config.model,
+                stream,
+                max_tokens: maxTokens,
+                top_p: this.params.config.topP,
                 temperature,
-                generate,
-                type,
-                maxLength,
+            },
+            {
                 timeout,
-                stream = false,
-            } = this.params.config;
-            const maxTokens = this.params.config.maxTokens;
-            const promptOptions: PromptOptions = {
-                ...DEFAULT_PROMPT_OPTIONS,
-                locale,
-                maxLength,
-                type,
-                generate,
-                systemPrompt,
-                systemPromptPath,
-                codeReviewPromptPath,
-            };
-            const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
-
-            const chatCompletion = await this.openAI.chat.completions.create(
-                {
-                    messages: [
-                        {
-                            role: 'system',
-                            content: generatedSystemPrompt,
-                        },
-                        {
-                            role: 'user',
-                            content: `Here is the diff: ${diff}`,
-                        },
-                    ],
-                    model: this.params.config.model,
-                    stream,
-                    max_tokens: maxTokens,
-                    top_p: this.params.config.topP,
-                    temperature,
-                },
-                {
-                    timeout,
-                }
-            );
-
-
-            let result = '';
-            if (stream && chatCompletion) {
-                const chatCompletionStream = chatCompletion as unknown as AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>;
-                for await (const chunk of chatCompletionStream) {
-                    // 适配DeepSeek的响应格式
-                    const content = chunk.choices[0]?.delta?.content || '';
-                    const reasoning = chunk.choices[0]?.delta?.reasoning_content || '';
-                    const chunkText = `${content}${reasoning}`;
-                    result += chunkText;
-                }
-            } else {
-                result = chatCompletion.choices[0].message.content || '';
             }
-            logging && createLogResponse(this.params.keyName, diff, generatedSystemPrompt, result, requestType);
-            if (requestType === 'review') {
-                return this.sanitizeResponse(result);
+        );
+
+        let result = '';
+        if (stream && chatCompletion) {
+            const chatCompletionStream = chatCompletion as unknown as AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>;
+            for await (const chunk of chatCompletionStream) {
+                // Adapt to DeepSeek's response format
+                const content = chunk.choices?.[0]?.delta?.content || '';
+                const reasoning = chunk.choices?.[0]?.delta?.reasoning_content || '';
+                const chunkText = `${content}${reasoning}`;
+                result += chunkText;
             }
-            return this.parseMessage(result, type, generate);
-        } catch (error) {
-            console.error('generateMessage error >>>', error);
-            throw error as any;
+        } else {
+            result = chatCompletion.choices?.[0]?.message.content || '';
         }
+        logging && createLogResponse(this.params.keyName, diff, generatedSystemPrompt, result, requestType);
+        if (requestType === 'review') {
+            return this.sanitizeResponse(result);
+        }
+        return this.parseMessage(result, type, generate);
     }
 }

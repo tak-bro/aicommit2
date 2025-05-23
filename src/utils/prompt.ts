@@ -1,7 +1,6 @@
 import fs from 'fs';
-import path from 'path';
 
-import { CommitType, ValidConfig } from './config.js';
+import { CommitType, ValidConfig, resolvePromptPath } from './config.js';
 import { KnownError } from './error.js';
 
 export interface PromptOptions {
@@ -250,7 +249,7 @@ export const generatePrompt = (promptOptions: PromptOptions) => {
     }
 
     try {
-        const systemPromptTemplate = fs.readFileSync(path.resolve(systemPromptPath), 'utf-8');
+        const systemPromptTemplate = fs.readFileSync(resolvePromptPath(systemPromptPath), 'utf-8');
         return `${parseTemplate(systemPromptTemplate, promptOptions)}\n${finalPrompt(type, generate)}`;
     } catch (error) {
         return `${defaultPrompt(promptOptions)}\n${finalPrompt(type, generate)}`;
@@ -287,7 +286,7 @@ Please structure your response with appropriate Markdown headings, code blocks, 
     }
 
     try {
-        const codeReviewPromptTemplate = fs.readFileSync(path.resolve(codeReviewPromptPath), 'utf-8');
+        const codeReviewPromptTemplate = fs.readFileSync(resolvePromptPath(codeReviewPromptPath), 'utf-8');
         return `${parseTemplate(codeReviewPromptTemplate, promptOptions)}`;
     } catch (error) {
         return defaultPrompt;
@@ -297,17 +296,17 @@ Please structure your response with appropriate Markdown headings, code blocks, 
 export const validateSystemPrompt = async (config: ValidConfig) => {
     if (config.systemPromptPath) {
         try {
-            fs.readFileSync(path.resolve(config.systemPromptPath), 'utf-8');
+            fs.readFileSync(resolvePromptPath(config.systemPromptPath), 'utf-8');
         } catch (error) {
-            throw new KnownError(`Error reading system prompt file: ${config.systemPromptPath}`);
+            throw new KnownError(`Error reading system prompt file: ${config.systemPromptPath}, ${error}`);
         }
     }
 
     if (config.codeReview && config.codeReviewPromptPath) {
         try {
-            fs.readFileSync(path.resolve(config.codeReviewPromptPath), 'utf-8');
+            fs.readFileSync(resolvePromptPath(config.codeReviewPromptPath), 'utf-8');
         } catch (error) {
-            throw new KnownError(`Error reading code review prompt file: ${config.codeReviewPromptPath}`);
+            throw new KnownError(`Error reading code review prompt file: ${config.codeReviewPromptPath}, ${error}`);
         }
     }
 };
