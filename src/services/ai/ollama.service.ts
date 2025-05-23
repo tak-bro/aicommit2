@@ -114,7 +114,8 @@ export class OllamaService extends AIService {
     }
 
     private async createChatCompletions(systemPrompt: string, userMessage: string) {
-        const isStream = this.params.config.stream || false;
+        const { stream, numCtx, temperature, topP, timeout, maxTokens } = this.params.config;
+        const isStream = stream || false;
 
         const response = await this.ollama.chat({
             model: this.model,
@@ -129,12 +130,13 @@ export class OllamaService extends AIService {
                 },
             ],
             stream: isStream,
-            keep_alive: this.params.config.timeout,
+            keep_alive: timeout,
             options: {
-                num_ctx: this.params.config.numCtx,
-                temperature: this.params.config.temperature,
-                top_p: this.params.config.topP,
+                num_ctx: numCtx,
+                temperature: temperature,
+                top_p: topP,
                 seed: getRandomNumber(10, 1000),
+                num_predict: maxTokens ?? -1,
             },
         });
 
