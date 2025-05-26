@@ -37,7 +37,7 @@ export class ConsoleManager {
     }
 
     printStagedFiles(staged: { files: string[]; diff: string }) {
-        console.log(chalk.bold.green('✔ ') + chalk.bold(`${getDetectedMessage(staged.files)}:`));
+        console.log(chalk.bold.green('✔ ') + chalk.bold(`${getDetectedMessage(staged)}:`));
         console.log(`${staged.files.map(file => `     ${file}`).join('\n')}\n`);
     }
 

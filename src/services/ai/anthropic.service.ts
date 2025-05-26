@@ -1,12 +1,11 @@
 import Anthropic from '@anthropic-ai/sdk';
 import chalk from 'chalk';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
-import { Observable, catchError, concatMap, from, map, of } from 'rxjs';
+import { Observable, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
-import { KnownError } from '../../utils/error.js';
-import { RequestType, createLogResponse } from '../../utils/log.js';
+import { RequestType, createLogResponse } from '../../utils/ai-log.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 
 export interface AnthropicServiceError extends AIServiceError {
@@ -65,73 +64,55 @@ export class AnthropicService extends AIService {
     }
 
     private async generateMessage(requestType: RequestType): Promise<AIResponse[]> {
-        try {
-            const diff = this.params.stagedDiff.diff;
-            const {
-                systemPrompt,
-                systemPromptPath,
-                codeReviewPromptPath,
-                logging,
-                temperature,
-                locale,
-                generate,
-                type,
-                maxLength,
-                maxTokens,
-                topP,
-                model,
-            } = this.params.config;
+        const diff = this.params.stagedDiff.diff;
+        const {
+            systemPrompt,
+            systemPromptPath,
+            codeReviewPromptPath,
+            logging,
+            temperature,
+            locale,
+            generate,
+            type,
+            maxLength,
+            maxTokens,
+            topP,
+            model,
+        } = this.params.config;
 
-            const promptOptions: PromptOptions = {
-                ...DEFAULT_PROMPT_OPTIONS,
-                locale,
-                maxLength,
-                type,
-                generate,
-                systemPrompt,
-                systemPromptPath,
-                codeReviewPromptPath,
-            };
-            const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
+        const promptOptions: PromptOptions = {
+            ...DEFAULT_PROMPT_OPTIONS,
+            locale,
+            maxLength,
+            type,
+            generate,
+            systemPrompt,
+            systemPromptPath,
+            codeReviewPromptPath,
+        };
+        const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
 
-            const params: Anthropic.MessageCreateParams = {
-                max_tokens: maxTokens,
-                temperature: temperature,
-                system: generatedSystemPrompt,
-                messages: [
-                    {
-                        role: 'user',
-                        content: `Here is the diff: ${diff}`,
-                    },
-                ],
-                top_p: topP,
-                model: model,
-            };
-            const result: Anthropic.Message = await this.anthropic.messages.create(params);
-            // @ts-ignore ignore
-            const completion = result.content.map(({ text }) => text).join('');
+        const params: Anthropic.MessageCreateParams = {
+            max_tokens: maxTokens,
+            temperature: temperature,
+            system: generatedSystemPrompt,
+            messages: [
+                {
+                    role: 'user',
+                    content: `Here is the diff: ${diff}`,
+                },
+            ],
+            top_p: topP,
+            model: model,
+        };
+        const result: Anthropic.Message = await this.anthropic.messages.create(params);
+        // @ts-ignore ignore
+        const completion = result.content.map(({ text }) => text).join('');
 
-            logging && createLogResponse('Anthropic', diff, generatedSystemPrompt, completion, requestType);
-            if (requestType === 'review') {
-                return this.sanitizeResponse(completion);
-            }
-            return this.parseMessage(completion, type, generate);
-        } catch (error) {
-            const errorAsAny = error as any;
-            if (errorAsAny.code === 'ENOTFOUND') {
-                throw new KnownError(`Error connecting to ${errorAsAny.hostname} (${errorAsAny.syscall})`);
-            }
-            throw errorAsAny;
+        logging && createLogResponse('Anthropic', diff, generatedSystemPrompt, completion, requestType);
+        if (requestType === 'review') {
+            return this.sanitizeResponse(completion);
         }
+        return this.parseMessage(completion, type, generate);
     }
-
-    handleError$ = (anthropicError: AnthropicServiceError) => {
-        const simpleMessage = anthropicError.error?.error?.message?.replace(/(\r\n|\n|\r)/gm, '') || 'An error occurred';
-        return of({
-            name: `${this.errorPrefix} ${simpleMessage}`,
-            value: simpleMessage,
-            isError: true,
-            disabled: true,
-        });
-    };
 }

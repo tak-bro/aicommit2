@@ -1,12 +1,10 @@
 import fs from 'fs/promises';
-import os from 'os';
-import path from 'path';
 
 import { command } from 'cleye';
 import ini from 'ini';
 
 import { ConsoleManager } from '../managers/console.manager.js';
-import { addConfigs, getConfig, hasOwn, listConfigs, readConfigFile, setConfigs } from '../utils/config.js';
+import { addConfigs, getConfig, getConfigPath, hasOwn, listConfigs, printConfigPath, readConfigFile, setConfigs } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
 
 export default command(
@@ -63,6 +61,14 @@ export default command(
                 help: {
                     description: 'Delete a configuration setting or section.',
                     examples: ['aic2 config del <config-name>', 'aic2 config del OPENAI.key', 'aic2 config del OPENAI'],
+                },
+            }),
+            command({
+                name: 'path',
+                parameters: [],
+                help: {
+                    description: 'Display the path of the loaded configuration file.',
+                    examples: ['aic2 config path'],
                 },
             }),
         ],
@@ -152,8 +158,14 @@ export default command(
                         if (Object.keys(config[section] as Record<string, any>).length === 0) {
                             delete config[section];
                         }
-                        await fs.writeFile(configPath, ini.stringify(config), 'utf8');
+                        const writePath = await getConfigPath();
+                        await fs.writeFile(writePath, ini.stringify(config), 'utf8');
                         console.log(`Successfully deleted config: ${configName}`);
+                        // Re-read and print the file content for debugging
+                        const updatedConfigContent = await fs.readFile(writePath, 'utf8');
+                        console.log('--- Updated Config Content ---');
+                        console.log(updatedConfigContent);
+                        console.log('----------------------------');
                     } else {
                         throw new KnownError(`Config not found: ${configName}`);
                     }
@@ -161,14 +173,25 @@ export default command(
                     const key = parts[0];
                     if (hasOwn(config, key)) {
                         delete config[key];
-                        await fs.writeFile(configPath, ini.stringify(config), 'utf8');
+                        const writePath = await getConfigPath();
+                        await fs.writeFile(writePath, ini.stringify(config), 'utf8');
                         console.log(`Successfully deleted config: ${configName}`);
+                        // Re-read and print the file content for debugging
+                        const updatedConfigContent = await fs.readFile(writePath, 'utf8');
+                        console.log('--- Updated Config Content ---');
+                        console.log(updatedConfigContent);
+                        console.log('----------------------------');
                     } else {
                         throw new KnownError(`Config not found: ${configName}`);
                     }
                 } else {
                     throw new KnownError(`Invalid config name format: ${configName}`);
                 }
+                return;
+            }
+
+            if (mode === 'path') {
+                await printConfigPath();
                 return;
             }
 
@@ -181,5 +204,3 @@ export default command(
         });
     }
 );
-
-const configPath = path.join(os.homedir(), '.aicommit2');

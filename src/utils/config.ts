@@ -8,7 +8,22 @@ import { KnownError } from './error.js';
 import { fileExists } from './fs.js';
 import { flattenDeep } from './utils.js';
 
-import type { TiktokenModel } from '@dqbd/tiktoken';
+export const resolvePromptPath = (promptPath: string): string => {
+    if (!promptPath || typeof promptPath !== 'string') {
+        return '';
+    }
+    // Check if it's an absolute path
+    if (path.isAbsolute(promptPath)) {
+        return path.resolve(promptPath);
+    } else if (loadedConfigPath) {
+        // If not absolute, try combining with the config file directory
+        const configDir = path.dirname(loadedConfigPath);
+        const absolutePath = path.join(configDir, promptPath);
+        return path.resolve(absolutePath);
+    } else {
+        return ''; // If no config file loaded and path is relative, ignore
+    }
+};
 
 const commitTypes = ['', 'conventional', 'gitmoji'] as const;
 export type CommitType = (typeof commitTypes)[number];
@@ -34,14 +49,79 @@ export const BUILTIN_SERVICES = [
 ] as const;
 export type BuiltinService = (typeof BUILTIN_SERVICES)[number];
 
+const getXdgBaseDirectory = (type: 'config' | 'data' | 'cache' | 'state'): string => {
+    const platform = os.platform();
+    const homeDir = os.homedir();
+
+    let xdgVar: string | undefined;
+    let platformFallback: string;
+
+    // Determine the XDG environment variable
+    switch (type) {
+        case 'config':
+            xdgVar = process.env.XDG_CONFIG_HOME;
+            break;
+        case 'data':
+            xdgVar = process.env.XDG_DATA_HOME;
+            break;
+        case 'cache':
+            xdgVar = process.env.XDG_CACHE_HOME;
+            break;
+        case 'state':
+            xdgVar = process.env.XDG_STATE_HOME;
+            break;
+        default:
+            xdgVar = undefined; // Should not happen with strict type
+    }
+
+    // Determine platform-specific fallback
+    if (platform === 'darwin') {
+        // macOS
+        if (type === 'cache') {
+            platformFallback = path.join(homeDir, 'Library', 'Caches');
+        } else {
+            platformFallback = path.join(homeDir, 'Application Support');
+        }
+    } else if (platform === 'win32') {
+        // Windows
+        platformFallback = process.env.LOCALAPPDATA || homeDir;
+    } else {
+        // Linux and others (default XDG fallbacks)
+        switch (type) {
+            case 'config':
+                platformFallback = path.join(homeDir, '.config');
+                break;
+            case 'data':
+                platformFallback = path.join(homeDir, '.local', 'share');
+                break;
+            case 'cache':
+                platformFallback = path.join(homeDir, '.cache');
+                break;
+            case 'state':
+                platformFallback = path.join(homeDir, '.local', 'state');
+                break;
+            default:
+                platformFallback = homeDir; // Should not happen
+        }
+    }
+
+    return xdgVar || platformFallback;
+};
+
+export const AICOMMIT_CONFIG_DIR = path.join(getXdgBaseDirectory('config'), 'aicommit2');
+export const AICOMMIT_LOGS_DIR = path.join(getXdgBaseDirectory('state'), 'aicommit2', 'logs');
+export const AICOMMIT_CONFIG_FILE_PATH = path.join(AICOMMIT_CONFIG_DIR, 'config.ini');
+export const AICOMMIT_MAIN_LOG_FILE_PATH = path.join(AICOMMIT_LOGS_DIR, 'aicommit2-%DATE%.log');
+export const AICOMMIT_EXCEPTION_LOG_FILE_PATH = path.join(AICOMMIT_LOGS_DIR, 'exceptions-%DATE%.log');
+
 const findAllServices = (config: RawConfig): string[] => {
     const sections = Object.keys(config);
 
-    // 내장 서비스와 추가된 섹션들을 모두 포함
+    // Include all built-in services and added sections
     const allServices = new Set([
         ...BUILTIN_SERVICES,
         ...sections.filter(section =>
-            // 설정 섹션 이름 규칙 검증 (대문자와 언더스코어만 허용)
+            // Validate configuration section name rules (only uppercase letters and underscores allowed)
             /^[A-Z][A-Z0-9_]*$/.test(section)
         ),
     ]);
@@ -121,6 +201,29 @@ const generalConfigParsers = {
 
         parseAssert('logging', /^(?:true|false)$/.test(enable), 'Must be a boolean(true or false)');
         return enable === 'true';
+    },
+    logLevel(logLevel?: string) {
+        if (!logLevel) {
+            return 'info';
+        }
+        parseAssert(
+            'logLevel',
+            /^(?:error|warn|info|http|verbose|debug|silly)$/.test(logLevel),
+            'Must be a valid log level (error, warn, info, http, verbose, debug, silly)'
+        );
+        return logLevel;
+    },
+    logFilePath(logFilePath?: string) {
+        if (!logFilePath) {
+            return AICOMMIT_MAIN_LOG_FILE_PATH;
+        }
+        return logFilePath;
+    },
+    exceptionLogFilePath(exceptionLogFilePath?: string) {
+        if (!exceptionLogFilePath) {
+            return AICOMMIT_EXCEPTION_LOG_FILE_PATH;
+        }
+        return exceptionLogFilePath;
     },
     locale(locale?: string) {
         if (!locale) {
@@ -239,7 +342,14 @@ const generalConfigParsers = {
 const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>> = {
     OPENAI: {
         key: (key?: string) => key || '',
-        model: (model?: string): TiktokenModel => (model || 'gpt-4o-mini') as TiktokenModel,
+        envKey: (envKey?: string) => envKey || '',
+        model: (model?: string | string[]): string[] => {
+            if (!model) {
+                return ['gpt-4o-mini'];
+            }
+            const modelList = typeof model === 'string' ? model?.split(',') : model;
+            return modelList.map(m => m.trim()).filter(m => !!m && m.length > 0);
+        },
         url: (host?: string) => {
             if (!host) {
                 return 'https://api.openai.com';
@@ -268,10 +378,11 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
     },
     HUGGINGFACE: {
         cookie: (cookie?: string) => cookie || '',
-        model: (model?: string): string => {
+        model: (model?: string | string[]): string[] => {
             if (!model) {
-                return `CohereForAI/c4ai-command-r-plus`;
+                return [`CohereForAI/c4ai-command-r-plus`];
             }
+            const modelList = typeof model === 'string' ? model?.split(',') : model;
             const supportModels = [
                 `CohereForAI/c4ai-command-r-plus`,
                 `meta-llama/Meta-Llama-3-70B-Instruct`,
@@ -283,8 +394,12 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
                 `microsoft/Phi-3-mini-4k-instruct`,
             ];
 
-            parseAssert('HUGGINGFACE.model', supportModels.includes(model), 'Invalid model type of HuggingFace chat');
-            return model;
+            // Validate each model in the list
+            for (const m of modelList) {
+                parseAssert('HUGGINGFACE.model', supportModels.includes(m.trim()), `Invalid model type of HuggingFace chat: ${m.trim()}`);
+            }
+
+            return modelList.map(m => m.trim()).filter(m => !!m && m.length > 0);
         },
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
@@ -301,12 +416,15 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
     },
     GEMINI: {
         key: (key?: string) => key || '',
-        model: (model?: string) => {
-            if (!model || model.length === 0) {
-                return 'gemini-2.0-flash';
+        envKey: (envKey?: string) => envKey || '',
+        model: (model?: string | string[]): string[] => {
+            if (!model) {
+                return ['gemini-2.0-flash'];
             }
+            const modelList = typeof model === 'string' ? model?.split(',') : model;
             const supportModels = [
                 `gemini-2.5-flash-preview-04-17`,
+                `gemini-2.5-flash-preview-05-20`,
                 `gemini-2.5-pro-preview-05-06`,
                 `gemini-2.0-flash`,
                 `gemini-2.0-flash-lite`,
@@ -315,8 +433,11 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
                 `gemini-1.5-flash`,
                 `gemini-1.5-flash-8b`,
             ];
-            parseAssert('GEMINI.model', supportModels.includes(model), 'Invalid model type of Gemini');
-            return model;
+            // Validate each model in the list
+            for (const m of modelList) {
+                parseAssert('GEMINI.model', supportModels.includes(m.trim()), `Invalid model type of Gemini: ${m.trim()}`);
+            }
+            return modelList.map(m => m.trim()).filter(m => !!m && m.length > 0);
         },
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
@@ -336,10 +457,12 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
     },
     ANTHROPIC: {
         key: (key?: string) => key || '',
-        model: (model?: string) => {
-            if (!model || model.length === 0) {
-                return 'claude-3-5-haiku-20241022';
+        envKey: (envKey?: string) => envKey || '',
+        model: (model?: string | string[]): string[] => {
+            if (!model) {
+                return ['claude-3-5-haiku-20241022'];
             }
+            const modelList = typeof model === 'string' ? model?.split(',') : model;
             const supportModels = [
                 `claude-3-7-sonnet-20250219`,
                 `claude-3-5-sonnet-20241022`,
@@ -348,8 +471,11 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
                 `claude-3-sonnet-20240229`,
                 `claude-3-haiku-20240307`,
             ];
-            parseAssert('ANTHROPIC.model', supportModels.includes(model), 'Invalid model type of Anthropic');
-            return model;
+            // Validate each model in the list
+            for (const m of modelList) {
+                parseAssert('ANTHROPIC.model', supportModels.includes(m.trim()), `Invalid model type of Anthropic: ${m.trim()}`);
+            }
+            return modelList.map(m => m.trim()).filter(m => !!m && m.length > 0);
         },
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
@@ -369,10 +495,12 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
     },
     MISTRAL: {
         key: (key?: string) => key || '',
-        model: (model?: string) => {
-            if (!model || model.length === 0) {
-                return 'pixtral-12b-2409';
+        envKey: (envKey?: string) => envKey || '',
+        model: (model?: string | string[]): string[] => {
+            if (!model) {
+                return ['pixtral-12b-2409'];
             }
+            const modelList = typeof model === 'string' ? model?.split(',') : model;
             const supportModels = [
                 `codestral-latest`,
                 `mistral-large-latest`,
@@ -383,8 +511,12 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
                 `mistral-moderation-latest`,
             ];
 
-            parseAssert('MISTRAL.model', supportModels.includes(model), 'Invalid model type of Mistral AI');
-            return model;
+            // Validate each model in the list
+            for (const m of modelList) {
+                parseAssert('MISTRAL.model', supportModels.includes(m.trim()), `Invalid model type of Mistral AI: ${m.trim()}`);
+            }
+
+            return modelList.map(m => m.trim()).filter(m => !!m && m.length > 0);
         },
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
@@ -405,14 +537,20 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
     },
     CODESTRAL: {
         key: (key?: string) => key || '',
-        model: (model?: string) => {
-            if (!model || model.length === 0) {
-                return 'codestral-latest';
+        envKey: (envKey?: string) => envKey || '',
+        model: (model?: string | string[]): string[] => {
+            if (!model) {
+                return ['codestral-latest'];
             }
+            const modelList = typeof model === 'string' ? model?.split(',') : model;
             const supportModels = ['codestral-latest', 'codestral-2501'];
 
-            parseAssert('CODESTRAL.model', supportModels.includes(model), 'Invalid model type of Codestral');
-            return model;
+            // Validate each model in the list
+            for (const m of modelList) {
+                parseAssert('CODESTRAL.model', supportModels.includes(m.trim()), `Invalid model type of Codestral: ${m.trim()}`);
+            }
+
+            return modelList.map(m => m.trim()).filter(m => !!m && m.length > 0);
         },
         topP: generalConfigParsers.topP,
         systemPrompt: generalConfigParsers.systemPrompt,
@@ -459,6 +597,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         },
         auth: (auth?: string) => auth || '',
         key: (key?: string) => key || '',
+        envKey: (envKey?: string) => envKey || '',
         numCtx: (numCtx?: string) => {
             if (!numCtx) {
                 return 2048;
@@ -487,10 +626,12 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
     },
     COHERE: {
         key: (key?: string) => key || '',
-        model: (model?: string) => {
-            if (!model || model.length === 0) {
-                return 'command';
+        envKey: (envKey?: string) => envKey || '',
+        model: (model?: string | string[]): string[] => {
+            if (!model) {
+                return ['command'];
             }
+            const modelList = typeof model === 'string' ? model?.split(',') : model;
             const supportModels = [
                 `command-r7b-12-2024`,
                 `command-r-plus-08-2024`,
@@ -506,8 +647,11 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
                 `c4ai-aya-expanse-8b`,
                 `c4ai-aya-expanse-32b`,
             ];
-            parseAssert('COHERE.model', supportModels.includes(model), 'Invalid model type of Cohere');
-            return model;
+            // Validate each model in the list
+            for (const m of modelList) {
+                parseAssert('COHERE.model', supportModels.includes(m.trim()), `Invalid model type of Cohere: ${m.trim()}`);
+            }
+            return modelList.map(m => m.trim()).filter(m => !!m && m.length > 0);
         },
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
@@ -527,10 +671,12 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
     },
     GROQ: {
         key: (key?: string) => key || '',
-        model: (model?: string) => {
-            if (!model || model.length === 0) {
-                return 'llama-3.3-70b-versatile';
+        envKey: (envKey?: string) => envKey || '',
+        model: (model?: string | string[]): string[] => {
+            if (!model) {
+                return ['llama-3.3-70b-versatile'];
             }
+            const modelList = typeof model === 'string' ? model?.split(',') : model;
             const supportModels = [
                 `allam-2-7b`,
                 `compound-beta`,
@@ -553,8 +699,12 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
                 `whisper-large-v3-turbo`,
             ];
 
-            parseAssert('GROQ.model', supportModels.includes(model), 'Invalid model type of Groq');
-            return model;
+            // Validate each model in the list
+            for (const m of modelList) {
+                parseAssert('GROQ.model', supportModels.includes(m.trim()), `Invalid model type of Groq: ${m.trim()}`);
+            }
+
+            return modelList.map(m => m.trim()).filter(m => !!m && m.length > 0);
         },
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
@@ -575,11 +725,11 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
     },
     PERPLEXITY: {
         key: (key?: string) => key || '',
-        model: (model?: string) => {
-            if (!model || model.length === 0) {
-                return 'sonar';
+        model: (model?: string | string[]): string[] => {
+            if (!model) {
+                return ['sonar'];
             }
-
+            const modelList = typeof model === 'string' ? model?.split(',') : model;
             // https://docs.perplexity.ai/guides/model-cards
             const supportModels = [
                 `sonar-pro`,
@@ -589,8 +739,12 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
                 `llama-3.1-sonar-huge-128k-online`,
             ];
 
-            parseAssert('PERPLEXITY.model', supportModels.includes(model), 'Invalid model type of Perplexity');
-            return model;
+            // Validate each model in the list
+            for (const m of modelList) {
+                parseAssert('PERPLEXITY.model', supportModels.includes(m.trim()), `Invalid model type of Perplexity: ${m.trim()}`);
+            }
+
+            return modelList.map(m => m.trim()).filter(m => !!m && m.length > 0);
         },
         topP: generalConfigParsers.topP,
         systemPrompt: generalConfigParsers.systemPrompt,
@@ -611,15 +765,20 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
     },
     DEEPSEEK: {
         key: (key?: string) => key || '',
-        model: (model?: string) => {
-            if (!model || model.length === 0) {
-                return `deepseek-chat`;
+        envKey: (envKey?: string) => envKey || '',
+        model: (model?: string | string[]): string[] => {
+            if (!model) {
+                return [`deepseek-chat`];
             }
-            console.log(model);
+            const modelList = typeof model === 'string' ? model?.split(',') : model;
             const supportModels = [`deepseek-reasoner`, `deepseek-chat`];
 
-            parseAssert('DEEPSEEK.model', supportModels.includes(model), 'Invalid model type of DeepSeek');
-            return model;
+            // Validate each model in the list
+            for (const m of modelList) {
+                parseAssert('DEEPSEEK.model', supportModels.includes(m.trim()), `Invalid model type of DeepSeek: ${m.trim()}`);
+            }
+
+            return modelList.map(m => m.trim()).filter(m => !!m && m.length > 0);
         },
         topP: generalConfigParsers.topP,
         systemPrompt: generalConfigParsers.systemPrompt,
@@ -654,7 +813,7 @@ export type ModelConfig<Model extends keyof typeof modelConfigParsers> = {
     [Key in keyof (typeof modelConfigParsers)[Model]]: ReturnType<(typeof modelConfigParsers)[Model][Key]>;
 };
 
-const configPath = path.join(os.homedir(), '.aicommit2');
+let loadedConfigPath: string | undefined;
 
 const parseCliArgs = (rawArgv: string[] = []): RawConfig => {
     const cliConfig: RawConfig = {};
@@ -675,43 +834,49 @@ const parseCliArgs = (rawArgv: string[] = []): RawConfig => {
     return cliConfig;
 };
 
-// Read config file and merge with CLI arguments
-const getConfigFileContent = async (): Promise<string> => {
-    const configExists = await fileExists(configPath);
-    if (!configExists) {
-        return '';
-    }
+// Read config file from multiple locations with precedence
+const getGlobalConfigPaths = (): string[] => {
+    const homeDir = os.homedir();
+    const configPath = process.env.AICOMMIT_CONFIG_PATH;
+    const xdgConfigPath = AICOMMIT_CONFIG_FILE_PATH;
+    const oldConfigPath = path.join(homeDir, '.aicommit2');
 
-    const configString = await fs.readFile(configPath, 'utf8');
-    return configString;
+    // Order of precedence for config file locations
+    return [
+        configPath, // Highest priority: explicitly set via environment variable
+        xdgConfigPath, // Second priority: XDG-compliant location
+        oldConfigPath, // Third priority: old default location
+    ].filter((p): p is string => !!p);
+};
+
+export const getConfigPath = async (): Promise<string> => {
+    const configPaths = getGlobalConfigPaths();
+    for (const p of configPaths) {
+        if (await fileExists(p)) {
+            return p;
+        }
+    }
+    // If no existing config file is found, return the XDG-compliant path as the default for writing
+    return AICOMMIT_CONFIG_FILE_PATH;
 };
 
 export const readConfigFile = async (): Promise<RawConfig> => {
-    const configString = await getConfigFileContent();
-    if (!configString) {
-        return Object.create(null);
-    }
+    const configPath = await getConfigPath(); // Use the shared function to get the path
 
-    let config = ini.parse(configString);
-    const hasOllamaModel = hasOwn(config, 'OLLAMA') && hasOwn(config['OLLAMA'], 'model');
-    if (hasOllamaModel) {
-        config = {
-            ...config,
-            OLLAMA: {
-                ...config.OLLAMA,
-                model: typeof config['OLLAMA'].model === 'string' ? [config['OLLAMA'].model] : config['OLLAMA'].model,
-            },
-        };
+    loadedConfigPath = configPath;
+    try {
+        const configContent = await fs.readFile(configPath, 'utf8');
+        return ini.parse(configContent);
+    } catch (error) {
+        // If the file doesn't exist or can't be read, return an empty config
+        if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+            loadedConfigPath = undefined;
+            return {};
+        }
+        console.error(`Error reading config file ${configPath}:`, error);
+        loadedConfigPath = undefined;
+        return {};
     }
-
-    const hasExclude = hasOwn(config, 'exclude');
-    if (hasExclude) {
-        config = {
-            ...config,
-            exclude: typeof config.exclude === 'string' ? [config.exclude] : config.exclude,
-        };
-    }
-    return config;
 };
 
 export const getConfig = async (cliConfig: RawConfig, rawArgv: string[] = []): Promise<ValidConfig> => {
@@ -722,23 +887,19 @@ export const getConfig = async (cliConfig: RawConfig, rawArgv: string[] = []): P
 
     const services = findAllServices(config);
 
-    // Check environment variables for API keys
     const envConfig: RawConfig = {};
-    const apiKeyMapping = BUILTIN_SERVICES.map(service => ({
-        service,
-        envKey: `${service}_API_KEY`,
-    }));
 
-    for (const { service, envKey } of apiKeyMapping) {
+    for (const service of services) {
+        const configuredEnvKey = (config[service] as Record<string, any>)?.envKey;
+        const envKey = configuredEnvKey || `${service}_API_KEY`;
+
         const apiKey = process.env[envKey];
         if (apiKey) {
             envConfig[service] = { key: apiKey };
         }
     }
 
-    // Helper function to get the value with priority
     const getValueWithPriority = (modelName: string, key: string) => {
-        // Priority: CLI > Environment Variables > Model-specific > General
         const cliValue = mergedCliConfig[`${modelName}.${key}`] ?? (mergedCliConfig[modelName] as Record<string, any>)?.[key];
         const envValue = (envConfig[modelName] as Record<string, any>)?.[key];
         const modelValue = (config[modelName] as Record<string, any>)?.[key];
@@ -747,7 +908,6 @@ export const getConfig = async (cliConfig: RawConfig, rawArgv: string[] = []): P
         return cliValue !== undefined ? cliValue : envValue !== undefined ? envValue : modelValue !== undefined ? modelValue : generalValue;
     };
 
-    // Parse general configs
     for (const [key, parser] of Object.entries(generalConfigParsers)) {
         const value = mergedCliConfig[key] ?? config[key];
         parsedConfig[key] = parser(value as any);
@@ -768,12 +928,12 @@ export const getConfig = async (cliConfig: RawConfig, rawArgv: string[] = []): P
 };
 
 export const setConfigs = async (keyValues: [key: string, value: any][]) => {
-    const config = await readConfigFile();
+    const config = await readConfigFile(); // Load existing config from any supported path
 
     for (const [key, value] of keyValues) {
         const [modelName, modelKey] = key.split('.');
 
-        // 일반 설정 키인 경우 (모델 이름이 없는 경우)
+        // General config keys
         if (!modelKey) {
             const parser = generalConfigParsers[key as keyof typeof generalConfigParsers];
             if (!parser) {
@@ -783,92 +943,99 @@ export const setConfigs = async (keyValues: [key: string, value: any][]) => {
             continue;
         }
 
-        // 모델 관련 설정인 경우
+        // Model-related config
         if (!config[modelName]) {
             config[modelName] = {};
         }
 
-        // 내장 서비스인 경우
+        // Built-in services
         if (BUILTIN_SERVICES.includes(modelName as BuiltinService)) {
             const parser = modelConfigParsers[modelName as BuiltinService][modelKey];
             if (!parser) {
                 throw new KnownError(`Invalid config property: ${key}`);
             }
-            (config[modelName] as Record<string, any>)[modelKey] = (parser as any)(value); // Add type assertion
+            (config[modelName] as Record<string, any>)[modelKey] = (parser as any)(value);
             continue;
         }
 
-        // 커스텀 서비스인 경우
+        // Custom services
         const isValidServiceName = /^[A-Z][A-Z0-9_]*$/.test(modelName);
         if (!isValidServiceName) {
             throw new KnownError(`Invalid service name: ${modelName}. Service names must be uppercase letters, numbers, and underscores.`);
         }
 
-        // 커스텀 서비스의 parser 가져오기
+        // Get parser for custom service
         const customParser = createConfigParser(modelName);
         if (!(customParser as any)[modelKey]) {
-            // Add type assertion
             throw new KnownError(`Invalid config property for custom service: ${key}`);
         }
 
         try {
-            (config[modelName] as Record<string, any>)[modelKey] = (customParser as any)[modelKey](value); // Add type assertion
+            (config[modelName] as Record<string, any>)[modelKey] = (customParser as any)[modelKey](value);
         } catch (error: unknown) {
-            // Catch error as unknown
             if (error instanceof KnownError) {
                 throw error;
             }
-            throw new KnownError(`Invalid value for ${key}: ${(error as Error).message}`); // Assert error as Error
+            throw new KnownError(`Invalid value for ${key}: ${(error as Error).message}`);
         }
     }
 
-    await fs.writeFile(configPath, ini.stringify(config), 'utf8');
+    const writePath = await getConfigPath();
+    const writeDir = path.dirname(writePath); // Get the directory path
+    await fs.mkdir(writeDir, { recursive: true }); // Create the directory if it doesn't exist
+    await fs.writeFile(writePath, ini.stringify(config), 'utf8');
 };
 
 export const addConfigs = async (keyValues: [key: string, value: any][]) => {
-    const config = await readConfigFile();
+    const config = await readConfigFile(); // Load existing config from any supported path
 
     for (const [key, value] of keyValues) {
         const [modelName, modelKey] = key.split('.');
         const modelConfig = config[modelName];
 
-        // OLLAMA.model은 기존 로जिक 유지
-        if (modelName === 'OLLAMA' && modelKey === 'model') {
+        // Handle model property as array for all services
+        if (modelKey === 'model') {
             if (!modelConfig) {
                 config[modelName] = {};
             }
             const originModels = (config[modelName] as Record<string, any>)[modelKey] || [];
-            (config[modelName] as Record<string, any>)[modelKey] = flattenDeep([...originModels, value]);
+            // Ensure the value being added is also treated as an array if it's a string
+            const valueToAdd =
+                typeof value === 'string'
+                    ? value
+                          .split(',')
+                          .map(v => v.trim())
+                          .filter(v => !!v)
+                    : value;
+            (config[modelName] as Record<string, any>)[modelKey] = flattenDeep([...originModels, ...valueToAdd]);
             continue;
         }
 
-        // compatible=true인 서비스에 대한 처리 추가
-        const isCompatible = modelConfig && (modelConfig as any).compatible === true; // Add type assertion
+        // Handling for compatible=true services
+        const isCompatible = modelConfig && (modelConfig as any).compatible === true;
         if (isCompatible) {
             if (!modelConfig) {
                 config[modelName] = {};
             }
 
-            // 설정 파서로 값 검증
+            // Validate value with parser
             const parser = createConfigParser(modelName);
             if (!(parser as any)[modelKey]) {
-                // Add type assertion
                 throw new KnownError(`Invalid config property: ${key}`);
             }
 
             try {
-                (config[modelName] as Record<string, any>)[modelKey] = (parser as any)[modelKey](value); // Add type assertion
+                (config[modelName] as Record<string, any>)[modelKey] = (parser as any)[modelKey](value);
             } catch (error: unknown) {
-                // Catch error as unknown
                 if (error instanceof KnownError) {
                     throw error;
                 }
-                throw new KnownError(`Invalid value for ${key}: ${(error as Error).message}`); // Assert error as Error
+                throw new KnownError(`Invalid value for ${key}: ${(error as Error).message}`);
             }
             continue;
         }
 
-        // 내장 서비스에 대한 기존 로직
+        // Existing logic for built-in services
         if (modelName in modelConfigParsers) {
             if (!modelConfig) {
                 config[modelName] = {};
@@ -877,27 +1044,33 @@ export const addConfigs = async (keyValues: [key: string, value: any][]) => {
             if (!parser) {
                 throw new KnownError(`Invalid config property: ${key}`);
             }
-            (config[modelName] as Record<string, any>)[modelKey] = (parser as any)(value); // Add type assertion
+            (config[modelName] as Record<string, any>)[modelKey] = (parser as any)(value);
         } else {
-            // 새로운 서비스에 대한 기본 파서 사용
+            // Default parser for new services
             const parser = createConfigParser(modelName);
             if (!(parser as any)[modelKey]) {
-                // Add type assertion
                 throw new KnownError(`Invalid config property: ${key}`);
             }
             if (!config[modelName]) {
                 config[modelName] = {};
             }
-            (config[modelName] as Record<string, any>)[modelKey] = (parser as any)[modelKey](value); // Add type assertion
+            (config[modelName] as Record<string, any>)[modelKey] = (parser as any)[modelKey](value);
         }
     }
 
-    await fs.writeFile(configPath, ini.stringify(config), 'utf8');
+    const writePath = await getConfigPath();
+    const writeDir = path.dirname(writePath); // Get the directory path
+    await fs.mkdir(writeDir, { recursive: true }); // Create the directory if it doesn't exist
+    await fs.writeFile(writePath, ini.stringify(config), 'utf8');
 };
 
 export const listConfigs = async () => {
-    const configContent = await getConfigFileContent();
-    console.log(configContent);
+    const config = await readConfigFile(); // Load config from any supported path
+    console.log(ini.stringify(config));
+};
+
+export const printConfigPath = async () => {
+    console.log(await getConfigPath());
 };
 
 const createConfigParser = (serviceName: string) => ({
@@ -930,7 +1103,14 @@ const createConfigParser = (serviceName: string) => ({
     },
     path: (path?: string) => path || '',
     key: (key?: string) => key || '',
-    model: (model?: string) => model || '',
+    envKey: (envKey?: string) => envKey || '',
+    model: (model?: string | string[]): string[] => {
+        if (!model) {
+            return [];
+        }
+        const modelList = typeof model === 'string' ? model?.split(',') : model;
+        return modelList.map(m => m.trim()).filter(m => !!m && m.length > 0);
+    },
     systemPrompt: generalConfigParsers.systemPrompt,
     systemPromptPath: generalConfigParsers.systemPromptPath,
     codeReviewPromptPath: generalConfigParsers.codeReviewPromptPath,

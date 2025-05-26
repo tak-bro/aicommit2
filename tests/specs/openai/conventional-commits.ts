@@ -2,18 +2,14 @@ import { expect, testSuite } from 'manten';
 
 import { generateCommitMessage } from '../../../src/utils/openai.js';
 import { generatePrompt } from '../../../src/utils/prompt.js';
-import { getDiff } from '../../utils.js';
+import { assertOpenAiKey, getDiff } from '../../utils.js';
 
 import type { ValidConfig } from '../../../src/utils/config.js';
 
 const { OPENAI_KEY } = process.env;
 
 export default testSuite(({ describe }) => {
-    if (!OPENAI_KEY) {
-        console.warn('⚠️  process.env.OPENAI_KEY is necessary to run these tests. Skipping...');
-        return;
-    }
-
+    assertOpenAiKey();
     describe('Conventional Commits', async ({ test }) => {
         await test('Should not translate conventional commit type to Japanase when locale config is set to japanese', async () => {
             const japaneseConventionalCommitPattern =

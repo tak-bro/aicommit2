@@ -1,10 +1,10 @@
 import chalk from 'chalk';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
-import { Observable, catchError, concatMap, from, map, of } from 'rxjs';
+import { Observable, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
-import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
-import { RequestType } from '../../utils/log.js';
+import { AIResponse, AIService, AIServiceParams } from './ai.service.js';
+import { RequestType } from '../../utils/ai-log.js';
 import { generateCommitMessage } from '../../utils/openai.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 import { flattenDeep } from '../../utils/utils.js';
@@ -47,21 +47,6 @@ export class OpenAIService extends AIService {
             catchError(this.handleError$)
         );
     }
-
-    handleError$ = (error: AIServiceError) => {
-        let simpleMessage = 'An error occurred';
-        if (error.message) {
-            simpleMessage = error.message.split('\n')[0];
-            const errorJson = this.extractJSONFromError(error.message);
-            simpleMessage += `: ${errorJson.error.message}`;
-        }
-        return of({
-            name: `${this.errorPrefix} ${simpleMessage}`,
-            value: simpleMessage,
-            isError: true,
-            disabled: true,
-        });
-    };
 
     private extractJSONFromError(error: string) {
         const regex = /[{[]{1}([,:{}[\]0-9.\-+Eaeflnr-u \n\r\t]|".*?")+[}\]]{1}/gis;
