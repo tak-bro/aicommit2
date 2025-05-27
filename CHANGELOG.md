@@ -1,22 +1,20 @@
 ## [2.2.17](https://github.com/tak-bro/aicommit2/compare/v2.2.16...v2.2.17) (2025-05-26)
 
-
 ### Bug Fixes
 
-* **openai-compatible:** prevent 'undefined' choices error in message generation ([e47d670](https://github.com/tak-bro/aicommit2/commit/e47d6705e68656dd0eb31e69f367ecc0781fd398))
-
+- **openai-compatible:** prevent 'undefined' choices error in message generation ([e47d670](https://github.com/tak-bro/aicommit2/commit/e47d6705e68656dd0eb31e69f367ecc0781fd398))
 
 ### Features
 
-* **ai:** support multiple models per service ([5500614](https://github.com/tak-bro/aicommit2/commit/55006141141a68a0a81a46c263aab295e06af07f))
-* **config:** add config path and XDG support ([7221e28](https://github.com/tak-bro/aicommit2/commit/7221e2849095d551746bb5a1b1708f229bffad54))
-* **config:** add envKey configuration for custom API key environment variables ([eac2c57](https://github.com/tak-bro/aicommit2/commit/eac2c57f40258541d29b57fcb91ce079033f1cae))
-* **config:** allow relative paths for prompt files ([7ef098b](https://github.com/tak-bro/aicommit2/commit/7ef098bdfd3ebb4a85b457ff2a84296ca9cd3632))
-* **gemini:** add gemini-2.5-flash-preview-05-20 model ([31d1939](https://github.com/tak-bro/aicommit2/commit/31d1939f4e7459585c88936280d53fd6c94760a4))
-* implement XDG config path lookup ([c6f0126](https://github.com/tak-bro/aicommit2/commit/c6f01260658043e844d46f21d5588791d1771589))
-* **logger:** add option to disable file logging ([ca0af40](https://github.com/tak-bro/aicommit2/commit/ca0af4010bc3ac5c730a72efee374dc1e0d9e8d1))
-* **logging:** implement file logging with daily rotation ([d4f4c34](https://github.com/tak-bro/aicommit2/commit/d4f4c34fa0bf80307afb0616f42ebe3ac3e9368c))
-* **output:** add diff character count to staged message ([4e8d50e](https://github.com/tak-bro/aicommit2/commit/4e8d50e93f28a3eb270fb639431d701add3ca182))
+- **ai:** support multiple models per service ([5500614](https://github.com/tak-bro/aicommit2/commit/55006141141a68a0a81a46c263aab295e06af07f))
+- **config:** add config path and XDG support ([7221e28](https://github.com/tak-bro/aicommit2/commit/7221e2849095d551746bb5a1b1708f229bffad54))
+- **config:** add envKey configuration for custom API key environment variables ([eac2c57](https://github.com/tak-bro/aicommit2/commit/eac2c57f40258541d29b57fcb91ce079033f1cae))
+- **config:** allow relative paths for prompt files ([7ef098b](https://github.com/tak-bro/aicommit2/commit/7ef098bdfd3ebb4a85b457ff2a84296ca9cd3632))
+- **gemini:** add gemini-2.5-flash-preview-05-20 model ([31d1939](https://github.com/tak-bro/aicommit2/commit/31d1939f4e7459585c88936280d53fd6c94760a4))
+- implement XDG config path lookup ([c6f0126](https://github.com/tak-bro/aicommit2/commit/c6f01260658043e844d46f21d5588791d1771589))
+- **logger:** add option to disable file logging ([ca0af40](https://github.com/tak-bro/aicommit2/commit/ca0af4010bc3ac5c730a72efee374dc1e0d9e8d1))
+- **logging:** implement file logging with daily rotation ([d4f4c34](https://github.com/tak-bro/aicommit2/commit/d4f4c34fa0bf80307afb0616f42ebe3ac3e9368c))
+- **output:** add diff character count to staged message ([4e8d50e](https://github.com/tak-bro/aicommit2/commit/4e8d50e93f28a3eb270fb639431d701add3ca182))
 
 ## [2.2.16](https://github.com/tak-bro/aicommit2/compare/v2.2.15...v2.2.16) (2025-05-19)
 

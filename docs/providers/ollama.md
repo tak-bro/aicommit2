@@ -52,21 +52,22 @@ aicommit2 config set OLLAMA.model="llama3.2"
 aicommit2 config set OLLAMA.model="codellama" \
     OLLAMA.numCtx=4096 \
     OLLAMA.temperature=0.7 \
-    OLLAMA.maxTokens=4000 \
     OLLAMA.locale="en" \
     OLLAMA.generate=3 \
-    OLLAMA.topP=0.9
+    OLLAMA.topP=0.9 \
+    OLLAMA.maxTokens=4000
 ```
 
 ## Settings
 
-| Setting  | Description                                                | Default                |
-| -------- | ---------------------------------------------------------- | ---------------------- |
-| `model`  | Model(s) to use (comma-separated list)                     | -                      |
-| `host`   | Ollama host URL                                            | http://localhost:11434 |
-| `auth`   | Authentication type                                        | Bearer                 |
-| `key`    | Authentication key                                         | -                      |
-| `numCtx` | The maximum number of tokens the model can process at once | 2048                   |
+| Setting     | Description                                                 | Default                  |
+| ----------- | ----------------------------------------------------------- | ------------------------ |
+| `model`     | Model(s) to use (comma-separated list)                      | -                        |
+| `host`      | Ollama host URL                                             | http://localhost:11434   |
+| `auth`      | Authentication type                                         | Bearer                   |
+| `key`       | Authentication key                                          | -                        |
+| `numCtx`    | The maximum number of tokens the model can process at once  | 2048                     |
+| `maxTokens` | The maximum number of output tokens (maps to `num_predict`) | -1 (infinite generation) |
 
 ## Configuration
 
@@ -128,11 +129,15 @@ It is recommended to set it to 4096 or higher.
 aicommit2 config set OLLAMA.numCtx=4096
 ```
 
-#### Unsupported Options
+#### OLLAMA.maxTokens
 
-Ollama does not support the following options in General Settings.
+Default: `-1` (infinite generation)
 
-- maxTokens
+The maximum number of output tokens to generate. This maps to Ollama's `num_predict` option.
+
+```sh
+aicommit2 config set OLLAMA.maxTokens=4000
+```
 
 ## Loading Multiple Ollama Models
 

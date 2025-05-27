@@ -613,6 +613,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         systemPromptPath: generalConfigParsers.systemPromptPath,
         codeReviewPromptPath: generalConfigParsers.codeReviewPromptPath,
         temperature: generalConfigParsers.temperature,
+        maxTokens: generalConfigParsers.maxTokens,
         logging: generalConfigParsers.logging,
         locale: generalConfigParsers.locale,
         generate: generalConfigParsers.generate,
