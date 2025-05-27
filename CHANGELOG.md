@@ -1,3 +1,10 @@
+## [2.2.18](https://github.com/tak-bro/aicommit2/compare/v2.2.17...v2.2.18) (2025-05-27)
+
+
+### Features
+
+* **ollama:** add support for maxTokens option ([3afa316](https://github.com/tak-bro/aicommit2/commit/3afa3164b6df3dcb18d750f4bdaf56f2ab4abecf))
+
 ## [2.2.17](https://github.com/tak-bro/aicommit2/compare/v2.2.16...v2.2.17) (2025-05-26)
 
 ### Bug Fixes
