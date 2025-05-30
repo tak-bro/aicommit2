@@ -1,3 +1,10 @@
+## [2.2.19](https://github.com/tak-bro/aicommit2/compare/v2.2.18...v2.2.19) (2025-05-30)
+
+
+### Features
+
+* **anthropic:** add Claude 4 Opus and Sonnet models ([be0fc0d](https://github.com/tak-bro/aicommit2/commit/be0fc0d810de44f02b70cde64aecdde7da42a3e4))
+
 ## [2.2.18](https://github.com/tak-bro/aicommit2/compare/v2.2.17...v2.2.18) (2025-05-27)
 
 
