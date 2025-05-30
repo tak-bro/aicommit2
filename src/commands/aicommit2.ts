@@ -43,7 +43,7 @@ export default async (
             {
                 locale: locale?.toString() as string,
                 generate: generate?.toString() as string,
-                commitType: commitType?.toString() as string,
+                type: commitType?.toString() as string,
                 systemPrompt: prompt?.toString() as string,
             },
             rawArgv
