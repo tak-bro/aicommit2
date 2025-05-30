@@ -1,3 +1,10 @@
+## [2.2.20](https://github.com/tak-bro/aicommit2/compare/v2.2.19...v2.2.20) (2025-05-30)
+
+
+### Bug Fixes
+
+* correct commitType typo ([1ff8a27](https://github.com/tak-bro/aicommit2/commit/1ff8a276ff29d9f3421c8961a1d5eff9f489ac93))
+
 ## [2.2.19](https://github.com/tak-bro/aicommit2/compare/v2.2.18...v2.2.19) (2025-05-30)
 
 
