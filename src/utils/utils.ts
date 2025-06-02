@@ -92,7 +92,7 @@ export const hashToHSL = (hash: number) => {
 
 export const hslToHex = (hslColor: any) => {
     // HSL 문자열에서 값 추출
-    const [h, s, l] = hslColor.match(/\d+/g).map((n, i) => (i === 0 ? Number(n) : Number(n) / 100));
+    const [h, s, l] = hslColor.match(/\d+/g).map((n: string, i: number) => (i === 0 ? Number(n) : Number(n) / 100));
 
     const c = (1 - Math.abs(2 * l - 1)) * s;
     const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
@@ -130,4 +130,13 @@ export const generateColors = (modelName: string) => {
         primary: primary,
         secondary: '#FFFFFF',
     };
+};
+
+export const safeJsonParse = (jsonString: string): { ok: true; data: any } | { ok: false; error: any } => {
+    try {
+        const data = JSON.parse(jsonString);
+        return { ok: true, data };
+    } catch (error: any) {
+        return { ok: false, error };
+    }
 };
