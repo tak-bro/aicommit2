@@ -77,11 +77,6 @@ export abstract class AIService {
     };
 
     protected parseMessage(aiGeneratedText: string, type: CommitType, maxCount: number): AIResponse[] {
-        const cleanJsonString = (str: string) => {
-            // eslint-disable-next-line no-control-regex
-            return str.replace(/[\u0000-\u001F\u007F-\u009F]/g, '').replace(/\\(?!["\\/bfnrtu])/g, '\\\\');
-        };
-
         const jsonContentPattern = /(\[\s*\{[\s\S]*?\}\s*\]|\{[\s\S]*?\})/;
         const matchedJsonContent = aiGeneratedText.match(jsonContentPattern);
         if (!matchedJsonContent) {
@@ -91,12 +86,12 @@ export abstract class AIService {
             throw error;
         }
 
-        const sanitizedJsonString = cleanJsonString(matchedJsonContent[0]);
-        const parseResult = safeJsonParse(sanitizedJsonString);
+        const jsonString = matchedJsonContent[0];
+        const parseResult = safeJsonParse(jsonString);
         if (!parseResult.ok) {
             const error: AIServiceError = new Error(`Failed to parse AI response as JSON`);
             error.name = 'JsonParseError';
-            error.content = sanitizedJsonString;
+            error.content = jsonString;
             error.originalError = parseResult.error;
             throw error;
         }
