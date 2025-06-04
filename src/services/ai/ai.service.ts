@@ -4,7 +4,7 @@ import { Observable, of } from 'rxjs';
 import { CommitType, ModelConfig, ModelName } from '../../utils/config.js';
 import { GitDiff } from '../../utils/git.js';
 import { logger } from '../../utils/logger.js';
-import { getFirstWordsFrom } from '../../utils/utils.js';
+import { getFirstWordsFrom, safeJsonParse } from '../../utils/utils.js';
 
 export interface AIResponse {
     title: string;
@@ -24,9 +24,10 @@ export interface AIServiceParams {
 }
 
 export interface AIServiceError extends Error {
-    response?: any;
     status?: number;
     code?: string;
+    content?: any;
+    originalError?: any;
 }
 
 export interface Theme {
@@ -52,7 +53,16 @@ export abstract class AIService {
 
     handleError$ = (error: AIServiceError) => {
         let message = error.name ?? 'Unknown Error';
-        logger.error(`${this.errorPrefix} ${error.toString()}`);
+        logger.error(`${this.errorPrefix} ${error}`);
+        if (error.stack) {
+            logger.error(`    ${error.stack}`);
+        }
+        if (error.content) {
+            logger.error(`    Problematic content: ${error.content}`);
+        }
+        if (error.originalError) {
+            logger.error(`    Original error: ${error.originalError}`);
+        }
         if (error.status) {
             message = `${error.status} ${message}`;
         } else if (error.code) {
@@ -67,27 +77,31 @@ export abstract class AIService {
     };
 
     protected parseMessage(aiGeneratedText: string, type: CommitType, maxCount: number): AIResponse[] {
-        const cleanJsonString = (str: string) => {
-            // eslint-disable-next-line no-control-regex
-            return str.replace(/[\u0000-\u001F\u007F-\u009F]/g, '').replace(/\\(?!["\\/bfnrtu])/g, '\\\\');
-        };
-
         const jsonContentPattern = /(\[\s*\{[\s\S]*?\}\s*\]|\{[\s\S]*?\})/;
         const matchedJsonContent = aiGeneratedText.match(jsonContentPattern);
-
         if (!matchedJsonContent) {
-            const error = new Error('AI response did not contain a valid JSON object or array.');
+            const error: AIServiceError = new Error('AI response did not contain a valid JSON object or array.');
             error.name = 'InvalidJsonResponse';
+            error.content = aiGeneratedText;
             throw error;
         }
 
-        const sanitizedJsonString = cleanJsonString(matchedJsonContent[0]);
-        const parsedContent = JSON.parse(sanitizedJsonString);
+        const jsonString = matchedJsonContent[0];
+        const parseResult = safeJsonParse(jsonString);
+        if (!parseResult.ok) {
+            const error: AIServiceError = new Error(`Failed to parse AI response as JSON`);
+            error.name = 'JsonParseError';
+            error.content = jsonString;
+            error.originalError = parseResult.error;
+            throw error;
+        }
+        const parsedContent = parseResult.data;
         const rawCommitMessages: RawCommitMessage[] = Array.isArray(parsedContent) ? parsedContent : [parsedContent];
 
         if (!rawCommitMessages.length || !rawCommitMessages.every(msg => typeof msg.subject === 'string')) {
-            const error = new Error('AI response contained malformed commit message data.');
+            const error: AIServiceError = new Error('AI response contained malformed commit message data.');
             error.name = 'MalformedCommitMessage';
+            error.content = aiGeneratedText;
             throw error;
         }
 
