@@ -1,3 +1,10 @@
+## [2.2.24](https://github.com/tak-bro/aicommit2/compare/v2.2.23...v2.2.24) (2025-07-11)
+
+
+### Features
+
+* add auto-select option for single AI model ([4088be4](https://github.com/tak-bro/aicommit2/commit/4088be419518b5b6228bcf337e294913ef4e4760))
+
 ## [2.2.23](https://github.com/tak-bro/aicommit2/compare/v2.2.22...v2.2.23) (2025-07-11)
 
 
