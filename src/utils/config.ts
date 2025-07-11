@@ -46,6 +46,7 @@ export const BUILTIN_SERVICES = [
     'GROQ',
     'PERPLEXITY',
     'DEEPSEEK',
+    'COPILOT',
 ] as const;
 export type BuiltinService = (typeof BUILTIN_SERVICES)[number];
 
@@ -803,6 +804,48 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         disabled: generalConfigParsers.disabled,
         watchMode: generalConfigParsers.watchMode,
     },
+    COPILOT: {
+        key: (key?: string) => key || '',
+        envKey: (envKey?: string) => envKey || '',
+        model: (model?: string | string[]): string[] => {
+            if (!model) {
+                return ['gpt-4o-mini'];
+            }
+            const modelList = typeof model === 'string' ? model?.split(',') : model;
+            const supportModels = [
+                'gpt-4o-mini',
+                'gpt-4o',
+                'gpt-3.5-turbo',
+                'meta-llama-3.1-405b-instruct',
+                'meta-llama-3.1-70b-instruct',
+                'meta-llama-3.1-8b-instruct',
+                'phi-3-medium-4k-instruct',
+                'phi-3-mini-4k-instruct',
+                'phi-3-small-8k-instruct',
+            ];
+            // Validate each model in the list
+            for (const m of modelList) {
+                parseAssert('COPILOT.model', supportModels.includes(m.trim()), `Invalid model type for GitHub Copilot: ${m.trim()}`);
+            }
+            return modelList.map(m => m.trim()).filter(m => !!m && m.length > 0);
+        },
+        systemPrompt: generalConfigParsers.systemPrompt,
+        systemPromptPath: generalConfigParsers.systemPromptPath,
+        codeReviewPromptPath: generalConfigParsers.codeReviewPromptPath,
+        timeout: generalConfigParsers.timeout,
+        temperature: generalConfigParsers.temperature,
+        maxTokens: generalConfigParsers.maxTokens,
+        logging: generalConfigParsers.logging,
+        locale: generalConfigParsers.locale,
+        generate: generalConfigParsers.generate,
+        type: generalConfigParsers.type,
+        maxLength: generalConfigParsers.maxLength,
+        includeBody: generalConfigParsers.includeBody,
+        topP: generalConfigParsers.topP,
+        codeReview: generalConfigParsers.codeReview,
+        disabled: generalConfigParsers.disabled,
+        watchMode: generalConfigParsers.watchMode,
+    },
 };
 
 export type RawConfig = {
@@ -1009,9 +1052,9 @@ export const addConfigs = async (keyValues: [key: string, value: any][]) => {
             const valueToAdd =
                 typeof value === 'string'
                     ? value
-                        .split(',')
-                        .map(v => v.trim())
-                        .filter(v => !!v)
+                          .split(',')
+                          .map(v => v.trim())
+                          .filter(v => !!v)
                     : value;
             (config[modelName] as Record<string, any>)[modelKey] = flattenDeep([...originModels, ...valueToAdd]);
             continue;

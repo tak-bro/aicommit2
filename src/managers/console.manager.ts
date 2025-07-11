@@ -69,6 +69,14 @@ export class ConsoleManager {
         console.log(`\n${chalk.bold.yellow('⚠')} ${chalk.red(`${message}`)}`);
     }
 
+    printSuccess(message: string) {
+        console.log(`\n${chalk.bold.green('✔')} ${chalk.green(`${message}`)}`);
+    }
+
+    printInfo(message: string) {
+        console.log(`\n${chalk.bold.blue('ℹ')} ${chalk.blue(`${message}`)}`);
+    }
+
     printSetupGitEvent(event: string) {
         console.log(`\n${chalk.bold.green('✔')} ${chalk.bold(`Git ${event} hook has been set up`)}`);
     }
