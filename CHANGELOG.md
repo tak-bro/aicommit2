@@ -1,3 +1,10 @@
+## [2.2.23](https://github.com/tak-bro/aicommit2/compare/v2.2.22...v2.2.23) (2025-07-11)
+
+
+### Features
+
+* add --include-body flag to force commit body ([a54edca](https://github.com/tak-bro/aicommit2/commit/a54edca35ca7d041672a1531ec525e2d52371efa))
+
 ## [2.2.22](https://github.com/tak-bro/aicommit2/compare/v2.2.21...v2.2.22) (2025-06-23)
 
 
