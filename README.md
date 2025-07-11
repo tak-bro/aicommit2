@@ -719,13 +719,42 @@ The `logging` setting controls whether log files are generated. It can be config
 - **Global `logging` setting**: When set in the general configuration, it controls the overall application logging (handled by Winston) and acts as a default for AI request/response logging.
 - **Service-specific `logging` setting**: You can override the global `logging` setting for a particular AI service. If `logging` is set to `false` for a specific service, AI request/response logs will not be generated for that service, regardless of the global setting.
 
-### Removing All Logs
+### Log Management
 
-You can remove all generated log files (both application and AI logs) using the following command:
+_aicommit2_ generates detailed logs for debugging and tracking AI requests. You can manage these log files using the built-in log commands:
+
+#### View Log Files
 
 ```sh
+# List all log files with details
+aicommit2 log list
+
+# Show logs directory path
+aicommit2 log path
+```
+
+#### Open Log Directory
+
+```sh
+# Open logs directory in your file manager
+aicommit2 log open
+```
+
+#### Clean Up Logs
+
+```sh
+# Remove all log files
 aicommit2 log removeAll
 ```
+
+#### Log File Information
+
+- **Location**: Logs are stored in your system's state directory (usually `~/.local/state/aicommit2/logs` on Linux/macOS)
+- **Content**: Each log file contains the git diff, system prompt, AI response, and metadata
+- **Naming**: Files are named with timestamp and hash for easy identification
+- **Size**: File sizes are displayed in human-readable format (B, KB, MB, GB)
+
+
 
 ## Custom Prompt Template
 
