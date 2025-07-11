@@ -81,6 +81,12 @@ cli(
                 description: 'Run in pre-commit Framework, allowing chaining with other hooks',
                 default: false,
             },
+            'include-body': {
+                type: Boolean,
+                description: 'Force include commit body in all generated messages',
+                alias: 'i',
+                default: false,
+            },
         },
 
         commands: [configCommand, hookCommand, logCommand],
@@ -119,6 +125,7 @@ cli(
             argv.flags.confirm,
             argv.flags.clipboard,
             argv.flags.prompt,
+            argv.flags['include-body'],
             rawArgv
         );
     },
