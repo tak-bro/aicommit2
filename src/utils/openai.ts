@@ -6,6 +6,7 @@ import createHttpsProxyAgent from 'https-proxy-agent';
 
 import { RequestType, createLogResponse } from './ai-log.js';
 import { KnownError } from './error.js';
+import { generateUserPrompt } from './prompt.js';
 
 import type { ClientRequest, IncomingMessage } from 'http';
 import type { CreateChatCompletionRequest, CreateChatCompletionResponse } from 'openai';
@@ -161,7 +162,7 @@ export const generateCommitMessage = async (
             model,
             messages: [
                 { role: 'system', content: systemPrompt },
-                { role: 'user', content: `Here is the diff: ${diff}` },
+                { role: 'user', content: generateUserPrompt(diff, requestType) },
             ],
             temperature,
             max_tokens: maxTokens,

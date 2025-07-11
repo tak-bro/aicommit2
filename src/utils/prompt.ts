@@ -174,23 +174,47 @@ const defaultPrompt = (promptOptions: PromptOptions) => {
     const { type, maxLength, generate, locale } = promptOptions;
 
     return [
-        `You are a helpful assistant specializing in writing clear and informative Git commit messages using the ${type} style`,
-        `Based on the given code changes or context, generate exactly ${generate} ${type} Git commit message${generate !== 1 ? 's' : ''} based on the following guidelines.`,
-        `1. Message Language: ${locale}`,
-        `2. Format: follow the ${type} Commits format:`,
+        `You are an expert Git commit message writer specializing in analyzing code changes and creating precise, meaningful commit messages.`,
+        `Your task is to generate exactly ${generate} ${type} style commit message${generate !== 1 ? 's' : ''} based on the provided git diff.`,
+        '',
+        `## Requirements:`,
+        `1. Language: Write all messages in ${locale}`,
+        `2. Format: Strictly follow the ${type} commit format:`,
         `${commitTypeFormats[type]}`,
-        `3. Types: use one of the following types:${commitTypes[type]}`,
-        '4. Guidelines for writing commit messages:',
-        '   - Be specific about what changes were made',
-        '   - Use imperative mood ("add feature" not "added feature")',
-        `   - Keep subject line under ${maxLength} characters`,
-        '   - Do not end the subject line with a period',
-        '   - Use the body to explain what and why vs. how',
-        '5. Focus on:',
-        '   - What problem this commit solves',
-        '   - Why this change was necessary',
-        '   - Any important technical details',
-        '6. Exclude anything unnecessary such as translation or implementation details.',
+        `3. Allowed Types:${commitTypes[type]}`,
+        '',
+        `## Guidelines:`,
+        `- Subject line: Max ${maxLength} characters, imperative mood, no period`,
+        `- Analyze the diff to understand:`,
+        `  * What files were changed`,
+        `  * What functionality was added, modified, or removed`,
+        `  * The scope and impact of changes`,
+        `- For the commit type, choose based on:`,
+        `  * feat: New functionality or feature`,
+        `  * fix: Bug fixes or error corrections`,
+        `  * refactor: Code restructuring without changing functionality`,
+        `  * docs: Documentation changes only`,
+        `  * style: Formatting, missing semi-colons, etc`,
+        `  * test: Adding or modifying tests`,
+        `  * chore: Maintenance tasks, dependency updates`,
+        `  * perf: Performance improvements`,
+        `  * build: Build system or external dependency changes`,
+        `  * ci: CI configuration changes`,
+        `- Scope: Extract from file paths or logical grouping (e.g., auth, api, ui)`,
+        `- Body (when needed):`,
+        `  * Explain the motivation for the change`,
+        `  * Compare previous behavior with new behavior`,
+        `  * Note any breaking changes or important details`,
+        `- Footer: Include references to issues, breaking changes if applicable`,
+        '',
+        `## Analysis Approach:`,
+        `1. Identify the primary purpose of the changes`,
+        `2. Group related changes together`,
+        `3. Determine the most appropriate type and scope`,
+        `4. Write a clear, concise subject line`,
+        `5. Add body details for complex changes`,
+        '',
+        `Remember: The commit message should help future developers understand WHY this change was made, not just WHAT was changed.`,
     ]
         .filter(Boolean)
         .join('\n');
@@ -309,4 +333,12 @@ export const validateSystemPrompt = async (config: ValidConfig) => {
             throw new KnownError(`Error reading code review prompt file: ${config.codeReviewPromptPath}, ${error}`);
         }
     }
+};
+
+export const generateUserPrompt = (diff: string, requestType: 'commit' | 'review' = 'commit'): string => {
+    if (requestType === 'review') {
+        return `Please analyze the following git diff and provide a comprehensive code review:\n\n\`\`\`diff\n${diff}\n\`\`\`\n\nFocus on code quality, potential issues, and improvement suggestions.`;
+    }
+
+    return `Please analyze the following git diff and generate commit message(s) based on the changes:\n\n\`\`\`diff\n${diff}\n\`\`\`\n\nFocus on understanding the purpose and impact of these changes to create meaningful commit message(s).`;
 };

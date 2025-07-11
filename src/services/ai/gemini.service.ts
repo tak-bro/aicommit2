@@ -6,7 +6,7 @@ import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIResponse, AIService, AIServiceParams } from './ai.service.js';
 import { RequestType, createLogResponse } from '../../utils/ai-log.js';
-import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
+import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt, generateUserPrompt } from '../../utils/prompt.js';
 
 export class GeminiService extends AIService {
     private genAI: GoogleGenerativeAI;
@@ -129,7 +129,7 @@ export class GeminiService extends AIService {
             ],
         });
 
-        const result = await model.generateContent(`Here is the diff: ${diff}`);
+        const result = await model.generateContent(generateUserPrompt(diff, requestType));
         const response = result.response;
         const completion = response.text();
 

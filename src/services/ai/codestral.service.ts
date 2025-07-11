@@ -7,7 +7,7 @@ import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
 import { CreateChatCompletionsResponse } from './mistral.service.js';
 import { RequestType, createLogResponse } from '../../utils/ai-log.js';
-import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
+import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt, generateUserPrompt } from '../../utils/prompt.js';
 import { getRandomNumber } from '../../utils/utils.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
 export interface CodestralServiceError extends AIServiceError {}
@@ -106,7 +106,7 @@ export class CodestralService extends AIService {
                     },
                     {
                         role: 'user',
-                        content: `Here is the diff: ${this.params.stagedDiff.diff}`,
+                        content: generateUserPrompt(diff, requestType),
                     },
                 ],
                 temperature: this.params.config.temperature,

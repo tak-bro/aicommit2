@@ -6,7 +6,7 @@ import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
 import { RequestType, createLogResponse } from '../../utils/ai-log.js';
-import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
+import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt, generateUserPrompt } from '../../utils/prompt.js';
 
 export interface DeepSeekServiceError extends AIServiceError {}
 
@@ -98,7 +98,7 @@ export class DeepSeekService extends AIService {
                     },
                     {
                         role: 'user',
-                        content: `Here is the diff: ${this.params.stagedDiff.diff}`,
+                        content: generateUserPrompt(diff, requestType),
                     },
                 ],
                 model: this.params.config.model,
