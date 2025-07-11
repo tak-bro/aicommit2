@@ -90,4 +90,8 @@ export class ConsoleManager {
         readline.moveCursor(process.stdout, 0, 2);
         rl.close();
     }
+
+    print(message: string) {
+        console.log(message);
+    }
 }

@@ -195,6 +195,13 @@ aicommit2 --all # or -a
 - `--generate` or `-g`: Number of messages to generate (default: **1**)
   - **Warning**: This uses more tokens, meaning it costs more.
 - `--exclude` or `-x`: Files to exclude from AI analysis
+- `--include-body` or `-i`: Force include commit body in all generated messages (default: **false**)
+  - When enabled, all commit messages will include a detailed body section
+  - Useful for providing more context in commit messages
+- `--auto-select` or `-s`: Automatically select the commit message when only one AI model is configured (default: **false**)
+  - When enabled and only one AI provider is configured, the generated message is automatically selected
+  - Also skips the confirmation prompt for a seamless experience
+  - Has no effect when multiple AI providers are configured
 - `--hook-mode`: Run as a Git hook, typically used with prepare-commit-msg hook (default: **false**)
   - This mode is automatically enabled when running through the Git hook system
   - See [Git hook](#git-hook) section for more details
