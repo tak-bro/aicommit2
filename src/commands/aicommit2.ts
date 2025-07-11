@@ -30,6 +30,7 @@ export default async (
     useClipboard: boolean,
     prompt: string | undefined,
     includeBody: boolean | undefined,
+    autoSelect: boolean,
     rawArgv: string[]
 ) =>
     (async () => {
@@ -86,7 +87,7 @@ export default async (
             await handleCodeReview(aiRequestManager, codeReviewAIs);
         }
 
-        const selectedCommitMessage = await handleCommitMessage(aiRequestManager, availableAIs);
+        const selectedCommitMessage = await handleCommitMessage(aiRequestManager, availableAIs, autoSelect);
         if (useClipboard) {
             // eslint-disable-next-line @typescript-eslint/no-var-requires
             const ncp = require('copy-paste');
@@ -95,7 +96,7 @@ export default async (
             process.exit();
         }
 
-        if (confirm) {
+        if (confirm || (autoSelect && availableAIs.length === 1)) {
             await commitChanges(selectedCommitMessage, rawArgv);
             process.exit();
         }
@@ -195,8 +196,43 @@ async function handleCodeReview(aiRequestManager: AIRequestManager, availableAIs
     }
 }
 
-async function handleCommitMessage(aiRequestManager: AIRequestManager, availableAIs: ModelName[]) {
+async function handleCommitMessage(aiRequestManager: AIRequestManager, availableAIs: ModelName[], autoSelect: boolean) {
     const commitMsgPromptManager = new ReactivePromptManager(commitMsgLoader);
+
+    // If auto-select is enabled and only 1 AI model is available, collect messages without prompt
+    if (autoSelect && availableAIs.length === 1) {
+        const messages: ReactiveListChoice[] = [];
+        commitMsgPromptManager.startLoader();
+
+        const commitMsgSubscription = aiRequestManager.createCommitMsgRequests$(availableAIs).subscribe(
+            (choice: ReactiveListChoice) => {
+                messages.push(choice);
+                commitMsgPromptManager.refreshChoices(choice);
+            },
+            () => {
+                /* empty */
+            },
+            () => commitMsgPromptManager.checkErrorOnChoices(false)
+        );
+
+        // Wait for all messages to be generated
+        await new Promise<void>(resolve => {
+            commitMsgSubscription.add(() => resolve());
+        });
+
+        commitMsgPromptManager.clearLoader();
+        commitMsgPromptManager.completeSubject();
+
+        consoleManager.moveCursorUp(); // NOTE: reactiveListPrompt has 2 blank lines
+        const validMessage = messages.find(msg => msg.value && !msg.isError && !msg.disabled);
+        if (!validMessage || !validMessage.value) {
+            throw new KnownError('No valid commit message was generated');
+        }
+
+        consoleManager.print(`\n${validMessage.name}\n`);
+        return validMessage.value;
+    }
+
     const commitMsgInquirer = commitMsgPromptManager.initPrompt();
 
     commitMsgPromptManager.startLoader();

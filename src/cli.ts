@@ -87,6 +87,12 @@ cli(
                 alias: 'i',
                 default: false,
             },
+            'auto-select': {
+                type: Boolean,
+                description: 'Automatically select the message when only one is generated',
+                alias: 's',
+                default: false,
+            },
         },
 
         commands: [configCommand, hookCommand, logCommand],
@@ -126,6 +132,7 @@ cli(
             argv.flags.clipboard,
             argv.flags.prompt,
             argv.flags['include-body'],
+            argv.flags['auto-select'],
             rawArgv
         );
     },
