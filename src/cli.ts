@@ -113,7 +113,14 @@ cli(
         }
 
         if (argv.flags['hook-mode'] || isCalledFromGitHook) {
-            prepareCommitMessageHook();
+            prepareCommitMessageHook(
+                argv.flags.locale,
+                argv.flags.generate,
+                argv.flags.exclude,
+                argv.flags.type,
+                argv.flags.prompt,
+                argv.flags['include-body']
+            );
             return;
         }
 
