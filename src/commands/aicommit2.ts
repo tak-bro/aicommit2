@@ -29,6 +29,7 @@ export default async (
     confirm: boolean,
     useClipboard: boolean,
     prompt: string | undefined,
+    includeBody: boolean | undefined,
     rawArgv: string[]
 ) =>
     (async () => {
@@ -45,9 +46,21 @@ export default async (
                 generate: generate?.toString() as string,
                 type: commitType?.toString() as string,
                 systemPrompt: prompt?.toString() as string,
+                includeBody: includeBody?.toString() as string,
             },
             rawArgv
         );
+
+        // Override includeBody setting for all models when --include-body flag is present
+        const shouldIncludeBody = includeBody === true || config.includeBody === true;
+        if (shouldIncludeBody) {
+            Object.keys(config).forEach(key => {
+                if (typeof config[key] === 'object' && config[key] !== null && 'includeBody' in config[key]) {
+                    (config[key] as any).includeBody = true;
+                }
+            });
+        }
+
         await validateSystemPrompt(config);
 
         const detectingFilesSpinner = consoleManager.displaySpinner('Detecting staged files');
