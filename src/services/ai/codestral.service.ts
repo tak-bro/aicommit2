@@ -27,6 +27,38 @@ export class CodestralService extends AIService {
         this.apiKey = this.params.config.key;
     }
 
+    protected getServiceSpecificErrorMessage(error: AIServiceError): string | null {
+        const errorMsg = error.message || '';
+
+        // Codestral-specific error messages
+        if (errorMsg.includes('API key') || errorMsg.includes('api_key')) {
+            return 'Invalid API key. Check your Codestral API key in configuration';
+        }
+        if (errorMsg.includes('rate_limit') || errorMsg.includes('Rate limit')) {
+            return 'Rate limit exceeded. Wait a moment and try again, or upgrade your Codestral plan';
+        }
+        if (errorMsg.includes('model') || errorMsg.includes('Model')) {
+            return 'Model not found or not accessible. Check if the Codestral model name is correct';
+        }
+        if (errorMsg.includes('Invalid model type')) {
+            return 'Invalid model type. Use supported models: codestral-latest, codestral-2501';
+        }
+        if (errorMsg.includes('overloaded') || errorMsg.includes('capacity')) {
+            return 'Codestral service is overloaded. Try again in a few minutes';
+        }
+        if (errorMsg.includes('403') || errorMsg.includes('Forbidden')) {
+            return 'Access denied. Your API key may not have permission for this Codestral model';
+        }
+        if (errorMsg.includes('404') || errorMsg.includes('Not Found')) {
+            return 'Model or endpoint not found. Check your Codestral model configuration';
+        }
+        if (errorMsg.includes('500') || errorMsg.includes('Internal Server Error')) {
+            return 'Codestral server error. Try again later';
+        }
+
+        return null;
+    }
+
     generateCommitMessage$(): Observable<ReactiveListChoice> {
         return fromPromise(this.generateMessage('commit')).pipe(
             concatMap(messages => from(messages)),
@@ -106,7 +138,7 @@ export class CodestralService extends AIService {
                     },
                     {
                         role: 'user',
-                        content: generateUserPrompt(diff, requestType),
+                        content: generateUserPrompt(this.params.stagedDiff.diff, requestType),
                     },
                 ],
                 temperature: this.params.config.temperature,

@@ -4,7 +4,7 @@ import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Observable, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
-import { AIResponse, AIService, AIServiceParams } from './ai.service.js';
+import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
 import { RequestType, createLogResponse } from '../../utils/ai-log.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt, generateUserPrompt } from '../../utils/prompt.js';
 
@@ -20,6 +20,38 @@ export class GeminiService extends AIService {
         this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold('[Gemini]');
         this.errorPrefix = chalk.red.bold(`[Gemini]`);
         this.genAI = new GoogleGenerativeAI(this.params.config.key);
+    }
+
+    protected getServiceSpecificErrorMessage(error: AIServiceError): string | null {
+        const errorMsg = error.message || '';
+
+        // Gemini-specific error messages
+        if (errorMsg.includes('API key') || errorMsg.includes('api_key')) {
+            return 'Invalid API key. Check your Google AI Studio API key in configuration';
+        }
+        if (errorMsg.includes('quota') || errorMsg.includes('QUOTA_EXCEEDED')) {
+            return 'API quota exceeded. Check your Google AI Studio usage limits';
+        }
+        if (errorMsg.includes('model') || errorMsg.includes('Model')) {
+            return 'Model not found or not accessible. Check if the Gemini model name is correct';
+        }
+        if (errorMsg.includes('SAFETY') || errorMsg.includes('safety')) {
+            return 'Content blocked by safety filters. Try rephrasing your request';
+        }
+        if (errorMsg.includes('RECITATION') || errorMsg.includes('recitation')) {
+            return 'Content blocked due to recitation concerns. Try a different approach';
+        }
+        if (errorMsg.includes('403') || errorMsg.includes('Forbidden')) {
+            return 'Access denied. Your API key may not have permission for this Gemini model';
+        }
+        if (errorMsg.includes('404') || errorMsg.includes('Not Found')) {
+            return 'Model or endpoint not found. Check your Gemini model configuration';
+        }
+        if (errorMsg.includes('500') || errorMsg.includes('Internal Server Error')) {
+            return 'Google AI service error. Try again later';
+        }
+
+        return null;
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {

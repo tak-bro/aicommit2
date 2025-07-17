@@ -35,6 +35,32 @@ export class AnthropicService extends AIService {
         });
     }
 
+    protected getServiceSpecificErrorMessage(error: AIServiceError): string | null {
+        const errorMsg = error.message || '';
+
+        // Anthropic-specific error messages
+        if (errorMsg.includes('API key') || errorMsg.includes('api_key')) {
+            return 'Invalid API key. Check your Anthropic API key in configuration';
+        }
+        if (errorMsg.includes('quota') || errorMsg.includes('usage')) {
+            return 'API quota exceeded. Check your Anthropic usage limits';
+        }
+        if (errorMsg.includes('model') || errorMsg.includes('Model')) {
+            return 'Model not found or not accessible. Check if the Claude model name is correct';
+        }
+        if (errorMsg.includes('403') || errorMsg.includes('Forbidden')) {
+            return 'Access denied. Your API key may not have permission for this Claude model';
+        }
+        if (errorMsg.includes('404') || errorMsg.includes('Not Found')) {
+            return 'Model or endpoint not found. Check your Claude model configuration';
+        }
+        if (errorMsg.includes('500') || errorMsg.includes('Internal Server Error')) {
+            return 'Anthropic server error. Try again later';
+        }
+
+        return null;
+    }
+
     generateCommitMessage$(): Observable<ReactiveListChoice> {
         return fromPromise(this.generateMessage('commit')).pipe(
             concatMap(messages => from(messages)),

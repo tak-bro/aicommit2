@@ -160,7 +160,7 @@ async function authenticateWithBrowser(consoleManager: ConsoleManager) {
         }
 
         consoleManager.printSuccess('GitHub authentication completed and Copilot access verified!');
-        consoleManager.printInfo('You can now use GitHub Models: aic2 --ai COPILOT');
+        consoleManager.printInfo('See usage guide: https://github.com/tak-bro/aicommit2/blob/main/docs/providers/copilot.md');
         consoleManager.printInfo('Available models: gpt-4o-mini, gpt-4o, meta-llama-3.1-405b-instruct, etc.');
     } catch (error) {
         throw error;

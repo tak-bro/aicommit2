@@ -3,7 +3,7 @@ import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Observable, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
-import { AIResponse, AIService, AIServiceParams } from './ai.service.js';
+import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
 import { RequestType } from '../../utils/ai-log.js';
 import { generateCommitMessage } from '../../utils/openai.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
@@ -18,6 +18,23 @@ export class OpenAIService extends AIService {
         };
         this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold(`[ChatGPT]`);
         this.errorPrefix = chalk.red.bold(`[ChatGPT]`);
+    }
+
+    protected getServiceSpecificErrorMessage(error: AIServiceError): string | null {
+        const errorMsg = error.message || '';
+
+        // OpenAI-specific error messages
+        if (errorMsg.includes('API key')) {
+            return 'Invalid API key. Check your OpenAI API key in configuration';
+        }
+        if (errorMsg.includes('quota')) {
+            return 'API quota exceeded. Check your OpenAI usage limits';
+        }
+        if (errorMsg.includes('500')) {
+            return 'OpenAI server error. Try again later';
+        }
+
+        return null;
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {

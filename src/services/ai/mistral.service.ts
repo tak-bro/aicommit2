@@ -57,6 +57,32 @@ export class MistralService extends AIService {
         this.apiKey = this.params.config.key;
     }
 
+    protected getServiceSpecificErrorMessage(error: AIServiceError): string | null {
+        const errorMsg = error.message || '';
+
+        // Mistral-specific error messages
+        if (errorMsg.includes('API key') || errorMsg.includes('api_key')) {
+            return 'Invalid API key. Check your Mistral AI API key in configuration';
+        }
+        if (errorMsg.includes('quota') || errorMsg.includes('usage')) {
+            return 'API quota exceeded. Check your Mistral AI usage limits';
+        }
+        if (errorMsg.includes('model') || errorMsg.includes('Model')) {
+            return 'Model not found or not accessible. Check if the Mistral model name is correct';
+        }
+        if (errorMsg.includes('403') || errorMsg.includes('Forbidden')) {
+            return 'Access denied. Your API key may not have permission for this Mistral model';
+        }
+        if (errorMsg.includes('404') || errorMsg.includes('Not Found')) {
+            return 'Model or endpoint not found. Check your Mistral model configuration';
+        }
+        if (errorMsg.includes('500') || errorMsg.includes('Internal Server Error')) {
+            return 'Mistral AI server error. Try again later';
+        }
+
+        return null;
+    }
+
     generateCommitMessage$(): Observable<ReactiveListChoice> {
         return fromPromise(this.generateMessage('commit')).pipe(
             concatMap(messages => from(messages)),

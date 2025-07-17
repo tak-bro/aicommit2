@@ -4,7 +4,7 @@ import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Observable, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
-import { AIResponse, AIService, AIServiceParams } from './ai.service.js';
+import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
 import { RequestType, createLogResponse } from '../../utils/ai-log.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
@@ -42,6 +42,35 @@ export class PerplexityService extends AIService {
         this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold(`[Perplexity]`);
         this.errorPrefix = chalk.red.bold(`[Perplexity]`);
         this.apiKey = this.params.config.key;
+    }
+
+    protected getServiceSpecificErrorMessage(error: AIServiceError): string | null {
+        const errorMsg = error.message || '';
+
+        // Perplexity-specific error messages
+        if (errorMsg.includes('API key') || errorMsg.includes('api_key')) {
+            return 'Invalid API key. Check your Perplexity API key in configuration';
+        }
+        if (errorMsg.includes('rate_limit') || errorMsg.includes('Rate limit')) {
+            return 'Rate limit exceeded. Wait a moment and try again, or upgrade your Perplexity plan';
+        }
+        if (errorMsg.includes('model') || errorMsg.includes('Model')) {
+            return 'Model not found or not accessible. Check if the Perplexity model name is correct';
+        }
+        if (errorMsg.includes('overloaded') || errorMsg.includes('capacity')) {
+            return 'Perplexity service is overloaded. Try again in a few minutes';
+        }
+        if (errorMsg.includes('403') || errorMsg.includes('Forbidden')) {
+            return 'Access denied. Your API key may not have permission for this Perplexity model';
+        }
+        if (errorMsg.includes('404') || errorMsg.includes('Not Found')) {
+            return 'Model or endpoint not found. Check your Perplexity model configuration';
+        }
+        if (errorMsg.includes('500') || errorMsg.includes('Internal Server Error')) {
+            return 'Perplexity server error. Try again later';
+        }
+
+        return null;
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {

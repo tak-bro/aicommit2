@@ -4,7 +4,7 @@ import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Observable, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
-import { AIResponse, AIService, AIServiceParams } from './ai.service.js';
+import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
 import { RequestType, createLogResponse } from '../../utils/ai-log.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 
@@ -20,6 +20,35 @@ export class GroqService extends AIService {
         this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold('[Groq]');
         this.errorPrefix = chalk.red.bold(`[Groq]`);
         this.groq = new Groq({ apiKey: this.params.config.key });
+    }
+
+    protected getServiceSpecificErrorMessage(error: AIServiceError): string | null {
+        const errorMsg = error.message || '';
+
+        // Groq-specific error messages
+        if (errorMsg.includes('API key') || errorMsg.includes('api_key')) {
+            return 'Invalid API key. Check your Groq API key in configuration';
+        }
+        if (errorMsg.includes('rate_limit') || errorMsg.includes('Rate limit')) {
+            return 'Rate limit exceeded. Wait a moment and try again, or upgrade your Groq plan';
+        }
+        if (errorMsg.includes('model') || errorMsg.includes('Model')) {
+            return 'Model not found or not accessible. Check if the Groq model name is correct';
+        }
+        if (errorMsg.includes('overloaded') || errorMsg.includes('capacity')) {
+            return 'Groq service is overloaded. Try again in a few minutes';
+        }
+        if (errorMsg.includes('403') || errorMsg.includes('Forbidden')) {
+            return 'Access denied. Your API key may not have permission for this Groq model';
+        }
+        if (errorMsg.includes('404') || errorMsg.includes('Not Found')) {
+            return 'Model or endpoint not found. Check your Groq model configuration';
+        }
+        if (errorMsg.includes('500') || errorMsg.includes('Internal Server Error')) {
+            return 'Groq server error. Try again later';
+        }
+
+        return null;
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {

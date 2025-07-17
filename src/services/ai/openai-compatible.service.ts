@@ -4,7 +4,7 @@ import OpenAI from 'openai';
 import { Observable, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
-import { AIResponse, AIService, AIServiceParams } from './ai.service.js';
+import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
 import { RequestType, createLogResponse } from '../../utils/ai-log.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 import { capitalizeFirstLetter, generateColors } from '../../utils/utils.js';
@@ -26,6 +26,41 @@ export class OpenAICompatibleService extends AIService {
             apiKey: this.params.config.key,
             baseURL: `${this.params.config.url}${this.params.config.path}`,
         });
+    }
+
+    protected getServiceSpecificErrorMessage(error: AIServiceError): string | null {
+        const errorMsg = error.message || '';
+
+        // OpenAI-compatible API specific error messages
+        if (errorMsg.includes('API key') || errorMsg.includes('api_key')) {
+            return 'Invalid API key. Check your OpenAI-compatible API key in configuration';
+        }
+        if (errorMsg.includes('rate_limit') || errorMsg.includes('Rate limit')) {
+            return 'Rate limit exceeded. Wait a moment and try again, or check your service limits';
+        }
+        if (errorMsg.includes('model') || errorMsg.includes('Model')) {
+            return 'Model not found or not accessible. Check if the model name is correct';
+        }
+        if (errorMsg.includes('network') || errorMsg.includes('connection')) {
+            return 'Network error. Check your internet connection and API endpoint';
+        }
+        if (errorMsg.includes('quota') || errorMsg.includes('usage')) {
+            return 'API quota exceeded. Check your usage limits';
+        }
+        if (errorMsg.includes('403') || errorMsg.includes('Forbidden')) {
+            return 'Access denied. Your API key may not have permission for this model';
+        }
+        if (errorMsg.includes('404') || errorMsg.includes('Not Found')) {
+            return 'Model or endpoint not found. Check your API configuration';
+        }
+        if (errorMsg.includes('500') || errorMsg.includes('Internal Server Error')) {
+            return 'Server error. Try again later';
+        }
+        if (errorMsg.includes('overloaded') || errorMsg.includes('capacity')) {
+            return 'Service is overloaded. Try again in a few minutes';
+        }
+
+        return null;
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {

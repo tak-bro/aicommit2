@@ -29,6 +29,38 @@ export class DeepSeekService extends AIService {
         });
     }
 
+    protected getServiceSpecificErrorMessage(error: AIServiceError): string | null {
+        const errorMsg = error.message || '';
+
+        // DeepSeek-specific error messages
+        if (errorMsg.includes('API key') || errorMsg.includes('api_key')) {
+            return 'Invalid API key. Check your DeepSeek API key in configuration';
+        }
+        if (errorMsg.includes('rate_limit') || errorMsg.includes('Rate limit')) {
+            return 'Rate limit exceeded. Wait a moment and try again, or upgrade your DeepSeek plan';
+        }
+        if (errorMsg.includes('model') || errorMsg.includes('Model')) {
+            return 'Model not found or not accessible. Check if the DeepSeek model name is correct';
+        }
+        if (errorMsg.includes('Invalid model type')) {
+            return 'Invalid model type. Use supported models: deepseek-reasoner, deepseek-chat';
+        }
+        if (errorMsg.includes('overloaded') || errorMsg.includes('capacity')) {
+            return 'DeepSeek service is overloaded. Try again in a few minutes';
+        }
+        if (errorMsg.includes('403') || errorMsg.includes('Forbidden')) {
+            return 'Access denied. Your API key may not have permission for this DeepSeek model';
+        }
+        if (errorMsg.includes('404') || errorMsg.includes('Not Found')) {
+            return 'Model or endpoint not found. Check your DeepSeek model configuration';
+        }
+        if (errorMsg.includes('500') || errorMsg.includes('Internal Server Error')) {
+            return 'DeepSeek server error. Try again later';
+        }
+
+        return null;
+    }
+
     generateCommitMessage$(): Observable<ReactiveListChoice> {
         return fromPromise(this.generateMessage('commit')).pipe(
             concatMap(messages => from(messages)),
@@ -72,7 +104,7 @@ export class DeepSeekService extends AIService {
         };
         const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
         this.checkAvailableModels();
-        const chatResponse = await this.createChatCompletions(generatedSystemPrompt);
+        const chatResponse = await this.createChatCompletions(generatedSystemPrompt, diff, requestType);
         logging && createLogResponse('DeepSeek', diff, generatedSystemPrompt, chatResponse, requestType);
         if (requestType === 'review') {
             return this.sanitizeResponse(chatResponse);
@@ -88,7 +120,7 @@ export class DeepSeekService extends AIService {
         throw new Error(`Invalid model type of DeepSeek`);
     }
 
-    private async createChatCompletions(systemPrompt: string) {
+    private async createChatCompletions(systemPrompt: string, diff: string, requestType: RequestType) {
         const chatCompletion = await this.deepSeek.chat.completions.create(
             {
                 messages: [

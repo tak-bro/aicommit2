@@ -51,9 +51,88 @@ export abstract class AIService {
     abstract generateCommitMessage$(): Observable<ReactiveListChoice>;
     abstract generateCodeReview$(): Observable<ReactiveListChoice>;
 
+    protected getDetailedErrorMessage(error: AIServiceError): string {
+        // Common error patterns that apply to most AI services
+        const errorMsg = error.message || '';
+
+        // API key related errors
+        if (errorMsg.includes('API key') || errorMsg.includes('api_key')) {
+            return 'Invalid API key. Check your API key configuration';
+        }
+
+        // Rate limiting errors
+        if (
+            errorMsg.includes('rate_limit') ||
+            errorMsg.includes('Rate limit') ||
+            errorMsg.includes('429') ||
+            errorMsg.includes('Too Many Requests')
+        ) {
+            return 'Rate limit exceeded. Wait a moment and try again, or upgrade your plan';
+        }
+
+        // Model related errors
+        if (errorMsg.includes('model') || errorMsg.includes('Model')) {
+            return 'Model not found or not accessible. Check if the model name is correct';
+        }
+
+        // Timeout errors
+        if (errorMsg.includes('timeout') || errorMsg.includes('Timeout')) {
+            return 'Request timed out. Try again or increase the timeout setting';
+        }
+
+        // Network errors
+        if (errorMsg.includes('network') || errorMsg.includes('connection') || errorMsg.includes('ECONNREFUSED')) {
+            return 'Network error. Check your internet connection and try again';
+        }
+
+        // Quota/usage errors
+        if (errorMsg.includes('quota') || errorMsg.includes('usage') || errorMsg.includes('QUOTA_EXCEEDED')) {
+            return 'API quota exceeded. Check your usage limits';
+        }
+
+        // HTTP status code specific errors
+        if (errorMsg.includes('401') || errorMsg.includes('Unauthorized')) {
+            return 'Authentication failed. Your API key may be invalid or expired';
+        }
+
+        if (errorMsg.includes('403') || errorMsg.includes('Forbidden')) {
+            return 'Access denied. Your API key may not have permission for this model';
+        }
+
+        if (errorMsg.includes('404') || errorMsg.includes('Not Found')) {
+            return 'Model or endpoint not found. Check your model configuration';
+        }
+
+        if (errorMsg.includes('500') || errorMsg.includes('Internal Server Error')) {
+            return 'Server error. Try again later';
+        }
+
+        // Service overload
+        if (
+            errorMsg.includes('overloaded') ||
+            errorMsg.includes('capacity') ||
+            errorMsg.includes('SERVICE_UNAVAILABLE') ||
+            errorMsg.includes('unavailable')
+        ) {
+            return 'Service is temporarily unavailable. Try again in a few minutes';
+        }
+
+        // Allow services to override with their own logic
+        return this.getServiceSpecificErrorMessage(error) || errorMsg || 'Unknown error occurred';
+    }
+
+    // Override this method in child classes for service-specific error messages
+    protected getServiceSpecificErrorMessage(error: AIServiceError): string | null {
+        return null;
+    }
+
     handleError$ = (error: AIServiceError) => {
-        let message = error.name ?? 'Unknown Error';
-        logger.error(`${this.errorPrefix} ${error}`);
+        const detailedMessage = this.getDetailedErrorMessage(error);
+
+        // Add status code if available
+        const finalMessage = error.status ? `HTTP ${error.status}: ${detailedMessage}` : detailedMessage;
+
+        logger.error(`${this.errorPrefix} ${finalMessage}`);
         if (error.stack) {
             logger.error(`    ${error.stack}`);
         }
@@ -63,14 +142,10 @@ export abstract class AIService {
         if (error.originalError) {
             logger.error(`    Original error: ${error.originalError}`);
         }
-        if (error.status) {
-            message = `${error.status} ${message}`;
-        } else if (error.code) {
-            message = `${error.code} ${message}`;
-        }
+
         return of({
-            name: `${this.errorPrefix} ${message}`,
-            value: message,
+            name: `${this.errorPrefix} ${finalMessage}`,
+            value: finalMessage,
             isError: true,
             disabled: true,
         });

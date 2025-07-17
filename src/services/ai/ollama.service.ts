@@ -44,6 +44,35 @@ export class OllamaService extends AIService {
         });
     }
 
+    protected getServiceSpecificErrorMessage(error: AIServiceError): string | null {
+        const errorMsg = error.message || '';
+
+        // Ollama-specific error messages
+        if (errorMsg.includes('ECONNREFUSED') || errorMsg.includes('connection')) {
+            return `Cannot connect to Ollama server at ${this.host}. Make sure Ollama is running`;
+        }
+        if (errorMsg.includes('model') || errorMsg.includes('Model')) {
+            return `Model '${this.model}' not found. Pull the model with: ollama pull ${this.model}`;
+        }
+        if (errorMsg.includes('401') || errorMsg.includes('Unauthorized')) {
+            return 'Authentication failed. Check your Ollama API key if authentication is enabled';
+        }
+        if (errorMsg.includes('403') || errorMsg.includes('Forbidden')) {
+            return 'Access denied. Check your Ollama server permissions';
+        }
+        if (errorMsg.includes('404') || errorMsg.includes('Not Found')) {
+            return `Model '${this.model}' not found on Ollama server. Pull it first with: ollama pull ${this.model}`;
+        }
+        if (errorMsg.includes('500') || errorMsg.includes('Internal Server Error')) {
+            return 'Ollama server error. Check server logs and try again';
+        }
+        if (errorMsg.includes('overloaded') || errorMsg.includes('capacity')) {
+            return 'Ollama server is overloaded. Try again in a few minutes';
+        }
+
+        return null;
+    }
+
     generateCommitMessage$(): Observable<ReactiveListChoice> {
         return fromPromise(this.generateMessage('commit')).pipe(
             concatMap(messages => from(messages)),

@@ -3,7 +3,7 @@ import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Observable, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
-import { AIResponse, AIService, AIServiceParams } from './ai.service.js';
+import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
 import { RequestType, createLogResponse } from '../../utils/ai-log.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 
@@ -73,6 +73,38 @@ export class HuggingFaceService extends AIService {
         this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold('[HuggingFace]');
         this.errorPrefix = chalk.red.bold(`[HuggingFace]`);
         this.cookie = this.params.config.cookie;
+    }
+
+    protected getServiceSpecificErrorMessage(error: AIServiceError): string | null {
+        const errorMsg = error.message || '';
+
+        // Hugging Face-specific error messages
+        if (errorMsg.includes('cookie') || errorMsg.includes('Cookie')) {
+            return 'Invalid cookie. Check your Hugging Face session cookie in configuration';
+        }
+        if (errorMsg.includes('model') || errorMsg.includes('Model')) {
+            return 'Model not found or not accessible. Check if the Hugging Face model name is correct';
+        }
+        if (errorMsg.includes('conversation') || errorMsg.includes('conversion')) {
+            return 'Failed to create conversation. Try again or check your session';
+        }
+        if (errorMsg.includes('401') || errorMsg.includes('Unauthorized')) {
+            return 'Authentication failed. Your Hugging Face session may have expired';
+        }
+        if (errorMsg.includes('403') || errorMsg.includes('Forbidden')) {
+            return 'Access denied. You may not have permission to access this model';
+        }
+        if (errorMsg.includes('404') || errorMsg.includes('Not Found')) {
+            return 'Model not found. Check your Hugging Face model configuration';
+        }
+        if (errorMsg.includes('500') || errorMsg.includes('Internal Server Error')) {
+            return 'Hugging Face server error. Try again later';
+        }
+        if (errorMsg.includes('overloaded') || errorMsg.includes('capacity')) {
+            return 'Hugging Face service is overloaded. Try again in a few minutes';
+        }
+
+        return null;
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
