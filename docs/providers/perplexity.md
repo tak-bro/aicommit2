@@ -13,7 +13,7 @@
 
 ```sh
 aicommit2 config set PERPLEXITY.key="your-api-key"
-aicommit2 config set PERPLEXITY.model="sonar-pro"
+aicommit2 config set PERPLEXITY.model="sonar"
 ```
 
 ### Advanced Setup
@@ -47,14 +47,14 @@ Default: `sonar`
 
 Supported:
 
-- `sonar-pro`
-- `sonar`
-- `llama-3.1-sonar-small-128k-online`
-- `llama-3.1-sonar-large-128k-online`
-- `llama-3.1-sonar-huge-128k-online`
+- `sonar-pro` (Sonar Pro)
+- `sonar` (Sonar - default)
+- `llama-3.1-sonar-small-128k-online` (Llama 3.1 Sonar Small 128K Online)
+- `llama-3.1-sonar-large-128k-online` (Llama 3.1 Sonar Large 128K Online)
+- `llama-3.1-sonar-huge-128k-online` (Llama 3.1 Sonar Huge 128K Online)
 
 > The models mentioned above are subject to change.
 
 ```sh
-aicommit2 config set PERPLEXITY.model="sonar-pro"
+aicommit2 config set PERPLEXITY.model="sonar"
 ```

@@ -6,6 +6,7 @@ import { AIServiceFactory } from '../services/ai/ai-service.factory.js';
 import { AnthropicService } from '../services/ai/anthropic.service.js';
 import { CodestralService } from '../services/ai/codestral.service.js';
 import { CohereService } from '../services/ai/cohere.service.js';
+import { CopilotService } from '../services/ai/copilot.service.js';
 import { DeepSeekService } from '../services/ai/deep-seek.service.js';
 import { GeminiService } from '../services/ai/gemini.service.js';
 import { GroqService } from '../services/ai/groq.service.js';
@@ -105,6 +106,12 @@ export class AIRequestManager {
                             case 'PERPLEXITY':
                                 return AIServiceFactory.create(PerplexityService, {
                                     config: { ...this.config.PERPLEXITY, model: model }, // Pass the single model name
+                                    stagedDiff: this.stagedDiff,
+                                    keyName: model as ModelName, // Use the model name as keyName
+                                }).generateCommitMessage$();
+                            case 'COPILOT':
+                                return AIServiceFactory.create(CopilotService, {
+                                    config: { ...this.config.COPILOT, model: model }, // Pass the single model name
                                     stagedDiff: this.stagedDiff,
                                     keyName: model as ModelName, // Use the model name as keyName
                                 }).generateCommitMessage$();
@@ -219,6 +226,12 @@ export class AIRequestManager {
                             case 'PERPLEXITY':
                                 return AIServiceFactory.create(PerplexityService, {
                                     config: { ...this.config.PERPLEXITY, model: model }, // Pass the single model name
+                                    stagedDiff: this.stagedDiff,
+                                    keyName: model as ModelName, // Use the model name as keyName
+                                }).generateCodeReview$();
+                            case 'COPILOT':
+                                return AIServiceFactory.create(CopilotService, {
+                                    config: { ...this.config.COPILOT, model: model }, // Pass the single model name
                                     stagedDiff: this.stagedDiff,
                                     keyName: model as ModelName, // Use the model name as keyName
                                 }).generateCodeReview$();

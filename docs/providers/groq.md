@@ -47,25 +47,25 @@ Default: `llama-3.3-70b-versatile`
 
 Supported:
 
-- `allam-2-7b`,
-- `compound-beta`,
-- `compound-beta-mini`,
-- `deepseek-r1-distill-llama-70b`,
-- `distil-whisper-large-v3-en`,
-- `gemma2-9b-it`,
-- `llama-3.1-8b-instant`,
-- `llama-3.3-70b-versatile`,
-- `llama-guard-3-8b`,
-- `llama3-70b-8192`,
-- `llama3-8b-8192`,
-- `meta-llama/llama-4-maverick-17b-128e-instruct`,
-- `meta-llama/llama-4-scout-17b-16e-instruct`,
-- `mistral-saba-24b`,
-- `playai-tts`,
-- `playai-tts-arabic`,
-- `qwen-qwq-32b`,
-- `whisper-large-v3`,
-- `whisper-large-v3-turbo`,
+- `llama-3.3-70b-versatile` (Llama 3.3 70B Versatile - default)
+- `meta-llama/llama-4-maverick-17b-128e-instruct` (Llama 4 Maverick 17B)
+- `meta-llama/llama-4-scout-17b-16e-instruct` (Llama 4 Scout 17B)
+- `deepseek-r1-distill-llama-70b` (DeepSeek R1 Distill Llama 70B)
+- `qwen-qwq-32b` (Qwen QwQ 32B)
+- `mistral-saba-24b` (Mistral Saba 24B)
+- `llama3-70b-8192` (Llama 3 70B)
+- `llama-3.1-8b-instant` (Llama 3.1 8B Instant)
+- `llama3-8b-8192` (Llama 3 8B)
+- `gemma2-9b-it` (Gemma 2 9B IT)
+- `llama-guard-3-8b` (Llama Guard 3 8B)
+- `allam-2-7b` (Allam 2 7B)
+- `compound-beta` (Compound Beta)
+- `compound-beta-mini` (Compound Beta Mini)
+- `whisper-large-v3` (Whisper Large V3)
+- `whisper-large-v3-turbo` (Whisper Large V3 Turbo)
+- `distil-whisper-large-v3-en` (Distil Whisper Large V3 EN)
+- `playai-tts` (PlayAI TTS)
+- `playai-tts-arabic` (PlayAI TTS Arabic)
 
 ```sh
 aicommit2 config set GROQ.model="llama-3.3-70b-versatile"

@@ -366,7 +366,7 @@ _aicommit2_ offers flexible configuration options for all AI services, including
    To specify multiple models, use the `--[Model].model=model1,model2` format.
 
    ```sh
-   aicommit2 --OPENAI.locale="jp" --GEMINI.temperature="0.5" --OPENAI.model="gpt-4o,gpt-3.5-turbo"
+   aicommit2 --OPENAI.locale="jp" --GEMINI.temperature="0.5" --OPENAI.model="gpt-4o-mini,gpt-3.5-turbo"
    ```
 
 2. **Configuration file**: Refer to [Configuration File Location](#configuration-file-location) or use the `set` command.
@@ -383,14 +383,14 @@ _aicommit2_ offers flexible configuration options for all AI services, including
    key="<your-api-key>"
    temperature=0.8
    generate=1
-   model="gpt-4o,gpt-3.5-turbo"
+   model="gpt-4o-mini,gpt-3.5-turbo"
    systemPromptPath="<your-prompt-path>"
 
    [GEMINI]
    key="<your-api-key>"
    generate=5
    includeBody=true
-   model="gemini-pro,gemini-flash"
+   model="gemini-1.5-flash,gemini-1.5-pro"
 
    [OLLAMA]
    temperature=0.7
@@ -662,9 +662,9 @@ aicommit2 config set \
   topP=0.8 \
   maxTokens=1024 \
   temperature=0.7 \
-  OPENAI.key="sk-..." OPENAI.model="gpt-4o" OPENAI.temperature=0.5 \
-  ANTHROPIC.key="sk-..." ANTHROPIC.model="claude-3-haiku" ANTHROPIC.maxTokens=2000 \
-  MISTRAL.key="your-key" MISTRAL.model="codestral-latest"  \
+  OPENAI.key="sk-..." OPENAI.model="gpt-4o-mini" OPENAI.temperature=0.5 \
+  ANTHROPIC.key="sk-..." ANTHROPIC.model="claude-3-5-haiku-20241022" ANTHROPIC.maxTokens=2000 \
+  MISTRAL.key="your-key" MISTRAL.model="mistral-small-latest"  \
   OLLAMA.model="llama3.2" OLLAMA.numCtx=4096 OLLAMA.watchMode=true
 ```
 

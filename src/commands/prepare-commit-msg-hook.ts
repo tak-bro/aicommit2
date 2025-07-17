@@ -9,8 +9,6 @@ import { BUILTIN_SERVICES, ModelName, RawConfig, getConfig } from '../utils/conf
 import { KnownError, handleCliError } from '../utils/error.js';
 import { getCommentChar, getStagedDiff } from '../utils/git.js';
 
-// Extract positional arguments after flags have been parsed by cleye
-// When called via --hook-mode, the message file path and commit source are the remaining arguments
 const allArgs = process.argv.slice(2);
 const positionalArgs: string[] = [];
 let skipNext = false;
@@ -24,12 +22,10 @@ for (let i = 0; i < allArgs.length; i++) {
     }
 
     if (arg === '--hook-mode') {
-        // Skip --hook-mode flag
         continue;
     }
 
     if (arg.startsWith('-')) {
-        // Skip flags and their values
         const nextArg = allArgs[i + 1];
         if (nextArg && !nextArg.startsWith('-')) {
             skipNext = true;

@@ -3,6 +3,7 @@ import { cli } from 'cleye';
 import pkg from '../package.json';
 import aicommit2 from './commands/aicommit2.js';
 import configCommand from './commands/config.js';
+import copilotLoginCommand from './commands/copilot-login.js';
 import hookCommand, { isCalledFromGitHook } from './commands/hook.js';
 import logCommand from './commands/log.js';
 import preCommitHook from './commands/pre-commit-hook.js';
@@ -95,7 +96,7 @@ cli(
             },
         },
 
-        commands: [configCommand, hookCommand, logCommand],
+        commands: [configCommand, copilotLoginCommand, hookCommand, logCommand],
 
         help: {
             description,

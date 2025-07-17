@@ -54,6 +54,14 @@ Default: `gpt-4o-mini`
 
 The Chat Completions (`/v1/chat/completions`) model to use. Consult the list of models available in the [OpenAI Documentation](https://platform.openai.com/docs/models/model-endpoint-compatibility).
 
+Supported models include:
+- `gpt-4o`
+- `gpt-4o-mini`
+- `gpt-4-turbo`
+- `gpt-4`
+- `gpt-3.5-turbo`
+- And other OpenAI chat completion models
+
 ```sh
 aicommit2 config set OPENAI.model=gpt-4o
 ```
