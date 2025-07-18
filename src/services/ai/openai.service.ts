@@ -10,7 +10,7 @@ import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt
 import { flattenDeep } from '../../utils/utils.js';
 
 export class OpenAIService extends AIService {
-    constructor(private readonly params: AIServiceParams) {
+    constructor(protected readonly params: AIServiceParams) {
         super(params);
         this.colors = {
             primary: '#74AA9C',

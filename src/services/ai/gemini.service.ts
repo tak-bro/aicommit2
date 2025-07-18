@@ -11,7 +11,7 @@ import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt
 export class GeminiService extends AIService {
     private genAI: GoogleGenerativeAI;
 
-    constructor(private readonly params: AIServiceParams) {
+    constructor(protected readonly params: AIServiceParams) {
         super(params);
         this.colors = {
             primary: '#0077FF',

@@ -13,7 +13,7 @@ export interface DeepSeekServiceError extends AIServiceError {}
 export class DeepSeekService extends AIService {
     private deepSeek: OpenAI;
 
-    constructor(private readonly params: AIServiceParams) {
+    constructor(protected readonly params: AIServiceParams) {
         super(params);
         this.colors = {
             primary: '#53a3f9',

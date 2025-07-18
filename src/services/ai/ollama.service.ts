@@ -21,7 +21,7 @@ export class OllamaService extends AIService {
     private auth = '';
     private ollama: Ollama;
 
-    constructor(private readonly params: AIServiceParams) {
+    constructor(protected readonly params: AIServiceParams) {
         super(params);
         this.colors = {
             primary: '#FFF',

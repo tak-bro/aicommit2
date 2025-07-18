@@ -12,7 +12,7 @@ import { capitalizeFirstLetter, generateColors } from '../../utils/utils.js';
 export class OpenAICompatibleService extends AIService {
     private openAI: OpenAI;
 
-    constructor(private readonly params: AIServiceParams) {
+    constructor(protected readonly params: AIServiceParams) {
         super(params);
         const keyName = this.params.keyName || 'OPENAI_COMPATIBLE';
         this.colors = generateColors(keyName);

@@ -15,7 +15,7 @@ export interface CodestralServiceError extends AIServiceError {}
 export class CodestralService extends AIService {
     private apiKey = '';
 
-    constructor(private readonly params: AIServiceParams) {
+    constructor(protected readonly params: AIServiceParams) {
         super(params);
         this.colors = {
             primary: '#e28c58',

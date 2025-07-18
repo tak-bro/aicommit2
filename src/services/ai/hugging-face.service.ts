@@ -53,7 +53,7 @@ export class HuggingFaceService extends AIService {
     private currentConversionID: string | undefined = undefined;
     private cookie = '';
 
-    constructor(private readonly params: AIServiceParams) {
+    constructor(protected readonly params: AIServiceParams) {
         super(params);
         this.colors = {
             primary: '#FED21F',

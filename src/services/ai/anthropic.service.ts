@@ -21,7 +21,7 @@ const DEFAULT_TIMEOUT = 10 * 60 * 1000; // 10 minutes in milliseconds
 export class AnthropicService extends AIService {
     private anthropic: Anthropic;
 
-    constructor(private readonly params: AIServiceParams) {
+    constructor(protected readonly params: AIServiceParams) {
         super(params);
         this.colors = {
             primary: '#AE5630',

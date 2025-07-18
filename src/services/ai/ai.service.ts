@@ -58,7 +58,6 @@ export abstract class AIService {
     abstract generateCodeReview$(): Observable<ReactiveListChoice>;
 
     protected getDetailedErrorMessage(error: AIServiceError): string {
-        // Common error patterns that apply to most AI services
         const errorMsg = error.message || '';
 
         // API key related errors
@@ -138,7 +137,6 @@ export abstract class AIService {
         // Add status code if available
         const finalMessage = error.status ? `HTTP ${error.status}: ${detailedMessage}` : detailedMessage;
 
-        // 에러 로깅
         if (this.params.config.logging) {
             const diff = this.params.stagedDiff.diff;
             const serviceName = this.serviceName.replace(/\[|\]/g, '').trim();
@@ -177,7 +175,6 @@ export abstract class AIService {
     }
 
     protected parseMessage(aiGeneratedText: string, type: CommitType, maxCount: number): AIResponse[] {
-        // 먼저 코드블록을 제거 (```json ... ``` 또는 ``` ... ``` 형태)
         const cleanedText = this.cleanJsonCodeBlock(aiGeneratedText);
 
         const jsonContentPattern = /(\[\s*\{[\s\S]*?\}\s*\]|\{[\s\S]*?\})/;
@@ -217,7 +214,6 @@ export abstract class AIService {
 
         const results = formattedCommitMessages.slice(0, maxCount);
 
-        // 성공적인 파싱 결과 로깅
         if (this.isLoggingEnabled()) {
             const resultSummary = results.map(r => r.title).join(', ');
             logger.info(`${this.serviceName} Parsed ${results.length} commit messages: ${resultSummary}`);

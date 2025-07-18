@@ -45,7 +45,7 @@ export interface CreateChatCompletionsResponse {
 export class MistralService extends AIService {
     private apiKey = '';
 
-    constructor(private readonly params: AIServiceParams) {
+    constructor(protected readonly params: AIServiceParams) {
         super(params);
         this.colors = {
             primary: '#ff7000',

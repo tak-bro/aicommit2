@@ -32,7 +32,7 @@ export interface CreateChatCompletionsResponse {
 export class PerplexityService extends AIService {
     private apiKey = '';
 
-    constructor(private readonly params: AIServiceParams) {
+    constructor(protected readonly params: AIServiceParams) {
         super(params);
         this.colors = {
             primary: '#20808D',
