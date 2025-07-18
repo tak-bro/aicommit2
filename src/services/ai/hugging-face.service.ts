@@ -4,7 +4,7 @@ import { Observable, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
-import { RequestType } from '../../utils/ai-log.js';
+import { RequestType, logAIComplete, logAIError, logAIPrompt, logAIRequest, logAIResponse } from '../../utils/ai-log.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 
 interface Conversation {
@@ -45,18 +45,7 @@ interface ChatResponse {
 
 // refer: https://github.com/rahulsushilsharma/huggingface-chat
 export class HuggingFaceService extends AIService {
-    private headers = {
-        accept: '*/*',
-        'accept-language': 'en-US,en;q=0.9',
-        'sec-ch-ua': '"Chromium";v="116", "Not)A;Brand";v="24", "Google Chrome";v="116"',
-        'sec-ch-ua-mobile': '?0',
-        'sec-ch-ua-platform': '"Windows"',
-        'sec-fetch-dest': 'empty',
-        'sec-fetch-mode': 'cors',
-        'sec-fetch-site': 'same-origin',
-        origin: 'https://huggingface.co',
-        'Referrer-Policy': 'strict-origin-when-cross-origin',
-    };
+    private headers: Record<string, string> = {};
     private models: Model[] = [];
     private currentModel: Model | undefined;
     private currentModelId: string | null = null;
@@ -73,6 +62,20 @@ export class HuggingFaceService extends AIService {
         this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold('[HuggingFace]');
         this.errorPrefix = chalk.red.bold(`[HuggingFace]`);
         this.cookie = this.params.config.cookie;
+
+        const baseUrl = this.params.config.url || 'https://huggingface.co';
+        this.headers = {
+            accept: '*/*',
+            'accept-language': 'en-US,en;q=0.9',
+            'sec-ch-ua': '"Chromium";v="116", "Not)A;Brand";v="24", "Google Chrome";v="116"',
+            'sec-ch-ua-mobile': '?0',
+            'sec-ch-ua-platform': '"Windows"',
+            'sec-fetch-dest': 'empty',
+            'sec-fetch-mode': 'cors',
+            'sec-fetch-site': 'same-origin',
+            origin: baseUrl,
+            'Referrer-Policy': 'strict-origin-when-cross-origin',
+        };
     }
 
     protected getServiceSpecificErrorMessage(error: AIServiceError): string | null {
@@ -152,16 +155,36 @@ export class HuggingFaceService extends AIService {
         };
         const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
 
-        const conversation = await this.getNewChat(generatedSystemPrompt);
-        const data = await this.sendMessage(`Here is the diff: ${diff}`, conversation.id);
-        const response = await data.completeResponsePromise();
-        await this.deleteConversation(conversation.id);
+        const userPrompt = `Here is the diff: ${diff}`;
+        const baseUrl = this.params.config.url || 'https://huggingface.co';
+        const url = `${baseUrl}/chat/conversation`;
+        const headers = { ...this.headers, cookie: this.cookie };
 
-        // logging && createLogResponse('HuggingFace', diff, generatedSystemPrompt, response, requestType);
-        if (requestType === 'review') {
-            return this.sanitizeResponse(response);
+        // 상세 로깅
+        logAIRequest(diff, requestType, 'HuggingFace', this.params.config.model, url, headers, logging);
+        logAIPrompt(diff, requestType, 'HuggingFace', generatedSystemPrompt, userPrompt, logging);
+
+        const startTime = Date.now();
+
+        try {
+            const conversation = await this.getNewChat(generatedSystemPrompt);
+            const data = await this.sendMessage(userPrompt, conversation.id);
+            const response = await data.completeResponsePromise();
+            await this.deleteConversation(conversation.id);
+
+            const duration = Date.now() - startTime;
+            logAIResponse(diff, requestType, 'HuggingFace', { response }, logging);
+            logAIComplete(diff, requestType, 'HuggingFace', duration, response, logging);
+
+            if (requestType === 'review') {
+                return this.sanitizeResponse(response);
+            }
+            return this.parseMessage(response, type, generate);
+        } catch (error) {
+            const duration = Date.now() - startTime;
+            logAIError(diff, requestType, 'HuggingFace', error, logging);
+            throw error;
         }
-        return this.parseMessage(response, type, generate);
     }
 
     /**
@@ -187,7 +210,8 @@ export class HuggingFaceService extends AIService {
      * @throws {Error} If the server response is not successful.
      */
     private async getRemoteLlms(): Promise<Model[]> {
-        const response = await fetch('https://huggingface.co/chat/__data.json', {
+        const baseUrl = this.params.config.url || 'https://huggingface.co';
+        const response = await fetch(`${baseUrl}/chat/__data.json`, {
             headers: {
                 ...this.headers,
                 cookie: this.cookie,
@@ -271,13 +295,14 @@ export class HuggingFaceService extends AIService {
             preprompt: systemPrompt,
         };
         let retry = 0;
+        const baseUrl = this.params.config.url || 'https://huggingface.co';
         while (retry < 5) {
-            const response = await fetch('https://huggingface.co/chat/conversation', {
+            const response = await fetch(`${baseUrl}/chat/conversation`, {
                 headers: {
                     ...this.headers,
                     'content-type': 'application/json',
                     cookie: this.cookie,
-                    Referer: 'https://huggingface.co/chat/',
+                    Referer: `${baseUrl}/chat/`,
                 },
                 body: JSON.stringify(model),
                 method: 'POST',
@@ -310,11 +335,12 @@ export class HuggingFaceService extends AIService {
         if (!conversationId) {
             throw new Error('conversationId is required for getConversationHistory');
         }
-        const response = await fetch('https://huggingface.co/chat/conversation/' + conversationId + '/__data.json', {
+        const baseUrl = this.params.config.url || 'https://huggingface.co';
+        const response = await fetch(`${baseUrl}/chat/conversation/${conversationId}/__data.json`, {
             headers: {
                 ...this.headers,
                 cookie: this.cookie,
-                Referer: 'https://huggingface.co/chat/',
+                Referer: `${baseUrl}/chat/`,
             },
             body: null,
             method: 'GET',
@@ -403,11 +429,12 @@ export class HuggingFaceService extends AIService {
         const formData = new FormData();
         formData.append('data', JSON.stringify(data));
 
-        const response = await fetch('https://huggingface.co/chat/conversation/' + this.currentConversionID + '', {
+        const baseUrl = this.params.config.url || 'https://huggingface.co';
+        const response = await fetch(`${baseUrl}/chat/conversation/${this.currentConversionID}`, {
             headers: {
                 ...this.headers,
                 cookie: this.cookie,
-                Referer: 'https://huggingface.co/chat/conversation/' + this.currentConversionID + '',
+                Referer: `${baseUrl}/chat/conversation/${this.currentConversionID}`,
             },
             body: formData,
             method: 'POST',
@@ -490,11 +517,12 @@ export class HuggingFaceService extends AIService {
     }
 
     private async deleteConversation(conversationId: string): Promise<any> {
-        const response = await fetch(`https://huggingface.co/chat/conversation/${conversationId}`, {
+        const baseUrl = this.params.config.url || 'https://huggingface.co';
+        const response = await fetch(`${baseUrl}/chat/conversation/${conversationId}`, {
             headers: {
                 ...this.headers,
                 cookie: this.cookie,
-                Referer: 'https://huggingface.co/chat/',
+                Referer: `${baseUrl}/chat/`,
             },
             body: null,
             method: 'DELETE',

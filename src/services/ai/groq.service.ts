@@ -5,7 +5,7 @@ import { Observable, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
-import { RequestType } from '../../utils/ai-log.js';
+import { RequestType, logAIComplete, logAIError, logAIPayload, logAIPrompt, logAIRequest, logAIResponse } from '../../utils/ai-log.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 
 export class GroqService extends AIService {
@@ -95,34 +95,59 @@ export class GroqService extends AIService {
             codeReviewPromptPath,
         };
         const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
+        const userPrompt = `Here is the diff: ${diff}`;
 
-        const chatCompletion: Groq.Chat.ChatCompletion = await this.groq.chat.completions.create(
-            {
-                messages: [
-                    {
-                        role: 'system',
-                        content: generatedSystemPrompt,
-                    },
-                    {
-                        role: 'user',
-                        content: `Here is the diff: ${diff}`,
-                    },
-                ],
-                model: this.params.config.model,
-                max_tokens: maxTokens,
-                top_p: this.params.config.topP,
-                temperature,
-            },
-            {
+        // 상세 로깅 (config URL 사용)
+        const baseUrl = this.params.config.url || 'https://api.groq.com';
+        const url = `${baseUrl}/openai/v1/chat/completions`;
+        const headers = {
+            Authorization: `Bearer ${this.params.config.key}`,
+            'Content-Type': 'application/json',
+        };
+
+        logAIRequest(diff, requestType, 'Groq', this.params.config.model, url, headers, logging);
+        logAIPrompt(diff, requestType, 'Groq', generatedSystemPrompt, userPrompt, logging);
+
+        const payload = {
+            messages: [
+                {
+                    role: 'system',
+                    content: generatedSystemPrompt,
+                },
+                {
+                    role: 'user',
+                    content: userPrompt,
+                },
+            ],
+            model: this.params.config.model,
+            max_tokens: maxTokens,
+            top_p: this.params.config.topP,
+            temperature,
+        };
+
+        logAIPayload(diff, requestType, 'Groq', payload, logging);
+
+        const startTime = Date.now();
+
+        try {
+            const chatCompletion: Groq.Chat.ChatCompletion = await this.groq.chat.completions.create(payload, {
                 timeout: this.params.config.timeout,
-            }
-        );
+            });
 
-        const result = chatCompletion.choices[0].message.content || '';
-        // logging && createLogResponse('Groq', diff, generatedSystemPrompt, result, requestType);
-        if (requestType === 'review') {
-            return this.sanitizeResponse(result);
+            const duration = Date.now() - startTime;
+            const result = chatCompletion.choices[0].message.content || '';
+
+            logAIResponse(diff, requestType, 'Groq', chatCompletion, logging);
+            logAIComplete(diff, requestType, 'Groq', duration, result, logging);
+
+            if (requestType === 'review') {
+                return this.sanitizeResponse(result);
+            }
+            return this.parseMessage(result, type, generate);
+        } catch (error) {
+            const duration = Date.now() - startTime;
+            logAIError(diff, requestType, 'Groq', error, logging);
+            throw error;
         }
-        return this.parseMessage(result, type, generate);
     }
 }

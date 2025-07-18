@@ -5,7 +5,7 @@ import { Observable, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
-import { RequestType } from '../../utils/ai-log.js';
+import { RequestType, logAIComplete, logAIError, logAIPayload, logAIPrompt, logAIRequest, logAIResponse } from '../../utils/ai-log.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt, generateUserPrompt } from '../../utils/prompt.js';
 
 export class GeminiService extends AIService {
@@ -161,21 +161,59 @@ export class GeminiService extends AIService {
             ],
         });
 
-        const aiRequest = async () => {
-            const result = await model.generateContent(generateUserPrompt(diff, requestType));
-            const response = result.response;
-            return response.text();
+        const userPrompt = generateUserPrompt(diff, requestType);
+
+        // 상세 로깅 (config URL 사용)
+        const baseUrl = this.params.config.url || 'https://generativelanguage.googleapis.com';
+        const url = `${baseUrl}/v1beta/models/${this.params.config.model}:generateContent`;
+        const headers = {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': this.params.config.key,
         };
 
-        const completion = await this.executeWithLogging(aiRequest, generatedSystemPrompt, requestType);
+        logAIRequest(diff, requestType, 'Gemini', this.params.config.model, url, headers, logging);
+        logAIPrompt(diff, requestType, 'Gemini', generatedSystemPrompt, userPrompt, logging);
 
-        // 레거시 로깅 지원 - 새로운 로깅 시스템에서 자동 처리됨
-        // if (logging && !this.logSessionId) {
-        //     createLogResponse('Gemini', diff, generatedSystemPrompt, completion, requestType);
-        // }
-        if (requestType === 'review') {
-            return this.sanitizeResponse(completion);
+        const requestPayload = {
+            systemInstruction: { parts: [{ text: generatedSystemPrompt }] },
+            contents: [{ parts: [{ text: userPrompt }] }],
+            generationConfig,
+        };
+
+        logAIPayload(diff, requestType, 'Gemini', requestPayload, logging);
+
+        const startTime = Date.now();
+
+        try {
+            const result = await model.generateContent(userPrompt);
+            const response = result.response;
+            const completion = response.text();
+            const duration = Date.now() - startTime;
+
+            // 응답 로깅
+            logAIResponse(
+                diff,
+                requestType,
+                'Gemini',
+                {
+                    response: completion,
+                    candidates: result.response.candidates,
+                    usageMetadata: result.response.usageMetadata,
+                },
+                logging
+            );
+
+            // 완료 로깅
+            logAIComplete(diff, requestType, 'Gemini', duration, completion, logging);
+
+            if (requestType === 'review') {
+                return this.sanitizeResponse(completion);
+            }
+            return this.parseMessage(completion, type, generate);
+        } catch (error) {
+            const duration = Date.now() - startTime;
+            logAIError(diff, requestType, 'Gemini', error, logging);
+            throw error;
         }
-        return this.parseMessage(completion, type, generate);
     }
 }

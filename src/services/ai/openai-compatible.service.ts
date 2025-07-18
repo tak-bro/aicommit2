@@ -5,7 +5,7 @@ import { Observable, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
-import { RequestType } from '../../utils/ai-log.js';
+import { RequestType, logAIComplete, logAIError, logAIPayload, logAIPrompt, logAIRequest, logAIResponse } from '../../utils/ai-log.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 import { capitalizeFirstLetter, generateColors } from '../../utils/utils.js';
 
@@ -119,46 +119,71 @@ export class OpenAICompatibleService extends AIService {
         };
         const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
 
-        const chatCompletion = await this.openAI.chat.completions.create(
-            {
-                messages: [
-                    {
-                        role: 'system',
-                        content: generatedSystemPrompt,
-                    },
-                    {
-                        role: 'user',
-                        content: `Here is the diff: ${diff}`,
-                    },
-                ],
-                model: this.params.config.model,
-                stream,
-                max_tokens: maxTokens,
-                top_p: this.params.config.topP,
-                temperature,
-            },
-            {
-                timeout,
-            }
-        );
+        const userPrompt = `Here is the diff: ${diff}`;
+        const serviceName = this.params.keyName || 'OpenAI-Compatible';
+        const url = `${this.params.config.url}${this.params.config.path}`;
+        const headers = {
+            Authorization: `Bearer ${this.params.config.key}`,
+            'Content-Type': 'application/json',
+        };
 
-        let result = '';
-        if (stream && chatCompletion) {
-            const chatCompletionStream = chatCompletion as unknown as AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>;
-            for await (const chunk of chatCompletionStream) {
-                // Adapt to DeepSeek's response format
-                const content = chunk.choices?.[0]?.delta?.content || '';
-                const reasoning = chunk.choices?.[0]?.delta?.reasoning_content || '';
-                const chunkText = `${content}${reasoning}`;
-                result += chunkText;
+        // 상세 로깅
+        logAIRequest(diff, requestType, serviceName, this.params.config.model, url, headers, logging);
+        logAIPrompt(diff, requestType, serviceName, generatedSystemPrompt, userPrompt, logging);
+
+        const payload = {
+            messages: [
+                {
+                    role: 'system',
+                    content: generatedSystemPrompt,
+                },
+                {
+                    role: 'user',
+                    content: userPrompt,
+                },
+            ],
+            model: this.params.config.model,
+            stream,
+            max_tokens: maxTokens,
+            top_p: this.params.config.topP,
+            temperature,
+        };
+
+        logAIPayload(diff, requestType, serviceName, payload, logging);
+
+        const startTime = Date.now();
+
+        try {
+            const chatCompletion = await this.openAI.chat.completions.create(payload, {
+                timeout,
+            });
+
+            let result = '';
+            if (stream && chatCompletion) {
+                const chatCompletionStream = chatCompletion as unknown as AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>;
+                for await (const chunk of chatCompletionStream) {
+                    // Adapt to DeepSeek's response format
+                    const content = chunk.choices?.[0]?.delta?.content || '';
+                    const reasoning = chunk.choices?.[0]?.delta?.reasoning_content || '';
+                    const chunkText = `${content}${reasoning}`;
+                    result += chunkText;
+                }
+            } else {
+                result = chatCompletion.choices?.[0]?.message.content || '';
             }
-        } else {
-            result = chatCompletion.choices?.[0]?.message.content || '';
+
+            const duration = Date.now() - startTime;
+            logAIResponse(diff, requestType, serviceName, chatCompletion, logging);
+            logAIComplete(diff, requestType, serviceName, duration, result, logging);
+
+            if (requestType === 'review') {
+                return this.sanitizeResponse(result);
+            }
+            return this.parseMessage(result, type, generate);
+        } catch (error) {
+            const duration = Date.now() - startTime;
+            logAIError(diff, requestType, serviceName, error, logging);
+            throw error;
         }
-        // logging && createLogResponse(this.params.keyName, diff, generatedSystemPrompt, result, requestType);
-        if (requestType === 'review') {
-            return this.sanitizeResponse(result);
-        }
-        return this.parseMessage(result, type, generate);
     }
 }

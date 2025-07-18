@@ -5,7 +5,7 @@ import { Observable, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
-import { RequestType } from '../../utils/ai-log.js';
+import { RequestType, logAIComplete, logAIError, logAIPayload, logAIPrompt, logAIRequest, logAIResponse } from '../../utils/ai-log.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 import { getRandomNumber } from '../../utils/utils.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
@@ -43,7 +43,6 @@ export interface CreateChatCompletionsResponse {
 }
 
 export class MistralService extends AIService {
-    private host = `https://api.mistral.ai`;
     private apiKey = '';
 
     constructor(private readonly params: AIServiceParams) {
@@ -127,8 +126,22 @@ export class MistralService extends AIService {
         const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
 
         await this.checkAvailableModels();
-        const chatResponse = await this.createChatCompletions(generatedSystemPrompt, `Here is the diff: ${diff}`);
-        // logging && createLogResponse('MistralAI', diff, generatedSystemPrompt, chatResponse, requestType);
+
+        const userPrompt = `Here is the diff: ${diff}`;
+        const baseUrl = this.params.config.url || 'https://api.mistral.ai';
+        const url = `${baseUrl}/v1/chat/completions`;
+        const headers = {
+            Authorization: `Bearer ${this.apiKey}`,
+            'content-type': 'application/json',
+        };
+
+        // 상세 로깅
+        logAIRequest(diff, requestType, 'MistralAI', this.params.config.model, url, headers, logging);
+        logAIPrompt(diff, requestType, 'MistralAI', generatedSystemPrompt, userPrompt, logging);
+
+        const chatResponse = await this.createChatCompletions(generatedSystemPrompt, userPrompt, requestType);
+
+        // 완룈 로깅은 createChatCompletions 내부에서 처리
         if (requestType === 'review') {
             return this.sanitizeResponse(chatResponse);
         }
@@ -144,9 +157,10 @@ export class MistralService extends AIService {
     }
 
     private async getAvailableModels() {
+        const baseUrl = this.params.config.url || 'https://api.mistral.ai';
         const response: AxiosResponse<ListAvailableModelsResponse> = await new HttpRequestBuilder({
             method: 'GET',
-            baseURL: `${this.host}/v1/models`,
+            baseURL: `${baseUrl}/v1/models`,
             timeout: this.params.config.timeout,
         })
             .setHeaders({
@@ -158,41 +172,68 @@ export class MistralService extends AIService {
         return response.data.data.filter(model => model.object === 'model').map(model => model.id);
     }
 
-    private async createChatCompletions(systemPrompt: string, userMessage: string) {
-        const response: AxiosResponse<CreateChatCompletionsResponse> = await new HttpRequestBuilder({
-            method: 'POST',
-            baseURL: `${this.host}/v1/chat/completions`,
-            timeout: this.params.config.timeout,
-        })
-            .setHeaders({
-                Authorization: `Bearer ${this.apiKey}`,
-                'content-type': 'application/json',
+    private async createChatCompletions(systemPrompt: string, userMessage: string, requestType: RequestType) {
+        const diff = this.params.stagedDiff.diff;
+        const { logging } = this.params.config;
+
+        const payload = {
+            model: this.params.config.model,
+            messages: [
+                {
+                    role: 'system',
+                    content: systemPrompt,
+                },
+                {
+                    role: 'user',
+                    content: userMessage,
+                },
+            ],
+            temperature: this.params.config.temperature,
+            top_p: this.params.config.topP,
+            max_tokens: this.params.config.maxTokens,
+            stream: false,
+            safe_prompt: false,
+            random_seed: getRandomNumber(10, 1000),
+        };
+
+        logAIPayload(diff, requestType, 'MistralAI', payload, logging);
+
+        const startTime = Date.now();
+
+        try {
+            const baseUrl = this.params.config.url || 'https://api.mistral.ai';
+            const response: AxiosResponse<CreateChatCompletionsResponse> = await new HttpRequestBuilder({
+                method: 'POST',
+                baseURL: `${baseUrl}/v1/chat/completions`,
+                timeout: this.params.config.timeout,
             })
-            .setBody({
-                model: this.params.config.model,
-                messages: [
-                    {
-                        role: 'system',
-                        content: systemPrompt,
-                    },
-                    {
-                        role: 'user',
-                        content: userMessage,
-                    },
-                ],
-                temperature: this.params.config.temperature,
-                top_p: this.params.config.topP,
-                max_tokens: this.params.config.maxTokens,
-                stream: false,
-                safe_prompt: false,
-                random_seed: getRandomNumber(10, 1000),
-            })
-            .execute();
-        const result: CreateChatCompletionsResponse = response.data;
-        const hasNoChoices = !result.choices || result.choices.length === 0;
-        if (hasNoChoices || !result.choices[0].message?.content) {
-            throw new Error(`No Content on response. Please open a Bug report`);
+                .setHeaders({
+                    Authorization: `Bearer ${this.apiKey}`,
+                    'content-type': 'application/json',
+                })
+                .setBody(payload)
+                .execute();
+
+            const duration = Date.now() - startTime;
+            const result: CreateChatCompletionsResponse = response.data;
+
+            logAIResponse(diff, requestType, 'MistralAI', result, logging);
+
+            const hasNoChoices = !result.choices || result.choices.length === 0;
+            if (hasNoChoices || !result.choices[0].message?.content) {
+                const errorData = { message: 'No Content on response', result };
+                logAIError(diff, requestType, 'MistralAI', errorData, logging);
+                throw new Error(`No Content on response. Please open a Bug report`);
+            }
+
+            const content = result.choices[0].message.content;
+            logAIComplete(diff, requestType, 'MistralAI', duration, content, logging);
+
+            return content;
+        } catch (error) {
+            const duration = Date.now() - startTime;
+            logAIError(diff, requestType, 'MistralAI', error, logging);
+            throw error;
         }
-        return result.choices[0].message.content;
     }
 }

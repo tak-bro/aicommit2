@@ -4,7 +4,6 @@ import path from 'path';
 import { xxh64 } from '@pacote/xxhash';
 import winston from 'winston';
 
-
 import { AICOMMIT_LOGS_DIR } from './config.js';
 
 export type RequestType = 'review' | 'commit';
@@ -53,6 +52,28 @@ const getOrCreateServiceLogger = (aiName: string, diff: string, requestType: Req
     return logger;
 };
 
+// API 키 마스킹 함수
+const maskApiKeys = (headers: any): any => {
+    const masked = { ...headers };
+    const keyFields = ['authorization', 'x-api-key', 'x-goog-api-key', 'api-key'];
+
+    for (const field of keyFields) {
+        const lowerField = field.toLowerCase();
+        const foundKey = Object.keys(masked).find(key => key.toLowerCase() === lowerField);
+        if (foundKey && masked[foundKey]) {
+            if (typeof masked[foundKey] === 'string') {
+                // Bearer 토큰이나 일반 키 마스킹
+                if (masked[foundKey].startsWith('Bearer ')) {
+                    masked[foundKey] = 'Bearer [MASKED]';
+                } else {
+                    masked[foundKey] = '[MASKED]';
+                }
+            }
+        }
+    }
+    return masked;
+};
+
 // AI 요청 시작 로깅 (config 체크 포함)
 export const logAIRequest = (
     diff: string,
@@ -63,17 +84,21 @@ export const logAIRequest = (
     headers: any,
     logging: boolean = true
 ) => {
-    if (!logging) {return;}
+    if (!logging) {
+        return;
+    }
 
     const logger = getOrCreateServiceLogger(aiName, diff, requestType);
     logger.info(`Making request to ${aiName} API with model: ${model}`);
     logger.info(`Request URL: ${url}`);
-    logger.info('Request headers:', headers);
+    logger.info('Request headers:', maskApiKeys(headers));
 };
 
 // AI 요청 페이로드 로깅
 export const logAIPayload = (diff: string, requestType: RequestType, aiName: string, payload: any, logging: boolean = true) => {
-    if (!logging) {return;}
+    if (!logging) {
+        return;
+    }
 
     const logger = getOrCreateServiceLogger(aiName, diff, requestType);
     logger.info('Request payload:', payload);
@@ -88,7 +113,9 @@ export const logAIPrompt = (
     userPrompt: string,
     logging: boolean = true
 ) => {
-    if (!logging) {return;}
+    if (!logging) {
+        return;
+    }
 
     const logger = getOrCreateServiceLogger(aiName, diff, requestType);
     logger.info('System prompt:', { prompt: systemPrompt });
@@ -97,7 +124,9 @@ export const logAIPrompt = (
 
 // AI 응답 로깅
 export const logAIResponse = (diff: string, requestType: RequestType, aiName: string, response: any, logging: boolean = true) => {
-    if (!logging) {return;}
+    if (!logging) {
+        return;
+    }
 
     const logger = getOrCreateServiceLogger(aiName, diff, requestType);
     logger.info('Response received:', response);
@@ -105,7 +134,9 @@ export const logAIResponse = (diff: string, requestType: RequestType, aiName: st
 
 // AI 에러 로깅
 export const logAIError = (diff: string, requestType: RequestType, aiName: string, error: any, logging: boolean = true) => {
-    if (!logging) {return;}
+    if (!logging) {
+        return;
+    }
 
     const logger = getOrCreateServiceLogger(aiName, diff, requestType);
     logger.error('API request failed:', error);
@@ -120,7 +151,9 @@ export const logAIComplete = (
     finalResponse?: string,
     logging: boolean = true
 ) => {
-    if (!logging) {return;}
+    if (!logging) {
+        return;
+    }
 
     const logger = getOrCreateServiceLogger(aiName, diff, requestType);
 
@@ -151,7 +184,9 @@ export const addLogEntry = (
     error?: string,
     logging: boolean = true
 ) => {
-    if (!logging) {return;}
+    if (!logging) {
+        return;
+    }
 
     const logger = getOrCreateServiceLogger(aiName, diff, requestType);
 
@@ -195,7 +230,9 @@ export const createLogResponse = (
     requestType: RequestType,
     logging: boolean = true
 ) => {
-    if (!logging) {return;}
+    if (!logging) {
+        return;
+    }
     addLogEntry(diff, requestType, aiName, prompt, response, undefined, undefined, logging);
 };
 
@@ -210,7 +247,9 @@ export const logWithTiming = (
     error?: string,
     logging: boolean = true
 ) => {
-    if (!logging) {return;}
+    if (!logging) {
+        return;
+    }
     const duration = Date.now() - startTime.getTime();
     addLogEntry(diff, requestType, aiName, prompt, response, duration, error, logging);
 };
@@ -220,12 +259,16 @@ const generateServiceLogFileName = (date: Date, aiName: string, diff: string, re
     const { year, month, day, hours, minutes, seconds } = getDateString(date);
     const hasher = xxh64(0);
     const hash = hasher.update(diff).digest('hex').substring(0, 8);
-    const serviceName = aiName.toLowerCase().replace(/[^a-z0-9]/g, '');
+    // AI 서비스명 정리 - 안전하게 처리
+    const serviceName = aiName
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '')
+        .substring(0, 20);
 
     if (requestType === 'review') {
-        return `${serviceName}_review_${year}-${month}-${day}_${hours}-${minutes}-${seconds}_${hash}.log`;
+        return `${year}-${month}-${day}_${hours}-${minutes}-${seconds}_${hash}_${serviceName}_review.log`;
     }
-    return `${serviceName}_commit_${year}-${month}-${day}_${hours}-${minutes}-${seconds}_${hash}.log`;
+    return `${year}-${month}-${day}_${hours}-${minutes}-${seconds}_${hash}_${serviceName}_commit.log`;
 };
 
 // 파일명 생성 (기존 호환성)
@@ -257,7 +300,6 @@ export const getDateString = (date: Date) => {
     return { year, month, day, hours, minutes, seconds };
 };
 
-// 파일 쓰기 유틸리티
 export const writeFileSyncRecursive = (fileName: string, content: string = '') => {
     try {
         fs.mkdirSync(path.dirname(fileName), { recursive: true });
@@ -267,7 +309,6 @@ export const writeFileSyncRecursive = (fileName: string, content: string = '') =
     }
 };
 
-// 로그 상태 확인
 export const getLogStatus = () => {
     return {
         activeServiceLoggers: serviceLoggers.size,
@@ -275,7 +316,6 @@ export const getLogStatus = () => {
     };
 };
 
-// 프로세스 종료 시 정리
 const cleanup = () => {
     for (const [key, logger] of serviceLoggers.entries()) {
         try {
@@ -300,7 +340,9 @@ process.on('SIGTERM', () => {
 // 오래된 로그 파일 정리
 export const compressOldLogs = async (daysToKeep: number = 7) => {
     const logDir = AICOMMIT_LOGS_DIR;
-    if (!fs.existsSync(logDir)) {return;}
+    if (!fs.existsSync(logDir)) {
+        return;
+    }
 
     const files = fs.readdirSync(logDir);
     const cutoffDate = new Date();

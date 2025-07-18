@@ -6,7 +6,7 @@ import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 import { Agent, fetch } from 'undici';
 
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
-import { RequestType } from '../../utils/ai-log.js';
+import { RequestType, logAIComplete, logAIError, logAIPayload, logAIPrompt, logAIRequest, logAIResponse } from '../../utils/ai-log.js';
 import { DEFAULT_OLLAMA_HOST } from '../../utils/config.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 import { capitalizeFirstLetter, getRandomNumber } from '../../utils/utils.js';
@@ -117,8 +117,19 @@ export class OllamaService extends AIService {
         const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
 
         await this.checkIsAvailableOllama();
-        const chatResponse = await this.createChatCompletions(generatedSystemPrompt, `Here is the diff: ${diff}`);
-        // logging && createLogResponse(`Ollama_${this.model}`, diff, generatedSystemPrompt, chatResponse, requestType);
+
+        const userPrompt = `Here is the diff: ${diff}`;
+        const serviceName = `Ollama_${this.model}`;
+        const url = `${this.host}/api/chat`;
+        const headers = this.key ? { Authorization: `${this.auth} ${this.key}` } : {};
+
+        // 상세 로깅
+        logAIRequest(diff, requestType, serviceName, this.model, url, headers, logging);
+        logAIPrompt(diff, requestType, serviceName, generatedSystemPrompt, userPrompt, logging);
+
+        const chatResponse = await this.createChatCompletions(generatedSystemPrompt, userPrompt, requestType);
+
+        // 완룈 로깅은 createChatCompletions 내부에서 처리
         if (requestType === 'review') {
             return this.sanitizeResponse(chatResponse);
         }
@@ -142,11 +153,13 @@ export class OllamaService extends AIService {
         return response.data;
     }
 
-    private async createChatCompletions(systemPrompt: string, userMessage: string) {
-        const { stream, numCtx, temperature, topP, timeout, maxTokens } = this.params.config;
+    private async createChatCompletions(systemPrompt: string, userMessage: string, requestType: RequestType) {
+        const { stream, numCtx, temperature, topP, timeout, maxTokens, logging } = this.params.config;
         const isStream = stream || false;
+        const diff = this.params.stagedDiff.diff;
+        const serviceName = `Ollama_${this.model}`;
 
-        const response = await this.ollama.chat({
+        const payload = {
             model: this.model,
             messages: [
                 {
@@ -167,19 +180,36 @@ export class OllamaService extends AIService {
                 seed: getRandomNumber(10, 1000),
                 num_predict: maxTokens ?? -1,
             },
-        });
+        };
 
-        if (isStream) {
+        logAIPayload(diff, requestType, serviceName, payload, logging);
+
+        const startTime = Date.now();
+
+        try {
+            const response = await this.ollama.chat(payload);
+            const duration = Date.now() - startTime;
+
             let result = '';
-            if (response) {
-                for await (const part of response) {
-                    result += part.message.content;
+            if (isStream) {
+                if (response) {
+                    for await (const part of response) {
+                        result += part.message.content;
+                    }
                 }
+            } else {
+                result = response.message.content;
             }
-            return result;
-        }
 
-        return response.message.content;
+            logAIResponse(diff, requestType, serviceName, { response: result, fullResponse: response }, logging);
+            logAIComplete(diff, requestType, serviceName, duration, result, logging);
+
+            return result;
+        } catch (error) {
+            const duration = Date.now() - startTime;
+            logAIError(diff, requestType, serviceName, error, logging);
+            throw error;
+        }
     }
 
     // TODO: add proper type

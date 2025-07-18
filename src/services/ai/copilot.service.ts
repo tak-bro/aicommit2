@@ -133,7 +133,6 @@ export class CopilotService extends AIService {
             stream: false,
         };
 
-        const diff = this.params.stagedDiff.diff;
         const url = `${this.baseURL}/chat/completions`;
         const headers = {
             'Content-Type': 'application/json',

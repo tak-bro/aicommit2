@@ -5,7 +5,7 @@ import { Observable, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
-import { RequestType } from '../../utils/ai-log.js';
+import { RequestType, logAIComplete, logAIError, logAIPayload, logAIPrompt, logAIRequest, logAIResponse } from '../../utils/ai-log.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt, generateUserPrompt } from '../../utils/prompt.js';
 
 export interface AnthropicServiceError extends AIServiceError {
@@ -118,31 +118,58 @@ export class AnthropicService extends AIService {
         };
         const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
 
-        const aiRequest = async () => {
-            const params: Anthropic.MessageCreateParams = {
-                max_tokens: maxTokens,
-                temperature: temperature,
-                system: generatedSystemPrompt,
-                messages: [
-                    {
-                        role: 'user',
-                        content: generateUserPrompt(diff, requestType),
-                    },
-                ],
-                top_p: topP,
-                model: model,
-            };
-            const result: Anthropic.Message = await this.anthropic.messages.create(params);
-            // @ts-ignore ignore
-            return result.content.map(({ text }) => text).join('');
+        const userPrompt = generateUserPrompt(diff, requestType);
+
+        // 상세 로깅 (config URL 사용)
+        const baseUrl = this.params.config.url || 'https://api.anthropic.com';
+        const url = `${baseUrl}/v1/messages`;
+        const headers = {
+            'Content-Type': 'application/json',
+            'x-api-key': this.params.config.key,
+            'anthropic-version': '2023-06-01',
         };
 
-        const completion = await this.executeWithLogging(aiRequest, generatedSystemPrompt, requestType);
+        logAIRequest(diff, requestType, 'Anthropic', model, url, headers, logging);
+        logAIPrompt(diff, requestType, 'Anthropic', generatedSystemPrompt, userPrompt, logging);
 
-        // 레거시 로깅 지원 - 새로운 로깅 시스템에서 자동 처리됨
-        // if (logging && !this.logSessionId) {
-        //     createLogResponse('Anthropic', diff, generatedSystemPrompt, completion, requestType);
-        // }
+        const params: Anthropic.MessageCreateParams = {
+            max_tokens: maxTokens,
+            temperature: temperature,
+            system: generatedSystemPrompt,
+            messages: [
+                {
+                    role: 'user',
+                    content: userPrompt,
+                },
+            ],
+            top_p: topP,
+            model: model,
+        };
+
+        logAIPayload(diff, requestType, 'Anthropic', params, logging);
+
+        const startTime = Date.now();
+
+        try {
+            const result: Anthropic.Message = await this.anthropic.messages.create(params);
+            const duration = Date.now() - startTime;
+
+            // 응답 로깅
+            logAIResponse(diff, requestType, 'Anthropic', result, logging);
+
+            // @ts-ignore ignore
+            const completion = result.content.map(({ text }) => text).join('');
+
+            // 완료 로깅
+            logAIComplete(diff, requestType, 'Anthropic', duration, completion, logging);
+
+            return completion;
+        } catch (error) {
+            const duration = Date.now() - startTime;
+            logAIError(diff, requestType, 'Anthropic', error, logging);
+            throw error;
+        }
+
         if (requestType === 'review') {
             return this.sanitizeResponse(completion);
         }

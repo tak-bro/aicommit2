@@ -6,14 +6,13 @@ import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
 import { CreateChatCompletionsResponse } from './mistral.service.js';
-import { RequestType } from '../../utils/ai-log.js';
+import { RequestType, logAIComplete, logAIError, logAIPayload, logAIPrompt, logAIRequest, logAIResponse } from '../../utils/ai-log.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt, generateUserPrompt } from '../../utils/prompt.js';
 import { getRandomNumber } from '../../utils/utils.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
 export interface CodestralServiceError extends AIServiceError {}
 
 export class CodestralService extends AIService {
-    private host = 'https://codestral.mistral.ai';
     private apiKey = '';
 
     constructor(private readonly params: AIServiceParams) {
@@ -101,9 +100,22 @@ export class CodestralService extends AIService {
             codeReviewPromptPath,
         };
         const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
+
         this.checkAvailableModels();
+
+        const userPrompt = generateUserPrompt(diff, requestType);
+        const baseUrl = this.params.config.url || 'https://codestral.mistral.ai';
+        const url = `${baseUrl}/v1/chat/completions`;
+        const headers = {
+            Authorization: `Bearer ${this.apiKey}`,
+            'content-type': 'application/json',
+        };
+
+        // 상세 로깅
+        logAIRequest(diff, requestType, 'Codestral', this.params.config.model, url, headers, logging);
+        logAIPrompt(diff, requestType, 'Codestral', generatedSystemPrompt, userPrompt, logging);
+
         const chatResponse = await this.createChatCompletions(generatedSystemPrompt, requestType);
-        // logging && createLogResponse('Codestral', diff, generatedSystemPrompt, chatResponse, requestType);
         if (requestType === 'review') {
             return this.sanitizeResponse(chatResponse);
         }
@@ -120,49 +132,73 @@ export class CodestralService extends AIService {
     }
 
     private async createChatCompletions(systemPrompt: string, requestType: RequestType) {
-        const requestBuilder = new HttpRequestBuilder({
-            method: 'POST',
-            baseURL: `${this.host}/v1/chat/completions`,
-            timeout: this.params.config.timeout,
-        })
-            .setHeaders({
-                Authorization: `Bearer ${this.apiKey}`,
-                'content-type': 'application/json',
-            })
-            .setBody({
-                model: this.params.config.model,
-                messages: [
-                    {
-                        role: 'system',
-                        content: systemPrompt,
-                    },
-                    {
-                        role: 'user',
-                        content: generateUserPrompt(this.params.stagedDiff.diff, requestType),
-                    },
-                ],
-                temperature: this.params.config.temperature,
-                top_p: this.params.config.topP,
-                max_tokens: this.params.config.maxTokens,
-                stream: false,
-                safe_prompt: false,
-                random_seed: getRandomNumber(10, 1000),
-            });
+        const diff = this.params.stagedDiff.diff;
+        const { logging } = this.params.config;
+        const baseUrl = this.params.config.url || 'https://codestral.mistral.ai';
+
+        const payload = {
+            model: this.params.config.model,
+            messages: [
+                {
+                    role: 'system',
+                    content: systemPrompt,
+                },
+                {
+                    role: 'user',
+                    content: generateUserPrompt(this.params.stagedDiff.diff, requestType),
+                },
+            ],
+            temperature: this.params.config.temperature,
+            top_p: this.params.config.topP,
+            max_tokens: this.params.config.maxTokens,
+            stream: false,
+            safe_prompt: false,
+            random_seed: getRandomNumber(10, 1000),
+        };
 
         if (requestType === 'commit') {
-            requestBuilder.addBody({
-                response_format: {
-                    type: 'json_object',
-                },
-            });
+            (payload as any).response_format = {
+                type: 'json_object',
+            };
         }
 
-        const response: AxiosResponse<CreateChatCompletionsResponse> = await requestBuilder.execute();
-        const result: CreateChatCompletionsResponse = response.data;
-        const hasNoChoices = !result.choices || result.choices.length === 0;
-        if (hasNoChoices || !result.choices[0].message?.content) {
-            throw new Error(`No Content on response. Please open a Bug report`);
+        logAIPayload(diff, requestType, 'Codestral', payload, logging);
+
+        const startTime = Date.now();
+
+        try {
+            const requestBuilder = new HttpRequestBuilder({
+                method: 'POST',
+                baseURL: `${baseUrl}/v1/chat/completions`,
+                timeout: this.params.config.timeout,
+            })
+                .setHeaders({
+                    Authorization: `Bearer ${this.apiKey}`,
+                    'content-type': 'application/json',
+                })
+                .setBody(payload);
+
+            const response: AxiosResponse<CreateChatCompletionsResponse> = await requestBuilder.execute();
+            const duration = Date.now() - startTime;
+            const result: CreateChatCompletionsResponse = response.data;
+
+            logAIResponse(diff, requestType, 'Codestral', result, logging);
+
+            const hasNoChoices = !result.choices || result.choices.length === 0;
+            if (hasNoChoices || !result.choices[0].message?.content) {
+                const errorData = { message: 'No Content on response', result };
+                logAIError(diff, requestType, 'Codestral', errorData, logging);
+                throw new Error(`No Content on response. Please open a Bug report`);
+            }
+
+            const content = result.choices[0].message.content;
+            logAIComplete(diff, requestType, 'Codestral', duration, content, logging);
+
+            return content;
+        } catch (error) {
+            const duration = Date.now() - startTime;
+            logAIError(diff, requestType, 'Codestral', error, logging);
+            throw error;
         }
-        return result.choices[0].message.content;
     }
 }

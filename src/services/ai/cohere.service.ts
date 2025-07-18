@@ -5,7 +5,7 @@ import { Observable, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
-import { RequestType } from '../../utils/ai-log.js';
+import { RequestType, logAIComplete, logAIError, logAIPayload, logAIPrompt, logAIRequest, logAIResponse } from '../../utils/ai-log.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 import { getRandomNumber } from '../../utils/utils.js';
 
@@ -99,29 +99,55 @@ export class CohereService extends AIService {
             codeReviewPromptPath,
         };
         const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
+        const userPrompt = `Here is the diff: ${diff}`;
 
-        const prediction = await this.cohere.chat(
-            {
-                chatHistory: generatedSystemPrompt ? [{ role: 'SYSTEM', message: generatedSystemPrompt }] : [],
-                message: `Here is the diff: ${diff}`,
-                connectors: [{ id: 'web-search' }],
-                maxTokens,
-                temperature,
-                model: this.params.config.model,
-                seed: getRandomNumber(10, 1000),
-                p: this.params.config.topP,
-            },
-            {
+        // 상세 로깅 (config URL 사용)
+        const baseUrl = this.params.config.url || 'https://api.cohere.ai';
+        const url = `${baseUrl}/v1/chat`;
+        const headers = {
+            Authorization: `Bearer ${this.params.config.key}`,
+            'Content-Type': 'application/json',
+        };
+
+        logAIRequest(diff, requestType, 'Cohere', this.params.config.model, url, headers, logging);
+        logAIPrompt(diff, requestType, 'Cohere', generatedSystemPrompt, userPrompt, logging);
+
+        const payload = {
+            chatHistory: generatedSystemPrompt ? [{ role: 'SYSTEM', message: generatedSystemPrompt }] : [],
+            message: userPrompt,
+            connectors: [{ id: 'web-search' }],
+            maxTokens,
+            temperature,
+            model: this.params.config.model,
+            seed: getRandomNumber(10, 1000),
+            p: this.params.config.topP,
+        };
+
+        logAIPayload(diff, requestType, 'Cohere', payload, logging);
+
+        const startTime = Date.now();
+
+        try {
+            const prediction = await this.cohere.chat(payload, {
                 ...(this.params.config.timeout > DEFAULT_TIMEOUT && {
                     timeoutInSeconds: Math.floor(this.params.config.timeout / 1000),
                 }),
-            }
-        );
+            });
 
-        // logging && createLogResponse('Cohere', diff, generatedSystemPrompt, prediction.text, requestType);
-        if (requestType === 'review') {
-            return this.sanitizeResponse(prediction.text);
+            const duration = Date.now() - startTime;
+            const result = prediction.text;
+
+            logAIResponse(diff, requestType, 'Cohere', prediction, logging);
+            logAIComplete(diff, requestType, 'Cohere', duration, result, logging);
+
+            if (requestType === 'review') {
+                return this.sanitizeResponse(result);
+            }
+            return this.parseMessage(result, type, generate);
+        } catch (error) {
+            const duration = Date.now() - startTime;
+            logAIError(diff, requestType, 'Cohere', error, logging);
+            throw error;
         }
-        return this.parseMessage(prediction.text, type, generate);
     }
 }
