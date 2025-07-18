@@ -8,10 +8,8 @@ import { AICOMMIT_LOGS_DIR } from './config.js';
 
 export type RequestType = 'review' | 'commit';
 
-// AI 서비스별 로거들
 const serviceLoggers = new Map<string, winston.Logger>();
 
-// 로거 생성 또는 가져오기
 const getOrCreateServiceLogger = (aiName: string, diff: string, requestType: RequestType): winston.Logger => {
     const diffHash = xxh64(0).update(diff).digest('hex').substring(0, 8);
     const loggerKey = `${aiName}_${diffHash}_${requestType}`;
@@ -52,7 +50,6 @@ const getOrCreateServiceLogger = (aiName: string, diff: string, requestType: Req
     return logger;
 };
 
-// API 키 마스킹 함수
 const maskApiKeys = (headers: any): any => {
     const masked = { ...headers };
     const keyFields = ['authorization', 'x-api-key', 'x-goog-api-key', 'api-key'];
@@ -62,7 +59,6 @@ const maskApiKeys = (headers: any): any => {
         const foundKey = Object.keys(masked).find(key => key.toLowerCase() === lowerField);
         if (foundKey && masked[foundKey]) {
             if (typeof masked[foundKey] === 'string') {
-                // Bearer 토큰이나 일반 키 마스킹
                 if (masked[foundKey].startsWith('Bearer ')) {
                     masked[foundKey] = 'Bearer [MASKED]';
                 } else {
@@ -74,7 +70,6 @@ const maskApiKeys = (headers: any): any => {
     return masked;
 };
 
-// AI 요청 시작 로깅 (config 체크 포함)
 export const logAIRequest = (
     diff: string,
     requestType: RequestType,
@@ -94,7 +89,6 @@ export const logAIRequest = (
     logger.info('Request headers:', maskApiKeys(headers));
 };
 
-// AI 요청 페이로드 로깅
 export const logAIPayload = (diff: string, requestType: RequestType, aiName: string, payload: any, logging: boolean = true) => {
     if (!logging) {
         return;
@@ -104,7 +98,6 @@ export const logAIPayload = (diff: string, requestType: RequestType, aiName: str
     logger.info('Request payload:', payload);
 };
 
-// AI 프롬프트 정보 로깅 (시스템 프롬프트와 사용자 프롬프트)
 export const logAIPrompt = (
     diff: string,
     requestType: RequestType,
@@ -122,7 +115,6 @@ export const logAIPrompt = (
     logger.info('User prompt:', { prompt: userPrompt });
 };
 
-// AI 응답 로깅
 export const logAIResponse = (diff: string, requestType: RequestType, aiName: string, response: any, logging: boolean = true) => {
     if (!logging) {
         return;
@@ -132,7 +124,6 @@ export const logAIResponse = (diff: string, requestType: RequestType, aiName: st
     logger.info('Response received:', response);
 };
 
-// AI 에러 로깅
 export const logAIError = (diff: string, requestType: RequestType, aiName: string, error: any, logging: boolean = true) => {
     if (!logging) {
         return;
@@ -142,7 +133,6 @@ export const logAIError = (diff: string, requestType: RequestType, aiName: strin
     logger.error('API request failed:', error);
 };
 
-// AI 요청 완료 로깅 (성공시)
 export const logAIComplete = (
     diff: string,
     requestType: RequestType,
@@ -206,9 +196,7 @@ export const startLogSession = (diff: string, requestType: RequestType): string 
     return `${requestType}_${diffHash}`;
 };
 
-// 세션 완료 시 로거 정리
 export const finishLogSession = (sessionKey: string) => {
-    // 해당 세션과 관련된 모든 서비스 로거들을 정리
     const loggerKeysToRemove: string[] = [];
 
     for (const [loggerKey, logger] of serviceLoggers.entries()) {
@@ -221,45 +209,10 @@ export const finishLogSession = (sessionKey: string) => {
     loggerKeysToRemove.forEach(key => serviceLoggers.delete(key));
 };
 
-// 레거시 함수 - 새로운 시스템으로 리다이렉트
-export const createLogResponse = (
-    aiName: string,
-    diff: string,
-    prompt: string,
-    response: string,
-    requestType: RequestType,
-    logging: boolean = true
-) => {
-    if (!logging) {
-        return;
-    }
-    addLogEntry(diff, requestType, aiName, prompt, response, undefined, undefined, logging);
-};
-
-// 성능 측정과 함께 로그 추가
-export const logWithTiming = (
-    diff: string,
-    requestType: RequestType,
-    aiName: string,
-    prompt: string,
-    response: string,
-    startTime: Date,
-    error?: string,
-    logging: boolean = true
-) => {
-    if (!logging) {
-        return;
-    }
-    const duration = Date.now() - startTime.getTime();
-    addLogEntry(diff, requestType, aiName, prompt, response, duration, error, logging);
-};
-
-// 서비스별 파일명 생성
 const generateServiceLogFileName = (date: Date, aiName: string, diff: string, requestType: RequestType) => {
     const { year, month, day, hours, minutes, seconds } = getDateString(date);
     const hasher = xxh64(0);
     const hash = hasher.update(diff).digest('hex').substring(0, 8);
-    // AI 서비스명 정리 - 안전하게 처리
     const serviceName = aiName
         .toLowerCase()
         .replace(/[^a-z0-9]/g, '')
@@ -271,24 +224,11 @@ const generateServiceLogFileName = (date: Date, aiName: string, diff: string, re
     return `${year}-${month}-${day}_${hours}-${minutes}-${seconds}_${hash}_${serviceName}_commit.log`;
 };
 
-// 파일명 생성 (기존 호환성)
-export const generateLogFileName = (date: Date, diff: string, requestType: RequestType) => {
-    const { year, month, day, hours, minutes, seconds } = getDateString(date);
-    const hasher = xxh64(0);
-    const hash = hasher.update(diff).digest('hex').substring(0, 8);
-    if (requestType === 'review') {
-        return `aic2_review_${year}-${month}-${day}_${hours}-${minutes}-${seconds}_${hash}.log`;
-    }
-    return `aic2_${year}-${month}-${day}_${hours}-${minutes}-${seconds}_${hash}.log`;
-};
-
-// 타이머 유틸리티
 export const createTimer = () => {
     const start = Date.now();
     return () => Date.now() - start;
 };
 
-// 날짜 문자열 생성
 export const getDateString = (date: Date) => {
     const year = date.getFullYear().toString();
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -298,22 +238,6 @@ export const getDateString = (date: Date) => {
     const seconds = date.getSeconds().toString().padStart(2, '0');
 
     return { year, month, day, hours, minutes, seconds };
-};
-
-export const writeFileSyncRecursive = (fileName: string, content: string = '') => {
-    try {
-        fs.mkdirSync(path.dirname(fileName), { recursive: true });
-        fs.writeFileSync(fileName, content, 'utf-8');
-    } catch (error) {
-        console.error(`Failed to write log file ${fileName}:`, error);
-    }
-};
-
-export const getLogStatus = () => {
-    return {
-        activeServiceLoggers: serviceLoggers.size,
-        loggers: Array.from(serviceLoggers.keys()),
-    };
 };
 
 const cleanup = () => {
