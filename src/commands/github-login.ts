@@ -8,7 +8,7 @@ import { KnownError, handleCliError } from '../utils/error.js';
 
 export default command(
     {
-        name: 'copilot-login',
+        name: 'github-login',
         parameters: [],
         flags: {
             token: {
@@ -18,8 +18,8 @@ export default command(
             },
         },
         help: {
-            description: 'Login to GitHub and setup access to GitHub Models (Copilot)',
-            examples: ['aic2 copilot-login', 'aic2 copilot-login --token ghp_xxxxxxxxxxxxxxxxxxxx'],
+            description: 'Login to GitHub and setup access to GitHub Models',
+            examples: ['aic2 github-login', 'aic2 github-login --token ghp_xxxxxxxxxxxxxxxxxxxx'],
         },
     },
     argv => {
@@ -65,7 +65,7 @@ async function authenticateWithToken(token: string, consoleManager: ConsoleManag
             headers: {
                 Authorization: `Bearer ${token}`,
                 Accept: 'application/vnd.github.v3+json',
-                'User-Agent': 'aicommit2-copilot',
+                'User-Agent': 'aicommit2-github-models',
             },
         });
 
@@ -75,21 +75,23 @@ async function authenticateWithToken(token: string, consoleManager: ConsoleManag
 
         const user = await response.json();
 
-        // Check if user has Copilot access
-        const copilotResponse = await fetch('https://api.github.com/user/copilot_access', {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                Accept: 'application/vnd.github.v3+json',
-                'User-Agent': 'aicommit2-copilot',
-            },
-        });
-
-        if (!copilotResponse.ok) {
-            consoleManager.printWarning('Could not verify Copilot access, but proceeding with authentication...');
+        // Test GitHub Models access
+        try {
+            const modelsResponse = await fetch('https://models.inference.ai.azure.com/models', {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'User-Agent': 'aicommit2-github-models',
+                },
+            });
+            if (!modelsResponse.ok) {
+                consoleManager.printWarning('Could not verify GitHub Models access, but proceeding with authentication...');
+            }
+        } catch {
+            consoleManager.printWarning('Could not verify GitHub Models access, but proceeding with authentication...');
         }
 
         // Store token for GitHub Models
-        await setConfigs([['COPILOT.key', token]]);
+        await setConfigs([['GITHUB_MODELS.key', token]]);
 
         consoleManager.printSuccess(`Successfully authenticated as ${user.login}`);
     } catch (error) {
@@ -98,7 +100,7 @@ async function authenticateWithToken(token: string, consoleManager: ConsoleManag
 }
 
 async function authenticateWithBrowser(consoleManager: ConsoleManager) {
-    consoleManager.printInfo('Starting GitHub Copilot browser authentication...');
+    consoleManager.printInfo('Starting GitHub browser authentication for GitHub Models...');
 
     // eslint-disable-next-line no-useless-catch
     try {
@@ -121,46 +123,28 @@ async function authenticateWithBrowser(consoleManager: ConsoleManager) {
             consoleManager.printInfo('Please follow the instructions in your browser to complete authentication.');
 
             try {
-                execSync('gh auth login --web -h github.com --scopes copilot', { stdio: 'inherit' });
+                execSync('gh auth login --web -h github.com', { stdio: 'inherit' });
             } catch (error) {
                 throw new Error('GitHub CLI authentication failed');
             }
         }
 
-        // Install or update Copilot extension
-        consoleManager.printInfo('Installing/updating GitHub Copilot CLI extension...');
-        try {
-            execSync('gh extension install github/gh-copilot', { stdio: 'pipe' });
-        } catch {
-            // Extension might already be installed, try to upgrade
-            try {
-                execSync('gh extension upgrade gh-copilot', { stdio: 'pipe' });
-            } catch {
-                // Ignore upgrade errors
-            }
-        }
-
-        // Test Copilot access
-        try {
-            execSync('gh copilot --help', { stdio: 'ignore' });
-            consoleManager.printSuccess('GitHub Copilot CLI extension is working!');
-        } catch {
-            throw new Error('GitHub Copilot CLI extension is not working properly');
-        }
+        // Verify GitHub Models access
+        consoleManager.printInfo('Verifying GitHub Models access...');
 
         // Extract token from GitHub CLI and store it
         try {
             const token = execSync('gh auth token', { encoding: 'utf8' }).trim();
             if (token) {
-                await setConfigs([['COPILOT.key', token]]);
+                await setConfigs([['GITHUB_MODELS.key', token]]);
                 consoleManager.printSuccess('GitHub token stored for GitHub Models access');
             }
         } catch {
             consoleManager.printWarning('Could not extract token from GitHub CLI, but authentication completed');
         }
 
-        consoleManager.printSuccess('GitHub authentication completed and Copilot access verified!');
-        consoleManager.printInfo('See usage guide: https://github.com/tak-bro/aicommit2/blob/main/docs/providers/copilot.md');
+        consoleManager.printSuccess('GitHub authentication completed and GitHub Models access verified!');
+        consoleManager.printInfo('See usage guide: https://github.com/tak-bro/aicommit2/blob/main/docs/providers/github-models.md');
         consoleManager.printInfo('Available models: gpt-4o-mini, gpt-4o, meta-llama-3.1-405b-instruct, etc.');
     } catch (error) {
         throw error;

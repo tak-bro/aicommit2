@@ -51,15 +51,15 @@ Default: `gemini-2.0-flash`
 
 Supported:
 
-- `gemini-2.0-flash-exp` (Gemini 2.0 Flash Experimental)
-- `gemini-2.0-flash-thinking-exp-1219` (Gemini 2.0 Flash Thinking Experimental)
-- `gemini-exp-1206` (Gemini Experimental December 2024)
-- `gemini-exp-1121` (Gemini Experimental November 2024)
+- `gemini-2.0-flash-exp` 
+- `gemini-2.0-flash-thinking-exp-1219`
+- `gemini-exp-1206` 
+- `gemini-exp-1121` 
 - `gemini-2.0-flash` (Gemini 2.0 Flash - default)
-- `gemini-1.5-pro` (Gemini 1.5 Pro)
-- `gemini-1.5-flash` (Gemini 1.5 Flash)
-- `gemini-1.5-flash-8b` (Gemini 1.5 Flash 8B)
-- `gemini-1.0-pro` (Gemini 1.0 Pro)
+- `gemini-1.5-pro`
+- `gemini-1.5-flash` 
+- `gemini-1.5-flash-8b`
+- `gemini-1.0-pro` 
 
 ```sh
 aicommit2 config set GEMINI.model="gemini-2.0-flash"

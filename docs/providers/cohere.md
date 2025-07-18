@@ -47,19 +47,19 @@ Default: `command-r`
 
 Supported models:
 
-- `command-r7b-12-2024` (Command R 7B December 2024)
-- `command-r-plus-08-2024` (Command R+ August 2024)
-- `command-r-plus-04-2024` (Command R+ April 2024)
-- `command-r-plus` (Command R+)
-- `command-r-08-2024` (Command R August 2024)
-- `command-r-03-2024` (Command R March 2024)
+- `command-r7b-12-2024` 
+- `command-r-plus-08-2024` 
+- `command-r-plus-04-2024` 
+- `command-r-plus` 
+- `command-r-08-2024` 
+- `command-r-03-2024` 
 - `command-r` (Command R - default)
-- `command` (Command)
-- `command-nightly` (Command Nightly)
-- `command-light` (Command Light)
-- `command-light-nightly` (Command Light Nightly)
-- `c4ai-aya-expanse-8b` (C4AI Aya Expanse 8B)
-- `c4ai-aya-expanse-32b` (C4AI Aya Expanse 32B)
+- `command` 
+- `command-nightly` 
+- `command-light`
+- `command-light-nightly` 
+- `c4ai-aya-expanse-8b` 
+- `c4ai-aya-expanse-32b`
 
 ```sh
 aicommit2 config set COHERE.model="command-r"

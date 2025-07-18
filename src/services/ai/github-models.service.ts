@@ -7,7 +7,7 @@ import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.ser
 import { RequestType, logAIComplete, logAIError, logAIPayload, logAIPrompt, logAIRequest, logAIResponse } from '../../utils/ai-log.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 
-export class CopilotService extends AIService {
+export class GitHubModelsService extends AIService {
     private readonly baseURL = 'https://models.inference.ai.azure.com';
 
     constructor(protected readonly params: AIServiceParams) {
@@ -16,21 +16,21 @@ export class CopilotService extends AIService {
             primary: '#24292e',
             secondary: '#FFF',
         };
-        this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold(`[Copilot]`);
-        this.errorPrefix = chalk.red.bold(`[Copilot]`);
+        this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold(`[GitHub Models]`);
+        this.errorPrefix = chalk.red.bold(`[GitHub Models]`);
     }
 
     protected getServiceSpecificErrorMessage(error: AIServiceError): string | null {
-        // Handle Copilot-specific error codes
+        // Handle GitHub Models-specific error codes
         switch (error.code) {
             case 'MISSING_TOKEN':
-                return 'GitHub token is required. Run: aicommit2 copilot-login';
+                return 'GitHub token is required. Run: aicommit2 github-login';
             case 'AUTHENTICATION_FAILED':
-                return 'Authentication failed. Your GitHub token may be expired or invalid. Run: aicommit2 copilot-login';
+                return 'Authentication failed. Your GitHub token may be expired or invalid. Run: aicommit2 github-login';
             case 'ACCESS_DENIED':
                 return 'Access denied. Make sure your GitHub token has "Models" permission in GitHub settings';
             case 'NO_CONTENT':
-                return 'No content received from Copilot. The model may have failed to generate a response';
+                return 'No content received from GitHub Models. The model may have failed to generate a response';
             default:
                 return null;
         }
@@ -66,7 +66,7 @@ export class CopilotService extends AIService {
 
     private async generateMessage(requestType: RequestType): Promise<AIResponse[]> {
         if (!this.params.config.key) {
-            const tokenError = new Error('GitHub token is required for Copilot. Use: aicommit2 copilot-login') as AIServiceError;
+            const tokenError = new Error('GitHub token is required for GitHub Models. Use: aicommit2 github-login') as AIServiceError;
             tokenError.code = 'MISSING_TOKEN';
             throw tokenError;
         }
@@ -101,8 +101,6 @@ export class CopilotService extends AIService {
         const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
 
         const result = await this.makeRequest(generatedSystemPrompt, diff, requestType);
-
-        // logging && createLogResponse('Copilot', diff, generatedSystemPrompt, result, requestType);
 
         if (requestType === 'review') {
             return this.sanitizeResponse(result);
@@ -142,16 +140,16 @@ export class CopilotService extends AIService {
 
         // Winston 형식 상세 로깅 (config.logging 체크)
         const { logging } = this.params.config;
-        logAIRequest(diff, requestType, 'Copilot', model, url, headers, logging);
+        logAIRequest(diff, requestType, 'GitHub Models', model, url, headers, logging);
         logAIPrompt(
             diff,
             requestType,
-            'Copilot',
+            'GitHub Models',
             systemPrompt,
             requestType === 'review' ? diff : `Here's the git diff:\n\n${diff}`,
             logging
         );
-        logAIPayload(diff, requestType, 'Copilot', body, logging);
+        logAIPayload(diff, requestType, 'GitHub Models', body, logging);
 
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), this.params.config.timeout);
@@ -178,7 +176,7 @@ export class CopilotService extends AIService {
                 };
 
                 // Winston 형식 에러 로깅
-                logAIError(diff, requestType, 'Copilot', errorData, logging);
+                logAIError(diff, requestType, 'GitHub Models', errorData, logging);
 
                 let errorMessage = `GitHub API request failed: ${response.status} ${response.statusText}`;
 
@@ -196,13 +194,15 @@ export class CopilotService extends AIService {
                 }
 
                 if (response.status === 401) {
-                    const authError = new Error('GitHub authentication failed. Please run: aicommit2 copilot-login') as AIServiceError;
+                    const authError = new Error('GitHub authentication failed. Please run: aicommit2 github-login') as AIServiceError;
                     authError.status = response.status;
                     authError.code = 'AUTHENTICATION_FAILED';
                     authError.content = errorText;
                     throw authError;
                 } else if (response.status === 403) {
-                    const accessError = new Error('Copilot access denied. Make sure your token has "Models" permission.') as AIServiceError;
+                    const accessError = new Error(
+                        'GitHub Models access denied. Make sure your token has "Models" permission.'
+                    ) as AIServiceError;
                     accessError.status = response.status;
                     accessError.code = 'ACCESS_DENIED';
                     accessError.content = errorText;
@@ -233,28 +233,28 @@ export class CopilotService extends AIService {
             const duration = Date.now() - startTime;
 
             // Winston 형식 응답 로깅
-            logAIResponse(diff, requestType, 'Copilot', result, logging);
+            logAIResponse(diff, requestType, 'GitHub Models', result, logging);
 
             const content = result.choices?.[0]?.message?.content?.trim();
 
             if (!content) {
-                const errorData = { message: 'No content found in Copilot response', result };
-                logAIError(diff, requestType, 'Copilot', errorData, logging);
-                const contentError = new Error('No response content received from Copilot') as AIServiceError;
+                const errorData = { message: 'No content found in GitHub Models response', result };
+                logAIError(diff, requestType, 'GitHub Models', errorData, logging);
+                const contentError = new Error('No response content received from GitHub Models') as AIServiceError;
                 contentError.code = 'NO_CONTENT';
                 contentError.content = JSON.stringify(result, null, 2);
                 throw contentError;
             }
 
             // 성공적으로 완료됨을 로깅
-            logAIComplete(diff, requestType, 'Copilot', duration, content, logging);
+            logAIComplete(diff, requestType, 'GitHub Models', duration, content, logging);
             return content;
         } catch (error) {
             clearTimeout(timeoutId);
             if (error instanceof Error && error.name === 'AbortError') {
-                const timeoutData = { message: `Copilot request timeout after ${this.params.config.timeout}ms`, error };
-                logAIError(diff, requestType, 'Copilot', timeoutData, logging);
-                const timeoutError = new Error(`Copilot request timed out after ${this.params.config.timeout}ms`) as AIServiceError;
+                const timeoutData = { message: `GitHub Models request timeout after ${this.params.config.timeout}ms`, error };
+                logAIError(diff, requestType, 'GitHub Models', timeoutData, logging);
+                const timeoutError = new Error(`GitHub Models request timed out after ${this.params.config.timeout}ms`) as AIServiceError;
                 timeoutError.code = 'REQUEST_TIMEOUT';
                 timeoutError.originalError = error;
                 throw timeoutError;
@@ -266,10 +266,10 @@ export class CopilotService extends AIService {
             }
 
             // Otherwise, wrap it in an AIServiceError
-            const errorData = { message: 'Copilot request failed', error };
-            logAIError(diff, requestType, 'Copilot', errorData, logging);
+            const errorData = { message: 'GitHub Models request failed', error };
+            logAIError(diff, requestType, 'GitHub Models', errorData, logging);
             const wrappedError = new Error(
-                `Copilot request failed: ${error instanceof Error ? error.message : String(error)}`
+                `GitHub Models request failed: ${error instanceof Error ? error.message : String(error)}`
             ) as AIServiceError;
             wrappedError.code = 'REQUEST_FAILED';
             wrappedError.originalError = error;

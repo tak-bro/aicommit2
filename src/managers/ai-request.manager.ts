@@ -6,9 +6,9 @@ import { AIServiceFactory } from '../services/ai/ai-service.factory.js';
 import { AnthropicService } from '../services/ai/anthropic.service.js';
 import { CodestralService } from '../services/ai/codestral.service.js';
 import { CohereService } from '../services/ai/cohere.service.js';
-import { CopilotService } from '../services/ai/copilot.service.js';
 import { DeepSeekService } from '../services/ai/deep-seek.service.js';
 import { GeminiService } from '../services/ai/gemini.service.js';
+import { GitHubModelsService } from '../services/ai/github-models.service.js';
 import { GroqService } from '../services/ai/groq.service.js';
 import { HuggingFaceService } from '../services/ai/hugging-face.service.js';
 import { MistralService } from '../services/ai/mistral.service.js';
@@ -109,9 +109,9 @@ export class AIRequestManager {
                                     stagedDiff: this.stagedDiff,
                                     keyName: model as ModelName, // Use the model name as keyName
                                 }).generateCommitMessage$();
-                            case 'COPILOT':
-                                return AIServiceFactory.create(CopilotService, {
-                                    config: { ...this.config.COPILOT, model: model }, // Pass the single model name
+                            case 'GITHUB_MODELS':
+                                return AIServiceFactory.create(GitHubModelsService, {
+                                    config: { ...this.config.GITHUB_MODELS, model: model }, // Pass the single model name
                                     stagedDiff: this.stagedDiff,
                                     keyName: model as ModelName, // Use the model name as keyName
                                 }).generateCommitMessage$();
@@ -229,9 +229,9 @@ export class AIRequestManager {
                                     stagedDiff: this.stagedDiff,
                                     keyName: model as ModelName, // Use the model name as keyName
                                 }).generateCodeReview$();
-                            case 'COPILOT':
-                                return AIServiceFactory.create(CopilotService, {
-                                    config: { ...this.config.COPILOT, model: model }, // Pass the single model name
+                            case 'GITHUB_MODELS':
+                                return AIServiceFactory.create(GitHubModelsService, {
+                                    config: { ...this.config.GITHUB_MODELS, model: model }, // Pass the single model name
                                     stagedDiff: this.stagedDiff,
                                     keyName: model as ModelName, // Use the model name as keyName
                                 }).generateCodeReview$();

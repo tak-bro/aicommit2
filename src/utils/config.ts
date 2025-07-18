@@ -46,7 +46,7 @@ export const BUILTIN_SERVICES = [
     'GROQ',
     'PERPLEXITY',
     'DEEPSEEK',
-    'COPILOT',
+    'GITHUB_MODELS',
 ] as const;
 export type BuiltinService = (typeof BUILTIN_SERVICES)[number];
 
@@ -801,7 +801,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         disabled: generalConfigParsers.disabled,
         watchMode: generalConfigParsers.watchMode,
     },
-    COPILOT: {
+    GITHUB_MODELS: {
         key: (key?: string) => key || '',
         envKey: (envKey?: string) => envKey || '',
         model: (model?: string | string[]): string[] => {
@@ -822,7 +822,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
             ];
             // Validate each model in the list
             for (const m of modelList) {
-                parseAssert('COPILOT.model', supportModels.includes(m.trim()), `Invalid model type for GitHub Copilot: ${m.trim()}`);
+                parseAssert('GITHUB_MODELS.model', supportModels.includes(m.trim()), `Invalid model type for GitHub Models: ${m.trim()}`);
             }
             return modelList.map(m => m.trim()).filter(m => !!m && m.length > 0);
         },

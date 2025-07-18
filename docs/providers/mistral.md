@@ -47,13 +47,13 @@ Default: `mistral-small-latest`
 
 Supported:
 
-- `mistral-large-latest` (Mistral Large Latest)
-- `pixtral-large-latest` (Pixtral Large Latest)
-- `ministral-8b-latest` (Ministral 8B Latest)
+- `mistral-large-latest` 
+- `pixtral-large-latest` 
+- `ministral-8b-latest` 
 - `mistral-small-latest` (Mistral Small Latest - default)
-- `codestral-latest` (Codestral Latest)
-- `mistral-embed` (Mistral Embed)
-- `mistral-moderation-latest` (Mistral Moderation Latest)
+- `codestral-latest` 
+- `mistral-embed` 
+- `mistral-moderation-latest` 
 
 ## Codestral Settings
 

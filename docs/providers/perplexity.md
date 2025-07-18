@@ -47,11 +47,11 @@ Default: `sonar`
 
 Supported:
 
-- `sonar-pro` (Sonar Pro)
+- `sonar-pro` 
 - `sonar` (Sonar - default)
-- `llama-3.1-sonar-small-128k-online` (Llama 3.1 Sonar Small 128K Online)
-- `llama-3.1-sonar-large-128k-online` (Llama 3.1 Sonar Large 128K Online)
-- `llama-3.1-sonar-huge-128k-online` (Llama 3.1 Sonar Huge 128K Online)
+- `llama-3.1-sonar-small-128k-online`
+- `llama-3.1-sonar-large-128k-online` 
+- `llama-3.1-sonar-huge-128k-online` 
 
 > The models mentioned above are subject to change.
 

@@ -47,14 +47,14 @@ Default: `claude-3-5-haiku-20241022`
 
 Supported:
 
-- `claude-opus-4-20250514` (latest Claude 4 Opus)
-- `claude-sonnet-4-20250514` (latest Claude 4 Sonnet)
-- `claude-3-7-sonnet-20250219` (Claude 3.7 Sonnet)
-- `claude-3-5-sonnet-20241022` (Claude 3.5 Sonnet)
+- `claude-opus-4-20250514` 
+- `claude-sonnet-4-20250514` 
+- `claude-3-7-sonnet-20250219` 
+- `claude-3-5-sonnet-20241022` 
 - `claude-3-5-haiku-20241022` (Claude 3.5 Haiku - default)
-- `claude-3-opus-20240229` (Claude 3 Opus)
-- `claude-3-sonnet-20240229` (Claude 3 Sonnet)
-- `claude-3-haiku-20240307` (Claude 3 Haiku)
+- `claude-3-opus-20240229` 
+- `claude-3-sonnet-20240229` 
+- `claude-3-haiku-20240307` 
 
 ```sh
 aicommit2 config set ANTHROPIC.model="claude-3-5-sonnet-20240620"
