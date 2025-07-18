@@ -8,7 +8,7 @@ import { RequestType, logAIComplete, logAIError, logAIPayload, logAIPrompt, logA
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 
 export class GitHubModelsService extends AIService {
-    private readonly baseURL = 'https://models.inference.ai.azure.com';
+    private readonly baseURL = 'https://models.github.ai';
 
     constructor(protected readonly params: AIServiceParams) {
         super(params);
@@ -131,11 +131,11 @@ export class GitHubModelsService extends AIService {
             stream: false,
         };
 
-        const url = `${this.baseURL}/chat/completions`;
+        const url = `${this.baseURL}/inference/chat/completions`;
         const headers = {
             'Content-Type': 'application/json',
+            Accept: 'application/vnd.github+json',
             Authorization: `Bearer ${this.params.config.key}`,
-            'User-Agent': 'aicommit2-github-models/1.0',
         };
 
         // Winston 형식 상세 로깅 (config.logging 체크)

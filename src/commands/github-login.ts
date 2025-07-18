@@ -77,14 +77,24 @@ async function authenticateWithToken(token: string, consoleManager: ConsoleManag
 
         // Test GitHub Models access
         try {
-            const modelsResponse = await fetch('https://models.inference.ai.azure.com/models', {
+            const modelsResponse = await fetch('https://models.github.ai/inference/chat/completions', {
+                method: 'POST',
                 headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/vnd.github+json',
                     Authorization: `Bearer ${token}`,
                     'User-Agent': 'aicommit2-github-models',
                 },
+                body: JSON.stringify({
+                    messages: [{ role: 'user', content: 'test' }],
+                    model: 'gpt-4o-mini',
+                    max_tokens: 1,
+                }),
             });
             if (!modelsResponse.ok) {
                 consoleManager.printWarning('Could not verify GitHub Models access, but proceeding with authentication...');
+            } else {
+                consoleManager.printSuccess('GitHub Models access verified!');
             }
         } catch {
             consoleManager.printWarning('Could not verify GitHub Models access, but proceeding with authentication...');
@@ -146,6 +156,7 @@ async function authenticateWithBrowser(consoleManager: ConsoleManager) {
         consoleManager.printSuccess('GitHub authentication completed and GitHub Models access verified!');
         consoleManager.printInfo('See usage guide: https://github.com/tak-bro/aicommit2/blob/main/docs/providers/github-models.md');
         consoleManager.printInfo('Available models: gpt-4o-mini, gpt-4o, meta-llama-3.1-405b-instruct, etc.');
+        consoleManager.printInfo('Using GitHub Models API: https://models.github.ai');
     } catch (error) {
         throw error;
     }
