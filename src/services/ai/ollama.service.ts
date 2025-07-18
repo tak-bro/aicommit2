@@ -6,7 +6,7 @@ import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 import { Agent, fetch } from 'undici';
 
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
-import { RequestType, createLogResponse } from '../../utils/ai-log.js';
+import { RequestType } from '../../utils/ai-log.js';
 import { DEFAULT_OLLAMA_HOST } from '../../utils/config.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 import { capitalizeFirstLetter, getRandomNumber } from '../../utils/utils.js';
@@ -118,7 +118,7 @@ export class OllamaService extends AIService {
 
         await this.checkIsAvailableOllama();
         const chatResponse = await this.createChatCompletions(generatedSystemPrompt, `Here is the diff: ${diff}`);
-        logging && createLogResponse(`Ollama_${this.model}`, diff, generatedSystemPrompt, chatResponse, requestType);
+        // logging && createLogResponse(`Ollama_${this.model}`, diff, generatedSystemPrompt, chatResponse, requestType);
         if (requestType === 'review') {
             return this.sanitizeResponse(chatResponse);
         }

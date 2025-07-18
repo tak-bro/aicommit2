@@ -5,7 +5,7 @@ import { Observable, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
-import { RequestType, createLogResponse } from '../../utils/ai-log.js';
+import { RequestType } from '../../utils/ai-log.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt, generateUserPrompt } from '../../utils/prompt.js';
 
 export interface DeepSeekServiceError extends AIServiceError {}
@@ -105,7 +105,7 @@ export class DeepSeekService extends AIService {
         const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
         this.checkAvailableModels();
         const chatResponse = await this.createChatCompletions(generatedSystemPrompt, diff, requestType);
-        logging && createLogResponse('DeepSeek', diff, generatedSystemPrompt, chatResponse, requestType);
+        // logging && createLogResponse('DeepSeek', diff, generatedSystemPrompt, chatResponse, requestType);
         if (requestType === 'review') {
             return this.sanitizeResponse(chatResponse);
         }

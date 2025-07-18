@@ -5,7 +5,7 @@ import { Observable, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
-import { RequestType, createLogResponse } from '../../utils/ai-log.js';
+import { RequestType } from '../../utils/ai-log.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
 
@@ -129,7 +129,7 @@ export class PerplexityService extends AIService {
         };
         const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
         const chatResponse = await this.createChatCompletions(generatedSystemPrompt, diff);
-        logging && createLogResponse('Perplexity', diff, generatedSystemPrompt, chatResponse, requestType);
+        // logging && createLogResponse('Perplexity', diff, generatedSystemPrompt, chatResponse, requestType);
         return this.parseMessage(chatResponse, type, generate);
     }
 

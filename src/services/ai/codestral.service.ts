@@ -6,7 +6,7 @@ import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
 import { CreateChatCompletionsResponse } from './mistral.service.js';
-import { RequestType, createLogResponse } from '../../utils/ai-log.js';
+import { RequestType } from '../../utils/ai-log.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt, generateUserPrompt } from '../../utils/prompt.js';
 import { getRandomNumber } from '../../utils/utils.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
@@ -103,7 +103,7 @@ export class CodestralService extends AIService {
         const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
         this.checkAvailableModels();
         const chatResponse = await this.createChatCompletions(generatedSystemPrompt, requestType);
-        logging && createLogResponse('Codestral', diff, generatedSystemPrompt, chatResponse, requestType);
+        // logging && createLogResponse('Codestral', diff, generatedSystemPrompt, chatResponse, requestType);
         if (requestType === 'review') {
             return this.sanitizeResponse(chatResponse);
         }

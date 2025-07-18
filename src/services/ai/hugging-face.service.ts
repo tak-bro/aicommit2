@@ -4,7 +4,7 @@ import { Observable, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
-import { RequestType, createLogResponse } from '../../utils/ai-log.js';
+import { RequestType } from '../../utils/ai-log.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 
 interface Conversation {
@@ -157,7 +157,7 @@ export class HuggingFaceService extends AIService {
         const response = await data.completeResponsePromise();
         await this.deleteConversation(conversation.id);
 
-        logging && createLogResponse('HuggingFace', diff, generatedSystemPrompt, response, requestType);
+        // logging && createLogResponse('HuggingFace', diff, generatedSystemPrompt, response, requestType);
         if (requestType === 'review') {
             return this.sanitizeResponse(response);
         }

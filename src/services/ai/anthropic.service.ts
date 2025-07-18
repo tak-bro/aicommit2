@@ -5,7 +5,7 @@ import { Observable, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
-import { RequestType, createLogResponse } from '../../utils/ai-log.js';
+import { RequestType } from '../../utils/ai-log.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt, generateUserPrompt } from '../../utils/prompt.js';
 
 export interface AnthropicServiceError extends AIServiceError {
@@ -118,24 +118,31 @@ export class AnthropicService extends AIService {
         };
         const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
 
-        const params: Anthropic.MessageCreateParams = {
-            max_tokens: maxTokens,
-            temperature: temperature,
-            system: generatedSystemPrompt,
-            messages: [
-                {
-                    role: 'user',
-                    content: generateUserPrompt(diff, requestType),
-                },
-            ],
-            top_p: topP,
-            model: model,
+        const aiRequest = async () => {
+            const params: Anthropic.MessageCreateParams = {
+                max_tokens: maxTokens,
+                temperature: temperature,
+                system: generatedSystemPrompt,
+                messages: [
+                    {
+                        role: 'user',
+                        content: generateUserPrompt(diff, requestType),
+                    },
+                ],
+                top_p: topP,
+                model: model,
+            };
+            const result: Anthropic.Message = await this.anthropic.messages.create(params);
+            // @ts-ignore ignore
+            return result.content.map(({ text }) => text).join('');
         };
-        const result: Anthropic.Message = await this.anthropic.messages.create(params);
-        // @ts-ignore ignore
-        const completion = result.content.map(({ text }) => text).join('');
 
-        logging && createLogResponse('Anthropic', diff, generatedSystemPrompt, completion, requestType);
+        const completion = await this.executeWithLogging(aiRequest, generatedSystemPrompt, requestType);
+
+        // 레거시 로깅 지원 - 새로운 로깅 시스템에서 자동 처리됨
+        // if (logging && !this.logSessionId) {
+        //     createLogResponse('Anthropic', diff, generatedSystemPrompt, completion, requestType);
+        // }
         if (requestType === 'review') {
             return this.sanitizeResponse(completion);
         }

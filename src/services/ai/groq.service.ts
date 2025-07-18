@@ -5,7 +5,7 @@ import { Observable, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
-import { RequestType, createLogResponse } from '../../utils/ai-log.js';
+import { RequestType } from '../../utils/ai-log.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 
 export class GroqService extends AIService {
@@ -119,7 +119,7 @@ export class GroqService extends AIService {
         );
 
         const result = chatCompletion.choices[0].message.content || '';
-        logging && createLogResponse('Groq', diff, generatedSystemPrompt, result, requestType);
+        // logging && createLogResponse('Groq', diff, generatedSystemPrompt, result, requestType);
         if (requestType === 'review') {
             return this.sanitizeResponse(result);
         }

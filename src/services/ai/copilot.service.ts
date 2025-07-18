@@ -4,8 +4,7 @@ import { Observable, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
-import { RequestType, createLogResponse } from '../../utils/ai-log.js';
-import { logger } from '../../utils/logger.js';
+import { RequestType, logAIError, logAIPayload, logAIRequest, logAIResponse } from '../../utils/ai-log.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 
 export class CopilotService extends AIService {
@@ -103,7 +102,7 @@ export class CopilotService extends AIService {
 
         const result = await this.makeRequest(generatedSystemPrompt, diff, requestType);
 
-        logging && createLogResponse('Copilot', diff, generatedSystemPrompt, result, requestType);
+        // logging && createLogResponse('Copilot', diff, generatedSystemPrompt, result, requestType);
 
         if (requestType === 'review') {
             return this.sanitizeResponse(result);
@@ -134,13 +133,18 @@ export class CopilotService extends AIService {
             stream: false,
         };
 
-        logger.info(`Copilot API request with model: ${model}`);
+        const diff = this.params.stagedDiff.diff;
+        const url = `${this.baseURL}/chat/completions`;
+
+        // Winston 형식 로깅
+        logAIRequest(diff, requestType, 'Copilot', model, url);
+        logAIPayload(diff, requestType, body);
 
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), this.params.config.timeout);
 
         try {
-            const response = await fetch(`${this.baseURL}/chat/completions`, {
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -155,13 +159,16 @@ export class CopilotService extends AIService {
 
             if (!response.ok) {
                 const errorText = await response.text();
+                const errorData = {
+                    status: response.status,
+                    statusText: response.statusText,
+                    url: url,
+                    headers: Object.fromEntries(response.headers),
+                    body: errorText,
+                };
 
-                // Detailed error logging
-                logger.error(`Copilot API Error: ${response.status} ${response.statusText}`);
-                logger.error(`Request URL: ${this.baseURL}/chat/completions`);
-                logger.error(`Request payload: ${JSON.stringify(body, null, 2)}`);
-                logger.error(`Response headers: ${JSON.stringify(Object.fromEntries(response.headers), null, 2)}`);
-                logger.error(`Response body: ${errorText}`);
+                // Winston 형식 에러 로깅
+                logAIError(diff, requestType, errorData);
 
                 let errorMessage = `GitHub API request failed: ${response.status} ${response.statusText}`;
 
@@ -212,11 +219,15 @@ export class CopilotService extends AIService {
             }
 
             const result = await response.json();
+
+            // Winston 형식 응답 로깅
+            logAIResponse(diff, requestType, result);
+
             const content = result.choices?.[0]?.message?.content?.trim();
 
             if (!content) {
-                logger.error('No content found in Copilot response');
-                logger.error(`Result structure: ${JSON.stringify(result, null, 2)}`);
+                const errorData = { message: 'No content found in Copilot response', result };
+                logAIError(diff, requestType, errorData);
                 const contentError = new Error('No response content received from Copilot') as AIServiceError;
                 contentError.code = 'NO_CONTENT';
                 contentError.content = JSON.stringify(result, null, 2);
@@ -227,7 +238,8 @@ export class CopilotService extends AIService {
         } catch (error) {
             clearTimeout(timeoutId);
             if (error instanceof Error && error.name === 'AbortError') {
-                logger.error(`Copilot request timeout after ${this.params.config.timeout}ms`);
+                const timeoutData = { message: `Copilot request timeout after ${this.params.config.timeout}ms`, error };
+                logAIError(diff, requestType, timeoutData);
                 const timeoutError = new Error(`Copilot request timed out after ${this.params.config.timeout}ms`) as AIServiceError;
                 timeoutError.code = 'REQUEST_TIMEOUT';
                 timeoutError.originalError = error;
@@ -240,7 +252,8 @@ export class CopilotService extends AIService {
             }
 
             // Otherwise, wrap it in an AIServiceError
-            logger.error('Copilot request failed:', error);
+            const errorData = { message: 'Copilot request failed', error };
+            logAIError(diff, requestType, errorData);
             const wrappedError = new Error(
                 `Copilot request failed: ${error instanceof Error ? error.message : String(error)}`
             ) as AIServiceError;

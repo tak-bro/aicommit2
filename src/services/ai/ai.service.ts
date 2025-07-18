@@ -1,6 +1,7 @@
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Observable, of } from 'rxjs';
 
+import { RequestType, addLogEntry } from '../../utils/ai-log.js';
 import { CommitType, ModelConfig, ModelName } from '../../utils/config.js';
 import { GitDiff } from '../../utils/git.js';
 import { logger } from '../../utils/logger.js';
@@ -21,6 +22,7 @@ export interface AIServiceParams {
     config: ModelConfig<ModelName>;
     stagedDiff: GitDiff;
     keyName: ModelName;
+    logSessionId?: string;
 }
 
 export interface AIServiceError extends Error {
@@ -39,6 +41,8 @@ export abstract class AIService {
     protected serviceName: string;
     protected errorPrefix: string;
     protected colors: Theme;
+    protected params: AIServiceParams;
+    protected logSessionId?: string;
 
     protected constructor(params: AIServiceParams) {
         this.serviceName = 'AI';
@@ -46,6 +50,8 @@ export abstract class AIService {
         this.colors = {
             primary: '',
         };
+        this.params = params;
+        this.logSessionId = params.logSessionId;
     }
 
     abstract generateCommitMessage$(): Observable<ReactiveListChoice>;
@@ -132,6 +138,13 @@ export abstract class AIService {
         // Add status code if available
         const finalMessage = error.status ? `HTTP ${error.status}: ${detailedMessage}` : detailedMessage;
 
+        // 에러 로깅
+        if (this.params.config.logging) {
+            const diff = this.params.stagedDiff.diff;
+            const serviceName = this.serviceName.replace(/\[|\]/g, '').trim();
+            addLogEntry(diff, 'commit', serviceName, 'Error occurred', '', undefined, finalMessage);
+        }
+
         logger.error(`${this.errorPrefix} ${finalMessage}`);
         if (error.stack) {
             logger.error(`    ${error.stack}`);
@@ -150,6 +163,52 @@ export abstract class AIService {
             disabled: true,
         });
     };
+
+    // 개선된 로깅 메서드
+    protected logAIRequest(prompt: string, response: string, duration?: number, error?: string) {
+        if (this.params.config.logging) {
+            const diff = this.params.stagedDiff.diff;
+            const requestType: RequestType = 'commit'; // 기본값, 서비스에서 오버라이드 가능
+            const serviceName = this.serviceName.replace(/\[|\]/g, '').trim();
+            addLogEntry(diff, requestType, serviceName, prompt, response, duration, error);
+        }
+    }
+
+    // 성능 측정과 함께 AI 요청 실행
+    protected async executeWithLogging<T>(aiRequest: () => Promise<T>, prompt: string, requestType: RequestType): Promise<T> {
+        const startTime = new Date();
+        const serviceName = this.serviceName.replace(/\[|\]/g, '').trim();
+
+        try {
+            logger.info(`${this.serviceName} Starting ${requestType} request...`);
+
+            const result = await aiRequest();
+            const duration = Date.now() - startTime.getTime();
+
+            logger.info(`${this.serviceName} Completed ${requestType} request in ${duration}ms`);
+
+            // 성공적인 요청 로깅
+            if (this.params.config.logging && typeof result === 'string') {
+                const diff = this.params.stagedDiff.diff;
+                addLogEntry(diff, requestType, serviceName, prompt, result, duration);
+            }
+
+            return result;
+        } catch (error) {
+            const duration = Date.now() - startTime.getTime();
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+
+            logger.error(`${this.serviceName} Failed ${requestType} request in ${duration}ms: ${errorMessage}`);
+
+            // 실패한 요청 로깅
+            if (this.params.config.logging) {
+                const diff = this.params.stagedDiff.diff;
+                addLogEntry(diff, requestType, serviceName, prompt, '', duration, errorMessage);
+            }
+
+            throw error;
+        }
+    }
 
     protected parseMessage(aiGeneratedText: string, type: CommitType, maxCount: number): AIResponse[] {
         const jsonContentPattern = /(\[\s*\{[\s\S]*?\}\s*\]|\{[\s\S]*?\})/;
@@ -187,7 +246,15 @@ export abstract class AIService {
                 value: `${rawMessageData.subject}${rawMessageData.body ? `\n\n${rawMessageData.body}` : ''}${rawMessageData.footer ? `\n\n${rawMessageData.footer}` : ''}`,
             }));
 
-        return formattedCommitMessages.slice(0, maxCount);
+        const results = formattedCommitMessages.slice(0, maxCount);
+
+        // 성공적인 파싱 결과 로깅
+        if (this.isLoggingEnabled()) {
+            const resultSummary = results.map(r => r.title).join(', ');
+            logger.info(`${this.serviceName} Parsed ${results.length} commit messages: ${resultSummary}`);
+        }
+
+        return results;
     }
 
     private extractMessageAsType(data: RawCommitMessage, type: CommitType): RawCommitMessage {
@@ -247,4 +314,29 @@ export abstract class AIService {
             }
         });
     }
+
+    // 로깅 활성화 여부 확인
+    protected isLoggingEnabled(): boolean {
+        return this.params.config.logging && !!this.logSessionId;
+    }
+
+    // 서비스 이름 getter (로깅용)
+    protected getServiceName(): string {
+        return this.serviceName.replace(/\[|\]/g, '').trim();
+    }
 }
+
+// 유틸리티 함수: 여러 AI 서비스 결과를 병합하여 로깅
+export const mergeAIResponses = (responses: { service: string; response: AIResponse[] }[]): string => {
+    return responses
+        .map(({ service, response }) => {
+            const titles = response.map(r => r.title).join(', ');
+            return `${service}: ${titles}`;
+        })
+        .join(' | ');
+};
+
+// 유틸리티 함수: 로깅 세션 요약 생성
+export const generateLogSummary = (services: string[], successful: number, failed: number, totalDuration: number): string => {
+    return `Services: ${services.join(', ')} | Success: ${successful}/${services.length} | Duration: ${totalDuration}ms`;
+};

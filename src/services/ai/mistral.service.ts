@@ -5,7 +5,7 @@ import { Observable, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
-import { RequestType, createLogResponse } from '../../utils/ai-log.js';
+import { RequestType } from '../../utils/ai-log.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 import { getRandomNumber } from '../../utils/utils.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
@@ -128,7 +128,7 @@ export class MistralService extends AIService {
 
         await this.checkAvailableModels();
         const chatResponse = await this.createChatCompletions(generatedSystemPrompt, `Here is the diff: ${diff}`);
-        logging && createLogResponse('MistralAI', diff, generatedSystemPrompt, chatResponse, requestType);
+        // logging && createLogResponse('MistralAI', diff, generatedSystemPrompt, chatResponse, requestType);
         if (requestType === 'review') {
             return this.sanitizeResponse(chatResponse);
         }
