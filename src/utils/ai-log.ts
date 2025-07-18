@@ -9,47 +9,25 @@ import { AICOMMIT_LOGS_DIR } from './config.js';
 
 export type RequestType = 'review' | 'commit';
 
-// winston 로거 생성
-let logger: winston.Logger | null = null;
+// AI 서비스별 로거들
+const serviceLoggers = new Map<string, winston.Logger>();
 
-// 로그 항목 인터페이스
-interface LogEntry {
-    aiName: string;
-    prompt: string;
-    response: string;
-    timestamp: Date;
-    duration?: number;
-    error?: string;
-}
-
-// 단일 diff 파일 기반 로깅 시스템
-const activeLogFiles = new Map<
-    string,
-    {
-        filePath: string;
-        diff: string;
-        requestType: RequestType;
-        entries: LogEntry[];
-        startTime: Date;
-        diffHash: string;
-    }
->();
-
-// winston 로거 초기화
-const getOrCreateLogger = (diff: string, requestType: RequestType): winston.Logger => {
+// 로거 생성 또는 가져오기
+const getOrCreateServiceLogger = (aiName: string, diff: string, requestType: RequestType): winston.Logger => {
     const diffHash = xxh64(0).update(diff).digest('hex').substring(0, 8);
-    const logKey = `${requestType}_${diffHash}`;
+    const loggerKey = `${aiName}_${diffHash}_${requestType}`;
 
-    if (logger && activeLogFiles.has(logKey)) {
-        return logger;
+    if (serviceLoggers.has(loggerKey)) {
+        return serviceLoggers.get(loggerKey)!;
     }
 
+    // 서비스별 로그 파일명 생성
     const startTime = new Date();
-    const fileName = generateLogFileName(startTime, diff, requestType);
+    const fileName = generateServiceLogFileName(startTime, aiName, diff, requestType);
     const filePath = `${AICOMMIT_LOGS_DIR}/${fileName}`;
 
-    // winston 로거 설정
-    logger = winston.createLogger({
+    // winston 로거 생성
+    const logger = winston.createLogger({
         level: 'info',
         format: winston.format.combine(
             winston.format.timestamp({ format: 'YYYY-MM-DDTHH:mm:ss.SSSZ' }),
@@ -63,67 +41,103 @@ const getOrCreateLogger = (diff: string, requestType: RequestType): winston.Logg
         transports: [new winston.transports.File({ filename: filePath })],
     });
 
-    const logFile = {
-        filePath,
-        diff,
-        requestType,
-        entries: [],
-        startTime,
-        diffHash,
-    };
+    // 로그 헤더 작성
+    logger.info(`=== ${aiName.toUpperCase()} AI SERVICE LOG ===`);
+    logger.info(`Diff Hash: ${diffHash}`);
+    logger.info(`Request Type: ${requestType.toUpperCase()}`);
+    logger.info(`Start Time: ${startTime.toISOString()}`);
+    logger.info('='.repeat(50));
+    logger.info('');
 
-    activeLogFiles.set(logKey, logFile);
+    serviceLoggers.set(loggerKey, logger);
     return logger;
 };
 
-// diff 해시 기반 로그 파일 생성 또는 기존 파일 가져오기
-const getOrCreateLogFile = (diff: string, requestType: RequestType) => {
-    const diffHash = xxh64(0).update(diff).digest('hex').substring(0, 8);
-    const logKey = `${requestType}_${diffHash}`;
+// AI 요청 시작 로깅 (config 체크 포함)
+export const logAIRequest = (
+    diff: string,
+    requestType: RequestType,
+    aiName: string,
+    model: string,
+    url: string,
+    headers: any,
+    logging: boolean = true
+) => {
+    if (!logging) {return;}
 
-    if (activeLogFiles.has(logKey)) {
-        return activeLogFiles.get(logKey)!;
-    }
-
-    const startTime = new Date();
-    const fileName = generateLogFileName(startTime, diff, requestType);
-    const filePath = `${AICOMMIT_LOGS_DIR}/${fileName}`;
-
-    const logFile = {
-        filePath,
-        diff,
-        requestType,
-        entries: [],
-        startTime,
-        diffHash,
-    };
-
-    activeLogFiles.set(logKey, logFile);
-    return logFile;
-};
-
-// winston으로 실시간 로깅
-export const logAIRequest = (diff: string, requestType: RequestType, aiName: string, model: string, url?: string) => {
-    const logger = getOrCreateLogger(diff, requestType);
+    const logger = getOrCreateServiceLogger(aiName, diff, requestType);
     logger.info(`Making request to ${aiName} API with model: ${model}`);
-    if (url) {
-        logger.info(`Request URL: ${url}`);
-    }
+    logger.info(`Request URL: ${url}`);
+    logger.info('Request headers:', headers);
 };
 
-export const logAIPayload = (diff: string, requestType: RequestType, payload: any) => {
-    const logger = getOrCreateLogger(diff, requestType);
+// AI 요청 페이로드 로깅
+export const logAIPayload = (diff: string, requestType: RequestType, aiName: string, payload: any, logging: boolean = true) => {
+    if (!logging) {return;}
+
+    const logger = getOrCreateServiceLogger(aiName, diff, requestType);
     logger.info('Request payload:', payload);
 };
 
-export const logAIResponse = (diff: string, requestType: RequestType, response: any) => {
-    const logger = getOrCreateLogger(diff, requestType);
+// AI 프롬프트 정보 로깅 (시스템 프롬프트와 사용자 프롬프트)
+export const logAIPrompt = (
+    diff: string,
+    requestType: RequestType,
+    aiName: string,
+    systemPrompt: string,
+    userPrompt: string,
+    logging: boolean = true
+) => {
+    if (!logging) {return;}
+
+    const logger = getOrCreateServiceLogger(aiName, diff, requestType);
+    logger.info('System prompt:', { prompt: systemPrompt });
+    logger.info('User prompt:', { prompt: userPrompt });
+};
+
+// AI 응답 로깅
+export const logAIResponse = (diff: string, requestType: RequestType, aiName: string, response: any, logging: boolean = true) => {
+    if (!logging) {return;}
+
+    const logger = getOrCreateServiceLogger(aiName, diff, requestType);
     logger.info('Response received:', response);
 };
 
-export const logAIError = (diff: string, requestType: RequestType, error: any) => {
-    const logger = getOrCreateLogger(diff, requestType);
+// AI 에러 로깅
+export const logAIError = (diff: string, requestType: RequestType, aiName: string, error: any, logging: boolean = true) => {
+    if (!logging) {return;}
+
+    const logger = getOrCreateServiceLogger(aiName, diff, requestType);
     logger.error('API request failed:', error);
+};
+
+// AI 요청 완료 로깅 (성공시)
+export const logAIComplete = (
+    diff: string,
+    requestType: RequestType,
+    aiName: string,
+    duration?: number,
+    finalResponse?: string,
+    logging: boolean = true
+) => {
+    if (!logging) {return;}
+
+    const logger = getOrCreateServiceLogger(aiName, diff, requestType);
+
+    if (duration) {
+        logger.info(`Request completed successfully in ${duration}ms`);
+    } else {
+        logger.info('Request completed successfully');
+    }
+
+    if (finalResponse) {
+        logger.info('Final processed response:', { response: finalResponse });
+    }
+
+    logger.info('');
+    logger.info('='.repeat(50));
+    logger.info(`End Time: ${new Date().toISOString()}`);
+    logger.info('=== REQUEST COMPLETED ===');
 };
 
 // 로그 엔트리 추가 (기존 함수 유지 - 호환성)
@@ -134,128 +148,55 @@ export const addLogEntry = (
     prompt: string,
     response: string,
     duration?: number,
-    error?: string
+    error?: string,
+    logging: boolean = true
 ) => {
-    const logger = getOrCreateLogger(diff, requestType);
+    if (!logging) {return;}
+
+    const logger = getOrCreateServiceLogger(aiName, diff, requestType);
 
     if (error) {
-        logger.error(`[${aiName}] Request failed after ${duration}ms: ${error}`);
+        logger.error(`Request failed after ${duration}ms:`, { error });
     } else {
-        logger.info(`[${aiName}] Request completed in ${duration}ms`);
-        logger.info(`[${aiName}] Response: ${response}`);
+        logger.info(`Request completed in ${duration}ms`);
+        logger.info('Response:', { response });
     }
 
-    // 백업용 파일 시스템 로그도 유지
-    const logFile = getOrCreateLogFile(diff, requestType);
-    logFile.entries.push({
-        aiName,
-        prompt,
-        response,
-        timestamp: new Date(),
-        duration,
-        error,
-    });
+    logAIComplete(diff, requestType, aiName, duration, response, logging);
 };
 
-// 로그 파일 쓰기
-const writeLogFile = (logFile: {
-    filePath: string;
-    diff: string;
-    requestType: RequestType;
-    entries: LogEntry[];
-    startTime: Date;
-    diffHash: string;
-}) => {
-    const content = buildLogContent(logFile);
-    writeFileSyncRecursive(logFile.filePath, content);
-};
-
-// copilot 스타일 로그 내용 구성
-const buildLogContent = (logFile: {
-    filePath: string;
-    diff: string;
-    requestType: RequestType;
-    entries: LogEntry[];
-    startTime: Date;
-    diffHash: string;
-}): string => {
-    const header =
-        `=== AI Commit Log (${logFile.requestType.toUpperCase()}) ===\n` +
-        `Diff Hash: ${logFile.diffHash}\n` +
-        `Start Time: ${logFile.startTime.toISOString()}\n` +
-        `Total Services: ${logFile.entries.length}\n\n`;
-
-    const diffSection = `[Git Diff]\n${logFile.diff}\n\n`;
-
-    // copilot 스타일 로그 형식
-    const entriesSection = logFile.entries
-        .map((entry, index) => {
-            const duration = entry.duration ? ` (${entry.duration}ms)` : '';
-            const timestamp = entry.timestamp.toISOString();
-            const status = entry.error ? '❌ FAILED' : '✅ SUCCESS';
-
-            let section = `[${entry.aiName}] ${status}${duration} - ${timestamp}\n`;
-            section += `- System Prompt\n${entry.prompt}\n\n`;
-
-            if (entry.error) {
-                section += `- Error\n${entry.error}\n`;
-            } else {
-                section += `- Response\n${entry.response}\n`;
-            }
-
-            return section;
-        })
-        .join('\n' + '='.repeat(80) + '\n\n');
-
-    // 요약 정보
-    const successful = logFile.entries.filter(e => !e.error).length;
-    const failed = logFile.entries.filter(e => e.error).length;
-    const totalDuration = logFile.entries.reduce((sum, e) => sum + (e.duration || 0), 0);
-    const avgDuration = logFile.entries.length > 0 ? Math.round(totalDuration / logFile.entries.length) : 0;
-    const endTime = new Date();
-    const sessionDuration = endTime.getTime() - logFile.startTime.getTime();
-
-    const summary =
-        `\n${'='.repeat(80)}\n` +
-        `=== SESSION SUMMARY ===\n` +
-        `Total Services: ${logFile.entries.length}\n` +
-        `Successful: ${successful}\n` +
-        `Failed: ${failed}\n` +
-        `Success Rate: ${logFile.entries.length > 0 ? ((successful / logFile.entries.length) * 100).toFixed(1) : 0}%\n` +
-        `Total AI Duration: ${totalDuration}ms\n` +
-        `Average AI Duration: ${avgDuration}ms\n` +
-        `Session Duration: ${sessionDuration}ms\n` +
-        `End Time: ${endTime.toISOString()}\n` +
-        `${'='.repeat(80)}\n`;
-
-    return header + diffSection + entriesSection + summary;
-};
-
-// 로그 세션 시작 (MultiAI 로거용)
+// 로그 세션 시작 (MultiAI 로거용) - 각 서비스별로 개별 세션
 export const startLogSession = (diff: string, requestType: RequestType): string => {
     const diffHash = xxh64(0).update(diff).digest('hex').substring(0, 8);
-    const logKey = `${requestType}_${diffHash}`;
-
-    // 로그 파일 초기화
-    getOrCreateLogFile(diff, requestType);
-
-    return logKey;
+    return `${requestType}_${diffHash}`;
 };
 
-// 세션 완료 시 파일 정리
+// 세션 완료 시 로거 정리
 export const finishLogSession = (sessionKey: string) => {
-    const logFile = activeLogFiles.get(sessionKey);
-    if (logFile) {
-        // 최종 파일 쓰기
-        writeLogFile(logFile);
-        // 메모리에서 제거
-        activeLogFiles.delete(sessionKey);
+    // 해당 세션과 관련된 모든 서비스 로거들을 정리
+    const loggerKeysToRemove: string[] = [];
+
+    for (const [loggerKey, logger] of serviceLoggers.entries()) {
+        if (loggerKey.includes(sessionKey)) {
+            logger.close();
+            loggerKeysToRemove.push(loggerKey);
+        }
     }
+
+    loggerKeysToRemove.forEach(key => serviceLoggers.delete(key));
 };
 
 // 레거시 함수 - 새로운 시스템으로 리다이렉트
-export const createLogResponse = (aiName: string, diff: string, prompt: string, response: string, requestType: RequestType) => {
-    addLogEntry(diff, requestType, aiName, prompt, response);
+export const createLogResponse = (
+    aiName: string,
+    diff: string,
+    prompt: string,
+    response: string,
+    requestType: RequestType,
+    logging: boolean = true
+) => {
+    if (!logging) {return;}
+    addLogEntry(diff, requestType, aiName, prompt, response, undefined, undefined, logging);
 };
 
 // 성능 측정과 함께 로그 추가
@@ -266,13 +207,28 @@ export const logWithTiming = (
     prompt: string,
     response: string,
     startTime: Date,
-    error?: string
+    error?: string,
+    logging: boolean = true
 ) => {
+    if (!logging) {return;}
     const duration = Date.now() - startTime.getTime();
-    addLogEntry(diff, requestType, aiName, prompt, response, duration, error);
+    addLogEntry(diff, requestType, aiName, prompt, response, duration, error, logging);
 };
 
-// 파일명 생성
+// 서비스별 파일명 생성
+const generateServiceLogFileName = (date: Date, aiName: string, diff: string, requestType: RequestType) => {
+    const { year, month, day, hours, minutes, seconds } = getDateString(date);
+    const hasher = xxh64(0);
+    const hash = hasher.update(diff).digest('hex').substring(0, 8);
+    const serviceName = aiName.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+    if (requestType === 'review') {
+        return `${serviceName}_review_${year}-${month}-${day}_${hours}-${minutes}-${seconds}_${hash}.log`;
+    }
+    return `${serviceName}_commit_${year}-${month}-${day}_${hours}-${minutes}-${seconds}_${hash}.log`;
+};
+
+// 파일명 생성 (기존 호환성)
 export const generateLogFileName = (date: Date, diff: string, requestType: RequestType) => {
     const { year, month, day, hours, minutes, seconds } = getDateString(date);
     const hasher = xxh64(0);
@@ -314,28 +270,21 @@ export const writeFileSyncRecursive = (fileName: string, content: string = '') =
 // 로그 상태 확인
 export const getLogStatus = () => {
     return {
-        activeFiles: activeLogFiles.size,
-        files: Array.from(activeLogFiles.entries()).map(([key, file]) => ({
-            key,
-            diffHash: file.diffHash,
-            requestType: file.requestType,
-            entriesCount: file.entries.length,
-            filePath: file.filePath,
-            startTime: file.startTime,
-        })),
+        activeServiceLoggers: serviceLoggers.size,
+        loggers: Array.from(serviceLoggers.keys()),
     };
 };
 
 // 프로세스 종료 시 정리
 const cleanup = () => {
-    for (const [key, logFile] of activeLogFiles.entries()) {
+    for (const [key, logger] of serviceLoggers.entries()) {
         try {
-            writeLogFile(logFile);
+            logger.close();
         } catch (error) {
-            console.error(`Failed to write log file on cleanup: ${error}`);
+            console.error(`Failed to close logger ${key}:`, error);
         }
     }
-    activeLogFiles.clear();
+    serviceLoggers.clear();
 };
 
 process.on('exit', cleanup);

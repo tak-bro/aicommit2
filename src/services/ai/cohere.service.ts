@@ -14,7 +14,7 @@ const DEFAULT_TIMEOUT = 2 * 60 * 1000; // 2 minutes in milliseconds
 export class CohereService extends AIService {
     private cohere: CohereClient;
 
-    constructor(private readonly params: AIServiceParams) {
+    constructor(protected readonly params: AIServiceParams) {
         super(params);
         this.colors = {
             primary: '#D18EE2',
