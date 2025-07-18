@@ -50,7 +50,7 @@ Supported:
 - `mistral-large-latest` 
 - `pixtral-large-latest` 
 - `ministral-8b-latest` 
-- `mistral-small-latest` (Mistral Small Latest - default)
+- `mistral-small-latest` (default)
 - `codestral-latest` 
 - `mistral-embed` 
 - `mistral-moderation-latest` 

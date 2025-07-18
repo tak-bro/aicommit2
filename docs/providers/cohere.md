@@ -53,7 +53,7 @@ Supported models:
 - `command-r-plus` 
 - `command-r-08-2024` 
 - `command-r-03-2024` 
-- `command-r` (Command R - default)
+- `command-r` (default)
 - `command` 
 - `command-nightly` 
 - `command-light`

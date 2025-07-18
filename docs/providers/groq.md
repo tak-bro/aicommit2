@@ -47,7 +47,7 @@ Default: `llama-3.3-70b-versatile`
 
 Supported:
 
-- `llama-3.3-70b-versatile` (Llama 3.3 70B Versatile - default)
+- `llama-3.3-70b-versatile` (default)
 - `meta-llama/llama-4-maverick-17b-128e-instruct`
 - `meta-llama/llama-4-scout-17b-16e-instruct`
 - `deepseek-r1-distill-llama-70b` 

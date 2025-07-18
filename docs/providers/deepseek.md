@@ -47,7 +47,7 @@ Default: `deepseek-chat`
 
 Supported:
 
-- `deepseek-chat` (DeepSeek Chat - default)
+- `deepseek-chat` (default)
 - `deepseek-reasoner`
 
 ```sh
