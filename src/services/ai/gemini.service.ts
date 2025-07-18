@@ -185,7 +185,9 @@ export class GeminiService extends AIService {
         const startTime = Date.now();
 
         try {
-            const result = await model.generateContent(userPrompt);
+            const generateOptions = this.params.config.timeout > 10000 ? { request: { timeout: this.params.config.timeout } } : undefined;
+
+            const result = await model.generateContent(userPrompt, generateOptions);
             const response = result.response;
             const completion = response.text();
             const duration = Date.now() - startTime;

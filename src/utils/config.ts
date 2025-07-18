@@ -405,6 +405,10 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
         codeReviewPromptPath: generalConfigParsers.codeReviewPromptPath,
+        timeout: generalConfigParsers.timeout,
+        temperature: generalConfigParsers.temperature,
+        maxTokens: generalConfigParsers.maxTokens,
+        topP: generalConfigParsers.topP,
         logging: generalConfigParsers.logging,
         locale: generalConfigParsers.locale,
         generate: generalConfigParsers.generate,
@@ -729,6 +733,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
     },
     PERPLEXITY: {
         key: (key?: string) => key || '',
+        envKey: (envKey?: string) => envKey || '',
         model: (model?: string | string[]): string[] => {
             if (!model) {
                 return ['sonar'];

@@ -129,9 +129,7 @@ export class CohereService extends AIService {
 
         try {
             const prediction = await this.cohere.chat(payload, {
-                ...(this.params.config.timeout > DEFAULT_TIMEOUT && {
-                    timeoutInSeconds: Math.floor(this.params.config.timeout / 1000),
-                }),
+                timeoutInSeconds: Math.floor(this.params.config.timeout / 1000),
             });
 
             const duration = Date.now() - startTime;

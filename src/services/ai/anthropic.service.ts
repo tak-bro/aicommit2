@@ -163,16 +163,14 @@ export class AnthropicService extends AIService {
             // 완료 로깅
             logAIComplete(diff, requestType, 'Anthropic', duration, completion, logging);
 
-            return completion;
+            if (requestType === 'review') {
+                return this.sanitizeResponse(completion);
+            }
+            return this.parseMessage(completion, type, generate);
         } catch (error) {
             const duration = Date.now() - startTime;
             logAIError(diff, requestType, 'Anthropic', error, logging);
             throw error;
         }
-
-        if (requestType === 'review') {
-            return this.sanitizeResponse(completion);
-        }
-        return this.parseMessage(completion, type, generate);
     }
 }

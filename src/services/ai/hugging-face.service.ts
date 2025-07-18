@@ -142,7 +142,20 @@ export class HuggingFaceService extends AIService {
         await this.initialize();
 
         const diff = this.params.stagedDiff.diff;
-        const { systemPrompt, systemPromptPath, codeReviewPromptPath, logging, locale, generate, type, maxLength } = this.params.config;
+        const {
+            systemPrompt,
+            systemPromptPath,
+            codeReviewPromptPath,
+            logging,
+            locale,
+            generate,
+            type,
+            maxLength,
+            temperature,
+            maxTokens,
+            topP,
+            timeout,
+        } = this.params.config;
         const promptOptions: PromptOptions = {
             ...DEFAULT_PROMPT_OPTIONS,
             locale,
@@ -430,6 +443,9 @@ export class HuggingFaceService extends AIService {
         formData.append('data', JSON.stringify(data));
 
         const baseUrl = this.params.config.url || 'https://huggingface.co';
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), this.params.config.timeout);
+
         const response = await fetch(`${baseUrl}/chat/conversation/${this.currentConversionID}`, {
             headers: {
                 ...this.headers,
@@ -438,7 +454,10 @@ export class HuggingFaceService extends AIService {
             },
             body: formData,
             method: 'POST',
+            signal: controller.signal,
         });
+
+        clearTimeout(timeoutId);
 
         function parseResponse(chunk: string) {
             try {
