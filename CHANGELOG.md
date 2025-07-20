@@ -1,3 +1,15 @@
+# [2.3.0](https://github.com/tak-bro/aicommit2/compare/v2.2.24...v2.3.0) (2025-07-20)
+
+
+### Features
+
+* add timeout config to AI service requests ([4f378b9](https://github.com/tak-bro/aicommit2/commit/4f378b980e08152beb6585d529bfc72f8c84f070))
+* **git:** enhance diff to include binary file changes ([b8379fa](https://github.com/tak-bro/aicommit2/commit/b8379fa0fb09d483e9b11202e0868246df096931))
+* **github-models:** update to GitHub Models API ([388e7ec](https://github.com/tak-bro/aicommit2/commit/388e7ec5f9247194e4b9b093b508cb3e335a6367))
+* improve prompt generation for AI services ([1909961](https://github.com/tak-bro/aicommit2/commit/1909961727fbd833852bfe532868b0be7ec1a9d8))
+* **log:** enhance log command with list, open, path actions ([70729ec](https://github.com/tak-bro/aicommit2/commit/70729ec644bba21897d8f39ed41c21ffebfcb786))
+* pass flags to prepare-commit-msg hook ([2de0093](https://github.com/tak-bro/aicommit2/commit/2de00930d2fce51ebbe837f0b075af3c4af3522e))
+
 ## [2.2.24](https://github.com/tak-bro/aicommit2/compare/v2.2.23...v2.2.24) (2025-07-11)
 
 
