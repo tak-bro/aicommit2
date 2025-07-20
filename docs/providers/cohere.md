@@ -13,14 +13,14 @@
 
 ```sh
 aicommit2 config set COHERE.key="your-api-key"
-aicommit2 config set COHERE.model="command"
+aicommit2 config set COHERE.model="command-r"
 ```
 
 ### Advanced Setup
 
 ```sh
 aicommit2 config set COHERE.key="your-api-key" \
-    COHERE.model="command-nightly" \
+    COHERE.model="command-r" \
     COHERE.temperature=0.7 \
     COHERE.maxTokens=4000 \
     COHERE.locale="en" \
@@ -33,7 +33,7 @@ aicommit2 config set COHERE.key="your-api-key" \
 | Setting | Description  | Default   |
 | ------- | ------------ | --------- |
 | `key`   | API key      | -         |
-| `model` | Model to use | `command` |
+| `model` | Model to use | `command-r` |
 
 ## Configuration
 
@@ -43,24 +43,24 @@ The Cohere API key. If you don't have one, please sign up and get the API key in
 
 #### COHERE.model
 
-Default: `command`
+Default: `command-r`
 
 Supported models:
 
-- `command-r7b-12-2024`
-- `command-r-plus-08-2024`
-- `command-r-plus-04-2024`
-- `command-r-plus`
-- `command-r-08-2024`
-- `command-r-03-2024`
-- `command-r`
-- `command`
-- `command-nightly`
+- `command-r7b-12-2024` 
+- `command-r-plus-08-2024` 
+- `command-r-plus-04-2024` 
+- `command-r-plus` 
+- `command-r-08-2024` 
+- `command-r-03-2024` 
+- `command-r` (default)
+- `command` 
+- `command-nightly` 
 - `command-light`
-- `command-light-nightly`
-- `c4ai-aya-expanse-8b`
+- `command-light-nightly` 
+- `c4ai-aya-expanse-8b` 
 - `c4ai-aya-expanse-32b`
 
 ```sh
-aicommit2 config set COHERE.model="command-nightly"
+aicommit2 config set COHERE.model="command-r"
 ```

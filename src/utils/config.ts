@@ -46,6 +46,7 @@ export const BUILTIN_SERVICES = [
     'GROQ',
     'PERPLEXITY',
     'DEEPSEEK',
+    'GITHUB_MODELS',
 ] as const;
 export type BuiltinService = (typeof BUILTIN_SERVICES)[number];
 
@@ -404,6 +405,10 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
         codeReviewPromptPath: generalConfigParsers.codeReviewPromptPath,
+        timeout: generalConfigParsers.timeout,
+        temperature: generalConfigParsers.temperature,
+        maxTokens: generalConfigParsers.maxTokens,
+        topP: generalConfigParsers.topP,
         logging: generalConfigParsers.logging,
         locale: generalConfigParsers.locale,
         generate: generalConfigParsers.generate,
@@ -423,18 +428,15 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
             }
             const modelList = typeof model === 'string' ? model?.split(',') : model;
             const supportModels = [
-                `gemini-2.5-flash`,
-                `gemini-2.5-flash-preview-04-17`,
-                `gemini-2.5-flash-preview-05-20`,
-                `gemini-2.5-flash-lite-preview-06-17`,
-                `gemini-2.5-pro`,
-                `gemini-2.5-pro-preview-05-06`,
+                `gemini-2.0-flash-exp`,
+                `gemini-2.0-flash-thinking-exp-1219`,
+                `gemini-exp-1206`,
+                `gemini-exp-1121`,
                 `gemini-2.0-flash`,
-                `gemini-2.0-flash-lite`,
-                `gemini-2.0-flash-preview-image-generation`,
                 `gemini-1.5-pro`,
                 `gemini-1.5-flash`,
                 `gemini-1.5-flash-8b`,
+                `gemini-1.0-pro`,
             ];
             // Validate each model in the list
             for (const m of modelList) {
@@ -503,15 +505,15 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         envKey: (envKey?: string) => envKey || '',
         model: (model?: string | string[]): string[] => {
             if (!model) {
-                return ['pixtral-12b-2409'];
+                return ['mistral-small-latest'];
             }
             const modelList = typeof model === 'string' ? model?.split(',') : model;
             const supportModels = [
-                `codestral-latest`,
                 `mistral-large-latest`,
                 `pixtral-large-latest`,
                 `ministral-8b-latest`,
                 `mistral-small-latest`,
+                `codestral-latest`,
                 `mistral-embed`,
                 `mistral-moderation-latest`,
             ];
@@ -635,7 +637,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         envKey: (envKey?: string) => envKey || '',
         model: (model?: string | string[]): string[] => {
             if (!model) {
-                return ['command'];
+                return ['command-r'];
             }
             const modelList = typeof model === 'string' ? model?.split(',') : model;
             const supportModels = [
@@ -731,6 +733,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
     },
     PERPLEXITY: {
         key: (key?: string) => key || '',
+        envKey: (envKey?: string) => envKey || '',
         model: (model?: string | string[]): string[] => {
             if (!model) {
                 return ['sonar'];
@@ -799,6 +802,48 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         type: generalConfigParsers.type,
         maxLength: generalConfigParsers.maxLength,
         includeBody: generalConfigParsers.includeBody,
+        codeReview: generalConfigParsers.codeReview,
+        disabled: generalConfigParsers.disabled,
+        watchMode: generalConfigParsers.watchMode,
+    },
+    GITHUB_MODELS: {
+        key: (key?: string) => key || '',
+        envKey: (envKey?: string) => envKey || '',
+        model: (model?: string | string[]): string[] => {
+            if (!model) {
+                return ['gpt-4o-mini'];
+            }
+            const modelList = typeof model === 'string' ? model?.split(',') : model;
+            const supportModels = [
+                'gpt-4o-mini',
+                'gpt-4o',
+                'gpt-3.5-turbo',
+                'meta-llama-3.1-405b-instruct',
+                'meta-llama-3.1-70b-instruct',
+                'meta-llama-3.1-8b-instruct',
+                'phi-3-medium-4k-instruct',
+                'phi-3-mini-4k-instruct',
+                'phi-3-small-8k-instruct',
+            ];
+            // Validate each model in the list
+            for (const m of modelList) {
+                parseAssert('GITHUB_MODELS.model', supportModels.includes(m.trim()), `Invalid model type for GitHub Models: ${m.trim()}`);
+            }
+            return modelList.map(m => m.trim()).filter(m => !!m && m.length > 0);
+        },
+        systemPrompt: generalConfigParsers.systemPrompt,
+        systemPromptPath: generalConfigParsers.systemPromptPath,
+        codeReviewPromptPath: generalConfigParsers.codeReviewPromptPath,
+        timeout: generalConfigParsers.timeout,
+        temperature: generalConfigParsers.temperature,
+        maxTokens: generalConfigParsers.maxTokens,
+        logging: generalConfigParsers.logging,
+        locale: generalConfigParsers.locale,
+        generate: generalConfigParsers.generate,
+        type: generalConfigParsers.type,
+        maxLength: generalConfigParsers.maxLength,
+        includeBody: generalConfigParsers.includeBody,
+        topP: generalConfigParsers.topP,
         codeReview: generalConfigParsers.codeReview,
         disabled: generalConfigParsers.disabled,
         watchMode: generalConfigParsers.watchMode,
@@ -1009,9 +1054,9 @@ export const addConfigs = async (keyValues: [key: string, value: any][]) => {
             const valueToAdd =
                 typeof value === 'string'
                     ? value
-                        .split(',')
-                        .map(v => v.trim())
-                        .filter(v => !!v)
+                          .split(',')
+                          .map(v => v.trim())
+                          .filter(v => !!v)
                     : value;
             (config[modelName] as Record<string, any>)[modelKey] = flattenDeep([...originModels, ...valueToAdd]);
             continue;

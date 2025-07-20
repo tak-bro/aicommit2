@@ -47,25 +47,25 @@ Default: `llama-3.3-70b-versatile`
 
 Supported:
 
-- `allam-2-7b`,
-- `compound-beta`,
-- `compound-beta-mini`,
-- `deepseek-r1-distill-llama-70b`,
-- `distil-whisper-large-v3-en`,
-- `gemma2-9b-it`,
-- `llama-3.1-8b-instant`,
-- `llama-3.3-70b-versatile`,
-- `llama-guard-3-8b`,
-- `llama3-70b-8192`,
-- `llama3-8b-8192`,
-- `meta-llama/llama-4-maverick-17b-128e-instruct`,
-- `meta-llama/llama-4-scout-17b-16e-instruct`,
-- `mistral-saba-24b`,
-- `playai-tts`,
-- `playai-tts-arabic`,
-- `qwen-qwq-32b`,
-- `whisper-large-v3`,
-- `whisper-large-v3-turbo`,
+- `llama-3.3-70b-versatile` (default)
+- `meta-llama/llama-4-maverick-17b-128e-instruct`
+- `meta-llama/llama-4-scout-17b-16e-instruct`
+- `deepseek-r1-distill-llama-70b` 
+- `qwen-qwq-32b`
+- `mistral-saba-24b`
+- `llama3-70b-8192`
+- `llama-3.1-8b-instant`
+- `llama3-8b-8192`
+- `gemma2-9b-it` 
+- `llama-guard-3-8b` 
+- `allam-2-7b` 
+- `compound-beta` 
+- `compound-beta-mini` 
+- `whisper-large-v3` 
+- `whisper-large-v3-turbo` 
+- `distil-whisper-large-v3-en` 
+- `playai-tts`
+- `playai-tts-arabic` 
 
 ```sh
 aicommit2 config set GROQ.model="llama-3.3-70b-versatile"

@@ -7,12 +7,45 @@ import { AIRequestManager } from '../managers/ai-request.manager.js';
 import { ConsoleManager } from '../managers/console.manager.js';
 import { BUILTIN_SERVICES, ModelName, RawConfig, getConfig } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
-import { getStagedDiff, getCommentChar } from '../utils/git.js';
+import { getCommentChar, getStagedDiff } from '../utils/git.js';
 
-const args = process.argv.slice(2).filter(arg => !arg.startsWith('--hook-mode'));
-const [messageFilePath, commitSource] = args;
+const allArgs = process.argv.slice(2);
+const positionalArgs: string[] = [];
+let skipNext = false;
 
-export default () =>
+for (let i = 0; i < allArgs.length; i++) {
+    const arg = allArgs[i];
+
+    if (skipNext) {
+        skipNext = false;
+        continue;
+    }
+
+    if (arg === '--hook-mode') {
+        continue;
+    }
+
+    if (arg.startsWith('-')) {
+        const nextArg = allArgs[i + 1];
+        if (nextArg && !nextArg.startsWith('-')) {
+            skipNext = true;
+        }
+        continue;
+    }
+
+    positionalArgs.push(arg);
+}
+
+const [messageFilePath, commitSource] = positionalArgs;
+
+export default (
+    locale: string | undefined,
+    generate: number | undefined,
+    excludeFiles: string[],
+    commitType: string | undefined,
+    prompt: string | undefined,
+    includeBody: boolean | undefined
+) =>
     (async () => {
         if (!messageFilePath) {
             throw new KnownError(
@@ -35,7 +68,16 @@ export default () =>
         const consoleManager = new ConsoleManager();
         consoleManager.printTitle();
 
-        const config = await getConfig({});
+        const config = await getConfig(
+            {
+                locale: locale?.toString() as string,
+                generate: generate?.toString() as string,
+                type: commitType?.toString() as string,
+                systemPrompt: prompt?.toString() as string,
+                includeBody: includeBody?.toString() as string,
+            },
+            excludeFiles
+        );
         if (config.systemPromptPath) {
             try {
                 await fs.readFile(path.resolve(config.systemPromptPath), 'utf-8');

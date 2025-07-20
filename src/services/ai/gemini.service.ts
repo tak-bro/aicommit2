@@ -4,14 +4,14 @@ import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Observable, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
-import { AIResponse, AIService, AIServiceParams } from './ai.service.js';
-import { RequestType, createLogResponse } from '../../utils/ai-log.js';
-import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
+import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
+import { RequestType, logAIComplete, logAIError, logAIPayload, logAIPrompt, logAIRequest, logAIResponse } from '../../utils/ai-log.js';
+import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt, generateUserPrompt } from '../../utils/prompt.js';
 
 export class GeminiService extends AIService {
     private genAI: GoogleGenerativeAI;
 
-    constructor(private readonly params: AIServiceParams) {
+    constructor(protected readonly params: AIServiceParams) {
         super(params);
         this.colors = {
             primary: '#0077FF',
@@ -20,6 +20,38 @@ export class GeminiService extends AIService {
         this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold('[Gemini]');
         this.errorPrefix = chalk.red.bold(`[Gemini]`);
         this.genAI = new GoogleGenerativeAI(this.params.config.key);
+    }
+
+    protected getServiceSpecificErrorMessage(error: AIServiceError): string | null {
+        const errorMsg = error.message || '';
+
+        // Gemini-specific error messages
+        if (errorMsg.includes('API key') || errorMsg.includes('api_key')) {
+            return 'Invalid API key. Check your Google AI Studio API key in configuration';
+        }
+        if (errorMsg.includes('quota') || errorMsg.includes('QUOTA_EXCEEDED')) {
+            return 'API quota exceeded. Check your Google AI Studio usage limits';
+        }
+        if (errorMsg.includes('model') || errorMsg.includes('Model')) {
+            return 'Model not found or not accessible. Check if the Gemini model name is correct';
+        }
+        if (errorMsg.includes('SAFETY') || errorMsg.includes('safety')) {
+            return 'Content blocked by safety filters. Try rephrasing your request';
+        }
+        if (errorMsg.includes('RECITATION') || errorMsg.includes('recitation')) {
+            return 'Content blocked due to recitation concerns. Try a different approach';
+        }
+        if (errorMsg.includes('403') || errorMsg.includes('Forbidden')) {
+            return 'Access denied. Your API key may not have permission for this Gemini model';
+        }
+        if (errorMsg.includes('404') || errorMsg.includes('Not Found')) {
+            return 'Model or endpoint not found. Check your Gemini model configuration';
+        }
+        if (errorMsg.includes('500') || errorMsg.includes('Internal Server Error')) {
+            return 'Google AI service error. Try again later';
+        }
+
+        return null;
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
@@ -129,14 +161,61 @@ export class GeminiService extends AIService {
             ],
         });
 
-        const result = await model.generateContent(`Here is the diff: ${diff}`);
-        const response = result.response;
-        const completion = response.text();
+        const userPrompt = generateUserPrompt(diff, requestType);
 
-        logging && createLogResponse('Gemini', diff, generatedSystemPrompt, completion, requestType);
-        if (requestType === 'review') {
-            return this.sanitizeResponse(completion);
+        // 상세 로깅 (config URL 사용)
+        const baseUrl = this.params.config.url || 'https://generativelanguage.googleapis.com';
+        const url = `${baseUrl}/v1beta/models/${this.params.config.model}:generateContent`;
+        const headers = {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': this.params.config.key,
+        };
+
+        logAIRequest(diff, requestType, 'Gemini', this.params.config.model, url, headers, logging);
+        logAIPrompt(diff, requestType, 'Gemini', generatedSystemPrompt, userPrompt, logging);
+
+        const requestPayload = {
+            systemInstruction: { parts: [{ text: generatedSystemPrompt }] },
+            contents: [{ parts: [{ text: userPrompt }] }],
+            generationConfig,
+        };
+
+        logAIPayload(diff, requestType, 'Gemini', requestPayload, logging);
+
+        const startTime = Date.now();
+
+        try {
+            const generateOptions = this.params.config.timeout > 10000 ? { request: { timeout: this.params.config.timeout } } : undefined;
+
+            const result = await model.generateContent(userPrompt, generateOptions);
+            const response = result.response;
+            const completion = response.text();
+            const duration = Date.now() - startTime;
+
+            // 응답 로깅
+            logAIResponse(
+                diff,
+                requestType,
+                'Gemini',
+                {
+                    response: completion,
+                    candidates: result.response.candidates,
+                    usageMetadata: result.response.usageMetadata,
+                },
+                logging
+            );
+
+            // 완료 로깅
+            logAIComplete(diff, requestType, 'Gemini', duration, completion, logging);
+
+            if (requestType === 'review') {
+                return this.sanitizeResponse(completion);
+            }
+            return this.parseMessage(completion, type, generate);
+        } catch (error) {
+            const duration = Date.now() - startTime;
+            logAIError(diff, requestType, 'Gemini', error, logging);
+            throw error;
         }
-        return this.parseMessage(completion, type, generate);
     }
 }

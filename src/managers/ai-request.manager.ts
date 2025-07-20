@@ -8,6 +8,7 @@ import { CodestralService } from '../services/ai/codestral.service.js';
 import { CohereService } from '../services/ai/cohere.service.js';
 import { DeepSeekService } from '../services/ai/deep-seek.service.js';
 import { GeminiService } from '../services/ai/gemini.service.js';
+import { GitHubModelsService } from '../services/ai/github-models.service.js';
 import { GroqService } from '../services/ai/groq.service.js';
 import { HuggingFaceService } from '../services/ai/hugging-face.service.js';
 import { MistralService } from '../services/ai/mistral.service.js';
@@ -105,6 +106,12 @@ export class AIRequestManager {
                             case 'PERPLEXITY':
                                 return AIServiceFactory.create(PerplexityService, {
                                     config: { ...this.config.PERPLEXITY, model: model }, // Pass the single model name
+                                    stagedDiff: this.stagedDiff,
+                                    keyName: model as ModelName, // Use the model name as keyName
+                                }).generateCommitMessage$();
+                            case 'GITHUB_MODELS':
+                                return AIServiceFactory.create(GitHubModelsService, {
+                                    config: { ...this.config.GITHUB_MODELS, model: model }, // Pass the single model name
                                     stagedDiff: this.stagedDiff,
                                     keyName: model as ModelName, // Use the model name as keyName
                                 }).generateCommitMessage$();
@@ -219,6 +226,12 @@ export class AIRequestManager {
                             case 'PERPLEXITY':
                                 return AIServiceFactory.create(PerplexityService, {
                                     config: { ...this.config.PERPLEXITY, model: model }, // Pass the single model name
+                                    stagedDiff: this.stagedDiff,
+                                    keyName: model as ModelName, // Use the model name as keyName
+                                }).generateCodeReview$();
+                            case 'GITHUB_MODELS':
+                                return AIServiceFactory.create(GitHubModelsService, {
+                                    config: { ...this.config.GITHUB_MODELS, model: model }, // Pass the single model name
                                     stagedDiff: this.stagedDiff,
                                     keyName: model as ModelName, // Use the model name as keyName
                                 }).generateCodeReview$();

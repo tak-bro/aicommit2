@@ -366,7 +366,7 @@ _aicommit2_ offers flexible configuration options for all AI services, including
    To specify multiple models, use the `--[Model].model=model1,model2` format.
 
    ```sh
-   aicommit2 --OPENAI.locale="jp" --GEMINI.temperature="0.5" --OPENAI.model="gpt-4o,gpt-3.5-turbo"
+   aicommit2 --OPENAI.locale="jp" --GEMINI.temperature="0.5" --OPENAI.model="gpt-4o-mini,gpt-3.5-turbo"
    ```
 
 2. **Configuration file**: Refer to [Configuration File Location](#configuration-file-location) or use the `set` command.
@@ -383,14 +383,14 @@ _aicommit2_ offers flexible configuration options for all AI services, including
    key="<your-api-key>"
    temperature=0.8
    generate=1
-   model="gpt-4o,gpt-3.5-turbo"
+   model="gpt-4o-mini,gpt-3.5-turbo"
    systemPromptPath="<your-prompt-path>"
 
    [GEMINI]
    key="<your-api-key>"
    generate=5
    includeBody=true
-   model="gemini-pro,gemini-flash"
+   model="gemini-2.0-flash,gemini-1.5-pro"
 
    [OLLAMA]
    temperature=0.7
@@ -662,9 +662,9 @@ aicommit2 config set \
   topP=0.8 \
   maxTokens=1024 \
   temperature=0.7 \
-  OPENAI.key="sk-..." OPENAI.model="gpt-4o" OPENAI.temperature=0.5 \
-  ANTHROPIC.key="sk-..." ANTHROPIC.model="claude-3-haiku" ANTHROPIC.maxTokens=2000 \
-  MISTRAL.key="your-key" MISTRAL.model="codestral-latest"  \
+  OPENAI.key="sk-..." OPENAI.model="gpt-4o-mini" OPENAI.temperature=0.5 \
+  ANTHROPIC.key="sk-..." ANTHROPIC.model="claude-3-5-haiku-20241022" ANTHROPIC.maxTokens=2000 \
+  MISTRAL.key="your-key" MISTRAL.model="mistral-small-latest"  \
   OLLAMA.model="llama3.2" OLLAMA.numCtx=4096 OLLAMA.watchMode=true
 ```
 
@@ -719,13 +719,42 @@ The `logging` setting controls whether log files are generated. It can be config
 - **Global `logging` setting**: When set in the general configuration, it controls the overall application logging (handled by Winston) and acts as a default for AI request/response logging.
 - **Service-specific `logging` setting**: You can override the global `logging` setting for a particular AI service. If `logging` is set to `false` for a specific service, AI request/response logs will not be generated for that service, regardless of the global setting.
 
-### Removing All Logs
+### Log Management
 
-You can remove all generated log files (both application and AI logs) using the following command:
+_aicommit2_ generates detailed logs for debugging and tracking AI requests. You can manage these log files using the built-in log commands:
+
+#### View Log Files
 
 ```sh
+# List all log files with details
+aicommit2 log list
+
+# Show logs directory path
+aicommit2 log path
+```
+
+#### Open Log Directory
+
+```sh
+# Open logs directory in your file manager
+aicommit2 log open
+```
+
+#### Clean Up Logs
+
+```sh
+# Remove all log files
 aicommit2 log removeAll
 ```
+
+#### Log File Information
+
+- **Location**: Logs are stored in your system's state directory (usually `~/.local/state/aicommit2/logs` on Linux/macOS)
+- **Content**: Each log file contains the git diff, system prompt, AI response, and metadata
+- **Naming**: Files are named with timestamp and hash for easy identification
+- **Size**: File sizes are displayed in human-readable format (B, KB, MB, GB)
+
+
 
 ## Custom Prompt Template
 

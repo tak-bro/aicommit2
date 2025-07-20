@@ -47,9 +47,9 @@ Default: `deepseek-chat`
 
 Supported:
 
-- `deepseek-chat`
+- `deepseek-chat` (default)
 - `deepseek-reasoner`
 
 ```sh
-aicommit2 config set DEEPSEEK.model="deepseek-reasoner"
+aicommit2 config set DEEPSEEK.model="deepseek-chat"
 ```

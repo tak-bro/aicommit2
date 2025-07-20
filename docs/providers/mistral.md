@@ -13,14 +13,14 @@
 
 ```sh
 aicommit2 config set MISTRAL.key="your-api-key"
-aicommit2 config set MISTRAL.model="codestral-latest"
+aicommit2 config set MISTRAL.model="mistral-small-latest"
 ```
 
 ### Advanced Setup
 
 ```sh
 aicommit2 config set MISTRAL.key="your-api-key" \
-    MISTRAL.model="codestral-latest" \
+    MISTRAL.model="mistral-small-latest" \
     MISTRAL.temperature=0.7 \
     MISTRAL.maxTokens=4000 \
     MISTRAL.locale="en" \
@@ -33,7 +33,7 @@ aicommit2 config set MISTRAL.key="your-api-key" \
 | Setting | Description  | Default            |
 | ------- | ------------ | ------------------ |
 | `key`   | API key      | -                  |
-| `model` | Model to use | `pixtral-12b-2409` |
+| `model` | Model to use | `mistral-small-latest` |
 
 ## Mistral Configuration
 
@@ -43,17 +43,17 @@ The Mistral API key. If you don't have one, please sign up and subscribe in [Mis
 
 #### MISTRAL.model
 
-Default: `pixtral-12b-2409`
+Default: `mistral-small-latest`
 
 Supported:
 
-- `codestral-latest`
-- `mistral-large-latest`
-- `pixtral-large-latest`
-- `ministral-8b-latest`
-- `mistral-small-latest`
-- `mistral-embed`
-- `mistral-moderation-latest`
+- `mistral-large-latest` 
+- `pixtral-large-latest` 
+- `ministral-8b-latest` 
+- `mistral-small-latest` (default)
+- `codestral-latest` 
+- `mistral-embed` 
+- `mistral-moderation-latest` 
 
 ## Codestral Settings
 
