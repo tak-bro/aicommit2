@@ -1,3 +1,10 @@
+## [2.3.1](https://github.com/tak-bro/aicommit2/compare/v2.3.0...v2.3.1) (2025-07-21)
+
+
+### Features
+
+* add new supported models for providers ([3c5200d](https://github.com/tak-bro/aicommit2/commit/3c5200d311f28b9ae5e4e9b4e99f88a7722eaa16))
+
 # [2.3.0](https://github.com/tak-bro/aicommit2/compare/v2.2.24...v2.3.0) (2025-07-20)
 
 
