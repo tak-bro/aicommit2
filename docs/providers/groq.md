@@ -65,7 +65,9 @@ Supported:
 - `whisper-large-v3-turbo` 
 - `distil-whisper-large-v3-en` 
 - `playai-tts`
-- `playai-tts-arabic` 
+- `playai-tts-arabic`
+- `mixtral-8x7b-32768`
+- `gemma-7b-it` 
 
 ```sh
 aicommit2 config set GROQ.model="llama-3.3-70b-versatile"

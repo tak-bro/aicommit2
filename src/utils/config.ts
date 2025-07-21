@@ -485,6 +485,8 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
                 `claude-3-opus-20240229`,
                 `claude-3-sonnet-20240229`,
                 `claude-3-haiku-20240307`,
+                `claude-2.1`,
+                `claude-2.0`,
             ];
             // Validate each model in the list
             for (const m of modelList) {
@@ -524,6 +526,13 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
                 `codestral-latest`,
                 `mistral-embed`,
                 `mistral-moderation-latest`,
+                `mistral-medium`,
+                `mistral-small-2312`,
+                `mistral-small-2402`,
+                `mistral-large-2402`,
+                `open-mistral-7b`,
+                `open-mixtral-8x7b`,
+                `mixtral-8x7b-32768`,
             ];
 
             // Validate each model in the list
@@ -713,6 +722,8 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
                 `qwen-qwq-32b`,
                 `whisper-large-v3`,
                 `whisper-large-v3-turbo`,
+                `mixtral-8x7b-32768`,
+                `gemma-7b-it`,
             ];
 
             // Validate each model in the list
@@ -788,7 +799,14 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
                 return [`deepseek-chat`];
             }
             const modelList = typeof model === 'string' ? model?.split(',') : model;
-            const supportModels = [`deepseek-reasoner`, `deepseek-chat`];
+            const supportModels = [
+                `deepseek-reasoner`,
+                `deepseek-chat`,
+                `deepseek-coder`,
+                `deepseek-coder-v2`,
+                `deepseek-v2`,
+                `deepseek-v2.5`,
+            ];
 
             // Validate each model in the list
             for (const m of modelList) {

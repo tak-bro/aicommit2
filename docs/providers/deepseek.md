@@ -49,6 +49,10 @@ Supported:
 
 - `deepseek-chat` (default)
 - `deepseek-reasoner`
+- `deepseek-coder` (recommended for coding tasks)
+- `deepseek-coder-v2`
+- `deepseek-v2`
+- `deepseek-v2.5`
 
 ```sh
 aicommit2 config set DEEPSEEK.model="deepseek-chat"

@@ -53,7 +53,14 @@ Supported:
 - `mistral-small-latest` (default)
 - `codestral-latest` 
 - `mistral-embed` 
-- `mistral-moderation-latest` 
+- `mistral-moderation-latest`
+- `mistral-medium`
+- `mistral-small-2312`
+- `mistral-small-2402`
+- `mistral-large-2402`
+- `open-mistral-7b`
+- `open-mixtral-8x7b`
+- `mixtral-8x7b-32768` 
 
 ## Codestral Settings
 
