@@ -650,7 +650,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         envKey: (envKey?: string) => envKey || '',
         model: (model?: string | string[]): string[] => {
             if (!model) {
-                return [`deepseek-chat`];
+                return [`deepseek-coder`];
             }
             const modelList = typeof model === 'string' ? model?.split(',') : model;
 
