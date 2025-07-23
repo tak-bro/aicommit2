@@ -45,29 +45,15 @@ The Groq API key. If you don't have one, please sign up and get the API key in [
 
 Default: `llama-3.3-70b-versatile`
 
-Supported:
+You can use any Groq model name. The system no longer validates specific model names, allowing you to use new models as soon as they become available.
 
-- `llama-3.3-70b-versatile` (default)
-- `meta-llama/llama-4-maverick-17b-128e-instruct`
-- `meta-llama/llama-4-scout-17b-16e-instruct`
-- `deepseek-r1-distill-llama-70b` 
-- `qwen-qwq-32b`
-- `mistral-saba-24b`
-- `llama3-70b-8192`
-- `llama-3.1-8b-instant`
-- `llama3-8b-8192`
-- `gemma2-9b-it` 
-- `llama-guard-3-8b` 
-- `allam-2-7b` 
-- `compound-beta` 
-- `compound-beta-mini` 
-- `whisper-large-v3` 
-- `whisper-large-v3-turbo` 
-- `distil-whisper-large-v3-en` 
-- `playai-tts`
-- `playai-tts-arabic`
-- `mixtral-8x7b-32768`
-- `gemma-7b-it` 
+Popular models include:
+- `llama-3.3-70b-versatile` (default) (Llama 3.3 series)
+- `meta-llama/llama-4-maverick-17b-128e-instruct`, `meta-llama/llama-4-scout-17b-16e-instruct` (Llama 4 series)
+- `deepseek-r1-distill-llama-70b`, `qwen-qwq-32b` (reasoning models)
+- `mixtral-8x7b-32768`, `gemma2-9b-it` (other popular models)
+
+For the most up-to-date list of available models, please check [Groq Console](https://console.groq.com).
 
 ```sh
 aicommit2 config set GROQ.model="llama-3.3-70b-versatile"

@@ -45,21 +45,15 @@ The Cohere API key. If you don't have one, please sign up and get the API key in
 
 Default: `command-r`
 
-Supported models:
+You can use any Cohere model name. The system no longer validates specific model names, allowing you to use new models as soon as they become available.
 
-- `command-r7b-12-2024` 
-- `command-r-plus-08-2024` 
-- `command-r-plus-04-2024` 
-- `command-r-plus` 
-- `command-r-08-2024` 
-- `command-r-03-2024` 
-- `command-r` (default)
-- `command` 
-- `command-nightly` 
-- `command-light`
-- `command-light-nightly` 
-- `c4ai-aya-expanse-8b` 
-- `c4ai-aya-expanse-32b`
+Popular models include:
+- `command-r` (default), `command-r-plus` (main series)
+- `command-r-plus-08-2024`, `command-r-08-2024` (dated versions)
+- `command-light`, `command-light-nightly` (lighter models)
+- `c4ai-aya-expanse-8b`, `c4ai-aya-expanse-32b` (multilingual models)
+
+For the most up-to-date list of available models, please check [Cohere Dashboard](https://dashboard.cohere.com/).
 
 ```sh
 aicommit2 config set COHERE.model="command-r"
