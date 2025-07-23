@@ -1,3 +1,10 @@
+## [2.3.2](https://github.com/tak-bro/aicommit2/compare/v2.3.1...v2.3.2) (2025-07-23)
+
+
+### Bug Fixes
+
+* **config:** update default model name in config ([2a845e4](https://github.com/tak-bro/aicommit2/commit/2a845e44c1db03230c98d9f0c6266e6d9078e705))
+
 ## [2.3.1](https://github.com/tak-bro/aicommit2/compare/v2.3.0...v2.3.1) (2025-07-21)
 
 
