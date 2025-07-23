@@ -49,25 +49,14 @@ aicommit2 config set GEMINI.key="your api key"
 
 Default: `gemini-2.0-flash`
 
-Supported:
+You can use any Gemini model name. The system no longer validates specific model names, allowing you to use new models as soon as they become available.
 
-- `gemini-2.5-flash`
-- `gemini-2.5-flash-preview-04-17`
-- `gemini-2.5-flash-preview-05-20`
-- `gemini-2.5-flash-lite-preview-06-17`
-- `gemini-2.5-pro`
-- `gemini-2.5-pro-preview-05-06`
-- `gemini-2.0-flash` (default)
-- `gemini-2.0-flash-lite`
-- `gemini-2.0-flash-preview-image-generation`
-- `gemini-2.0-flash-exp`
-- `gemini-2.0-flash-thinking-exp-1219`
-- `gemini-1.5-pro`
-- `gemini-1.5-flash`
-- `gemini-1.5-flash-8b`
-- `gemini-exp-1206`
-- `gemini-exp-1121`
-- `gemini-1.0-pro` 
+Popular models include:
+- `gemini-2.5-flash`, `gemini-2.5-pro` (latest generation)
+- `gemini-2.0-flash` (default), `gemini-2.0-flash-lite` (current generation)  
+- `gemini-1.5-pro`, `gemini-1.5-flash` (previous generation)
+
+For the most up-to-date list of available models, please check [Google AI Studio](https://aistudio.google.com/). 
 
 ```sh
 aicommit2 config set GEMINI.model="gemini-2.0-flash"

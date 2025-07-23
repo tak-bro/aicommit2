@@ -384,22 +384,6 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
                 return [`CohereForAI/c4ai-command-r-plus`];
             }
             const modelList = typeof model === 'string' ? model?.split(',') : model;
-            const supportModels = [
-                `CohereForAI/c4ai-command-r-plus`,
-                `meta-llama/Meta-Llama-3-70B-Instruct`,
-                `HuggingFaceH4/zephyr-orpo-141b-A35b-v0.1`,
-                `mistralai/Mixtral-8x7B-Instruct-v0.1`,
-                `NousResearch/Nous-Hermes-2-Mixtral-8x7B-DPO`,
-                `01-ai/Yi-1.5-34B-Chat`,
-                `mistralai/Mistral-7B-Instruct-v0.2`,
-                `microsoft/Phi-3-mini-4k-instruct`,
-            ];
-
-            // Validate each model in the list
-            for (const m of modelList) {
-                parseAssert('HUGGINGFACE.model', supportModels.includes(m.trim()), `Invalid model type of HuggingFace chat: ${m.trim()}`);
-            }
-
             return modelList.map(m => m.trim()).filter(m => !!m && m.length > 0);
         },
         systemPrompt: generalConfigParsers.systemPrompt,
@@ -427,29 +411,6 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
                 return ['gemini-2.0-flash'];
             }
             const modelList = typeof model === 'string' ? model?.split(',') : model;
-            const supportModels = [
-                `gemini-2.5-flash`,
-                `gemini-2.5-flash-preview-04-17`,
-                `gemini-2.5-flash-preview-05-20`,
-                `gemini-2.5-flash-lite-preview-06-17`,
-                `gemini-2.5-pro`,
-                `gemini-2.5-pro-preview-05-06`,
-                `gemini-2.0-flash`,
-                `gemini-2.0-flash-lite`,
-                `gemini-2.0-flash-preview-image-generation`,
-                `gemini-2.0-flash-exp`,
-                `gemini-2.0-flash-thinking-exp-1219`,
-                `gemini-1.5-pro`,
-                `gemini-1.5-flash`,
-                `gemini-1.5-flash-8b`,
-                `gemini-exp-1206`,
-                `gemini-exp-1121`,
-                `gemini-1.0-pro`,
-            ];
-            // Validate each model in the list
-            for (const m of modelList) {
-                parseAssert('GEMINI.model', supportModels.includes(m.trim()), `Invalid model type of Gemini: ${m.trim()}`);
-            }
             return modelList.map(m => m.trim()).filter(m => !!m && m.length > 0);
         },
         systemPrompt: generalConfigParsers.systemPrompt,
@@ -476,22 +437,6 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
                 return ['claude-3-5-haiku-20241022'];
             }
             const modelList = typeof model === 'string' ? model?.split(',') : model;
-            const supportModels = [
-                `claude-opus-4-20250514`,
-                `claude-sonnet-4-20250514`,
-                `claude-3-7-sonnet-20250219`,
-                `claude-3-5-sonnet-20241022`,
-                `claude-3-5-haiku-20241022`,
-                `claude-3-opus-20240229`,
-                `claude-3-sonnet-20240229`,
-                `claude-3-haiku-20240307`,
-                `claude-2.1`,
-                `claude-2.0`,
-            ];
-            // Validate each model in the list
-            for (const m of modelList) {
-                parseAssert('ANTHROPIC.model', supportModels.includes(m.trim()), `Invalid model type of Anthropic: ${m.trim()}`);
-            }
             return modelList.map(m => m.trim()).filter(m => !!m && m.length > 0);
         },
         systemPrompt: generalConfigParsers.systemPrompt,
@@ -518,28 +463,6 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
                 return ['mistral-small-latest'];
             }
             const modelList = typeof model === 'string' ? model?.split(',') : model;
-            const supportModels = [
-                `mistral-large-latest`,
-                `pixtral-large-latest`,
-                `ministral-8b-latest`,
-                `mistral-small-latest`,
-                `codestral-latest`,
-                `mistral-embed`,
-                `mistral-moderation-latest`,
-                `mistral-medium`,
-                `mistral-small-2312`,
-                `mistral-small-2402`,
-                `mistral-large-2402`,
-                `open-mistral-7b`,
-                `open-mixtral-8x7b`,
-                `mixtral-8x7b-32768`,
-            ];
-
-            // Validate each model in the list
-            for (const m of modelList) {
-                parseAssert('MISTRAL.model', supportModels.includes(m.trim()), `Invalid model type of Mistral AI: ${m.trim()}`);
-            }
-
             return modelList.map(m => m.trim()).filter(m => !!m && m.length > 0);
         },
         systemPrompt: generalConfigParsers.systemPrompt,
@@ -567,13 +490,6 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
                 return ['codestral-latest'];
             }
             const modelList = typeof model === 'string' ? model?.split(',') : model;
-            const supportModels = ['codestral-latest', 'codestral-2501'];
-
-            // Validate each model in the list
-            for (const m of modelList) {
-                parseAssert('CODESTRAL.model', supportModels.includes(m.trim()), `Invalid model type of Codestral: ${m.trim()}`);
-            }
-
             return modelList.map(m => m.trim()).filter(m => !!m && m.length > 0);
         },
         topP: generalConfigParsers.topP,
@@ -657,25 +573,6 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
                 return ['command-r'];
             }
             const modelList = typeof model === 'string' ? model?.split(',') : model;
-            const supportModels = [
-                `command-r7b-12-2024`,
-                `command-r-plus-08-2024`,
-                `command-r-plus-04-2024`,
-                `command-r-plus`,
-                `command-r-08-2024`,
-                `command-r-03-2024`,
-                `command-r`,
-                `command`,
-                `command-nightly`,
-                `command-light`,
-                `command-light-nightly`,
-                `c4ai-aya-expanse-8b`,
-                `c4ai-aya-expanse-32b`,
-            ];
-            // Validate each model in the list
-            for (const m of modelList) {
-                parseAssert('COHERE.model', supportModels.includes(m.trim()), `Invalid model type of Cohere: ${m.trim()}`);
-            }
             return modelList.map(m => m.trim()).filter(m => !!m && m.length > 0);
         },
         systemPrompt: generalConfigParsers.systemPrompt,
@@ -702,35 +599,6 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
                 return ['llama-3.3-70b-versatile'];
             }
             const modelList = typeof model === 'string' ? model?.split(',') : model;
-            const supportModels = [
-                `allam-2-7b`,
-                `compound-beta`,
-                `compound-beta-mini`,
-                `deepseek-r1-distill-llama-70b`,
-                `distil-whisper-large-v3-en`,
-                `gemma2-9b-it`,
-                `llama-3.1-8b-instant`,
-                `llama-3.3-70b-versatile`,
-                `llama-guard-3-8b`,
-                `llama3-70b-8192`,
-                `llama3-8b-8192`,
-                `meta-llama/llama-4-maverick-17b-128e-instruct`,
-                `meta-llama/llama-4-scout-17b-16e-instruct`,
-                `mistral-saba-24b`,
-                `playai-tts`,
-                `playai-tts-arabic`,
-                `qwen-qwq-32b`,
-                `whisper-large-v3`,
-                `whisper-large-v3-turbo`,
-                `mixtral-8x7b-32768`,
-                `gemma-7b-it`,
-            ];
-
-            // Validate each model in the list
-            for (const m of modelList) {
-                parseAssert('GROQ.model', supportModels.includes(m.trim()), `Invalid model type of Groq: ${m.trim()}`);
-            }
-
             return modelList.map(m => m.trim()).filter(m => !!m && m.length > 0);
         },
         systemPrompt: generalConfigParsers.systemPrompt,
@@ -758,20 +626,6 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
                 return ['sonar'];
             }
             const modelList = typeof model === 'string' ? model?.split(',') : model;
-            // https://docs.perplexity.ai/guides/model-cards
-            const supportModels = [
-                `sonar-pro`,
-                `sonar`,
-                `llama-3.1-sonar-small-128k-online`,
-                `llama-3.1-sonar-large-128k-online`,
-                `llama-3.1-sonar-huge-128k-online`,
-            ];
-
-            // Validate each model in the list
-            for (const m of modelList) {
-                parseAssert('PERPLEXITY.model', supportModels.includes(m.trim()), `Invalid model type of Perplexity: ${m.trim()}`);
-            }
-
             return modelList.map(m => m.trim()).filter(m => !!m && m.length > 0);
         },
         topP: generalConfigParsers.topP,
@@ -799,19 +653,6 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
                 return [`deepseek-chat`];
             }
             const modelList = typeof model === 'string' ? model?.split(',') : model;
-            const supportModels = [
-                `deepseek-reasoner`,
-                `deepseek-chat`,
-                `deepseek-coder`,
-                `deepseek-coder-v2`,
-                `deepseek-v2`,
-                `deepseek-v2.5`,
-            ];
-
-            // Validate each model in the list
-            for (const m of modelList) {
-                parseAssert('DEEPSEEK.model', supportModels.includes(m.trim()), `Invalid model type of DeepSeek: ${m.trim()}`);
-            }
 
             return modelList.map(m => m.trim()).filter(m => !!m && m.length > 0);
         },
@@ -840,21 +681,6 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
                 return ['gpt-4o-mini'];
             }
             const modelList = typeof model === 'string' ? model?.split(',') : model;
-            const supportModels = [
-                'gpt-4o-mini',
-                'gpt-4o',
-                'gpt-3.5-turbo',
-                'meta-llama-3.1-405b-instruct',
-                'meta-llama-3.1-70b-instruct',
-                'meta-llama-3.1-8b-instruct',
-                'phi-3-medium-4k-instruct',
-                'phi-3-mini-4k-instruct',
-                'phi-3-small-8k-instruct',
-            ];
-            // Validate each model in the list
-            for (const m of modelList) {
-                parseAssert('GITHUB_MODELS.model', supportModels.includes(m.trim()), `Invalid model type for GitHub Models: ${m.trim()}`);
-            }
             return modelList.map(m => m.trim()).filter(m => !!m && m.length > 0);
         },
         systemPrompt: generalConfigParsers.systemPrompt,
