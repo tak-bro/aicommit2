@@ -48,6 +48,7 @@ Default: `sonar`
 You can use any Perplexity model name. The system no longer validates specific model names, allowing you to use new models as soon as they become available.
 
 Popular models include:
+
 - `sonar` (default), `sonar-pro` (main series)
 - `llama-3.1-sonar-small-128k-online`, `llama-3.1-sonar-large-128k-online` (online models)
 - `llama-3.1-sonar-huge-128k-online` (advanced models)

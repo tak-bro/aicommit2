@@ -30,9 +30,9 @@ aicommit2 config set MISTRAL.key="your-api-key" \
 
 ## Mistral Settings
 
-| Setting | Description  | Default            |
-| ------- | ------------ | ------------------ |
-| `key`   | API key      | -                  |
+| Setting | Description  | Default                |
+| ------- | ------------ | ---------------------- |
+| `key`   | API key      | -                      |
 | `model` | Model to use | `mistral-small-latest` |
 
 ## Mistral Configuration
@@ -48,12 +48,13 @@ Default: `mistral-small-latest`
 You can use any Mistral model name. The system no longer validates specific model names, allowing you to use new models as soon as they become available.
 
 Popular models include:
+
 - `mistral-large-latest`, `pixtral-large-latest` (latest generation)
 - `mistral-small-latest` (default), `ministral-8b-latest` (small models)
 - `codestral-latest` (code-focused)
 - `open-mistral-7b`, `open-mixtral-8x7b` (open models)
 
-For the most up-to-date list of available models, please check [Mistral Console](https://console.mistral.ai/). 
+For the most up-to-date list of available models, please check [Mistral Console](https://console.mistral.ai/).
 
 ## Codestral Settings
 
@@ -75,6 +76,7 @@ Default: `codestral-latest`
 You can use any Codestral model name. The system no longer validates specific model names, allowing you to use new models as soon as they become available.
 
 Popular models include:
+
 - `codestral-latest` (default)
 - `codestral-2501`
 

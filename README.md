@@ -754,8 +754,6 @@ aicommit2 log removeAll
 - **Naming**: Files are named with timestamp and hash for easy identification
 - **Size**: File sizes are displayed in human-readable format (B, KB, MB, GB)
 
-
-
 ## Custom Prompt Template
 
 _aicommit2_ supports custom prompt templates through the `systemPromptPath` option. This feature allows you to define your own prompt structure, giving you more control over the commit message generation process.

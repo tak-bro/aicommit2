@@ -48,6 +48,7 @@ Default: `llama-3.3-70b-versatile`
 You can use any Groq model name. The system no longer validates specific model names, allowing you to use new models as soon as they become available.
 
 Popular models include:
+
 - `llama-3.3-70b-versatile` (default) (Llama 3.3 series)
 - `meta-llama/llama-4-maverick-17b-128e-instruct`, `meta-llama/llama-4-scout-17b-16e-instruct` (Llama 4 series)
 - `deepseek-r1-distill-llama-70b`, `qwen-qwq-32b` (reasoning models)
