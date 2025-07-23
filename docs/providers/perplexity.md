@@ -45,15 +45,14 @@ The Perplexity API key. If you don't have one, please sign up and get the API ke
 
 Default: `sonar`
 
-Supported:
+You can use any Perplexity model name. The system no longer validates specific model names, allowing you to use new models as soon as they become available.
 
-- `sonar-pro` 
-- `sonar` (default)
-- `llama-3.1-sonar-small-128k-online`
-- `llama-3.1-sonar-large-128k-online` 
-- `llama-3.1-sonar-huge-128k-online` 
+Popular models include:
+- `sonar` (default), `sonar-pro` (main series)
+- `llama-3.1-sonar-small-128k-online`, `llama-3.1-sonar-large-128k-online` (online models)
+- `llama-3.1-sonar-huge-128k-online` (advanced models)
 
-> The models mentioned above are subject to change.
+For the most up-to-date list of available models, please check [Perplexity Documentation](https://docs.perplexity.ai/).
 
 ```sh
 aicommit2 config set PERPLEXITY.model="sonar"

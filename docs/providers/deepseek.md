@@ -45,14 +45,14 @@ The DeepSeek API key. If you don't have one, please sign up and subscribe in [De
 
 Default: `deepseek-chat`
 
-Supported:
+You can use any DeepSeek model name. The system no longer validates specific model names, allowing you to use new models as soon as they become available.
 
-- `deepseek-chat` (default)
-- `deepseek-reasoner`
-- `deepseek-coder` (recommended for coding tasks)
-- `deepseek-coder-v2`
-- `deepseek-v2`
-- `deepseek-v2.5`
+Popular models include:
+- `deepseek-chat` (default), `deepseek-reasoner` (general purpose)
+- `deepseek-coder`, `deepseek-coder-v2` (recommended for coding tasks)
+- `deepseek-v2`, `deepseek-v2.5` (advanced models)
+
+For the most up-to-date list of available models, please check [DeepSeek Platform](https://platform.deepseek.com/).
 
 ```sh
 aicommit2 config set DEEPSEEK.model="deepseek-chat"

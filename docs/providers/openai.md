@@ -52,15 +52,14 @@ aicommit2 config set OPENAI.key="your api key"
 
 Default: `gpt-4o-mini`
 
-The Chat Completions (`/v1/chat/completions`) model to use. Consult the list of models available in the [OpenAI Documentation](https://platform.openai.com/docs/models/model-endpoint-compatibility).
+You can use any OpenAI model name. The system no longer validates specific model names, allowing you to use new models as soon as they become available.
 
-Supported models include:
-- `gpt-4o`
-- `gpt-4o-mini`
-- `gpt-4-turbo`
-- `gpt-4`
-- `gpt-3.5-turbo`
-- And other OpenAI chat completion models
+Popular models include:
+- `gpt-4o`, `gpt-4o-mini` (default) (GPT-4o series)
+- `gpt-4-turbo`, `gpt-4` (GPT-4 series)
+- `gpt-3.5-turbo` (GPT-3.5 series)
+
+For the most up-to-date list of available models, please check [OpenAI Documentation](https://platform.openai.com/docs/models/model-endpoint-compatibility).
 
 ```sh
 aicommit2 config set OPENAI.model=gpt-4o

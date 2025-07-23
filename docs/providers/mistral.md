@@ -45,22 +45,15 @@ The Mistral API key. If you don't have one, please sign up and subscribe in [Mis
 
 Default: `mistral-small-latest`
 
-Supported:
+You can use any Mistral model name. The system no longer validates specific model names, allowing you to use new models as soon as they become available.
 
-- `mistral-large-latest` 
-- `pixtral-large-latest` 
-- `ministral-8b-latest` 
-- `mistral-small-latest` (default)
-- `codestral-latest` 
-- `mistral-embed` 
-- `mistral-moderation-latest`
-- `mistral-medium`
-- `mistral-small-2312`
-- `mistral-small-2402`
-- `mistral-large-2402`
-- `open-mistral-7b`
-- `open-mixtral-8x7b`
-- `mixtral-8x7b-32768` 
+Popular models include:
+- `mistral-large-latest`, `pixtral-large-latest` (latest generation)
+- `mistral-small-latest` (default), `ministral-8b-latest` (small models)
+- `codestral-latest` (code-focused)
+- `open-mistral-7b`, `open-mixtral-8x7b` (open models)
+
+For the most up-to-date list of available models, please check [Mistral Console](https://console.mistral.ai/). 
 
 ## Codestral Settings
 
@@ -79,10 +72,13 @@ The Codestral API key. If you don't have one, please sign up and subscribe in [M
 
 Default: `codestral-latest`
 
-Supported:
+You can use any Codestral model name. The system no longer validates specific model names, allowing you to use new models as soon as they become available.
 
-- `codestral-latest`
+Popular models include:
+- `codestral-latest` (default)
 - `codestral-2501`
+
+For the most up-to-date list of available models, please check [Mistral Console](https://console.mistral.ai/codestral).
 
 ```sh
 aicommit2 config set CODESTRAL.model="codestral-2501"
