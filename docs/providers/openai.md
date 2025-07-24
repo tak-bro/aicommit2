@@ -55,6 +55,7 @@ Default: `gpt-4o-mini`
 You can use any OpenAI model name. The system no longer validates specific model names, allowing you to use new models as soon as they become available.
 
 Popular models include:
+
 - `gpt-4o`, `gpt-4o-mini` (default) (GPT-4o series)
 - `gpt-4-turbo`, `gpt-4` (GPT-4 series)
 - `gpt-3.5-turbo` (GPT-3.5 series)

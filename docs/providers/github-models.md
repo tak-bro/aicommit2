@@ -8,10 +8,12 @@
 - [General Settings](../../README.md#general-settings) - Common settings applicable to all providers
 
 **GitHub Models is separate from GitHub Copilot.** While both are GitHub services:
+
 - **GitHub Copilot**: Code completion and generation tool integrated into IDEs
 - **GitHub Models**: API access to various AI models for general-purpose use
 
 Currently, GitHub does not officially support direct access to the GitHub Copilot API. Instead, this implementation uses GitHub Models (https://models.inference.ai.azure.com), which provides:
+
 - Authentication using GitHub Personal Access Token
 - Access to various AI models (GPT, Claude, Llama, etc.)
 - Free tier available with no additional API costs
@@ -42,9 +44,9 @@ aicommit2 config set GITHUB_MODELS.key="ghp_xxxxxxxxxxxxxxxxxxxx" \
 
 ## Settings
 
-| Setting | Description | Default |
-|---------|-------------|---------|
-| `key` | GitHub token | - |
+| Setting | Description  | Default       |
+| ------- | ------------ | ------------- |
+| `key`   | GitHub token | -             |
 | `model` | Model to use | `gpt-4o-mini` |
 
 ## Configuration

@@ -30,9 +30,9 @@ aicommit2 config set COHERE.key="your-api-key" \
 
 ## Settings
 
-| Setting | Description  | Default   |
-| ------- | ------------ | --------- |
-| `key`   | API key      | -         |
+| Setting | Description  | Default     |
+| ------- | ------------ | ----------- |
+| `key`   | API key      | -           |
 | `model` | Model to use | `command-r` |
 
 ## Configuration
@@ -48,6 +48,7 @@ Default: `command-r`
 You can use any Cohere model name. The system no longer validates specific model names, allowing you to use new models as soon as they become available.
 
 Popular models include:
+
 - `command-r` (default), `command-r-plus` (main series)
 - `command-r-plus-08-2024`, `command-r-08-2024` (dated versions)
 - `command-light`, `command-light-nightly` (lighter models)

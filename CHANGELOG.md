@@ -1,49 +1,43 @@
 ## [2.3.2](https://github.com/tak-bro/aicommit2/compare/v2.3.1...v2.3.2) (2025-07-23)
 
-
 ### Bug Fixes
 
-* **config:** update default model name in config ([2a845e4](https://github.com/tak-bro/aicommit2/commit/2a845e44c1db03230c98d9f0c6266e6d9078e705))
+- **config:** update default model name in config ([2a845e4](https://github.com/tak-bro/aicommit2/commit/2a845e44c1db03230c98d9f0c6266e6d9078e705))
 
 ## [2.3.1](https://github.com/tak-bro/aicommit2/compare/v2.3.0...v2.3.1) (2025-07-21)
 
-
 ### Features
 
-* add new supported models for providers ([3c5200d](https://github.com/tak-bro/aicommit2/commit/3c5200d311f28b9ae5e4e9b4e99f88a7722eaa16))
+- add new supported models for providers ([3c5200d](https://github.com/tak-bro/aicommit2/commit/3c5200d311f28b9ae5e4e9b4e99f88a7722eaa16))
 
 # [2.3.0](https://github.com/tak-bro/aicommit2/compare/v2.2.24...v2.3.0) (2025-07-20)
 
-
 ### Features
 
-* add timeout config to AI service requests ([4f378b9](https://github.com/tak-bro/aicommit2/commit/4f378b980e08152beb6585d529bfc72f8c84f070))
-* **git:** enhance diff to include binary file changes ([b8379fa](https://github.com/tak-bro/aicommit2/commit/b8379fa0fb09d483e9b11202e0868246df096931))
-* **github-models:** update to GitHub Models API ([388e7ec](https://github.com/tak-bro/aicommit2/commit/388e7ec5f9247194e4b9b093b508cb3e335a6367))
-* improve prompt generation for AI services ([1909961](https://github.com/tak-bro/aicommit2/commit/1909961727fbd833852bfe532868b0be7ec1a9d8))
-* **log:** enhance log command with list, open, path actions ([70729ec](https://github.com/tak-bro/aicommit2/commit/70729ec644bba21897d8f39ed41c21ffebfcb786))
-* pass flags to prepare-commit-msg hook ([2de0093](https://github.com/tak-bro/aicommit2/commit/2de00930d2fce51ebbe837f0b075af3c4af3522e))
+- add timeout config to AI service requests ([4f378b9](https://github.com/tak-bro/aicommit2/commit/4f378b980e08152beb6585d529bfc72f8c84f070))
+- **git:** enhance diff to include binary file changes ([b8379fa](https://github.com/tak-bro/aicommit2/commit/b8379fa0fb09d483e9b11202e0868246df096931))
+- **github-models:** update to GitHub Models API ([388e7ec](https://github.com/tak-bro/aicommit2/commit/388e7ec5f9247194e4b9b093b508cb3e335a6367))
+- improve prompt generation for AI services ([1909961](https://github.com/tak-bro/aicommit2/commit/1909961727fbd833852bfe532868b0be7ec1a9d8))
+- **log:** enhance log command with list, open, path actions ([70729ec](https://github.com/tak-bro/aicommit2/commit/70729ec644bba21897d8f39ed41c21ffebfcb786))
+- pass flags to prepare-commit-msg hook ([2de0093](https://github.com/tak-bro/aicommit2/commit/2de00930d2fce51ebbe837f0b075af3c4af3522e))
 
 ## [2.2.24](https://github.com/tak-bro/aicommit2/compare/v2.2.23...v2.2.24) (2025-07-11)
 
-
 ### Features
 
-* add auto-select option for single AI model ([4088be4](https://github.com/tak-bro/aicommit2/commit/4088be419518b5b6228bcf337e294913ef4e4760))
+- add auto-select option for single AI model ([4088be4](https://github.com/tak-bro/aicommit2/commit/4088be419518b5b6228bcf337e294913ef4e4760))
 
 ## [2.2.23](https://github.com/tak-bro/aicommit2/compare/v2.2.22...v2.2.23) (2025-07-11)
 
-
 ### Features
 
-* add --include-body flag to force commit body ([a54edca](https://github.com/tak-bro/aicommit2/commit/a54edca35ca7d041672a1531ec525e2d52371efa))
+- add --include-body flag to force commit body ([a54edca](https://github.com/tak-bro/aicommit2/commit/a54edca35ca7d041672a1531ec525e2d52371efa))
 
 ## [2.2.22](https://github.com/tak-bro/aicommit2/compare/v2.2.21...v2.2.22) (2025-06-23)
 
-
 ### Features
 
-* **gemini:** add support for new Gemini 2.5 models ([694a49c](https://github.com/tak-bro/aicommit2/commit/694a49c131d28d095cf859d815bcfe25fb6c3600))
+- **gemini:** add support for new Gemini 2.5 models ([694a49c](https://github.com/tak-bro/aicommit2/commit/694a49c131d28d095cf859d815bcfe25fb6c3600))
 
 ## [2.2.21](https://github.com/tak-bro/aicommit2/compare/v2.2.20...v2.2.21) (2025-06-04)
 

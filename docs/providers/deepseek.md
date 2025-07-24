@@ -48,6 +48,7 @@ Default: `deepseek-chat`
 You can use any DeepSeek model name. The system no longer validates specific model names, allowing you to use new models as soon as they become available.
 
 Popular models include:
+
 - `deepseek-chat` (default), `deepseek-reasoner` (general purpose)
 - `deepseek-coder`, `deepseek-coder-v2` (recommended for coding tasks)
 - `deepseek-v2`, `deepseek-v2.5` (advanced models)

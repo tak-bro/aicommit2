@@ -48,12 +48,13 @@ Default: `claude-3-5-haiku-20241022`
 You can use any Claude model name. The system no longer validates specific model names, allowing you to use new models as soon as they become available.
 
 Popular models include:
+
 - `claude-opus-4-20250514`, `claude-sonnet-4-20250514` (Claude 4 series)
 - `claude-3-5-sonnet-20241022`, `claude-3-5-haiku-20241022` (default) (Claude 3.5 series)
 - `claude-3-opus-20240229`, `claude-3-sonnet-20240229` (Claude 3 series)
 - `claude-2.1`, `claude-2.0` (Claude 2 legacy)
 
-For the most up-to-date list of available models, please check [Anthropic Console](https://console.anthropic.com/). 
+For the most up-to-date list of available models, please check [Anthropic Console](https://console.anthropic.com/).
 
 ```sh
 aicommit2 config set ANTHROPIC.model="claude-3-5-sonnet-20240620"
