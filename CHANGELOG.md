@@ -1,3 +1,5 @@
+## [2.3.3](https://github.com/tak-bro/aicommit2/compare/v2.3.2...v2.3.3) (2025-07-24)
+
 ## [2.3.2](https://github.com/tak-bro/aicommit2/compare/v2.3.1...v2.3.2) (2025-07-23)
 
 ### Bug Fixes
