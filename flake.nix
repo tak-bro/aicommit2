@@ -8,17 +8,13 @@
 
   outputs = inputs @ {
     self,
-    nixpkgs,
     flake-parts,
+    ...
   }:
     flake-parts.lib.mkFlake {inherit inputs;} {
       systems = ["x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin"];
 
-      perSystem = {
-        pkgs,
-        system,
-        ...
-      }: {
+      perSystem = {pkgs, ...}: {
         packages.default = pkgs.stdenvNoCC.mkDerivation (finalAttrs: {
           pname = "aicommit2";
           version = "v2.2.14";
@@ -26,7 +22,8 @@
 
           pnpmDeps = pkgs.pnpm.fetchDeps {
             inherit (finalAttrs) pname version src;
-            hash = "sha256-AgBZYOz3P/nqDiXB/HCff8oFElEdAT0agwI39XGHBqg=";
+            fetcherVersion = 1;
+            hash = "sha256-gRsu4J5XRKkzV5/Sl9Ud/HjO8hFEddo/MnSv+UCNSXg=";
           };
 
           nativeBuildInputs = [
