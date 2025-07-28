@@ -1,3 +1,10 @@
+## [2.3.4](https://github.com/tak-bro/aicommit2/compare/v2.3.3...v2.3.4) (2025-07-28)
+
+
+### Bug Fixes
+
+* **nix:** add pnpmDeps fetcherVersion due to Nixpkgs[#426496](https://github.com/tak-bro/aicommit2/issues/426496) ([eda9c55](https://github.com/tak-bro/aicommit2/commit/eda9c551cbdb64cdf97118588278597c8eb14b5a))
+
 ## [2.3.3](https://github.com/tak-bro/aicommit2/compare/v2.3.2...v2.3.3) (2025-07-24)
 
 ## [2.3.2](https://github.com/tak-bro/aicommit2/compare/v2.3.1...v2.3.2) (2025-07-23)
