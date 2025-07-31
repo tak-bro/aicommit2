@@ -32,6 +32,7 @@ aicommit2 github-login
 ```
 
 This command will:
+
 1. Open your browser for GitHub authentication
 2. Automatically configure your token
 3. Verify GitHub Models access
@@ -54,10 +55,12 @@ aicommit2 config set GITHUB_MODELS.key="ghp_xxxxxxxxxxxxxxxxxxxx"
 ### Prerequisites
 
 For automatic login, you'll need:
+
 - [GitHub CLI](https://cli.github.com/) installed on your system
 - A web browser for authentication
 
 Install GitHub CLI:
+
 ```sh
 # macOS
 brew install gh
@@ -119,14 +122,17 @@ aicommit2 config set GITHUB_MODELS.key="ghp_xxxxxxxxxxxxxxxxxxxx" \
 Your GitHub Personal Access Token for accessing GitHub Models.
 
 **Automatic Setup (Recommended):**
+
 ```sh
 aicommit2 github-login
 ```
 
 **Manual Setup:**
+
 1. Go to [github.com/settings/tokens](https://github.com/settings/tokens)
 2. Create a new token with "Models" permission
 3. Configure it:
+
 ```sh
 aicommit2 config set GITHUB_MODELS.key="ghp_xxxxxxxxxxxxxxxxxxxx"
 ```
@@ -137,17 +143,17 @@ Default: `gpt-4o-mini`
 
 **Available Models:**
 
-| Model | Provider | Context | Best For |
-|-------|----------|---------|----------|
-| `gpt-4o-mini` | OpenAI | 128K | General use (default) |
-| `gpt-4o` | OpenAI | 128K | Complex reasoning |
-| `gpt-3.5-turbo` | OpenAI | 16K | Fast responses |
-| `meta-llama-3.1-405b-instruct` | Meta | 128K | Advanced reasoning |
-| `meta-llama-3.1-70b-instruct` | Meta | 128K | Balanced performance |
-| `meta-llama-3.1-8b-instruct` | Meta | 128K | Fast, efficient |
-| `phi-3-medium-4k-instruct` | Microsoft | 4K | Code-focused |
-| `phi-3-mini-4k-instruct` | Microsoft | 4K | Lightweight |
-| `phi-3-small-8k-instruct` | Microsoft | 8K | Balanced |
+| Model                          | Provider  | Context | Best For              |
+| ------------------------------ | --------- | ------- | --------------------- |
+| `gpt-4o-mini`                  | OpenAI    | 128K    | General use (default) |
+| `gpt-4o`                       | OpenAI    | 128K    | Complex reasoning     |
+| `gpt-3.5-turbo`                | OpenAI    | 16K     | Fast responses        |
+| `meta-llama-3.1-405b-instruct` | Meta      | 128K    | Advanced reasoning    |
+| `meta-llama-3.1-70b-instruct`  | Meta      | 128K    | Balanced performance  |
+| `meta-llama-3.1-8b-instruct`   | Meta      | 128K    | Fast, efficient       |
+| `phi-3-medium-4k-instruct`     | Microsoft | 4K      | Code-focused          |
+| `phi-3-mini-4k-instruct`       | Microsoft | 4K      | Lightweight           |
+| `phi-3-small-8k-instruct`      | Microsoft | 8K      | Balanced              |
 
 ```sh
 aicommit2 config set GITHUB_MODELS.model="meta-llama-3.1-70b-instruct"

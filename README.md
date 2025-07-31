@@ -638,7 +638,7 @@ aicommit2 config set codeReviewPromptPath="/path/to/user/prompt.txt"
 ## Available General Settings by Model
 
 |                           | timeout | temperature | maxTokens | topP |
-|:-------------------------:| :-----: | :---------: | :-------: | :--: |
+| :-----------------------: | :-----: | :---------: | :-------: | :--: |
 |        **OpenAI**         |    ✓    |      ✓      |     ✓     |  ✓   |
 |   **Anthropic Claude**    |    ✓    |      ✓      |     ✓     |  ✓   |
 |        **Gemini**         |         |      ✓      |     ✓     |  ✓   |
