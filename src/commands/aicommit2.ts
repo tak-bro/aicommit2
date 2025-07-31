@@ -259,8 +259,15 @@ async function handleCommitMessage(aiRequestManager: AIRequestManager, available
 
 async function commitChanges(message: string, rawArgv: string[]) {
     const commitSpinner = ora('Committing with the generated message').start();
-    await execa('git', ['commit', '-m', message, ...rawArgv]);
+
+    // Stop spinner before git commit to show lint-staged output
     commitSpinner.stop();
     commitSpinner.clear();
+
+    // Use stdio: 'inherit' to show lint-staged progress
+    await execa('git', ['commit', '-m', message, ...rawArgv], {
+        stdio: 'inherit',
+    });
+
     consoleManager.printCommitted();
 }
