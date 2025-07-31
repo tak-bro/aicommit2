@@ -1,3 +1,11 @@
+## [2.3.5](https://github.com/tak-bro/aicommit2/compare/v2.3.4...v2.3.5) (2025-07-31)
+
+
+### Features
+
+* **git:** display lint-staged output during commit ([3d2a5af](https://github.com/tak-bro/aicommit2/commit/3d2a5af2309dc4c438c26f90652acc586836d08d))
+* remove ora spinner for commit ([d684a20](https://github.com/tak-bro/aicommit2/commit/d684a20e0cf67867dc2d00de1ea651d1aca9c7ef))
+
 ## [2.3.4](https://github.com/tak-bro/aicommit2/compare/v2.3.3...v2.3.4) (2025-07-28)
 
 ### Bug Fixes
