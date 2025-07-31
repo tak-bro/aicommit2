@@ -56,6 +56,7 @@ _aicommit2_ is a reactive CLI tool that automatically generates Git commit messa
 - [Groq](docs/providers/groq.md)
 - [Perplexity](docs/providers/perplexity.md)
 - [DeepSeek](docs/providers/deepseek.md)
+- [GitHub Models](docs/providers/github-models.md)
 - [OpenAI API Compatibility](docs/providers/compatible.md)
 
 ### Local AI Services
@@ -637,7 +638,7 @@ aicommit2 config set codeReviewPromptPath="/path/to/user/prompt.txt"
 ## Available General Settings by Model
 
 |                           | timeout | temperature | maxTokens | topP |
-| :-----------------------: | :-----: | :---------: | :-------: | :--: |
+|:-------------------------:| :-----: | :---------: | :-------: | :--: |
 |        **OpenAI**         |    ✓    |      ✓      |     ✓     |  ✓   |
 |   **Anthropic Claude**    |    ✓    |      ✓      |     ✓     |  ✓   |
 |        **Gemini**         |         |      ✓      |     ✓     |  ✓   |
@@ -647,6 +648,7 @@ aicommit2 config set codeReviewPromptPath="/path/to/user/prompt.txt"
 |         **Groq**          |    ✓    |      ✓      |     ✓     |  ✓   |
 |      **Perplexity**       |    ✓    |      ✓      |     ✓     |  ✓   |
 |       **DeepSeek**        |    ✓    |      ✓      |     ✓     |  ✓   |
+|     **Github Models**     |    ✓    |      ✓      |     ✓     |  ✓   |
 |        **Ollama**         |    ✓    |      ✓      |           |  ✓   |
 | **OpenAI API-Compatible** |    ✓    |      ✓      |     ✓     |  ✓   |
 
@@ -678,6 +680,7 @@ aicommit2 config set \
 > - [Groq](docs/providers/groq.md)
 > - [Perplexity](docs/providers/perplexity.md)
 > - [DeepSeek](docs/providers/deepseek.md)
+> - [GitHub Models](docs/providers/github-models.md)
 > - [OpenAI API Compatibility](docs/providers/compatible.md)
 > - [Ollama](docs/providers/ollama.md)
 
