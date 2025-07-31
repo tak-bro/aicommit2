@@ -21,16 +21,80 @@ Currently, GitHub does not officially support direct access to the GitHub Copilo
 
 This approach allows AI-powered commit message generation within the GitHub ecosystem using a stable and officially supported solution.
 
-## Example Configuration
+## 🚀 Quick Setup
 
-### Basic Setup
+### Option 1: Automatic Login (Recommended)
+
+Use the built-in GitHub login command for seamless authentication:
 
 ```sh
 aicommit2 github-login
-aicommit2 config set GITHUB_MODELS.model="gpt-4o-mini"
 ```
 
-### Advanced Setup
+This command will:
+
+1. Open your browser for GitHub authentication
+2. Automatically configure your token
+3. Verify GitHub Models access
+4. Store the configuration for immediate use
+
+### Option 2: Manual Token Setup
+
+If you prefer manual setup or need to use a specific token:
+
+1. Create a Personal Access Token at [github.com/settings/tokens](https://github.com/settings/tokens)
+2. Select the "Models" permission scope
+3. Use the token directly:
+
+```sh
+aicommit2 github-login --token ghp_xxxxxxxxxxxxxxxxxxxx
+# or
+aicommit2 config set GITHUB_MODELS.key="ghp_xxxxxxxxxxxxxxxxxxxx"
+```
+
+### Prerequisites
+
+For automatic login, you'll need:
+
+- [GitHub CLI](https://cli.github.com/) installed on your system
+- A web browser for authentication
+
+Install GitHub CLI:
+
+```sh
+# macOS
+brew install gh
+
+# Windows (using Chocolatey)
+choco install gh
+
+# Windows (using winget)
+winget install GitHub.cli
+
+# Linux
+curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+sudo apt update
+sudo apt install gh
+```
+
+## Usage Examples
+
+### Basic Usage
+
+After authentication, you can immediately start using GitHub Models:
+
+```sh
+# Basic setup
+aicommit2 github-login
+aicommit2 config set GITHUB_MODELS.model="gpt-4o-mini"
+
+# Use with your git repository
+git add .
+aicommit2
+```
+
+### Advanced Configuration
 
 ```sh
 aicommit2 config set GITHUB_MODELS.key="ghp_xxxxxxxxxxxxxxxxxxxx" \
@@ -49,27 +113,47 @@ aicommit2 config set GITHUB_MODELS.key="ghp_xxxxxxxxxxxxxxxxxxxx" \
 | `key`   | GitHub token | -             |
 | `model` | Model to use | `gpt-4o-mini` |
 
-## Configuration
+## Configuration Details
+
+### Authentication Setup
 
 #### GITHUB_MODELS.key
 
-The GitHub Personal Access Token. Run `aicommit2 github-login` to authenticate automatically, or create a token manually at [github.com/settings/tokens](https://github.com/settings/tokens) with "Models" permission.
+Your GitHub Personal Access Token for accessing GitHub Models.
+
+**Automatic Setup (Recommended):**
+
+```sh
+aicommit2 github-login
+```
+
+**Manual Setup:**
+
+1. Go to [github.com/settings/tokens](https://github.com/settings/tokens)
+2. Create a new token with "Models" permission
+3. Configure it:
+
+```sh
+aicommit2 config set GITHUB_MODELS.key="ghp_xxxxxxxxxxxxxxxxxxxx"
+```
 
 #### GITHUB_MODELS.model
 
 Default: `gpt-4o-mini`
 
-Supported:
+**Available Models:**
 
-- `gpt-4o-mini` (default)
-- `gpt-4o`
-- `gpt-3.5-turbo`
-- `meta-llama-3.1-405b-instruct`
-- `meta-llama-3.1-70b-instruct`
-- `meta-llama-3.1-8b-instruct`
-- `phi-3-medium-4k-instruct`
-- `phi-3-mini-4k-instruct`
-- `phi-3-small-8k-instruct`
+| Model                          | Provider  | Context | Best For              |
+| ------------------------------ | --------- | ------- | --------------------- |
+| `gpt-4o-mini`                  | OpenAI    | 128K    | General use (default) |
+| `gpt-4o`                       | OpenAI    | 128K    | Complex reasoning     |
+| `gpt-3.5-turbo`                | OpenAI    | 16K     | Fast responses        |
+| `meta-llama-3.1-405b-instruct` | Meta      | 128K    | Advanced reasoning    |
+| `meta-llama-3.1-70b-instruct`  | Meta      | 128K    | Balanced performance  |
+| `meta-llama-3.1-8b-instruct`   | Meta      | 128K    | Fast, efficient       |
+| `phi-3-medium-4k-instruct`     | Microsoft | 4K      | Code-focused          |
+| `phi-3-mini-4k-instruct`       | Microsoft | 4K      | Lightweight           |
+| `phi-3-small-8k-instruct`      | Microsoft | 8K      | Balanced              |
 
 ```sh
 aicommit2 config set GITHUB_MODELS.model="meta-llama-3.1-70b-instruct"
