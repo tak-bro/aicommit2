@@ -57,6 +57,8 @@ export async function initializeLogger(options?: {
                 ),
             })
         );
+    } else {
+        transports.push(new winston.transports.Console());
     }
 
     loggerInstance = winston.createLogger({
@@ -76,6 +78,7 @@ export async function initializeLogger(options?: {
               ]
             : [],
         exitOnError: false, // Do not exit on handled exceptions
+        silent: !logging,
     });
 }
 
