@@ -58,7 +58,7 @@ export async function initializeLogger(options?: {
             })
         );
     } else {
-        transports.push(new winston.transports.Console());
+        transports.push(new winston.transports.Console({ silent: true }));
     }
 
     loggerInstance = winston.createLogger({
