@@ -156,7 +156,7 @@ your `devcontainer.json` file:
 
 ```json
 "features": {
-    "ghcr.io/kvokka/features/aicommit2:1": {}
+"ghcr.io/kvokka/features/aicommit2:1": {}
 }
 ```
 
@@ -899,6 +899,9 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/devxpain"><img src="https://avatars.githubusercontent.com/devxpain" width="100px;" alt=""/><br /><sub><b>@devxpain</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=devxpain" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/delenzhang"><img src="https://avatars.githubusercontent.com/delenzhang" width="100px;" alt=""/><br /><sub><b>@delenzhang</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=delenzhang" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/kvokka"><img src="https://avatars.githubusercontent.com/kvokka" width="100px;" alt=""/><br /><sub><b>@kvokka</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=kvokka" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://github.com/mdeweerd"><img src="https://avatars.githubusercontent.com/mdeweerd" width="100px;" alt=""/><br /><sub><b>@mdeweerd</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=mdeweerd" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/DivitMittal"><img src="https://avatars.githubusercontent.com/DivitMittal" width="100px;" alt=""/><br /><sub><b>@DivitMittal</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=DivitMittal" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/aaccioly"><img src="https://avatars.githubusercontent.com/aaccioly" width="100px;" alt=""/><br /><sub><b>@aaccioly</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=aaccioly" title="Code">💻</a></td>
   </tr>
 </table>
 <!-- markdownlint-restore -->
