@@ -1,3 +1,11 @@
+## [2.3.6](https://github.com/tak-bro/aicommit2/compare/v2.3.5...v2.3.6) (2025-08-05)
+
+
+### Bug Fixes
+
+* add redundant silent to console transport to please Copilot ([5a58097](https://github.com/tak-bro/aicommit2/commit/5a58097080cc6d447088e745246ab5d60ca618fd))
+* **logger:** suppress winston message about missing transports ([62c8d8c](https://github.com/tak-bro/aicommit2/commit/62c8d8c170ad375e5666c530a4b6412f28b70098)), closes [#158](https://github.com/tak-bro/aicommit2/issues/158)
+
 ## [2.3.5](https://github.com/tak-bro/aicommit2/compare/v2.3.4...v2.3.5) (2025-07-31)
 
 
