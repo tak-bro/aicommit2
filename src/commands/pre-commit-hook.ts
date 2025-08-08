@@ -7,7 +7,7 @@ import { AIRequestManager } from '../managers/ai-request.manager.js';
 import { ConsoleManager } from '../managers/console.manager.js';
 import { BUILTIN_SERVICES, ModelName, RawConfig, getConfig } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
-import { getStagedDiff } from '../utils/git.js';
+import { getStagedDiff } from '../utils/vcs.js';
 
 const args = process.argv.slice(2).filter(arg => !arg.startsWith('--pre-commit'));
 const [messageFilePath, commitSource] = args;

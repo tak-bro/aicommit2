@@ -7,7 +7,7 @@ import { command } from 'cleye';
 
 import { KnownError, handleCliError } from '../utils/error.js';
 import { fileExists } from '../utils/fs.js';
-import { assertGitRepo } from '../utils/git.js';
+import { assertGitRepo } from '../utils/vcs.js';
 
 const hookName = 'prepare-commit-msg';
 const symlinkPath = `.git/hooks/${hookName}`;

@@ -7,7 +7,7 @@ import { AIRequestManager } from '../managers/ai-request.manager.js';
 import { ConsoleManager } from '../managers/console.manager.js';
 import { BUILTIN_SERVICES, ModelName, RawConfig, getConfig } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
-import { getCommentChar, getStagedDiff } from '../utils/git.js';
+import { getCommentChar, getStagedDiff } from '../utils/vcs.js';
 
 const allArgs = process.argv.slice(2);
 const positionalArgs: string[] = [];

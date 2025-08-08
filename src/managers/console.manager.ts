@@ -4,7 +4,7 @@ import chalk from 'chalk';
 import figlet from 'figlet';
 import ora, { Ora } from 'ora';
 
-import { getDetectedMessage } from '../utils/git.js';
+import { getDetectedMessage } from '../utils/vcs.js';
 
 export class ConsoleManager {
     private title = 'aicommit2';

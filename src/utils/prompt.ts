@@ -35,12 +35,16 @@ const commitTypeFormats: Record<CommitType, string> = {
 [optional body]
 
 [optional footer(s)]`,
+    jujutsu: `<component>: <brief description>
+
+[optional detailed explanation]`,
 };
 
 export const exampleCommitByType: Record<CommitType, string> = {
     '': '',
     conventional: `<type>(<optional scope>): <description>`,
     gitmoji: `:<emoji>: <description>`,
+    jujutsu: `<component>: <description>`,
 };
 
 const specifyCommitFormat = (type: CommitType = 'conventional') => {
@@ -59,6 +63,30 @@ get from gitmoji.dev
 */
 const commitTypes: Record<CommitType, string> = {
     '': '',
+    jujutsu: `\n${Object.entries({
+        cli: 'Command-line interface changes',
+        ui: 'User interface and frontend changes',
+        api: 'API and backend service changes',
+        auth: 'Authentication and authorization changes',
+        db: 'Database schema and migration changes',
+        docs: 'Documentation updates',
+        config: 'Configuration and settings changes',
+        test: 'Testing and test infrastructure',
+        build: 'Build system and compilation changes',
+        deploy: 'Deployment and infrastructure changes',
+        perf: 'Performance improvements and optimizations',
+        security: 'Security fixes and enhancements',
+        deps: 'Dependency updates and management',
+        refactor: 'Code refactoring without functional changes',
+        style: 'Code style and formatting changes',
+        fix: 'Bug fixes and error corrections',
+        feature: 'New features and functionality',
+        cleanup: 'Code cleanup and maintenance',
+        logging: 'Logging and monitoring changes',
+        i18n: 'Internationalization and localization',
+    })
+        .map(([key, value]) => `  - ${key}: ${value}`)
+        .join('\n')}`,
     gitmoji: `\n${Object.entries({
         ':sparkles:': 'Introduce new features.',
         ':bug:': 'Fix a bug.',
@@ -173,9 +201,19 @@ const parseTemplate = (template: string, options: PromptOptions): string => {
 const defaultPrompt = (promptOptions: PromptOptions) => {
     const { type, maxLength, generate, locale } = promptOptions;
 
+    const systemDescription =
+        type === 'jujutsu'
+            ? `You are an expert Jujutsu (jj) commit message writer specializing in analyzing code changes and creating precise, component-focused commit messages.`
+            : `You are an expert Git commit message writer specializing in analyzing code changes and creating precise, meaningful commit messages.`;
+
+    const taskDescription =
+        type === 'jujutsu'
+            ? `Your task is to generate exactly ${generate} Jujutsu style commit message${generate !== 1 ? 's' : ''} based on the provided diff.`
+            : `Your task is to generate exactly ${generate} ${type} style commit message${generate !== 1 ? 's' : ''} based on the provided git diff.`;
+
     return [
-        `You are an expert Git commit message writer specializing in analyzing code changes and creating precise, meaningful commit messages.`,
-        `Your task is to generate exactly ${generate} ${type} style commit message${generate !== 1 ? 's' : ''} based on the provided git diff.`,
+        systemDescription,
+        taskDescription,
         '',
         `## Requirements:`,
         `1. Language: Write all messages in ${locale}`,
@@ -189,18 +227,25 @@ const defaultPrompt = (promptOptions: PromptOptions) => {
         `  * What files were changed`,
         `  * What functionality was added, modified, or removed`,
         `  * The scope and impact of changes`,
-        `- For the commit type, choose based on:`,
-        `  * feat: New functionality or feature`,
-        `  * fix: Bug fixes or error corrections`,
-        `  * refactor: Code restructuring without changing functionality`,
-        `  * docs: Documentation changes only`,
-        `  * style: Formatting, missing semi-colons, etc`,
-        `  * test: Adding or modifying tests`,
-        `  * chore: Maintenance tasks, dependency updates`,
-        `  * perf: Performance improvements`,
-        `  * build: Build system or external dependency changes`,
-        `  * ci: CI configuration changes`,
-        `- Scope: Extract from file paths or logical grouping (e.g., auth, api, ui)`,
+        type === 'jujutsu' ? `- For the component prefix, choose based on:${commitTypes[type]}` : `- For the commit type, choose based on:`,
+        ...(type !== 'jujutsu'
+            ? [
+                  `  * feat: New functionality or feature`,
+                  `  * fix: Bug fixes or error corrections`,
+                  `  * refactor: Code restructuring without changing functionality`,
+                  `  * docs: Documentation changes only`,
+                  `  * style: Formatting, missing semi-colons, etc`,
+                  `  * test: Adding or modifying tests`,
+                  `  * chore: Maintenance tasks, dependency updates`,
+                  `  * perf: Performance improvements`,
+                  `  * build: Build system or external dependency changes`,
+                  `  * ci: CI configuration changes`,
+                  `- Scope: Extract from file paths or logical grouping (e.g., auth, api, ui)`,
+              ]
+            : [
+                  `- Component: Identify the main system component affected (e.g., cli, ui, api, auth)`,
+                  `- Description: Write a clear, concise description of what was changed`,
+              ]),
         `- Body (when needed):`,
         `  * Explain the motivation for the change`,
         `  * Compare previous behavior with new behavior`,
@@ -230,6 +275,19 @@ const finalPrompt = (type: CommitType, generate: number) => {
   {
     "subject": "fix(auth): fix bug in user authentication process",
     "body": "- Update login function to handle edge cases\\n- Add additional error logging for debugging",
+    "footer": ""
+  }`
+                )
+                .join(',')}`;
+        }
+        if (type === 'jujutsu') {
+            return `${Array(generate)
+                .fill(null)
+                .map(
+                    (_, index) => `
+  {
+    "subject": "ui: implement responsive navigation component",
+    "body": "Add mobile-friendly navigation that collapses on small screens.\\nUses CSS Grid for flexible layout and supports keyboard navigation.",
     "footer": ""
   }`
                 )
@@ -291,6 +349,12 @@ export const isValidConventionalMessage = (message: string): boolean => {
 export const isValidGitmojiMessage = (message: string): boolean => {
     const gitmojiCommitMessageRegex = /:\w*:/;
     return gitmojiCommitMessageRegex.test(message);
+};
+
+export const isValidJujutsuMessage = (message: string): boolean => {
+    // Jujutsu format: component: description
+    const jujutsuReg = /^[a-zA-Z0-9_-]+: .+$/;
+    return jujutsuReg.test(message);
 };
 
 export const codeReviewPrompt = (promptOptions: PromptOptions) => {

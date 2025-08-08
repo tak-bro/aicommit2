@@ -11,8 +11,8 @@ import { ConsoleManager } from '../managers/console.manager.js';
 import { DEFAULT_INQUIRER_OPTIONS, ReactivePromptManager, codeReviewLoader, emptyCodeReview } from '../managers/reactive-prompt.manager.js';
 import { BUILTIN_SERVICES, ModelName, RawConfig, ValidConfig, getConfig } from '../utils/config.js';
 import { handleCliError } from '../utils/error.js';
-import { assertGitRepo, getCommitDiff } from '../utils/git.js';
 import { validateSystemPrompt } from '../utils/prompt.js';
+import { assertGitRepo, getCommitDiff } from '../utils/vcs.js';
 
 let destroyed$ = new Subject<void>();
 
