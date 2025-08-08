@@ -32,28 +32,22 @@ aicommit2 config set OPENAI.key=<your-key>
 git add .
 aicommit2
 
-# Or use in your Jujutsu repository (auto-detected)
+# Also works with Jujutsu repositories (auto-detected)
 aicommit2
-
-# Force Jujutsu when both Git and jj are present (environment variable)
-JJ=true aicommit2
-
-# Or set in config to prefer Jujutsu
-aicommit2 config set jujutsu=true
 ```
 
 ## 📖 Introduction
 
-_aicommit2_ is a reactive CLI tool that automatically generates commit messages for **Git** and **Jujutsu** repositories using various AI models. It supports simultaneous requests to multiple AI providers, allowing users to select the most suitable commit message. The core functionalities and architecture of this project are inspired by [AICommits](https://github.com/Nutlope/aicommits).
+AICommit2 automatically generates commit messages using AI. It primarily supports Git and also works with Jujutsu (jj) repositories.
 
 ## ✨ Key Features
 
-- **[Multi-AI Support](#cloud-ai-services)**: Integrates with OpenAI, Anthropic Claude, Google Gemini, Mistral AI, Cohere, Groq, Ollama and more.
-- **[OpenAI API Compatibility](docs/providers/compatible.md)**: Support for any service that implements the OpenAI API specification.
-- **[Dual VCS Support](#version-control-systems)**: Works with both **Git** and **Jujutsu** repositories with automatic detection.
-- **[Reactive CLI](#usage)**: Enables simultaneous requests to multiple AIs and selection of the best commit message.
-- **[Git Hook Integration](#git-hook)**: Can be used as a prepare-commit-msg hook.
-- **[Custom Prompt](#custom-prompt-template)**: Supports user-defined system prompt templates.
+- **[VCS Support](#version-control-systems)**: Works with both Git and Jujutsu repositories
+- **[Multi-AI Support](#cloud-ai-services)**: Integrates with OpenAI, Anthropic Claude, Google Gemini, Mistral AI, Cohere, Groq, Ollama and more
+- **[OpenAI API Compatibility](docs/providers/compatible.md)**: Support for any service that implements the OpenAI API specification
+- **[Reactive CLI](#usage)**: Enables simultaneous requests to multiple AIs and selection of the best commit message
+- **[Git Hook Integration](#git-hook)**: Can be used as a prepare-commit-msg hook
+- **[Custom Prompt](#custom-prompt-template)**: Supports user-defined system prompt templates
 
 ## 🤖 Supported Providers
 
@@ -99,71 +93,11 @@ aicommit2 config set ANTHROPIC.key=<your key>
 git add <files...>
 aicommit2
 
-# For Jujutsu repositories (no staging needed)
+# Works with Jujutsu too (auto-detected, no staging needed)
 aicommit2
 ```
 
 > 👉 **Tip:** Use the `aic2` alias if `aicommit2` is too long for you.
-
-## 📋 Version Control Systems
-
-_aicommit2_ supports both **Git** and **Jujutsu** version control systems with automatic detection.
-
-### Git Support (Default)
-
-```bash
-# Standard Git workflow
-git add <files>
-aicommit2
-```
-
-- Uses `git diff --cached` for staged changes
-- Supports all Git features and hooks
-- Requires staging changes before commit
-
-### Jujutsu Support
-
-```bash
-# Jujutsu workflow (no staging needed)
-aicommit2
-
-# Force Jujutsu when both Git and jj are present (environment variable)
-JJ=true aicommit2
-
-# Or set in config to prefer Jujutsu
-aicommit2 config set jujutsu=true
-```
-
-**Jujutsu Features:**
-- Automatic detection of `.jj` repositories  
-- No staging area - works directly on working copy changes
-- Uses `jj describe -m` instead of `git commit -m`
-- Git-compatible diff format for AI analysis
-- Supports Jujutsu's flexible commit workflow
-
-**Requirements:**
-- [Jujutsu](https://github.com/martinvonz/jj) must be installed
-- Must be in a valid `jj` workspace
-
-**Installation:**
-```bash
-# macOS
-brew install jj
-
-# Linux/Windows
-cargo install jj-cli
-
-# Initialize repository
-jj init
-```
-
-### VCS Detection Priority
-
-1. **Git Priority**: Git is checked first by default
-2. **Environment Override**: Set `JJ=true` to force Jujutsu detection (highest priority)
-3. **Config Override**: Set `jujutsu=true` in config to prefer Jujutsu (second priority)
-4. **Automatic Fallback**: Falls back to Jujutsu if Git is not available
-5. **Clear Error Messages**: Provides installation guidance when neither is available
 
 ### Alternative Installation Methods
 
@@ -240,6 +174,58 @@ your `devcontainer.json` file:
 This CLI tool runs `git diff` to grab all your latest code changes, sends them to configured AI, then returns the AI generated commit message.
 
 > If the diff becomes too large, AI will not function properly. If you encounter an error saying the message is too long or it's not a valid commit message, **try reducing the commit unit**.
+
+## Version Control Systems
+
+### Git (Primary)
+
+```bash
+# Standard Git workflow
+git add <files>
+aicommit2
+```
+
+- Uses `git diff --cached` for staged changes
+- Supports all Git features and hooks
+- Requires staging changes before commit
+
+### Jujutsu Support
+
+AICommit2 also supports [Jujutsu (jj)](https://github.com/martinvonz/jj) repositories:
+
+```bash
+# No staging needed
+aicommit2
+
+# Force use when both Git and jj present
+JJ=true aicommit2
+```
+
+**Features:**
+
+- Automatic detection of `.jj` repositories
+- Uses `jj describe` for commits
+- Supports Jujutsu's fileset syntax for file exclusions
+
+**Installation:**
+
+```bash
+# macOS
+brew install jj
+
+# Linux/Windows
+cargo install jj-cli
+
+# Initialize repository
+jj init
+```
+
+### Detection Priority
+
+1. Git repository (default)
+2. Jujutsu repository (if Git not found)
+3. Environment override: `JJ=true` forces Jujutsu
+4. Config: `aicommit2 config set jujutsu=true`
 
 ## Usage
 
@@ -562,16 +548,19 @@ Supported: `conventional`, `gitmoji`, `jujutsu`
 The type of commit message to generate:
 
 **Conventional Commits**: Follow the [Conventional Commits](https://conventionalcommits.org/) specification:
+
 ```sh
 aicommit2 config set type="conventional"
 ```
 
 **Gitmoji**: Use [Gitmoji](https://gitmoji.dev/) emojis in commit messages:
+
 ```sh
 aicommit2 config set type="gitmoji"
 ```
 
 **Jujutsu**: Use component-focused commit messages optimized for Jujutsu workflows:
+
 ```sh
 aicommit2 config set type="jujutsu"
 ```
