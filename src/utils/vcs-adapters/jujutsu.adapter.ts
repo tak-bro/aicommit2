@@ -66,7 +66,14 @@ export class JujutsuAdapter extends BaseVCSAdapter {
         }
     }
 
-    private excludeFromDiff = (path: string) => `~${path}`;
+    private excludeFromDiff = (path: string) => {
+        // Convert glob patterns to Jujutsu fileset glob expressions
+        if (path.includes('*') || path.includes('?') || path.includes('[')) {
+            return `~glob:"${path}"`;
+        }
+        // For exact file paths, use simple negation
+        return `~"${path}"`;
+    };
 
     private filesToExclude = [
         'package-lock.json',
@@ -79,8 +86,6 @@ export class JujutsuAdapter extends BaseVCSAdapter {
     async getStagedDiff(excludeFiles?: string[], exclude?: string[]): Promise<VCSDiff | null> {
         // In Jujutsu, there's no staging area, so we diff against the parent
         // Use --git flag for Git-compatible output format
-        const diffArgs = ['diff', '--git'];
-
         try {
             // First check if there are any changes using jj status
             const { stdout: status } = await execa('jj', ['status', '--no-pager']);
@@ -96,17 +101,40 @@ export class JujutsuAdapter extends BaseVCSAdapter {
                 return null;
             }
 
-            // For now, use basic diff without exclusions to get it working
-            // TODO: Implement proper jj fileset syntax for exclusions later
+            // Build exclusion patterns using Jujutsu fileset syntax
+            const defaultExclusions = this.filesToExclude.map(this.excludeFromDiff);
+            const userExclusions = [
+                ...(excludeFiles ? excludeFiles.map(this.excludeFromDiff) : []),
+                ...(exclude ? exclude.map(this.excludeFromDiff) : []),
+            ];
+            const allExclusions = [...defaultExclusions, ...userExclusions];
+
+            // Create fileset expression: all() with exclusions applied
+            let filesetExpr = 'all()';
+            if (allExclusions.length > 0) {
+                // Combine all exclusions: all() & ~pattern1 & ~pattern2 & ...
+                filesetExpr = `all() & ${allExclusions.join(' & ')}`;
+            }
+
+            // Build commands with fileset expressions
             const diffCmd = ['diff', '--name-only'];
             const diffArgsCmd = ['diff', '--git'];
+
+            // Add fileset expression as positional argument if we have exclusions
+            if (allExclusions.length > 0) {
+                diffCmd.push(filesetExpr);
+                diffArgsCmd.push(filesetExpr);
+            }
+
+            if (process.env.DEBUG) {
+                console.log('jj diff command with fileset:', diffCmd);
+                console.log('fileset expression:', filesetExpr);
+            }
 
             // Get list of changed files
             const { stdout: files } = await execa('jj', diffCmd);
 
-            // In debug mode, log the files output
             if (process.env.DEBUG) {
-                console.log('jj diff command:', diffCmd);
                 console.log('jj diff --name-only output:', JSON.stringify(files));
             }
 
@@ -193,13 +221,19 @@ export class JujutsuAdapter extends BaseVCSAdapter {
         ];
 
         try {
-            // Build commands with exclusions only if provided
-            let filesCmd = ['diff', '--name-only', '--revision', commitHash];
-            let diffCmd = ['diff', '--git', '--revision', commitHash];
+            // Build base commands
+            const filesCmd = ['diff', '--name-only', '--revision', commitHash];
+            const diffCmd = ['diff', '--git', '--revision', commitHash];
 
+            // Create fileset expression with user exclusions if provided
             if (userExclusions.length > 0) {
-                filesCmd = [...filesCmd, ...userExclusions];
-                diffCmd = [...diffCmd, ...userExclusions];
+                const filesetExpr = `all() & ${userExclusions.join(' & ')}`;
+                filesCmd.push(filesetExpr);
+                diffCmd.push(filesetExpr);
+
+                if (process.env.DEBUG) {
+                    console.log('jj getCommitDiff fileset expression:', filesetExpr);
+                }
             }
 
             // Get files changed in the commit
@@ -218,7 +252,11 @@ export class JujutsuAdapter extends BaseVCSAdapter {
                 files: allFiles,
                 diff: diff || `Files changed: ${allFiles.join(', ')}`,
             };
-        } catch {
+        } catch (error) {
+            if (process.env.DEBUG) {
+                const execError = error as any;
+                console.log('jj getCommitDiff error:', execError.message, execError.stderr);
+            }
             return null;
         }
     }
