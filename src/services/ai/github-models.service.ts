@@ -114,17 +114,16 @@ export class GitHubModelsService extends AIService {
         const body: any = {
             messages,
             model,
-            temperature: this.params.config.temperature || 0.7,
             stream: false,
             ...(isGPT5Model
                 ? {
-                      // GPT-5 models use max_completion_tokens instead of max_tokens and don't support top_p parameter
                       max_completion_tokens: this.params.config.maxTokens || 1024,
+                      temperature: 1,
                   }
                 : {
-                      // Non-GPT-5 models use standard parameters
                       max_tokens: this.params.config.maxTokens || 1024,
                       top_p: this.params.config.topP || 0.95,
+                      temperature: this.params.config.temperature || 0.7,
                   }),
         };
 

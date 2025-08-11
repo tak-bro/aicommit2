@@ -131,7 +131,10 @@ export class OpenAICompatibleService extends AIService {
         logAIRequest(diff, requestType, serviceName, this.params.config.model, url, headers, logging);
         logAIPrompt(diff, requestType, serviceName, generatedSystemPrompt, userPrompt, logging);
 
-        const payload = {
+        // GPT-5 series models have different parameter requirements
+        const isGPT5Model = ['gpt-5', 'gpt-5-mini', 'gpt-5-nano'].some(gpt5Model => this.params.config.model.includes(gpt5Model));
+
+        const payload: any = {
             messages: [
                 {
                     role: 'system',
@@ -144,9 +147,16 @@ export class OpenAICompatibleService extends AIService {
             ],
             model: this.params.config.model,
             stream,
-            max_tokens: maxTokens,
-            top_p: this.params.config.topP,
-            temperature,
+            ...(isGPT5Model
+                ? {
+                      max_completion_tokens: maxTokens,
+                      temperature: 1,
+                  }
+                : {
+                      max_tokens: maxTokens,
+                      top_p: this.params.config.topP,
+                      temperature: temperature,
+                  }),
         };
 
         logAIPayload(diff, requestType, serviceName, payload, logging);

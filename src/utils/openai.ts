@@ -4,15 +4,7 @@ import https from 'https';
 import { type TiktokenModel } from '@dqbd/tiktoken';
 import createHttpsProxyAgent from 'https-proxy-agent';
 
-import {
-    RequestType,
-    logAIComplete,
-    logAIError,
-    logAIPayload,
-    logAIPrompt,
-    logAIRequest,
-    logAIResponse,
-} from './ai-log.js';
+import { RequestType, logAIComplete, logAIError, logAIPayload, logAIPrompt, logAIRequest, logAIResponse } from './ai-log.js';
 import { KnownError } from './error.js';
 import { generateUserPrompt } from './prompt.js';
 
@@ -167,19 +159,32 @@ export const generateCommitMessage = async (
 ) => {
     try {
         const userPrompt = generateUserPrompt(diff, requestType);
+
+        // GPT-5 series models have different parameter requirements
+        const isGPT5Model = model.includes('gpt-5') || model.includes('gpt-5-mini') || model.includes('gpt-5-nano');
+
         const request: CreateChatCompletionRequest = {
             model,
             messages: [
                 { role: 'system', content: systemPrompt },
                 { role: 'user', content: userPrompt },
             ],
-            temperature,
-            max_tokens: maxTokens,
+            // GPT-5 models only support temperature = 1
+            temperature: isGPT5Model ? 1 : temperature,
             stream: false,
             n: 1,
-            top_p: topP,
             frequency_penalty: 0,
             presence_penalty: 0,
+            ...(isGPT5Model
+                ? {
+                      // GPT-5 models use max_completion_tokens instead of max_tokens and don't support top_p
+                      max_completion_tokens: maxTokens,
+                  }
+                : {
+                      // Non-GPT-5 models use standard parameters
+                      max_tokens: maxTokens,
+                      top_p: topP,
+                  }),
         };
 
         const fullUrl = new URL(url);
