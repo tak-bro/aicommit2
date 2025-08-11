@@ -14,8 +14,8 @@ import {
 import { RequestType } from '../utils/ai-log.js';
 import { BUILTIN_SERVICES, BuiltinService, ModelName, RawConfig, ValidConfig, getConfig } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
-import { assertGitRepo, getStagedDiff } from '../utils/git.js';
 import { validateSystemPrompt } from '../utils/prompt.js';
+import { assertGitRepo, getStagedDiff, getVCSName, commitChanges as vcsCommitChanges } from '../utils/vcs.js';
 
 const consoleManager = new ConsoleManager();
 
@@ -37,7 +37,11 @@ export default async (
 
         await assertGitRepo();
         if (stageAll) {
-            await execa('git', ['add', '--update']); // NOTE: should be equivalent behavior to `git commit --all`
+            const vcsName = await getVCSName();
+            if (vcsName === 'git') {
+                await execa('git', ['add', '--update']); // NOTE: should be equivalent behavior to `git commit --all`
+            }
+            // For Jujutsu, no staging needed - working copy is already staged
         }
 
         const config = await getConfig(
@@ -257,9 +261,6 @@ async function handleCommitMessage(aiRequestManager: AIRequestManager, available
 }
 
 async function commitChanges(message: string, rawArgv: string[]) {
-    await execa('git', ['commit', '-m', message, ...rawArgv], {
-        stdio: 'inherit',
-    });
-
+    await vcsCommitChanges(message, rawArgv);
     consoleManager.printCommitted();
 }

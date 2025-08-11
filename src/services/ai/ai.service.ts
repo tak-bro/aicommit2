@@ -3,9 +3,9 @@ import { Observable, of } from 'rxjs';
 
 import { addLogEntry } from '../../utils/ai-log.js';
 import { CommitType, ModelConfig, ModelName } from '../../utils/config.js';
-import { GitDiff } from '../../utils/git.js';
 import { logger } from '../../utils/logger.js';
 import { getFirstWordsFrom, safeJsonParse } from '../../utils/utils.js';
+import { GitDiff } from '../../utils/vcs.js';
 
 export interface AIResponse {
     title: string;

@@ -17,7 +17,7 @@ import { OpenAICompatibleService } from '../services/ai/openai-compatible.servic
 import { OpenAIService } from '../services/ai/openai.service.js';
 import { PerplexityService } from '../services/ai/perplexity.service.js';
 import { ModelName, ValidConfig } from '../utils/config.js';
-import { GitDiff } from '../utils/git.js';
+import { GitDiff } from '../utils/vcs.js';
 
 export class AIRequestManager {
     constructor(

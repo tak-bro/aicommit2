@@ -21,7 +21,6 @@ export class GitHubModelsService extends AIService {
     }
 
     protected getServiceSpecificErrorMessage(error: AIServiceError): string | null {
-        // Handle GitHub Models-specific error codes
         switch (error.code) {
             case 'MISSING_TOKEN':
                 return 'GitHub token is required. Run: aicommit2 github-login';
@@ -72,20 +71,7 @@ export class GitHubModelsService extends AIService {
         }
 
         const diff = this.params.stagedDiff.diff;
-        const {
-            systemPrompt,
-            systemPromptPath,
-            codeReviewPromptPath,
-            logging,
-            temperature,
-            locale,
-            generate,
-            type,
-            maxLength,
-            maxTokens,
-            topP,
-            model,
-        } = this.params.config;
+        const { systemPrompt, systemPromptPath, codeReviewPromptPath, locale, generate, type, maxLength } = this.params.config;
 
         const promptOptions: PromptOptions = {
             ...DEFAULT_PROMPT_OPTIONS,
@@ -122,13 +108,24 @@ export class GitHubModelsService extends AIService {
             },
         ];
 
-        const body = {
+        // GPT-5 series models have different parameter requirements
+        const isGPT5Model = ['gpt-5', 'gpt-5-mini', 'gpt-5-nano'].some(gpt5Model => model.includes(gpt5Model));
+
+        const body: any = {
             messages,
             model,
             temperature: this.params.config.temperature || 0.7,
-            max_tokens: this.params.config.maxTokens || 1024,
-            top_p: this.params.config.topP || 0.95,
             stream: false,
+            ...(isGPT5Model
+                ? {
+                      // GPT-5 models use max_completion_tokens instead of max_tokens and don't support top_p parameter
+                      max_completion_tokens: this.params.config.maxTokens || 1024,
+                  }
+                : {
+                      // Non-GPT-5 models use standard parameters
+                      max_tokens: this.params.config.maxTokens || 1024,
+                      top_p: this.params.config.topP || 0.95,
+                  }),
         };
 
         const url = `${this.baseURL}/inference/chat/completions`;
@@ -138,7 +135,6 @@ export class GitHubModelsService extends AIService {
             Authorization: `Bearer ${this.params.config.key}`,
         };
 
-        // Winston 형식 상세 로깅 (config.logging 체크)
         const { logging } = this.params.config;
         logAIRequest(diff, requestType, 'GitHub Models', model, url, headers, logging);
         logAIPrompt(

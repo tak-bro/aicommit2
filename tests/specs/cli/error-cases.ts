@@ -8,7 +8,8 @@ export default testSuite(({ describe }) => {
             const { fixture, aicommit2 } = await createFixture();
             const { stdout, exitCode } = await aicommit2([], { reject: false });
             expect(exitCode).toBe(1);
-            expect(stdout).toMatch('The current directory must be a Git repository!');
+            // Updated to match new VCS abstraction error message
+            expect(stdout).toMatch('No supported VCS repository found');
             await fixture.rm();
         });
 

@@ -4,7 +4,7 @@
     <h1 align="center">AICommit2</h1>
   </div>
   <p>
-    A Reactive CLI that generates git commit messages with Ollama, ChatGPT, Gemini, Claude, Mistral and other AI
+    A Reactive CLI that generates commit messages for Git and Jujutsu with Ollama, ChatGPT, Gemini, Claude, Mistral and other AI
   </p>
 </div>
 
@@ -27,22 +27,27 @@ ______________________________________________________________________
 npm install -g aicommit2
 # Set up at least one AI provider
 aicommit2 config set OPENAI.key=<your-key>
-# Use in your git repository
+
+# Use in your Git repository
 git add .
+aicommit2
+
+# Also works with Jujutsu repositories (auto-detected)
 aicommit2
 ```
 
 ## 📖 Introduction
 
-_aicommit2_ is a reactive CLI tool that automatically generates Git commit messages using various AI models. It supports simultaneous requests to multiple AI providers, allowing users to select the most suitable commit message. The core functionalities and architecture of this project are inspired by [AICommits](https://github.com/Nutlope/aicommits).
+AICommit2 automatically generates commit messages using AI. It primarily supports Git and also works with Jujutsu (jj) repositories.
 
 ## ✨ Key Features
 
-- **[Multi-AI Support](#cloud-ai-services)**: Integrates with OpenAI, Anthropic Claude, Google Gemini, Mistral AI, Cohere, Groq, Ollama and more.
-- **[OpenAI API Compatibility](docs/providers/compatible.md)**: Support for any service that implements the OpenAI API specification.
-- **[Reactive CLI](#usage)**: Enables simultaneous requests to multiple AIs and selection of the best commit message.
-- **[Git Hook Integration](#git-hook)**: Can be used as a prepare-commit-msg hook.
-- **[Custom Prompt](#custom-prompt-template)**: Supports user-defined system prompt templates.
+- **[VCS Support](#version-control-systems)**: Works with both Git and Jujutsu repositories
+- **[Multi-AI Support](#cloud-ai-services)**: Integrates with OpenAI, Anthropic Claude, Google Gemini, Mistral AI, Cohere, Groq, Ollama and more
+- **[OpenAI API Compatibility](docs/providers/compatible.md)**: Support for any service that implements the OpenAI API specification
+- **[Reactive CLI](#usage)**: Enables simultaneous requests to multiple AIs and selection of the best commit message
+- **[Git Hook Integration](#git-hook)**: Can be used as a prepare-commit-msg hook
+- **[Custom Prompt](#custom-prompt-template)**: Supports user-defined system prompt templates
 
 ## 🤖 Supported Providers
 
@@ -81,10 +86,14 @@ aicommit2 config set ANTHROPIC.key=<your key>
 # ... (similar commands for other providers)
 ```
 
-3. Run _aicommit2_ with your staged files in git repository:
+3. Run _aicommit2_ in your Git or Jujutsu repository:
 
 ```shell
+# For Git repositories
 git add <files...>
+aicommit2
+
+# Works with Jujutsu too (auto-detected, no staging needed)
 aicommit2
 ```
 
@@ -166,6 +175,58 @@ This CLI tool runs `git diff` to grab all your latest code changes, sends them t
 
 > If the diff becomes too large, AI will not function properly. If you encounter an error saying the message is too long or it's not a valid commit message, **try reducing the commit unit**.
 
+## Version Control Systems
+
+### Git (Primary)
+
+```bash
+# Standard Git workflow
+git add <files>
+aicommit2
+```
+
+- Uses `git diff --cached` for staged changes
+- Supports all Git features and hooks
+- Requires staging changes before commit
+
+### Jujutsu Support
+
+AICommit2 also supports [Jujutsu (jj)](https://github.com/martinvonz/jj) repositories:
+
+```bash
+# No staging needed
+aicommit2
+
+# Force use when both Git and jj present
+JJ=true aicommit2
+```
+
+**Features:**
+
+- Automatic detection of `.jj` repositories
+- Uses `jj describe` for commits
+- Supports Jujutsu's fileset syntax for file exclusions
+
+**Installation:**
+
+```bash
+# macOS
+brew install jj
+
+# Linux/Windows
+cargo install jj-cli
+
+# Initialize repository
+jj init
+```
+
+### Detection Priority
+
+1. Git repository (default)
+2. Jujutsu repository (if Git not found)
+3. Environment override: `JJ=true` forces Jujutsu
+4. Config: `aicommit2 config set jujutsu=true`
+
 ## Usage
 
 ### CLI mode
@@ -189,7 +250,7 @@ aicommit2 --all # or -a
 
 - `--locale` or `-l`: Locale to use for the generated commit messages (default: **en**)
 - `--all` or `-a`: Automatically stage changes in tracked files for the commit (default: **false**)
-- `--type` or `-t`: Git commit message format (default: **conventional**). It supports [`conventional`](https://conventionalcommits.org/) and [`gitmoji`](https://gitmoji.dev/)
+- `--type` or `-t`: Git commit message format (default: **conventional**). It supports [`conventional`](https://conventionalcommits.org/), [`gitmoji`](https://gitmoji.dev/), and `jujutsu`
 - `--confirm` or `-y`: Skip confirmation when committing after message generation (default: **false**)
 - `--clipboard` or `-c`: Copy the selected message to the clipboard (default: **false**).
   - If you give this option, **_aicommit2_ will not commit**.
@@ -482,12 +543,26 @@ aicommit2 config set exclude="*.ts,*.json"
 
 Default: `conventional`
 
-Supported: `conventional`, `gitmoji`
+Supported: `conventional`, `gitmoji`, `jujutsu`
 
-The type of commit message to generate. Set this to "conventional" to generate commit messages that follow the Conventional Commits specification:
+The type of commit message to generate:
+
+**Conventional Commits**: Follow the [Conventional Commits](https://conventionalcommits.org/) specification:
 
 ```sh
 aicommit2 config set type="conventional"
+```
+
+**Gitmoji**: Use [Gitmoji](https://gitmoji.dev/) emojis in commit messages:
+
+```sh
+aicommit2 config set type="gitmoji"
+```
+
+**Jujutsu**: Use component-focused commit messages optimized for Jujutsu workflows:
+
+```sh
+aicommit2 config set type="jujutsu"
 ```
 
 ##### locale
@@ -781,7 +856,7 @@ Use curly braces `{}` to denote these placeholders for options. The following pl
 
 - [{locale}](#locale): The language for the commit message (**string**)
 - [{maxLength}](#max-length): The maximum length for the commit message (**number**)
-- [{type}](#type): The type of the commit message (**conventional** or **gitmoji**)
+- [{type}](#type): The type of the commit message (**conventional**, **gitmoji**, or **jujutsu**)
 - [{generate}](#generate): The number of commit messages to generate (**number**)
 
 #### Example Template
