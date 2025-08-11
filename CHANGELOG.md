@@ -1,18 +1,16 @@
 ## [2.3.6](https://github.com/tak-bro/aicommit2/compare/v2.3.5...v2.3.6) (2025-08-05)
 
-
 ### Bug Fixes
 
-* add redundant silent to console transport to please Copilot ([5a58097](https://github.com/tak-bro/aicommit2/commit/5a58097080cc6d447088e745246ab5d60ca618fd))
-* **logger:** suppress winston message about missing transports ([62c8d8c](https://github.com/tak-bro/aicommit2/commit/62c8d8c170ad375e5666c530a4b6412f28b70098)), closes [#158](https://github.com/tak-bro/aicommit2/issues/158)
+- add redundant silent to console transport to please Copilot ([5a58097](https://github.com/tak-bro/aicommit2/commit/5a58097080cc6d447088e745246ab5d60ca618fd))
+- **logger:** suppress winston message about missing transports ([62c8d8c](https://github.com/tak-bro/aicommit2/commit/62c8d8c170ad375e5666c530a4b6412f28b70098)), closes [#158](https://github.com/tak-bro/aicommit2/issues/158)
 
 ## [2.3.5](https://github.com/tak-bro/aicommit2/compare/v2.3.4...v2.3.5) (2025-07-31)
 
-
 ### Features
 
-* **git:** display lint-staged output during commit ([3d2a5af](https://github.com/tak-bro/aicommit2/commit/3d2a5af2309dc4c438c26f90652acc586836d08d))
-* remove ora spinner for commit ([d684a20](https://github.com/tak-bro/aicommit2/commit/d684a20e0cf67867dc2d00de1ea651d1aca9c7ef))
+- **git:** display lint-staged output during commit ([3d2a5af](https://github.com/tak-bro/aicommit2/commit/3d2a5af2309dc4c438c26f90652acc586836d08d))
+- remove ora spinner for commit ([d684a20](https://github.com/tak-bro/aicommit2/commit/d684a20e0cf67867dc2d00de1ea651d1aca9c7ef))
 
 ## [2.3.4](https://github.com/tak-bro/aicommit2/compare/v2.3.3...v2.3.4) (2025-07-28)
 
