@@ -1,3 +1,12 @@
+# [2.4.0](https://github.com/tak-bro/aicommit2/compare/v2.3.6...v2.4.0) (2025-08-11)
+
+
+### Features
+
+* **ai:** support GPT-5 models with updated parameters ([4971d0c](https://github.com/tak-bro/aicommit2/commit/4971d0ccb4e4ded9f763b36e4b862925bb334909))
+* **jujutsu:** implement fileset exclusion using Jujutsu syntax ([7455ab8](https://github.com/tak-bro/aicommit2/commit/7455ab8e14a9fd4c85bff6df3033bfcca9c774a6))
+* support jujutsu vcs ([234c736](https://github.com/tak-bro/aicommit2/commit/234c736fbd1179ddefd6c854594f371a3a6126e5))
+
 ## [2.3.6](https://github.com/tak-bro/aicommit2/compare/v2.3.5...v2.3.6) (2025-08-05)
 
 ### Bug Fixes
