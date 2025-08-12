@@ -160,8 +160,7 @@ export const generateCommitMessage = async (
     try {
         const userPrompt = generateUserPrompt(diff, requestType);
 
-        // GPT-5 series models have different parameter requirements
-        const isGPT5Model = model.includes('gpt-5') || model.includes('gpt-5-mini') || model.includes('gpt-5-nano');
+        const isGPT5Model = ['gpt-5', 'gpt-5-mini', 'gpt-5-nano'].some(gpt5Model => model.includes(gpt5Model));
 
         const request: CreateChatCompletionRequest = {
             model,
@@ -169,8 +168,6 @@ export const generateCommitMessage = async (
                 { role: 'system', content: systemPrompt },
                 { role: 'user', content: userPrompt },
             ],
-            // GPT-5 models only support temperature = 1
-            temperature: isGPT5Model ? 1 : temperature,
             stream: false,
             n: 1,
             frequency_penalty: 0,
@@ -179,11 +176,13 @@ export const generateCommitMessage = async (
                 ? {
                       // GPT-5 models use max_completion_tokens instead of max_tokens and don't support top_p
                       max_completion_tokens: maxTokens,
+                      temperature: 1,
                   }
                 : {
                       // Non-GPT-5 models use standard parameters
                       max_tokens: maxTokens,
                       top_p: topP,
+                      temperature: temperature,
                   }),
         };
 
