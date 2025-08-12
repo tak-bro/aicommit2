@@ -63,30 +63,7 @@ get from gitmoji.dev
 */
 const commitTypes: Record<CommitType, string> = {
     '': '',
-    jujutsu: `\n${Object.entries({
-        cli: 'Command-line interface changes',
-        ui: 'User interface and frontend changes',
-        api: 'API and backend service changes',
-        auth: 'Authentication and authorization changes',
-        db: 'Database schema and migration changes',
-        docs: 'Documentation updates',
-        config: 'Configuration and settings changes',
-        test: 'Testing and test infrastructure',
-        build: 'Build system and compilation changes',
-        deploy: 'Deployment and infrastructure changes',
-        perf: 'Performance improvements and optimizations',
-        security: 'Security fixes and enhancements',
-        deps: 'Dependency updates and management',
-        refactor: 'Code refactoring without functional changes',
-        style: 'Code style and formatting changes',
-        fix: 'Bug fixes and error corrections',
-        feature: 'New features and functionality',
-        cleanup: 'Code cleanup and maintenance',
-        logging: 'Logging and monitoring changes',
-        i18n: 'Internationalization and localization',
-    })
-        .map(([key, value]) => `  - ${key}: ${value}`)
-        .join('\n')}`,
+    jujutsu: '',
     gitmoji: `\n${Object.entries({
         ':sparkles:': 'Introduce new features.',
         ':bug:': 'Fix a bug.',
@@ -203,33 +180,53 @@ const defaultPrompt = (promptOptions: PromptOptions) => {
 
     const systemDescription =
         type === 'jujutsu'
-            ? `You are an expert Jujutsu (jj) commit message writer specializing in analyzing code changes and creating precise, component-focused commit messages.`
+            ? `You are a Jujutsu commit message writer. You create simple, clear commit messages following Jujutsu's format.`
             : `You are an expert Git commit message writer specializing in analyzing code changes and creating precise, meaningful commit messages.`;
 
     const taskDescription =
         type === 'jujutsu'
-            ? `Your task is to generate exactly ${generate} Jujutsu style commit message${generate !== 1 ? 's' : ''} based on the provided diff.`
+            ? `Generate exactly ${generate} Jujutsu-style commit message${generate !== 1 ? 's' : ''} based on the provided diff.`
             : `Your task is to generate exactly ${generate} ${type} style commit message${generate !== 1 ? 's' : ''} based on the provided git diff.`;
 
     return [
         systemDescription,
         taskDescription,
         '',
-        `## Requirements:`,
-        `1. Language: Write all messages in ${locale}`,
-        `2. Format: Strictly follow the ${type} commit format:`,
-        `${commitTypeFormats[type]}`,
-        `3. Allowed Types:${commitTypes[type]}`,
-        '',
-        `## Guidelines:`,
-        `- Subject line: Max ${maxLength} characters, imperative mood, no period`,
-        `- Analyze the diff to understand:`,
-        `  * What files were changed`,
-        `  * What functionality was added, modified, or removed`,
-        `  * The scope and impact of changes`,
-        type === 'jujutsu' ? `- For the component prefix, choose based on:${commitTypes[type]}` : `- For the commit type, choose based on:`,
-        ...(type !== 'jujutsu'
+        type === 'jujutsu'
             ? [
+                  `## Format:`,
+                  `<topic>: <description>`,
+                  '',
+                  `## Rules:`,
+                  `- Topic: The component/command/area being modified (e.g., cli, docs, config, next/prev)`,
+                  `- Description: Clear, imperative mood statement of what changed`,
+                  `- Maximum ${maxLength} characters`,
+                  `- Language: ${locale}`,
+                  `- Focus on clarity and simplicity - no conventional commit types or emojis`,
+                  `- Each commit should do one thing`,
+                  `- Explain the reason for change when not obvious`,
+                  '',
+                  `## Examples from Jujutsu's actual commits:`,
+                  `- "cli: make jj abandon print abandoned commit info"`,
+                  `- "docs: mention that @ can be used in revsets"`,
+                  `- "backend: make commit signature a property of the backend"`,
+                  `- "templater: add commit.annotate() method"`,
+                  `- "conflicts: simplify conflict marker parsing"`,
+              ].join('\n')
+            : [
+                  `## Requirements:`,
+                  `1. Language: Write all messages in ${locale}`,
+                  `2. Format: Strictly follow the ${type} commit format:`,
+                  `${commitTypeFormats[type]}`,
+                  `3. Allowed Types:${commitTypes[type]}`,
+                  '',
+                  `## Guidelines:`,
+                  `- Subject line: Max ${maxLength} characters, imperative mood, no period`,
+                  `- Analyze the diff to understand:`,
+                  `  * What files were changed`,
+                  `  * What functionality was added, modified, or removed`,
+                  `  * The scope and impact of changes`,
+                  `- For the commit type, choose based on:`,
                   `  * feat: New functionality or feature`,
                   `  * fix: Bug fixes or error corrections`,
                   `  * refactor: Code restructuring without changing functionality`,
@@ -241,25 +238,21 @@ const defaultPrompt = (promptOptions: PromptOptions) => {
                   `  * build: Build system or external dependency changes`,
                   `  * ci: CI configuration changes`,
                   `- Scope: Extract from file paths or logical grouping (e.g., auth, api, ui)`,
-              ]
-            : [
-                  `- Component: Identify the main system component affected (e.g., cli, ui, api, auth)`,
-                  `- Description: Write a clear, concise description of what was changed`,
-              ]),
-        `- Body (when needed):`,
-        `  * Explain the motivation for the change`,
-        `  * Compare previous behavior with new behavior`,
-        `  * Note any breaking changes or important details`,
-        `- Footer: Include references to issues, breaking changes if applicable`,
-        '',
-        `## Analysis Approach:`,
-        `1. Identify the primary purpose of the changes`,
-        `2. Group related changes together`,
-        `3. Determine the most appropriate type and scope`,
-        `4. Write a clear, concise subject line`,
-        `5. Add body details for complex changes`,
-        '',
-        `Remember: The commit message should help future developers understand WHY this change was made, not just WHAT was changed.`,
+                  `- Body (when needed):`,
+                  `  * Explain the motivation for the change`,
+                  `  * Compare previous behavior with new behavior`,
+                  `  * Note any breaking changes or important details`,
+                  `- Footer: Include references to issues, breaking changes if applicable`,
+                  '',
+                  `## Analysis Approach:`,
+                  `1. Identify the primary purpose of the changes`,
+                  `2. Group related changes together`,
+                  `3. Determine the most appropriate type and scope`,
+                  `4. Write a clear, concise subject line`,
+                  `5. Add body details for complex changes`,
+                  '',
+                  `Remember: The commit message should help future developers understand WHY this change was made, not just WHAT was changed.`,
+              ].join('\n'),
     ]
         .filter(Boolean)
         .join('\n');
@@ -280,30 +273,20 @@ const finalPrompt = (type: CommitType, generate: number) => {
                 )
                 .join(',')}`;
         }
-        if (type === 'jujutsu') {
+        if (type === 'gitmoji') {
             return `${Array(generate)
                 .fill(null)
                 .map(
                     (_, index) => `
   {
-    "subject": "ui: implement responsive navigation component",
-    "body": "Add mobile-friendly navigation that collapses on small screens.\\nUses CSS Grid for flexible layout and supports keyboard navigation.",
+    "subject": ":sparkles: Add real-time chat feature",
+    "body": "- Implement WebSocket connection\\n- Add message encryption\\n- Include typing indicators",
     "footer": ""
   }`
                 )
                 .join(',')}`;
         }
-        return `${Array(generate)
-            .fill(null)
-            .map(
-                (_, index) => `
-  {
-    "subject": ":sparkles: Add real-time chat feature",
-    "body": "- Implement WebSocket connection\\n- Add message encryption\\n- Include typing indicators",
-    "footer": ""
-  }`
-            )
-            .join(',')}`;
+        return '';
     };
 
     return [
@@ -312,7 +295,7 @@ const finalPrompt = (type: CommitType, generate: number) => {
         `- "body": An optional detailed explanation of the changes. If not needed, use an empty string.`,
         `- "footer": An optional footer for metadata like BREAKING CHANGES. If not needed, use an empty string.`,
         `The array must always contain ${generate} element${generate !== 1 ? 's' : ''}, no more and no less.`,
-        `Example response format: \n[${example(type)}\n]`,
+        type === 'jujutsu' ? '\n' : `Example response format: \n[${example(type)}\n]`,
         `Ensure you generate exactly ${generate} commit message${generate !== 1 ? 's' : ''}, even if it requires creating slightly varied versions for similar changes.`,
         `The response should be valid JSON that can be parsed without errors.`,
     ]

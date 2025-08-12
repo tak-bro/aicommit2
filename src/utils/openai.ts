@@ -4,15 +4,7 @@ import https from 'https';
 import { type TiktokenModel } from '@dqbd/tiktoken';
 import createHttpsProxyAgent from 'https-proxy-agent';
 
-import {
-    RequestType,
-    logAIComplete,
-    logAIError,
-    logAIPayload,
-    logAIPrompt,
-    logAIRequest,
-    logAIResponse,
-} from './ai-log.js';
+import { RequestType, logAIComplete, logAIError, logAIPayload, logAIPrompt, logAIRequest, logAIResponse } from './ai-log.js';
 import { KnownError } from './error.js';
 import { generateUserPrompt } from './prompt.js';
 
@@ -149,6 +141,10 @@ const createChatCompletion = async (
 
 export const sanitizeMessage = (message: string) => message.trim();
 
+export const isGPT5Model = (model: string): boolean => {
+    return ['gpt-5', 'gpt-5-mini', 'gpt-5-nano'].some(gpt5Model => model.includes(gpt5Model));
+};
+
 export const generateCommitMessage = async (
     serviceName: string,
     url: string,
@@ -167,19 +163,31 @@ export const generateCommitMessage = async (
 ) => {
     try {
         const userPrompt = generateUserPrompt(diff, requestType);
+
+        const gpt5Model = isGPT5Model(model);
+
         const request: CreateChatCompletionRequest = {
             model,
             messages: [
                 { role: 'system', content: systemPrompt },
                 { role: 'user', content: userPrompt },
             ],
-            temperature,
-            max_tokens: maxTokens,
             stream: false,
             n: 1,
-            top_p: topP,
             frequency_penalty: 0,
             presence_penalty: 0,
+            ...(gpt5Model
+                ? {
+                      // GPT-5 models use max_completion_tokens instead of max_tokens and don't support top_p
+                      max_completion_tokens: maxTokens,
+                      temperature: 1,
+                  }
+                : {
+                      // Non-GPT-5 models use standard parameters
+                      max_tokens: maxTokens,
+                      top_p: topP,
+                      temperature: temperature,
+                  }),
         };
 
         const fullUrl = new URL(url);
