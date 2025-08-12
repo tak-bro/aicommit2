@@ -141,6 +141,10 @@ const createChatCompletion = async (
 
 export const sanitizeMessage = (message: string) => message.trim();
 
+export const isGPT5Model = (model: string): boolean => {
+    return ['gpt-5', 'gpt-5-mini', 'gpt-5-nano'].some(gpt5Model => model.includes(gpt5Model));
+};
+
 export const generateCommitMessage = async (
     serviceName: string,
     url: string,
@@ -160,7 +164,7 @@ export const generateCommitMessage = async (
     try {
         const userPrompt = generateUserPrompt(diff, requestType);
 
-        const isGPT5Model = ['gpt-5', 'gpt-5-mini', 'gpt-5-nano'].some(gpt5Model => model.includes(gpt5Model));
+        const gpt5Model = isGPT5Model(model);
 
         const request: CreateChatCompletionRequest = {
             model,
@@ -172,7 +176,7 @@ export const generateCommitMessage = async (
             n: 1,
             frequency_penalty: 0,
             presence_penalty: 0,
-            ...(isGPT5Model
+            ...(gpt5Model
                 ? {
                       // GPT-5 models use max_completion_tokens instead of max_tokens and don't support top_p
                       max_completion_tokens: maxTokens,
