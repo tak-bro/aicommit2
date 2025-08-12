@@ -99,14 +99,15 @@ export default async (
 
         // Handle edit flag - open editor to modify the AI-generated message
         if (edit) {
-            consoleManager.print('\nOpening editor to modify commit message...');
+            consoleManager.printInfo('Opening editor to modify commit message...');
             selectedCommitMessage = await openEditor(selectedCommitMessage);
 
             if (!selectedCommitMessage.trim()) {
                 throw new KnownError('Commit message cannot be empty');
             }
 
-            consoleManager.print(`\nEdited commit message:\n${selectedCommitMessage}\n`);
+            consoleManager.printSuccess('Commit message edited successfully!');
+            console.log(`\n${selectedCommitMessage}\n`);
         }
 
         if (useClipboard) {
