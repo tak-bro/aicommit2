@@ -1,3 +1,11 @@
+## [2.4.1](https://github.com/tak-bro/aicommit2/compare/v2.4.0...v2.4.1) (2025-08-12)
+
+
+### Features
+
+* add GPT-5 model compatibility ([ba95ee8](https://github.com/tak-bro/aicommit2/commit/ba95ee8bd88e68677d310300e76b8d7355978c4b))
+* **openai:** support distinct GPT-5 model parameters ([6eea701](https://github.com/tak-bro/aicommit2/commit/6eea7018e418678de153a865f8402965b6b22411))
+
 # [2.4.0](https://github.com/tak-bro/aicommit2/compare/v2.3.6...v2.4.0) (2025-08-11)
 
 
