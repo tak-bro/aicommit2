@@ -94,6 +94,12 @@ cli(
                 alias: 's',
                 default: false,
             },
+            edit: {
+                type: Boolean,
+                description: 'Open the AI-generated commit message in your default editor',
+                alias: 'e',
+                default: false,
+            },
         },
 
         commands: [configCommand, githubLoginCommand, hookCommand, logCommand],
@@ -141,6 +147,7 @@ cli(
             argv.flags.prompt,
             argv.flags['include-body'],
             argv.flags['auto-select'],
+            argv.flags.edit,
             rawArgv
         );
     },

@@ -1,3 +1,7 @@
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
+
 import { execa } from 'execa';
 import inquirer from 'inquirer';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
@@ -30,6 +34,7 @@ export default async (
     prompt: string | undefined,
     includeBody: boolean | undefined,
     autoSelect: boolean,
+    edit: boolean,
     rawArgv: string[]
 ) =>
     (async () => {
@@ -90,7 +95,21 @@ export default async (
             await handleCodeReview(aiRequestManager, codeReviewAIs);
         }
 
-        const selectedCommitMessage = await handleCommitMessage(aiRequestManager, availableAIs, autoSelect);
+        let selectedCommitMessage = await handleCommitMessage(aiRequestManager, availableAIs, autoSelect);
+
+        // Handle edit flag - open editor to modify the AI-generated message
+        if (edit) {
+            consoleManager.printInfo('Opening editor to modify commit message...');
+            selectedCommitMessage = await openEditor(selectedCommitMessage);
+
+            if (!selectedCommitMessage.trim()) {
+                throw new KnownError('Commit message cannot be empty');
+            }
+
+            consoleManager.printSuccess('Commit message edited successfully!');
+            console.log(`\n${selectedCommitMessage}\n`);
+        }
+
         if (useClipboard) {
             // eslint-disable-next-line @typescript-eslint/no-var-requires
             const ncp = require('copy-paste');
@@ -258,6 +277,26 @@ async function handleCommitMessage(aiRequestManager: AIRequestManager, available
     }
 
     return selectedCommitMessage;
+}
+
+async function openEditor(message: string): Promise<string> {
+    const editor = process.env.VISUAL || process.env.EDITOR || (process.platform === 'win32' ? 'notepad' : 'vi');
+    const tempFile = path.join(os.tmpdir(), `aicommit2-${Date.now()}.txt`);
+
+    try {
+        fs.writeFileSync(tempFile, message, 'utf8');
+        await execa(editor, [tempFile], { stdio: 'inherit' });
+        const editedMessage = fs.readFileSync(tempFile, 'utf8').trim();
+        fs.unlinkSync(tempFile);
+        return editedMessage;
+    } catch (error) {
+        if (fs.existsSync(tempFile)) {
+            fs.unlinkSync(tempFile);
+        }
+        throw new KnownError(
+            `Failed to open editor "${editor}". Make sure your EDITOR or VISUAL environment variable is set to a valid editor command, or the default editor is available.`
+        );
+    }
 }
 
 async function commitChanges(message: string, rawArgv: string[]) {

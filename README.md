@@ -38,7 +38,7 @@ aicommit2
 
 ## 📖 Introduction
 
-AICommit2 automatically generates commit messages using AI. It primarily supports Git and also works with Jujutsu (jj) repositories.
+AICommit2 automatically generates commit messages using AI. It primarily supports [Git](https://git-scm.com/) and also works with [Jujutsu](https://github.com/jj-vcs/jj)(jj) repositories. The core functionalities and architecture of this project are inspired by [AICommits](https://github.com/Nutlope/aicommits).
 
 ## ✨ Key Features
 
@@ -254,6 +254,10 @@ aicommit2 --all # or -a
 - `--confirm` or `-y`: Skip confirmation when committing after message generation (default: **false**)
 - `--clipboard` or `-c`: Copy the selected message to the clipboard (default: **false**).
   - If you give this option, **_aicommit2_ will not commit**.
+- `--edit` or `-e`: Open the AI-generated commit message in your default editor for modification (default: **false**)
+  - Opens the message in the editor specified by `$VISUAL`, `$EDITOR`, or platform default
+  - Works with both Git and Jujutsu repositories
+  - Allows fine-tuning of AI-generated messages before committing
 - `--generate` or `-g`: Number of messages to generate (default: **1**)
   - **Warning**: This uses more tokens, meaning it costs more.
 - `--exclude` or `-x`: Files to exclude from AI analysis
@@ -271,10 +275,14 @@ aicommit2 --all # or -a
   - This option is specifically for use with the pre-commit framework
   - See [Integration with pre-commit framework](#integration-with-pre-commit-framework) section for setup instructions
 
-Example:
+Examples:
 
 ```sh
+# Generate multiple commit messages with clipboard and file exclusions
 aicommit2 --locale "jp" --all --type "conventional" --generate 3 --clipboard --exclude "*.json" --exclude "*.ts"
+
+# Generate and edit a Jujutsu-style commit message
+aicommit2 --edit --type jujutsu # or conventional, gitmoji
 ```
 
 ### Git hook

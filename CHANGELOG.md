@@ -1,19 +1,17 @@
 ## [2.4.1](https://github.com/tak-bro/aicommit2/compare/v2.4.0...v2.4.1) (2025-08-12)
 
-
 ### Features
 
-* add GPT-5 model compatibility ([ba95ee8](https://github.com/tak-bro/aicommit2/commit/ba95ee8bd88e68677d310300e76b8d7355978c4b))
-* **openai:** support distinct GPT-5 model parameters ([6eea701](https://github.com/tak-bro/aicommit2/commit/6eea7018e418678de153a865f8402965b6b22411))
+- add GPT-5 model compatibility ([ba95ee8](https://github.com/tak-bro/aicommit2/commit/ba95ee8bd88e68677d310300e76b8d7355978c4b))
+- **openai:** support distinct GPT-5 model parameters ([6eea701](https://github.com/tak-bro/aicommit2/commit/6eea7018e418678de153a865f8402965b6b22411))
 
 # [2.4.0](https://github.com/tak-bro/aicommit2/compare/v2.3.6...v2.4.0) (2025-08-11)
 
-
 ### Features
 
-* **ai:** support GPT-5 models with updated parameters ([4971d0c](https://github.com/tak-bro/aicommit2/commit/4971d0ccb4e4ded9f763b36e4b862925bb334909))
-* **jujutsu:** implement fileset exclusion using Jujutsu syntax ([7455ab8](https://github.com/tak-bro/aicommit2/commit/7455ab8e14a9fd4c85bff6df3033bfcca9c774a6))
-* support jujutsu vcs ([234c736](https://github.com/tak-bro/aicommit2/commit/234c736fbd1179ddefd6c854594f371a3a6126e5))
+- **ai:** support GPT-5 models with updated parameters ([4971d0c](https://github.com/tak-bro/aicommit2/commit/4971d0ccb4e4ded9f763b36e4b862925bb334909))
+- **jujutsu:** implement fileset exclusion using Jujutsu syntax ([7455ab8](https://github.com/tak-bro/aicommit2/commit/7455ab8e14a9fd4c85bff6df3033bfcca9c774a6))
+- support jujutsu vcs ([234c736](https://github.com/tak-bro/aicommit2/commit/234c736fbd1179ddefd6c854594f371a3a6126e5))
 
 ## [2.3.6](https://github.com/tak-bro/aicommit2/compare/v2.3.5...v2.3.6) (2025-08-05)
 
