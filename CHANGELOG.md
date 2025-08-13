@@ -1,3 +1,11 @@
+## [2.4.2](https://github.com/tak-bro/aicommit2/compare/v2.4.1...v2.4.2) (2025-08-13)
+
+
+### Features
+
+* **cli:** add edit flag to open AI-generated commit message in editor ([30ae22d](https://github.com/tak-bro/aicommit2/commit/30ae22dab568dde763074cc3035650bde9f9d325))
+* improve edit message feedback ([30e1924](https://github.com/tak-bro/aicommit2/commit/30e19247b13fbd814e2ad4ddcb9528b533bc5796))
+
 ## [2.4.1](https://github.com/tak-bro/aicommit2/compare/v2.4.0...v2.4.1) (2025-08-12)
 
 ### Features
