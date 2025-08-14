@@ -105,7 +105,7 @@ export class GitHubModelsService extends AIService {
             },
             {
                 role: 'user',
-                content: requestType === 'review' ? diff : `Here's the git diff:\n\n${diff}`,
+                content: requestType === 'review' ? diff : `Here's the diff:\n\n${diff}`,
             },
         ];
 
@@ -142,7 +142,7 @@ export class GitHubModelsService extends AIService {
             requestType,
             'GitHub Models',
             systemPrompt,
-            requestType === 'review' ? diff : `Here's the git diff:\n\n${diff}`,
+            requestType === 'review' ? diff : `Here's the diff:\n\n${diff}`,
             logging
         );
         logAIPayload(diff, requestType, 'GitHub Models', body, logging);
