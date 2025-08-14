@@ -17,7 +17,6 @@ let vcsAdapter: BaseVCSAdapter | null = null;
 async function detectVCS(): Promise<BaseVCSAdapter> {
     const forceJJEnv = process.env.JJ === 'true';
 
-    // If JJ environment variable is set, force Jujutsu (highest priority)
     if (forceJJEnv) {
         try {
             const jjAdapter = new JujutsuAdapter();
@@ -30,17 +29,14 @@ async function detectVCS(): Promise<BaseVCSAdapter> {
         }
     }
 
-    // Check config setting for jujutsu preference
     let forceJJConfig = false;
     try {
         const config = await getConfig({});
         forceJJConfig = config.jujutsu === true;
     } catch (error) {
-        // If config loading fails, continue with default behavior
         forceJJConfig = false;
     }
 
-    // If config jujutsu=true is set, force Jujutsu (second priority)
     if (forceJJConfig) {
         try {
             const jjAdapter = new JujutsuAdapter();
@@ -56,7 +52,6 @@ async function detectVCS(): Promise<BaseVCSAdapter> {
     let gitError: Error | null = null;
     let jjError: Error | null = null;
 
-    // Try Git first (default priority)
     try {
         const gitAdapter = new GitAdapter();
         await gitAdapter.assertRepo();
@@ -65,7 +60,6 @@ async function detectVCS(): Promise<BaseVCSAdapter> {
         gitError = error instanceof Error ? error : new Error(String(error));
     }
 
-    // If Git fails, try Jujutsu
     try {
         const jjAdapter = new JujutsuAdapter();
         await jjAdapter.assertRepo();
@@ -74,7 +68,6 @@ async function detectVCS(): Promise<BaseVCSAdapter> {
         jjError = error instanceof Error ? error : new Error(String(error));
     }
 
-    // Both failed, provide helpful error message
     if (gitError && jjError) {
         const gitMsg = gitError.message.replace('KnownError: ', '').trim();
         const jjMsg = jjError.message.replace('KnownError: ', '').trim();
