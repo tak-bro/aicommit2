@@ -15,9 +15,10 @@ let vcsAdapter: BaseVCSAdapter | null = null;
  * Priority: Git first, unless JJ="true" environment variable or jujutsu=true config is set
  */
 async function detectVCS(): Promise<BaseVCSAdapter> {
+    // VCS 우선순위: JJ환경변수 > config jujutsu=true > Git 기본 > Jujutsu 폴백
     const forceJJEnv = process.env.JJ === 'true';
 
-    // If JJ environment variable is set, force Jujutsu (highest priority)
+    // JJ 환경변수가 설정된 경우 Jujutsu 강제 사용 (최고 우선순위)
     if (forceJJEnv) {
         try {
             const jjAdapter = new JujutsuAdapter();
@@ -30,17 +31,17 @@ async function detectVCS(): Promise<BaseVCSAdapter> {
         }
     }
 
-    // Check config setting for jujutsu preference
+    // config 파일에서 jujutsu 설정 확인
     let forceJJConfig = false;
     try {
         const config = await getConfig({});
         forceJJConfig = config.jujutsu === true;
     } catch (error) {
-        // If config loading fails, continue with default behavior
+        // config 로딩 실패 시 기본 동작 계속
         forceJJConfig = false;
     }
 
-    // If config jujutsu=true is set, force Jujutsu (second priority)
+    // config에서 jujutsu=true 설정된 경우 Jujutsu 강제 사용 (두 번째 우선순위)
     if (forceJJConfig) {
         try {
             const jjAdapter = new JujutsuAdapter();
@@ -56,7 +57,7 @@ async function detectVCS(): Promise<BaseVCSAdapter> {
     let gitError: Error | null = null;
     let jjError: Error | null = null;
 
-    // Try Git first (default priority)
+    // Git 먼저 시도 (기본 우선순위)
     try {
         const gitAdapter = new GitAdapter();
         await gitAdapter.assertRepo();
@@ -65,7 +66,7 @@ async function detectVCS(): Promise<BaseVCSAdapter> {
         gitError = error instanceof Error ? error : new Error(String(error));
     }
 
-    // If Git fails, try Jujutsu
+    // Git 실패 시 Jujutsu 시도
     try {
         const jjAdapter = new JujutsuAdapter();
         await jjAdapter.assertRepo();
@@ -74,7 +75,7 @@ async function detectVCS(): Promise<BaseVCSAdapter> {
         jjError = error instanceof Error ? error : new Error(String(error));
     }
 
-    // Both failed, provide helpful error message
+    // 둘 다 실패한 경우 도움말 메시지 제공
     if (gitError && jjError) {
         const gitMsg = gitError.message.replace('KnownError: ', '').trim();
         const jjMsg = jjError.message.replace('KnownError: ', '').trim();

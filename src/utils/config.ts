@@ -339,12 +339,13 @@ const generalConfigParsers = {
         return watchMode === 'true';
     },
     jujutsu(jujutsu?: string | boolean) {
+        // Jujutsu VCS 우선 사용 설정 (config에서 jujutsu=true 시 Git 대신 Jujutsu 우선 사용)
         if (typeof jujutsu === 'boolean') {
             return jujutsu;
         }
 
         if (jujutsu === undefined || jujutsu === null) {
-            return false;
+            return false; // 기본값: false (Git 우선)
         }
 
         parseAssert('jujutsu', /^(?:true|false)$/.test(jujutsu), 'Must be a boolean(true or false)');

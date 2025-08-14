@@ -178,11 +178,13 @@ const parseTemplate = (template: string, options: PromptOptions): string => {
 const defaultPrompt = (promptOptions: PromptOptions) => {
     const { type, maxLength, generate, locale } = promptOptions;
 
+    // Jujutsu vs Git 커밋 메시지 작성자 구분
     const systemDescription =
         type === 'jujutsu'
             ? `You are a Jujutsu commit message writer. You create simple, clear commit messages following Jujutsu's format.`
             : `You are an expert Git commit message writer specializing in analyzing code changes and creating precise, meaningful commit messages.`;
 
+    // 태스크 설명 - Jujutsu는 diff가 아닌 변경사항 기반으로 설명
     const taskDescription =
         type === 'jujutsu'
             ? `Generate exactly ${generate} Jujutsu-style commit message${generate !== 1 ? 's' : ''} based on the provided diff.`
@@ -198,15 +200,18 @@ const defaultPrompt = (promptOptions: PromptOptions) => {
                   `<topic>: <description>`,
                   '',
                   `## Rules:`,
+                  // Jujutsu 가이드라인: 컴포넌트/명령어/영역 기반 토픽 (https://jj-vcs.github.io/jj/latest/contributing/#commit-guidelines)
                   `- Topic: The component/command/area being modified (e.g., cli, docs, config, next/prev)`,
                   `- Description: Clear, imperative mood statement of what changed`,
                   `- Maximum ${maxLength} characters`,
                   `- Language: ${locale}`,
+                  // Jujutsu는 conventional commit 형식을 사용하지 않음
                   `- Focus on clarity and simplicity - no conventional commit types or emojis`,
                   `- Each commit should do one thing`,
                   `- Explain the reason for change when not obvious`,
                   '',
                   `## Examples from Jujutsu's actual commits:`,
+                  // Jujutsu 프로젝트의 실제 커밋 메시지 예시
                   `- "cli: make jj abandon print abandoned commit info"`,
                   `- "docs: mention that @ can be used in revsets"`,
                   `- "backend: make commit signature a property of the backend"`,
