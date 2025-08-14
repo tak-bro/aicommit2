@@ -1,3 +1,5 @@
+## [2.4.3](https://github.com/tak-bro/aicommit2/compare/v2.4.2...v2.4.3) (2025-08-14)
+
 ## [2.4.2](https://github.com/tak-bro/aicommit2/compare/v2.4.1...v2.4.2) (2025-08-13)
 
 ### Features
