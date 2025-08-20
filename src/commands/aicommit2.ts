@@ -35,6 +35,7 @@ export default async (
     includeBody: boolean | undefined,
     autoSelect: boolean,
     edit: boolean,
+    disableLowerCase: boolean,
     rawArgv: string[]
 ) =>
     (async () => {
@@ -56,6 +57,7 @@ export default async (
                 type: commitType?.toString() as string,
                 systemPrompt: prompt?.toString() as string,
                 includeBody: includeBody?.toString() as string,
+                disableLowerCase: disableLowerCase?.toString() as string,
             },
             rawArgv
         );
@@ -66,6 +68,15 @@ export default async (
             Object.keys(config).forEach(key => {
                 if (typeof config[key] === 'object' && config[key] !== null && 'includeBody' in config[key]) {
                     (config[key] as any).includeBody = true;
+                }
+            });
+        }
+
+        // Override disableLowerCase setting for all models when --disable-lowercase flag is present
+        if (disableLowerCase) {
+            Object.keys(config).forEach(key => {
+                if (typeof config[key] === 'object' && config[key] !== null && 'disableLowerCase' in config[key]) {
+                    (config[key] as any).disableLowerCase = true;
                 }
             });
         }

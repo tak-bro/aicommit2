@@ -100,6 +100,11 @@ cli(
                 alias: 'e',
                 default: false,
             },
+            'disable-lowercase': {
+                type: Boolean,
+                description: 'Disable automatic lowercase conversion of commit messages',
+                default: false,
+            },
         },
 
         commands: [configCommand, githubLoginCommand, hookCommand, logCommand],
@@ -148,6 +153,7 @@ cli(
             argv.flags['include-body'],
             argv.flags['auto-select'],
             argv.flags.edit,
+            argv.flags['disable-lowercase'],
             rawArgv
         );
     },
