@@ -191,5 +191,46 @@ export default testSuite(({ describe }) => {
                 await fixture.rm();
             });
         });
+
+        await describe('disableLowerCase', ({ test }) => {
+            test('setting disableLowerCase to true', async () => {
+                const { fixture, aicommit2 } = await createFixture();
+                const { stdout } = await aicommit2(['config', 'path']);
+                const disableLowerCase = 'disableLowerCase=true';
+                await aicommit2(['config', 'set', disableLowerCase]);
+
+                const configFile = await fs.readFile(stdout, 'utf8');
+                expect(configFile).toMatch(disableLowerCase);
+
+                // Check if config get command exits successfully
+                const { exitCode } = await aicommit2(['config', 'get', 'disableLowerCase']);
+                expect(exitCode).toBe(0);
+                await fixture.rm();
+            });
+
+            test('setting disableLowerCase to false', async () => {
+                const { fixture, aicommit2 } = await createFixture();
+                const { stdout } = await aicommit2(['config', 'path']);
+                const disableLowerCase = 'disableLowerCase=false';
+                await aicommit2(['config', 'set', disableLowerCase]);
+
+                const configFile = await fs.readFile(stdout, 'utf8');
+                expect(configFile).toMatch(disableLowerCase);
+
+                // Check if config get command exits successfully
+                const { exitCode } = await aicommit2(['config', 'get', 'disableLowerCase']);
+                expect(exitCode).toBe(0);
+                await fixture.rm();
+            });
+
+            test('setting invalid disableLowerCase config', async () => {
+                const { fixture, aicommit2 } = await createFixture();
+                const { stdout } = await aicommit2(['config', 'set', 'disableLowerCase=invalid'], {
+                    reject: false,
+                });
+                expect(stdout).toMatch('\n✖ Invalid config property disableLowerCase: Must be a boolean(true or false)');
+                await fixture.rm();
+            });
+        });
     });
 });

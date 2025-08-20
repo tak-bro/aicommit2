@@ -235,9 +235,10 @@ export abstract class AIService {
             case 'gitmoji':
                 const gitmojiTypePattern = /:\w*:\s*(.*)/;
                 const gitmojiMatch = data.subject.match(gitmojiTypePattern);
+                const disableLowerCase = this.params.config.disableLowerCase ?? false;
                 return {
                     ...data,
-                    subject: gitmojiMatch ? gitmojiMatch[0].toLowerCase() : data.subject,
+                    subject: gitmojiMatch && !disableLowerCase ? gitmojiMatch[0].toLowerCase() : data.subject,
                 };
             default:
                 return data;
@@ -250,8 +251,10 @@ export abstract class AIService {
 
         if (match) {
             const [, type, scope, description] = match;
+            const disableLowerCase = this.params.config.disableLowerCase ?? false;
+
             const normalizedType = type.toLowerCase();
-            const normalizedDescription = description.charAt(0).toLowerCase() + description.slice(1);
+            const normalizedDescription = disableLowerCase ? description : description.charAt(0).toLowerCase() + description.slice(1);
             message = `${normalizedType}${scope || ''}: ${normalizedDescription}`;
         }
 

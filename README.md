@@ -268,6 +268,9 @@ aicommit2 --all # or -a
   - When enabled and only one AI provider is configured, the generated message is automatically selected
   - Also skips the confirmation prompt for a seamless experience
   - Has no effect when multiple AI providers are configured
+- `--disable-lowercase`: Disable automatic lowercase conversion of commit messages (default: **false**)
+  - Preserves the original casing of commit types and descriptions
+  - Useful when working with custom commit conventions that require specific casing
 - `--hook-mode`: Run as a Git hook, typically used with prepare-commit-msg hook (default: **false**)
   - This mode is automatically enabled when running through the Git hook system
   - See [Git hook](#git-hook) section for more details
@@ -487,6 +490,7 @@ Please check the documentation for each specific model to confirm which settings
 | `logging`              | Enable logging                                                      | true         |
 | `includeBody`          | Whether the commit message includes body                            | false        |
 | `maxLength`            | Maximum character length of the Subject of generated commit message | 50           |
+| `disableLowerCase`     | Disable automatic lowercase conversion of commit messages           | false        |
 | `timeout`              | Request timeout (milliseconds)                                      | 10000        |
 | `temperature`          | Model's creativity (0.0 - 2.0)                                      | 0.7          |
 | `maxTokens`            | Maximum number of tokens to generate                                | 1024         |
@@ -632,6 +636,24 @@ Default: `50`
 aicommit2 config set maxLength=100
 ```
 
+##### disableLowerCase
+
+Disable automatic lowercase conversion of commit messages
+
+Default: `false`
+
+By default, AICommit2 converts the first character of commit types and descriptions to lowercase to follow conventional commit standards. Set this to `true` to preserve the original casing.
+
+```sh
+aicommit2 config set disableLowerCase=true
+```
+
+You can also use the CLI flag:
+
+```sh
+aicommit2 --disable-lowercase
+```
+
 ##### timeout
 
 The timeout for network requests in milliseconds.
@@ -737,7 +759,7 @@ aicommit2 config set codeReviewPromptPath="/path/to/user/prompt.txt"
 
 > All AI support the following options in General Settings.
 >
-> - systemPrompt, systemPromptPath, codeReview, codeReviewPromptPath, exclude, type, locale, generate, logging, includeBody, maxLength
+> - systemPrompt, systemPromptPath, codeReview, codeReviewPromptPath, exclude, type, locale, generate, logging, includeBody, maxLength, disableLowerCase
 
 ## Configuration Examples
 

@@ -350,6 +350,18 @@ const generalConfigParsers = {
         parseAssert('jujutsu', /^(?:true|false)$/.test(jujutsu), 'Must be a boolean(true or false)');
         return jujutsu === 'true';
     },
+    disableLowerCase(disableLowerCase?: string | boolean) {
+        if (typeof disableLowerCase === 'boolean') {
+            return disableLowerCase;
+        }
+
+        if (disableLowerCase === undefined || disableLowerCase === null) {
+            return false;
+        }
+
+        parseAssert('disableLowerCase', /^(?:true|false)$/.test(disableLowerCase), 'Must be a boolean(true or false)');
+        return disableLowerCase === 'true';
+    },
 } as const;
 
 const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>> = {
@@ -388,6 +400,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         codeReview: generalConfigParsers.codeReview,
         disabled: generalConfigParsers.disabled,
         watchMode: generalConfigParsers.watchMode,
+        disableLowerCase: generalConfigParsers.disableLowerCase,
     },
     HUGGINGFACE: {
         cookie: (cookie?: string) => cookie || '',
@@ -414,6 +427,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         codeReview: generalConfigParsers.codeReview,
         disabled: generalConfigParsers.disabled,
         watchMode: generalConfigParsers.watchMode,
+        disableLowerCase: generalConfigParsers.disableLowerCase,
     },
     GEMINI: {
         key: (key?: string) => key || '',
@@ -440,6 +454,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         codeReview: generalConfigParsers.codeReview,
         disabled: generalConfigParsers.disabled,
         watchMode: generalConfigParsers.watchMode,
+        disableLowerCase: generalConfigParsers.disableLowerCase,
     },
     ANTHROPIC: {
         key: (key?: string) => key || '',
@@ -466,6 +481,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         codeReview: generalConfigParsers.codeReview,
         disabled: generalConfigParsers.disabled,
         watchMode: generalConfigParsers.watchMode,
+        disableLowerCase: generalConfigParsers.disableLowerCase,
     },
     MISTRAL: {
         key: (key?: string) => key || '',
@@ -493,6 +509,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         codeReview: generalConfigParsers.codeReview,
         disabled: generalConfigParsers.disabled,
         watchMode: generalConfigParsers.watchMode,
+        disableLowerCase: generalConfigParsers.disableLowerCase,
     },
     CODESTRAL: {
         key: (key?: string) => key || '',
@@ -520,6 +537,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         codeReview: generalConfigParsers.codeReview,
         disabled: generalConfigParsers.disabled,
         watchMode: generalConfigParsers.watchMode,
+        disableLowerCase: generalConfigParsers.disableLowerCase,
     },
     OLLAMA: {
         model: (models?: string | string[]): string[] => {
@@ -576,6 +594,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         codeReview: generalConfigParsers.codeReview,
         disabled: generalConfigParsers.disabled,
         watchMode: generalConfigParsers.watchMode,
+        disableLowerCase: generalConfigParsers.disableLowerCase,
     },
     COHERE: {
         key: (key?: string) => key || '',
@@ -602,6 +621,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         codeReview: generalConfigParsers.codeReview,
         disabled: generalConfigParsers.disabled,
         watchMode: generalConfigParsers.watchMode,
+        disableLowerCase: generalConfigParsers.disableLowerCase,
     },
     GROQ: {
         key: (key?: string) => key || '',
@@ -629,6 +649,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         codeReview: generalConfigParsers.codeReview,
         disabled: generalConfigParsers.disabled,
         watchMode: generalConfigParsers.watchMode,
+        disableLowerCase: generalConfigParsers.disableLowerCase,
     },
     PERPLEXITY: {
         key: (key?: string) => key || '',
@@ -656,6 +677,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         codeReview: generalConfigParsers.codeReview,
         disabled: generalConfigParsers.disabled,
         watchMode: generalConfigParsers.watchMode,
+        disableLowerCase: generalConfigParsers.disableLowerCase,
     },
     DEEPSEEK: {
         key: (key?: string) => key || '',
@@ -684,6 +706,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         codeReview: generalConfigParsers.codeReview,
         disabled: generalConfigParsers.disabled,
         watchMode: generalConfigParsers.watchMode,
+        disableLowerCase: generalConfigParsers.disableLowerCase,
     },
     GITHUB_MODELS: {
         key: (key?: string) => key || '',
@@ -711,6 +734,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         codeReview: generalConfigParsers.codeReview,
         disabled: generalConfigParsers.disabled,
         watchMode: generalConfigParsers.watchMode,
+        disableLowerCase: generalConfigParsers.disableLowerCase,
     },
 };
 
@@ -1042,4 +1066,5 @@ const createConfigParser = (serviceName: string) => ({
     codeReview: generalConfigParsers.codeReview,
     disabled: generalConfigParsers.disabled,
     watchMode: generalConfigParsers.watchMode,
+    disableLowerCase: generalConfigParsers.disableLowerCase,
 });
