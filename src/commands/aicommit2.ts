@@ -299,14 +299,35 @@ async function openEditor(message: string): Promise<string> {
         await execa(editor, [tempFile], { stdio: 'inherit' });
         const editedMessage = fs.readFileSync(tempFile, 'utf8').trim();
         fs.unlinkSync(tempFile);
+
+        if (!editedMessage) {
+            throw new KnownError('Commit cancelled - empty message');
+        }
+
         return editedMessage;
     } catch (error) {
         if (fs.existsSync(tempFile)) {
             fs.unlinkSync(tempFile);
         }
-        throw new KnownError(
-            `Failed to open editor "${editor}". Make sure your EDITOR or VISUAL environment variable is set to a valid editor command, or the default editor is available.`
-        );
+
+        if (error instanceof KnownError) {
+            throw error;
+        }
+
+        if (error && typeof error === 'object' && 'exitCode' in error) {
+            if ((error as any).exitCode !== 0) {
+                throw new KnownError('Commit cancelled');
+            }
+        }
+
+        const hasEditorEnv = process.env.VISUAL || process.env.EDITOR;
+        if (!hasEditorEnv) {
+            throw new KnownError(
+                `Failed to open editor "${editor}". Please set your EDITOR or VISUAL environment variable to a valid editor command.`
+            );
+        } else {
+            throw new KnownError(`Failed to open editor "${editor}". Please check that the editor command is valid and available.`);
+        }
     }
 }
 

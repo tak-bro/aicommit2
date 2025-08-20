@@ -198,7 +198,7 @@ const defaultPrompt = (promptOptions: PromptOptions) => {
                   `<topic>: <description>`,
                   '',
                   `## Rules:`,
-                  `- Topic: The component/command/area being modified (e.g., cli, docs, config, next/prev)`,
+                  `- Topic: The module/feature/scope being changed (e.g., cli, docs, config, next/prev)`,
                   `- Description: Clear, imperative mood statement of what changed`,
                   `- Maximum ${maxLength} characters`,
                   `- Language: ${locale}`,
@@ -384,8 +384,8 @@ export const validateSystemPrompt = async (config: ValidConfig) => {
 
 export const generateUserPrompt = (diff: string, requestType: 'commit' | 'review' = 'commit'): string => {
     if (requestType === 'review') {
-        return `Please analyze the following git diff and provide a comprehensive code review:\n\n\`\`\`diff\n${diff}\n\`\`\`\n\nFocus on code quality, potential issues, and improvement suggestions.`;
+        return `Please analyze the following diff and provide a comprehensive code review:\n\n\`\`\`diff\n${diff}\n\`\`\`\n\nFocus on code quality, potential issues, and improvement suggestions.`;
     }
 
-    return `Please analyze the following git diff and generate commit message(s) based on the changes:\n\n\`\`\`diff\n${diff}\n\`\`\`\n\nFocus on understanding the purpose and impact of these changes to create meaningful commit message(s).`;
+    return `Please analyze the following diff and generate commit message(s) based on the changes:\n\n\`\`\`diff\n${diff}\n\`\`\`\n\nFocus on understanding the purpose and impact of these changes to create meaningful commit message(s).`;
 };
