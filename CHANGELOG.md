@@ -1,3 +1,10 @@
+## [2.4.5](https://github.com/tak-bro/aicommit2/compare/v2.4.4...v2.4.5) (2025-08-25)
+
+
+### Bug Fixes
+
+* **config:** use correct path for macOS config dir ([8a1a6ff](https://github.com/tak-bro/aicommit2/commit/8a1a6ffb07a951a93719df83b5c5a33261874c82))
+
 ## [2.4.4](https://github.com/tak-bro/aicommit2/compare/v2.4.3...v2.4.4) (2025-08-20)
 
 ### Features
