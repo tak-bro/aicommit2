@@ -1,9 +1,8 @@
 ## [2.4.4](https://github.com/tak-bro/aicommit2/compare/v2.4.3...v2.4.4) (2025-08-20)
 
-
 ### Features
 
-* add disable-lowercase flag and config option ([2b9a45d](https://github.com/tak-bro/aicommit2/commit/2b9a45d1f2750f2c2070e7b3e856872120e8edad))
+- add disable-lowercase flag and config option ([2b9a45d](https://github.com/tak-bro/aicommit2/commit/2b9a45d1f2750f2c2070e7b3e856872120e8edad))
 
 ## [2.4.3](https://github.com/tak-bro/aicommit2/compare/v2.4.2...v2.4.3) (2025-08-14)
 
