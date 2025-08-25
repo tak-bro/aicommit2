@@ -81,7 +81,7 @@ const getXdgBaseDirectory = (type: 'config' | 'data' | 'cache' | 'state'): strin
         if (type === 'cache') {
             platformFallback = path.join(homeDir, 'Library', 'Caches');
         } else {
-            platformFallback = path.join(homeDir, 'Application Support');
+            platformFallback = path.join(homeDir, 'Library', 'Application Support');
         }
     } else if (platform === 'win32') {
         // Windows
