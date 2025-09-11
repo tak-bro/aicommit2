@@ -22,7 +22,7 @@ export class SubscriptionManager {
         observable: Observable<T>,
         observer?: {
             next?: (value: T) => void;
-            error?: (error: any) => void;
+            error?: (error: Error) => void;
             complete?: () => void;
         }
     ): Subscription {

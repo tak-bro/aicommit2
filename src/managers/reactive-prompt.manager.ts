@@ -43,13 +43,24 @@ export class ReactivePromptManager {
     private stopMessage = 'Changes analyzed';
     private isDestroyed = false;
     private subscriptions: Subscription = new Subscription();
-    inquirerInstance: any = null;
+    inquirerInstance: Promise<any> | null = null;
 
     constructor(loader: ReactiveListLoader) {
         this.loader$ = new BehaviorSubject<ReactiveListLoader>(loader);
     }
 
-    initPrompt(options: any = DEFAULT_INQUIRER_OPTIONS) {
+    /**
+     * Add subscription with automatic cleanup on destroy
+     */
+    addSubscription(subscription: Subscription): void {
+        if (this.isDestroyed) {
+            subscription.unsubscribe();
+            return;
+        }
+        this.subscriptions.add(subscription);
+    }
+
+    initPrompt(options: typeof DEFAULT_INQUIRER_OPTIONS = DEFAULT_INQUIRER_OPTIONS) {
         this.stopMessage = options.stopMessage;
 
         inquirer.registerPrompt('reactiveListPrompt', ReactiveListPrompt);
@@ -74,6 +85,10 @@ export class ReactivePromptManager {
     }
 
     refreshChoices(choice: ReactiveListChoice) {
+        if (this.isDestroyed) {
+            return;
+        }
+
         const { value, isError } = choice;
         if (!choice || !value) {
             return;
@@ -97,10 +112,19 @@ export class ReactivePromptManager {
     }
 
     completeSubject() {
-        this.choices$.complete();
-        this.loader$.complete();
-        this.destroyed$.next(true);
-        this.destroyed$.complete();
+        try {
+            this.destroyed$.next(true);
+            this.destroyed$.complete();
+
+            if (!this.choices$.closed) {
+                this.choices$.complete();
+            }
+            if (!this.loader$.closed) {
+                this.loader$.complete();
+            }
+        } catch (error) {
+            console.warn('Error completing subjects:', error);
+        }
     }
 
     closeInquirerInstance() {
@@ -117,14 +141,22 @@ export class ReactivePromptManager {
     }
 
     destroy() {
-        if (this.isDestroyed) {return;}
+        if (this.isDestroyed) {
+            return;
+        }
 
         this.isDestroyed = true;
-        this.cancel();
-        this.closeInquirerInstance();
-        this.subscriptions.unsubscribe();
-        this.completeSubject();
-        this.inquirerInstance = null;
+
+        try {
+            this.cancel();
+            this.closeInquirerInstance();
+            this.subscriptions.unsubscribe();
+            this.completeSubject();
+        } catch (error) {
+            console.warn('Error during ReactivePromptManager destruction:', error);
+        } finally {
+            this.inquirerInstance = null;
+        }
     }
 
     private alertNoGeneratedMessage() {
