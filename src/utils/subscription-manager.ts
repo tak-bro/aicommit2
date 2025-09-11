@@ -28,7 +28,9 @@ export class SubscriptionManager {
     ): Subscription {
         if (this.isDestroyed) {
             console.warn(`${this.name}: Cannot add subscription - manager is destroyed`);
-            return new Subscription();
+            const emptySubscription = new Subscription();
+            emptySubscription.unsubscribe();
+            return emptySubscription;
         }
 
         const subscription = observable

@@ -166,7 +166,7 @@ your `devcontainer.json` file:
 
 ```json
 "features": {
-"ghcr.io/kvokka/features/aicommit2:1": {}
+  "ghcr.io/kvokka/features/aicommit2:1": {}
 }
 ```
 
