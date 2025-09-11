@@ -129,14 +129,15 @@ Add aicommit2 to your flake inputs:
   };
   # Rest of your flake.nix file
 }
+```
 
-  # Somewhere where you define your packages
-  {pkgs, inputs, ...}:{
-
+```nix
+# Somewhere where you define your packages
+{pkgs, inputs, ...}:{
   environment.systemPackages = [inputs.aicommit2.packages.x86_64-linux.default];
   # Or home packages
   home.packages = [inputs.aicommit2.packages.x86_64-linux.default];
-  }
+}
 ```
 
 ##### Development Environment
