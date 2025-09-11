@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 import ReactiveListPrompt, { ChoiceItem, ReactiveListChoice, ReactiveListLoader } from 'inquirer-reactive-list-prompt';
-import { BehaviorSubject, ReplaySubject } from 'rxjs';
+import { BehaviorSubject, ReplaySubject, Subscription } from 'rxjs';
 
 import { sortByDisabled } from '../utils/utils.js';
 
@@ -41,6 +41,8 @@ export class ReactivePromptManager {
     private loader$: BehaviorSubject<ReactiveListLoader>;
     private destroyed$: ReplaySubject<boolean> = new ReplaySubject(1);
     private stopMessage = 'Changes analyzed';
+    private isDestroyed = false;
+    private subscriptions: Subscription = new Subscription();
     inquirerInstance: any = null;
 
     constructor(loader: ReactiveListLoader) {
@@ -112,6 +114,17 @@ export class ReactivePromptManager {
         if (this.inquirerInstance?.ui?.activePrompt) {
             (this.inquirerInstance.ui.activePrompt as ReactiveListPrompt<any>).abortPrompt();
         }
+    }
+
+    destroy() {
+        if (this.isDestroyed) {return;}
+
+        this.isDestroyed = true;
+        this.cancel();
+        this.closeInquirerInstance();
+        this.subscriptions.unsubscribe();
+        this.completeSubject();
+        this.inquirerInstance = null;
     }
 
     private alertNoGeneratedMessage() {
