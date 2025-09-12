@@ -1,3 +1,10 @@
+## [2.4.6](https://github.com/tak-bro/aicommit2/compare/v2.4.5...v2.4.6) (2025-09-12)
+
+
+### Features
+
+* prevents memory leaks and refactor code ([2dfab71](https://github.com/tak-bro/aicommit2/commit/2dfab716d5e0b5cfdc294aba27bc47f0ba7809f4))
+
 ## [2.4.5](https://github.com/tak-bro/aicommit2/compare/v2.4.4...v2.4.5) (2025-08-25)
 
 ### Bug Fixes
