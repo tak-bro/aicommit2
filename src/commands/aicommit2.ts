@@ -62,7 +62,6 @@ export default async (
             rawArgv
         );
 
-        // Override includeBody setting for all models when --include-body flag is present
         const shouldIncludeBody = includeBody === true || config.includeBody === true;
         if (shouldIncludeBody) {
             Object.keys(config).forEach(key => {
@@ -72,7 +71,6 @@ export default async (
             });
         }
 
-        // Override disableLowerCase setting for all models when --disable-lowercase flag is present
         if (disableLowerCase) {
             Object.keys(config).forEach(key => {
                 if (typeof config[key] === 'object' && config[key] !== null && 'disableLowerCase' in config[key]) {
@@ -108,7 +106,6 @@ export default async (
 
         let selectedCommitMessage = await handleCommitMessage(aiRequestManager, availableAIs, autoSelect);
 
-        // Handle edit flag - open editor to modify the AI-generated message
         if (edit) {
             consoleManager.printInfo('Opening editor to modify commit message...');
             selectedCommitMessage = await openEditor(selectedCommitMessage);
@@ -186,108 +183,124 @@ function getAvailableAIs(config: ValidConfig, requestType: RequestType): ModelNa
 
 async function handleCodeReview(aiRequestManager: AIRequestManager, availableAIs: ModelName[]) {
     const codeReviewPromptManager = new ReactivePromptManager(codeReviewLoader);
-    const codeReviewInquirer = codeReviewPromptManager.initPrompt({
-        ...DEFAULT_INQUIRER_OPTIONS,
-        name: 'codeReviewPrompt',
-        message: 'Please check code reviews: ',
-        emptyMessage: `⚠ ${emptyCodeReview}`,
-        isDescriptionDim: false,
-        stopMessage: 'Code review completed',
-        descPageSize: 20,
-    });
+    let codeReviewSubscription: Subscription | null = null;
 
-    codeReviewPromptManager.startLoader();
-    const codeReviewSubscription = aiRequestManager.createCodeReviewRequests$(availableAIs).subscribe(
-        (choice: ReactiveListChoice) => codeReviewPromptManager.refreshChoices(choice),
-        () => {
-            /* empty */
-        },
-        () => codeReviewPromptManager.checkErrorOnChoices()
-    );
+    try {
+        const codeReviewInquirer = codeReviewPromptManager.initPrompt({
+            ...DEFAULT_INQUIRER_OPTIONS,
+            name: 'codeReviewPrompt',
+            message: 'Please check code reviews: ',
+            emptyMessage: `⚠ ${emptyCodeReview}`,
+            isDescriptionDim: false,
+            stopMessage: 'Code review completed',
+            descPageSize: 20,
+        });
 
-    const codeReviewInquirerResult = await codeReviewInquirer;
-    const selectedCodeReview = codeReviewInquirerResult.codeReviewPrompt?.value;
-    if (!selectedCodeReview) {
-        throw new KnownError('An error occurred! No selected code review');
-    }
-    codeReviewSubscription.unsubscribe();
-    codeReviewPromptManager.completeSubject();
-    consoleManager.moveCursorUp(); // NOTE: reactiveListPrompt has 2 blank lines
+        codeReviewPromptManager.startLoader();
 
-    const { continuePrompt } = await inquirer.prompt([
-        {
-            type: 'confirm',
-            name: 'continuePrompt',
-            message: `Will you continue without changing the code?`,
-            default: true,
-        },
-    ]);
+        codeReviewSubscription = aiRequestManager.createCodeReviewRequests$(availableAIs).subscribe({
+            next: (choice: ReactiveListChoice) => codeReviewPromptManager.refreshChoices(choice),
+            error: error => {
+                console.error('Code review request error:', error);
+                codeReviewPromptManager.checkErrorOnChoices();
+            },
+            complete: () => codeReviewPromptManager.checkErrorOnChoices(),
+        });
 
-    if (!continuePrompt) {
-        consoleManager.printCancelledCommit();
-        process.exit();
+        const codeReviewInquirerResult = await codeReviewInquirer;
+        const selectedCodeReview = codeReviewInquirerResult.codeReviewPrompt?.value;
+
+        if (!selectedCodeReview) {
+            throw new KnownError('An error occurred! No selected code review');
+        }
+
+        consoleManager.moveCursorUp();
+
+        const { continuePrompt } = await inquirer.prompt([
+            {
+                type: 'confirm',
+                name: 'continuePrompt',
+                message: `Will you continue without changing the code?`,
+                default: true,
+            },
+        ]);
+
+        if (!continuePrompt) {
+            consoleManager.printCancelledCommit();
+            process.exit();
+        }
+    } finally {
+        if (codeReviewSubscription) {
+            codeReviewSubscription.unsubscribe();
+        }
+        codeReviewPromptManager.destroy();
     }
 }
 
 async function handleCommitMessage(aiRequestManager: AIRequestManager, availableAIs: ModelName[], autoSelect: boolean) {
     const commitMsgPromptManager = new ReactivePromptManager(commitMsgLoader);
+    let commitMsgSubscription: Subscription | null = null;
 
-    // If auto-select is enabled and only 1 AI model is available, collect messages without prompt
-    if (autoSelect && availableAIs.length === 1) {
-        const messages: ReactiveListChoice[] = [];
-        commitMsgPromptManager.startLoader();
+    try {
+        if (autoSelect && availableAIs.length === 1) {
+            const messages: ReactiveListChoice[] = [];
+            commitMsgPromptManager.startLoader();
 
-        const commitMsgSubscription = aiRequestManager.createCommitMsgRequests$(availableAIs).subscribe(
-            (choice: ReactiveListChoice) => {
-                messages.push(choice);
-                commitMsgPromptManager.refreshChoices(choice);
-            },
-            () => {
-                /* empty */
-            },
-            () => commitMsgPromptManager.checkErrorOnChoices(false)
-        );
+            commitMsgSubscription = aiRequestManager.createCommitMsgRequests$(availableAIs).subscribe({
+                next: (choice: ReactiveListChoice) => {
+                    messages.push(choice);
+                    commitMsgPromptManager.refreshChoices(choice);
+                },
+                error: error => {
+                    console.error('Commit message generation error:', error);
+                    commitMsgPromptManager.checkErrorOnChoices(false);
+                },
+                complete: () => commitMsgPromptManager.checkErrorOnChoices(false),
+            });
 
-        // Wait for all messages to be generated
-        await new Promise<void>(resolve => {
-            commitMsgSubscription.add(() => resolve());
-        });
+            await new Promise<void>(resolve => {
+                commitMsgSubscription?.add(() => resolve());
+            });
 
-        commitMsgPromptManager.clearLoader();
-        commitMsgPromptManager.completeSubject();
+            commitMsgPromptManager.clearLoader();
 
-        consoleManager.moveCursorUp(); // NOTE: reactiveListPrompt has 2 blank lines
-        const validMessage = messages.find(msg => msg.value && !msg.isError && !msg.disabled);
-        if (!validMessage || !validMessage.value) {
-            throw new KnownError('No valid commit message was generated');
+            consoleManager.moveCursorUp(); // NOTE: reactiveListPrompt has 2 blank lines
+            const validMessage = messages.find(msg => msg.value && !msg.isError && !msg.disabled);
+            if (!validMessage || !validMessage.value) {
+                throw new KnownError('No valid commit message was generated');
+            }
+
+            consoleManager.print(`\n${validMessage.name}\n`);
+            return validMessage.value;
         }
 
-        consoleManager.print(`\n${validMessage.name}\n`);
-        return validMessage.value;
+        const commitMsgInquirer = commitMsgPromptManager.initPrompt();
+
+        commitMsgPromptManager.startLoader();
+        commitMsgSubscription = aiRequestManager.createCommitMsgRequests$(availableAIs).subscribe({
+            next: (choice: ReactiveListChoice) => commitMsgPromptManager.refreshChoices(choice),
+            error: error => {
+                console.error('Commit message generation error:', error);
+                commitMsgPromptManager.checkErrorOnChoices();
+            },
+            complete: () => commitMsgPromptManager.checkErrorOnChoices(),
+        });
+
+        const commitMsgInquirerResult = await commitMsgInquirer;
+
+        consoleManager.moveCursorUp(); // NOTE: reactiveListPrompt has 2 blank lines
+        const selectedCommitMessage = commitMsgInquirerResult.aicommit2Prompt?.value;
+        if (!selectedCommitMessage) {
+            throw new KnownError('An error occurred! No selected message');
+        }
+
+        return selectedCommitMessage;
+    } finally {
+        if (commitMsgSubscription) {
+            commitMsgSubscription.unsubscribe();
+        }
+        commitMsgPromptManager.destroy();
     }
-
-    const commitMsgInquirer = commitMsgPromptManager.initPrompt();
-
-    commitMsgPromptManager.startLoader();
-    const commitMsgSubscription = aiRequestManager.createCommitMsgRequests$(availableAIs).subscribe(
-        (choice: ReactiveListChoice) => commitMsgPromptManager.refreshChoices(choice),
-        () => {
-            /* empty */
-        },
-        () => commitMsgPromptManager.checkErrorOnChoices()
-    );
-
-    const commitMsgInquirerResult = await commitMsgInquirer;
-    commitMsgSubscription.unsubscribe();
-    commitMsgPromptManager.completeSubject();
-
-    consoleManager.moveCursorUp(); // NOTE: reactiveListPrompt has 2 blank lines
-    const selectedCommitMessage = commitMsgInquirerResult.aicommit2Prompt?.value;
-    if (!selectedCommitMessage) {
-        throw new KnownError('An error occurred! No selected message');
-    }
-
-    return selectedCommitMessage;
 }
 
 async function openEditor(message: string): Promise<string> {

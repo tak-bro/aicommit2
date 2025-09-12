@@ -26,221 +26,132 @@ export class AIRequestManager {
     ) {}
 
     createCommitMsgRequests$(modelNames: ModelName[]): Observable<ReactiveListChoice> {
-        return from(modelNames).pipe(
-            mergeMap(ai => {
-                const config = this.config[ai];
-                const models = Array.isArray(config.model) ? config.model : [config.model]; // Ensure models is always an array
-
-                return from(models).pipe(
-                    // Iterate over the models for this service
-                    mergeMap(model => {
-                        // Now create the service instance for the specific model
-                        if (config.compatible) {
-                            return AIServiceFactory.create(OpenAICompatibleService, {
-                                config: {
-                                    ...config,
-                                    url: config.url || '',
-                                    path: config.path || '',
-                                    model: model, // Pass the single model name to the service
-                                },
-                                stagedDiff: this.stagedDiff,
-                                keyName: model as ModelName, // Use the model name as keyName
-                            }).generateCommitMessage$();
-                        }
-
-                        switch (ai) {
-                            case 'OPENAI':
-                                return AIServiceFactory.create(OpenAIService, {
-                                    config: { ...this.config.OPENAI, model: model }, // Pass the single model name
-                                    stagedDiff: this.stagedDiff,
-                                    keyName: model as ModelName, // Use the model name as keyName
-                                }).generateCommitMessage$();
-                            case 'GEMINI':
-                                return AIServiceFactory.create(GeminiService, {
-                                    config: { ...this.config.GEMINI, model: model }, // Pass the single model name
-                                    stagedDiff: this.stagedDiff,
-                                    keyName: model as ModelName, // Use the model name as keyName
-                                }).generateCommitMessage$();
-                            case 'ANTHROPIC':
-                                return AIServiceFactory.create(AnthropicService, {
-                                    config: { ...this.config.ANTHROPIC, model: model }, // Pass the single model name
-                                    stagedDiff: this.stagedDiff,
-                                    keyName: model as ModelName, // Use the model name as keyName
-                                }).generateCommitMessage$();
-                            case 'HUGGINGFACE':
-                                return AIServiceFactory.create(HuggingFaceService, {
-                                    config: { ...this.config.HUGGINGFACE, model: model }, // Pass the single model name
-                                    stagedDiff: this.stagedDiff,
-                                    keyName: model as ModelName, // Use the model name as keyName
-                                }).generateCommitMessage$();
-                            case 'MISTRAL':
-                                return AIServiceFactory.create(MistralService, {
-                                    config: { ...this.config.MISTRAL, model: model }, // Pass the single model name
-                                    stagedDiff: this.stagedDiff,
-                                    keyName: model as ModelName, // Use the model name as keyName
-                                }).generateCommitMessage$();
-                            case 'CODESTRAL':
-                                return AIServiceFactory.create(CodestralService, {
-                                    config: { ...this.config.CODESTRAL, model: model }, // Pass the single model name
-                                    stagedDiff: this.stagedDiff,
-                                    keyName: model as ModelName, // Use the model name as keyName
-                                }).generateCommitMessage$();
-                            case 'OLLAMA':
-                                return AIServiceFactory.create(OllamaService, {
-                                    config: { ...this.config.OLLAMA, model: model }, // Pass the single model name
-                                    keyName: model as ModelName, // Use the model name as keyName
-                                    stagedDiff: this.stagedDiff,
-                                }).generateCommitMessage$();
-                            case 'COHERE':
-                                return AIServiceFactory.create(CohereService, {
-                                    config: { ...this.config.COHERE, model: model }, // Pass the single model name
-                                    stagedDiff: this.stagedDiff,
-                                    keyName: model as ModelName, // Use the model name as keyName
-                                }).generateCommitMessage$();
-                            case 'GROQ':
-                                return AIServiceFactory.create(GroqService, {
-                                    config: { ...this.config.GROQ, model: model }, // Pass the single model name
-                                    stagedDiff: this.stagedDiff,
-                                    keyName: model as ModelName, // Use the model name as keyName
-                                }).generateCommitMessage$();
-                            case 'PERPLEXITY':
-                                return AIServiceFactory.create(PerplexityService, {
-                                    config: { ...this.config.PERPLEXITY, model: model }, // Pass the single model name
-                                    stagedDiff: this.stagedDiff,
-                                    keyName: model as ModelName, // Use the model name as keyName
-                                }).generateCommitMessage$();
-                            case 'GITHUB_MODELS':
-                                return AIServiceFactory.create(GitHubModelsService, {
-                                    config: { ...this.config.GITHUB_MODELS, model: model }, // Pass the single model name
-                                    stagedDiff: this.stagedDiff,
-                                    keyName: model as ModelName, // Use the model name as keyName
-                                }).generateCommitMessage$();
-                            case 'DEEPSEEK':
-                                return AIServiceFactory.create(DeepSeekService, {
-                                    config: { ...this.config.DEEPSEEK, model: model }, // Pass the single model name
-                                    stagedDiff: this.stagedDiff,
-                                    keyName: model as ModelName, // Use the model name as keyName
-                                }).generateCommitMessage$();
-                            default:
-                                const prefixError = chalk.red.bold(`[${ai}]`);
-                                return of({
-                                    name: prefixError + ' Invalid AI type',
-                                    value: 'Invalid AI type',
-                                    isError: true,
-                                    disabled: true,
-                                });
-                        }
-                    })
-                );
-            }),
-            catchError(err => {
-                const prefixError = chalk.red.bold(`[UNKNOWN]`);
-                return of({
-                    name: prefixError + ` ${err.message || ''}`,
-                    value: 'Unknown error',
-                    isError: true,
-                    disabled: true,
-                });
-            })
-        );
+        return this.createServiceRequests$(modelNames, 'commit');
     }
 
     createCodeReviewRequests$(modelNames: ModelName[]): Observable<ReactiveListChoice> {
+        return this.createServiceRequests$(modelNames, 'review');
+    }
+
+    private createServiceRequests$(modelNames: ModelName[], requestType: 'commit' | 'review'): Observable<ReactiveListChoice> {
         return from(modelNames).pipe(
             mergeMap(ai => {
                 const config = this.config[ai];
-                const models = Array.isArray(config.model) ? config.model : [config.model]; // Ensure models is always an array
+                const models = Array.isArray(config.model) ? config.model : [config.model];
 
                 return from(models).pipe(
-                    // Iterate over the models for this service
                     mergeMap(model => {
-                        // Now create the service instance for the specific model
                         if (config.compatible) {
-                            return AIServiceFactory.create(OpenAICompatibleService, {
+                            const service = AIServiceFactory.create(OpenAICompatibleService, {
                                 config: {
                                     ...config,
                                     url: config.url || '',
                                     path: config.path || '',
-                                    model: model, // Pass the single model name to the service
+                                    model: model,
                                 },
                                 stagedDiff: this.stagedDiff,
-                                keyName: model as ModelName, // Use the model name as keyName
-                            }).generateCodeReview$();
+                                keyName: model as ModelName,
+                            });
+                            return requestType === 'commit' ? service.generateCommitMessage$() : service.generateCodeReview$();
                         }
 
                         switch (ai) {
-                            case 'OPENAI':
-                                return AIServiceFactory.create(OpenAIService, {
-                                    config: { ...this.config.OPENAI, model: model }, // Pass the single model name
+                            case 'OPENAI': {
+                                const service = AIServiceFactory.create(OpenAIService, {
+                                    config: { ...this.config.OPENAI, model: model },
                                     stagedDiff: this.stagedDiff,
-                                    keyName: model as ModelName, // Use the model name as keyName
-                                }).generateCodeReview$();
-                            case 'GEMINI':
-                                return AIServiceFactory.create(GeminiService, {
-                                    config: { ...this.config.GEMINI, model: model }, // Pass the single model name
+                                    keyName: model as ModelName,
+                                });
+                                return requestType === 'commit' ? service.generateCommitMessage$() : service.generateCodeReview$();
+                            }
+                            case 'GEMINI': {
+                                const service = AIServiceFactory.create(GeminiService, {
+                                    config: { ...this.config.GEMINI, model: model },
                                     stagedDiff: this.stagedDiff,
-                                    keyName: model as ModelName, // Use the model name as keyName
-                                }).generateCodeReview$();
-                            case 'ANTHROPIC':
-                                return AIServiceFactory.create(AnthropicService, {
-                                    config: { ...this.config.ANTHROPIC, model: model }, // Pass the single model name
+                                    keyName: model as ModelName,
+                                });
+                                return requestType === 'commit' ? service.generateCommitMessage$() : service.generateCodeReview$();
+                            }
+                            case 'ANTHROPIC': {
+                                const service = AIServiceFactory.create(AnthropicService, {
+                                    config: { ...this.config.ANTHROPIC, model: model },
                                     stagedDiff: this.stagedDiff,
-                                    keyName: model as ModelName, // Use the model name as keyName
-                                }).generateCodeReview$();
-                            case 'HUGGINGFACE':
-                                return AIServiceFactory.create(HuggingFaceService, {
-                                    config: { ...this.config.HUGGINGFACE, model: model }, // Pass the single model name
+                                    keyName: model as ModelName,
+                                });
+                                return requestType === 'commit' ? service.generateCommitMessage$() : service.generateCodeReview$();
+                            }
+                            case 'HUGGINGFACE': {
+                                const service = AIServiceFactory.create(HuggingFaceService, {
+                                    config: { ...this.config.HUGGINGFACE, model: model },
                                     stagedDiff: this.stagedDiff,
-                                    keyName: model as ModelName, // Use the model name as keyName
-                                }).generateCodeReview$();
-                            case 'MISTRAL':
-                                return AIServiceFactory.create(MistralService, {
-                                    config: { ...this.config.MISTRAL, model: model }, // Pass the single model name
+                                    keyName: model as ModelName,
+                                });
+                                return requestType === 'commit' ? service.generateCommitMessage$() : service.generateCodeReview$();
+                            }
+                            case 'MISTRAL': {
+                                const service = AIServiceFactory.create(MistralService, {
+                                    config: { ...this.config.MISTRAL, model: model },
                                     stagedDiff: this.stagedDiff,
-                                    keyName: model as ModelName, // Use the model name as keyName
-                                }).generateCodeReview$();
-                            case 'CODESTRAL':
-                                return AIServiceFactory.create(CodestralService, {
-                                    config: { ...this.config.CODESTRAL, model: model }, // Pass the single model name
+                                    keyName: model as ModelName,
+                                });
+                                return requestType === 'commit' ? service.generateCommitMessage$() : service.generateCodeReview$();
+                            }
+                            case 'CODESTRAL': {
+                                const service = AIServiceFactory.create(CodestralService, {
+                                    config: { ...this.config.CODESTRAL, model: model },
                                     stagedDiff: this.stagedDiff,
-                                    keyName: model as ModelName, // Use the model name as keyName
-                                }).generateCodeReview$();
-                            case 'OLLAMA':
-                                return AIServiceFactory.create(OllamaService, {
-                                    config: { ...this.config.OLLAMA, model: model }, // Pass the single model name
-                                    keyName: model as ModelName, // Use the model name as keyName
+                                    keyName: model as ModelName,
+                                });
+                                return requestType === 'commit' ? service.generateCommitMessage$() : service.generateCodeReview$();
+                            }
+                            case 'OLLAMA': {
+                                const service = AIServiceFactory.create(OllamaService, {
+                                    config: { ...this.config.OLLAMA, model: model },
+                                    keyName: model as ModelName,
                                     stagedDiff: this.stagedDiff,
-                                }).generateCodeReview$();
-                            case 'COHERE':
-                                return AIServiceFactory.create(CohereService, {
-                                    config: { ...this.config.COHERE, model: model }, // Pass the single model name
+                                });
+                                return requestType === 'commit' ? service.generateCommitMessage$() : service.generateCodeReview$();
+                            }
+                            case 'COHERE': {
+                                const service = AIServiceFactory.create(CohereService, {
+                                    config: { ...this.config.COHERE, model: model },
                                     stagedDiff: this.stagedDiff,
-                                    keyName: model as ModelName, // Use the model name as keyName
-                                }).generateCodeReview$();
-                            case 'GROQ':
-                                return AIServiceFactory.create(GroqService, {
-                                    config: { ...this.config.GROQ, model: model }, // Pass the single model name
+                                    keyName: model as ModelName,
+                                });
+                                return requestType === 'commit' ? service.generateCommitMessage$() : service.generateCodeReview$();
+                            }
+                            case 'GROQ': {
+                                const service = AIServiceFactory.create(GroqService, {
+                                    config: { ...this.config.GROQ, model: model },
                                     stagedDiff: this.stagedDiff,
-                                    keyName: model as ModelName, // Use the model name as keyName
-                                }).generateCodeReview$();
-                            case 'PERPLEXITY':
-                                return AIServiceFactory.create(PerplexityService, {
-                                    config: { ...this.config.PERPLEXITY, model: model }, // Pass the single model name
+                                    keyName: model as ModelName,
+                                });
+                                return requestType === 'commit' ? service.generateCommitMessage$() : service.generateCodeReview$();
+                            }
+                            case 'PERPLEXITY': {
+                                const service = AIServiceFactory.create(PerplexityService, {
+                                    config: { ...this.config.PERPLEXITY, model: model },
                                     stagedDiff: this.stagedDiff,
-                                    keyName: model as ModelName, // Use the model name as keyName
-                                }).generateCodeReview$();
-                            case 'GITHUB_MODELS':
-                                return AIServiceFactory.create(GitHubModelsService, {
-                                    config: { ...this.config.GITHUB_MODELS, model: model }, // Pass the single model name
+                                    keyName: model as ModelName,
+                                });
+                                return requestType === 'commit' ? service.generateCommitMessage$() : service.generateCodeReview$();
+                            }
+                            case 'GITHUB_MODELS': {
+                                const service = AIServiceFactory.create(GitHubModelsService, {
+                                    config: { ...this.config.GITHUB_MODELS, model: model },
                                     stagedDiff: this.stagedDiff,
-                                    keyName: model as ModelName, // Use the model name as keyName
-                                }).generateCodeReview$();
-                            case 'DEEPSEEK':
-                                return AIServiceFactory.create(DeepSeekService, {
-                                    config: { ...this.config.DEEPSEEK, model: model }, // Pass the single model name
+                                    keyName: model as ModelName,
+                                });
+                                return requestType === 'commit' ? service.generateCommitMessage$() : service.generateCodeReview$();
+                            }
+                            case 'DEEPSEEK': {
+                                const service = AIServiceFactory.create(DeepSeekService, {
+                                    config: { ...this.config.DEEPSEEK, model: model },
                                     stagedDiff: this.stagedDiff,
-                                    keyName: model as ModelName, // Use the model name as keyName
-                                }).generateCodeReview$();
+                                    keyName: model as ModelName,
+                                });
+                                return requestType === 'commit' ? service.generateCommitMessage$() : service.generateCodeReview$();
+                            }
                             default:
                                 const prefixError = chalk.red.bold(`[${ai}]`);
                                 return of({

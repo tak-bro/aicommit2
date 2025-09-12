@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 import ReactiveListPrompt, { ChoiceItem, ReactiveListChoice, ReactiveListLoader } from 'inquirer-reactive-list-prompt';
-import { BehaviorSubject, ReplaySubject } from 'rxjs';
+import { BehaviorSubject, ReplaySubject, Subscription } from 'rxjs';
 
 import { sortByDisabled } from '../utils/utils.js';
 
@@ -41,13 +41,26 @@ export class ReactivePromptManager {
     private loader$: BehaviorSubject<ReactiveListLoader>;
     private destroyed$: ReplaySubject<boolean> = new ReplaySubject(1);
     private stopMessage = 'Changes analyzed';
-    inquirerInstance: any = null;
+    private isDestroyed = false;
+    private subscriptions: Subscription = new Subscription();
+    inquirerInstance: Promise<any> | null = null;
 
     constructor(loader: ReactiveListLoader) {
         this.loader$ = new BehaviorSubject<ReactiveListLoader>(loader);
     }
 
-    initPrompt(options: any = DEFAULT_INQUIRER_OPTIONS) {
+    /**
+     * Add subscription with automatic cleanup on destroy
+     */
+    addSubscription(subscription: Subscription): void {
+        if (this.isDestroyed) {
+            subscription.unsubscribe();
+            return;
+        }
+        this.subscriptions.add(subscription);
+    }
+
+    initPrompt(options: typeof DEFAULT_INQUIRER_OPTIONS = DEFAULT_INQUIRER_OPTIONS) {
         this.stopMessage = options.stopMessage;
 
         inquirer.registerPrompt('reactiveListPrompt', ReactiveListPrompt);
@@ -72,6 +85,10 @@ export class ReactivePromptManager {
     }
 
     refreshChoices(choice: ReactiveListChoice) {
+        if (this.isDestroyed) {
+            return;
+        }
+
         const { value, isError } = choice;
         if (!choice || !value) {
             return;
@@ -95,10 +112,19 @@ export class ReactivePromptManager {
     }
 
     completeSubject() {
-        this.choices$.complete();
-        this.loader$.complete();
-        this.destroyed$.next(true);
-        this.destroyed$.complete();
+        try {
+            this.destroyed$.next(true);
+            this.destroyed$.complete();
+
+            if (!this.choices$.closed) {
+                this.choices$.complete();
+            }
+            if (!this.loader$.closed) {
+                this.loader$.complete();
+            }
+        } catch (error) {
+            console.warn('Error completing subjects:', error);
+        }
     }
 
     closeInquirerInstance() {
@@ -111,6 +137,25 @@ export class ReactivePromptManager {
     cancel() {
         if (this.inquirerInstance?.ui?.activePrompt) {
             (this.inquirerInstance.ui.activePrompt as ReactiveListPrompt<any>).abortPrompt();
+        }
+    }
+
+    destroy() {
+        if (this.isDestroyed) {
+            return;
+        }
+
+        this.isDestroyed = true;
+
+        try {
+            this.cancel();
+            this.closeInquirerInstance();
+            this.subscriptions.unsubscribe();
+            this.completeSubject();
+        } catch (error) {
+            console.warn('Error during ReactivePromptManager destruction:', error);
+        } finally {
+            this.inquirerInstance = null;
         }
     }
 

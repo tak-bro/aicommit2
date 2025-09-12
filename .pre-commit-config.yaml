@@ -3,21 +3,21 @@ exclude:
   (?x)^(
   __NONE__)$
 repos:
-  - repo: https://github.com/executablebooks/mdformat
-    # Do this before other tools "fixing" the line endings
-    rev: 0.7.22
-    hooks:
-      - id: mdformat
-        name: Format Markdown
-        entry: mdformat  # Executable to run, with fixed options
-        language: python
-        types: [markdown]
-        args: [--number]
-        additional_dependencies:
-          - mdformat-toc
-          - mdformat-gfm
-          - mdformat-beautysh
-          - setuptools
+#  - repo: https://github.com/executablebooks/mdformat
+#    # Do this before other tools "fixing" the line endings
+#    rev: 0.7.22
+#    hooks:
+#      - id: mdformat
+#        name: Format Markdown
+#        entry: mdformat  # Executable to run, with fixed options
+#        language: python
+#        types: [markdown]
+#        args: [--number]
+#        additional_dependencies:
+#          - mdformat-toc
+#          - mdformat-gfm
+#          - mdformat-beautysh
+#          - setuptools
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
