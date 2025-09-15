@@ -250,6 +250,24 @@ class WatchGitManager {
         this.consoleManager.showLoader('Watching for new Git commits...');
     }
 
+    private cancelCurrentReview(): void {
+        if (this.currentCodeReviewPromptManager) {
+            // Cancel the current prompt using the ReactivePromptManager's cancel method
+            this.currentCodeReviewPromptManager.cancel();
+
+            // Clean up subscriptions
+            this.currentCodeReviewSubscription?.unsubscribe();
+            this.currentCodeReviewPromptManager.destroy();
+            this.currentCodeReviewPromptManager = null;
+            this.currentCodeReviewSubscription = null;
+        }
+
+        // Clean up the destroyed subject and recreate it
+        this.destroyed$.next();
+        this.destroyed$.complete();
+        this.destroyed$ = new Subject<void>();
+    }
+
     private async watchGitEvents(config: ValidConfig): Promise<void> {
         this.consoleManager.showLoader('Watching for new Git commits...');
 
@@ -295,11 +313,6 @@ class WatchGitManager {
     }
 
     private async handleGitChange(config: ValidConfig, changedPath: string): Promise<void> {
-        // Avoid processing multiple events for the same commit
-        if (this.isProcessingCommit) {
-            return;
-        }
-
         try {
             // Get current HEAD commit
             const currentCommit = await this.executeGitCommand('git rev-parse HEAD');
@@ -307,6 +320,12 @@ class WatchGitManager {
 
             // Check if this is a new commit
             if (currentHash !== this.lastCommitHash) {
+                // If we're currently processing a commit (showing review), cancel it for the new commit
+                if (this.isProcessingCommit) {
+                    this.consoleManager.printInfo(`\n🔄 New commit detected, cancelling current review...`);
+                    this.cancelCurrentReview();
+                }
+
                 this.isProcessingCommit = true;
 
                 this.consoleManager.stopLoader();
