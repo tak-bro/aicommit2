@@ -252,17 +252,14 @@ class WatchGitManager {
 
     private cancelCurrentReview(): void {
         if (this.currentCodeReviewPromptManager) {
-            // Cancel the current prompt using the ReactivePromptManager's cancel method
             this.currentCodeReviewPromptManager.cancel();
 
-            // Clean up subscriptions
             this.currentCodeReviewSubscription?.unsubscribe();
             this.currentCodeReviewPromptManager.destroy();
             this.currentCodeReviewPromptManager = null;
             this.currentCodeReviewSubscription = null;
         }
 
-        // Clean up the destroyed subject and recreate it
         this.destroyed$.next();
         this.destroyed$.complete();
         this.destroyed$ = new Subject<void>();
@@ -279,7 +276,6 @@ class WatchGitManager {
             path.join(this.GIT_PATH, 'logs', 'HEAD'), // Git reflog
         ];
 
-        // Filter out non-existent paths
         const existingPaths = watchPaths.filter(p => {
             try {
                 fs.accessSync(p);
@@ -314,11 +310,9 @@ class WatchGitManager {
 
     private async handleGitChange(config: ValidConfig, changedPath: string): Promise<void> {
         try {
-            // Get current HEAD commit
             const currentCommit = await this.executeGitCommand('git rev-parse HEAD');
             const currentHash = currentCommit.trim();
 
-            // Check if this is a new commit
             if (currentHash !== this.lastCommitHash) {
                 // If we're currently processing a commit (showing review), cancel it for the new commit
                 if (this.isProcessingCommit) {
@@ -331,11 +325,9 @@ class WatchGitManager {
                 this.consoleManager.stopLoader();
                 this.consoleManager.printInfo(`\n🔍 New commit detected: ${currentHash.substring(0, 8)}`);
 
-                // Update last commit hash
                 const previousHash = this.lastCommitHash;
                 this.lastCommitHash = currentHash;
 
-                // Process the new commit
                 this.clearTerminal();
                 await this.handleCommitEvent(config, currentHash);
 
@@ -343,7 +335,6 @@ class WatchGitManager {
             }
         } catch (error) {
             this.isProcessingCommit = false;
-            // Ignore errors when not in a valid git state
             if (!error.message?.includes('fatal: not a git repository')) {
                 this.consoleManager.printError(`Error checking for new commits: ${(error as Error).message}`);
             }
@@ -351,11 +342,9 @@ class WatchGitManager {
     }
 
     destroy(): void {
-        // Reset processing state
         this.isProcessingCommit = false;
         this.lastCommitHash = null;
 
-        // Clean up subscriptions
         this.subscriptionManager.destroy();
 
         if (this.currentCodeReviewPromptManager) {
@@ -368,22 +357,18 @@ class WatchGitManager {
             this.currentCodeReviewSubscription = null;
         }
 
-        // Close file watcher
         if (this.watcher) {
             this.watcher.close();
             this.watcher = null;
         }
 
-        // Clean up console
         this.consoleManager.stopLoader();
 
-        // Complete the destroyed subject
         this.destroyed$.next();
         this.destroyed$.complete();
     }
 }
 
-// Create singleton instance
 const watchGitManager = new WatchGitManager();
 
 export const watchGit = async (
