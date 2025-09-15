@@ -1,5 +1,7 @@
+import { exec } from 'child_process';
 import fs from 'fs';
 import path from 'path';
+import { promisify } from 'util';
 
 import chokidar from 'chokidar';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
@@ -22,16 +24,14 @@ class WatchGitManager {
     private currentCodeReviewSubscription: Subscription | null = null;
     private currentCodeReviewPromptManager: ReactivePromptManager | null = null;
     private watcher: chokidar.FSWatcher | null = null;
+    private lastCommitHash: string | null = null;
+    private isProcessingCommit = false;
 
     private readonly REPO_PATH = process.cwd();
-    private readonly HOOK_PATH = path.join(this.REPO_PATH, '.git', 'hooks', 'post-commit');
-    private readonly LOG_PATH = path.join(this.REPO_PATH, '.git', 'commit-log.txt');
-
-    private readonly hookScript = `#!/bin/sh
-commit_hash=$(git rev-parse HEAD)
-commit_message=$(git log -1 --pretty=%B)
-echo "$commit_hash: $commit_message" >> ${this.LOG_PATH}
-`;
+    private readonly GIT_PATH = path.join(this.REPO_PATH, '.git');
+    private readonly HEAD_PATH = path.join(this.GIT_PATH, 'HEAD');
+    private readonly REFS_PATH = path.join(this.GIT_PATH, 'refs', 'heads');
+    private readonly COMMIT_MSG_PATH = path.join(this.GIT_PATH, 'COMMIT_EDITMSG');
 
     constructor() {
         this.setupProcessHandlers();
@@ -58,11 +58,12 @@ echo "$commit_hash: $commit_message" >> ${this.LOG_PATH}
         this.consoleManager.printTitle();
         await assertGitRepo();
         const config = await this.initializeConfig(locale, generate, prompt, rawArgv);
-        this.setupGitHook();
-        this.initLogFile();
+
+        // Initialize with current HEAD commit
+        await this.initializeCurrentCommit();
 
         try {
-            await this.watchCommitLog(config);
+            await this.watchGitEvents(config);
         } catch (error) {
             await this.handleWatchGitError(error as Error);
             return this.watch(locale, generate, excludeFiles, prompt, rawArgv);
@@ -102,8 +103,21 @@ echo "$commit_hash: $commit_message" >> ${this.LOG_PATH}
         this.consoleManager.printWarning('Restarting the commit monitoring process...');
     }
 
-    private initLogFile(): void {
-        fs.writeFileSync(this.LOG_PATH, '', { flag: 'w' });
+    private async initializeCurrentCommit(): Promise<void> {
+        try {
+            const result = await this.executeGitCommand('git rev-parse HEAD');
+            this.lastCommitHash = result.trim();
+            this.consoleManager.printInfo(`Starting watch from commit: ${this.lastCommitHash.substring(0, 8)}`);
+        } catch (error) {
+            this.consoleManager.printWarning('No commits found in repository');
+            this.lastCommitHash = null;
+        }
+    }
+
+    private async executeGitCommand(command: string): Promise<string> {
+        const execAsync = promisify(exec);
+        const { stdout } = await execAsync(command, { cwd: this.REPO_PATH });
+        return stdout;
     }
 
     private getAvailableAIs(config: ValidConfig): ModelName[] {
@@ -131,9 +145,14 @@ echo "$commit_hash: $commit_message" >> ${this.LOG_PATH}
         return !!value.key && value.key.length > 0 && watchMode;
     }
 
-    private setupGitHook(): void {
-        fs.writeFileSync(this.HOOK_PATH, this.hookScript, { mode: 0o755 });
-        this.consoleManager.printSetupGitEvent('post-commit');
+    private async getCurrentBranch(): Promise<string> {
+        try {
+            const headContent = await fs.promises.readFile(this.HEAD_PATH, 'utf8');
+            const match = headContent.match(/ref: refs\/heads\/(.+)/);
+            return match ? match[1].trim() : 'HEAD';
+        } catch (error) {
+            return 'HEAD';
+        }
     }
 
     private clearTerminal(): void {
@@ -231,52 +250,93 @@ echo "$commit_hash: $commit_message" >> ${this.LOG_PATH}
         this.consoleManager.showLoader('Watching for new Git commits...');
     }
 
-    private async watchCommitLog(config: ValidConfig): Promise<void> {
-        this.watcher = chokidar.watch(this.LOG_PATH, { persistent: true });
+    private async watchGitEvents(config: ValidConfig): Promise<void> {
+        this.consoleManager.showLoader('Watching for new Git commits...');
 
-        this.watcher.on('change', async () => {
+        // Watch multiple Git locations for better detection
+        const watchPaths = [
+            this.HEAD_PATH, // Direct HEAD changes
+            this.REFS_PATH, // Branch updates
+            this.COMMIT_MSG_PATH, // Commit message file
+            path.join(this.GIT_PATH, 'logs', 'HEAD'), // Git reflog
+        ];
+
+        // Filter out non-existent paths
+        const existingPaths = watchPaths.filter(p => {
             try {
-                const commits = await this.readCommitsFromLog();
-                for (const commit of commits) {
-                    !!commit && (await this.processCommit(config, commit));
-                }
-            } catch (error) {
-                this.consoleManager.printError(`Error reading or processing commit log: ${(error as Error).message}`);
-            } finally {
-                this.truncateLogFile();
+                fs.accessSync(p);
+                return true;
+            } catch {
+                return false;
             }
+        });
+
+        this.watcher = chokidar.watch(existingPaths, {
+            persistent: true,
+            ignoreInitial: true,
+            awaitWriteFinish: {
+                stabilityThreshold: 500,
+                pollInterval: 100,
+            },
+        });
+
+        this.watcher.on('change', async filePath => {
+            await this.handleGitChange(config, filePath);
+        });
+
+        this.watcher.on('add', async filePath => {
+            await this.handleGitChange(config, filePath);
         });
 
         this.watcher.on('error', (error: Error) => {
             this.consoleManager.printError(`Watcher error: ${error.message}`);
-            setTimeout(() => this.watchCommitLog(config), 1000);
+            setTimeout(() => this.watchGitEvents(config), 1000);
         });
     }
 
-    private async readCommitsFromLog(): Promise<string[]> {
-        const logContent = await fs.promises.readFile(this.LOG_PATH, 'utf8');
-        return logContent.trim().split('\n');
-    }
-
-    private async processCommit(config: ValidConfig, commit: string): Promise<void> {
-        const [hash] = commit.split(':');
-        if (!hash) {
-            this.consoleManager.printWarning('Empty commit hash detected, skipping...');
+    private async handleGitChange(config: ValidConfig, changedPath: string): Promise<void> {
+        // Avoid processing multiple events for the same commit
+        if (this.isProcessingCommit) {
             return;
         }
-        this.clearTerminal();
-        await this.handleCommitEvent(config, hash.trim());
-    }
 
-    private truncateLogFile(): void {
         try {
-            fs.truncateSync(this.LOG_PATH);
-        } catch (truncateError) {
-            this.consoleManager.printError(`Error truncating log file: ${(truncateError as Error).message}`);
+            // Get current HEAD commit
+            const currentCommit = await this.executeGitCommand('git rev-parse HEAD');
+            const currentHash = currentCommit.trim();
+
+            // Check if this is a new commit
+            if (currentHash !== this.lastCommitHash) {
+                this.isProcessingCommit = true;
+
+                this.consoleManager.stopLoader();
+                this.consoleManager.printInfo(`\n🔍 New commit detected: ${currentHash.substring(0, 8)}`);
+
+                // Update last commit hash
+                const previousHash = this.lastCommitHash;
+                this.lastCommitHash = currentHash;
+
+                // Process the new commit
+                this.clearTerminal();
+                await this.handleCommitEvent(config, currentHash);
+
+                this.isProcessingCommit = false;
+            }
+        } catch (error) {
+            this.isProcessingCommit = false;
+            // Ignore errors when not in a valid git state
+            if (!error.message?.includes('fatal: not a git repository')) {
+                this.consoleManager.printError(`Error checking for new commits: ${(error as Error).message}`);
+            }
         }
     }
 
     destroy(): void {
+        // Reset processing state
+        this.isProcessingCommit = false;
+        this.lastCommitHash = null;
+
+        // Clean up subscriptions
         this.subscriptionManager.destroy();
 
         if (this.currentCodeReviewPromptManager) {
@@ -289,11 +349,16 @@ echo "$commit_hash: $commit_message" >> ${this.LOG_PATH}
             this.currentCodeReviewSubscription = null;
         }
 
+        // Close file watcher
         if (this.watcher) {
             this.watcher.close();
             this.watcher = null;
         }
 
+        // Clean up console
+        this.consoleManager.stopLoader();
+
+        // Complete the destroyed subject
         this.destroyed$.next();
         this.destroyed$.complete();
     }
