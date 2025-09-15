@@ -6,7 +6,6 @@ import { promisify } from 'util';
 import chokidar from 'chokidar';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Subject, Subscription } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
 
 import { AIRequestManager } from '../managers/ai-request.manager.js';
 import { ConsoleManager } from '../managers/console.manager.js';
@@ -204,10 +203,10 @@ class WatchGitManager {
     }
 
     private cleanupPreviousCodeReview(): void {
-        if (this.currentCodeReviewPromptManager) {
-            this.currentCodeReviewSubscription?.unsubscribe();
-            this.currentCodeReviewPromptManager.destroy();
-        }
+        // Clean up any existing review resources
+        this.cleanupCurrentReviewResources();
+
+        // Reset the destroyed subject for new operations
         this.destroyed$.next();
         this.destroyed$.complete();
         this.destroyed$ = new Subject<void>();
@@ -226,7 +225,8 @@ class WatchGitManager {
     }
 
     private subscribeToCodeReviewRequests(aiRequestManager: AIRequestManager, availableAIs: ModelName[]): Subscription {
-        return this.subscriptionManager.add(aiRequestManager.createCodeReviewRequests$(availableAIs).pipe(takeUntil(this.destroyed$)), {
+        // Use SubscriptionManager to handle the Observable properly
+        return this.subscriptionManager.add(aiRequestManager.createCodeReviewRequests$(availableAIs), {
             next: (choice: ReactiveListChoice) => {
                 this.currentCodeReviewPromptManager?.refreshChoices(choice);
             },
@@ -240,29 +240,40 @@ class WatchGitManager {
         });
     }
 
-    private cleanupCodeReview(): void {
+    private cleanupCurrentReviewResources(): void {
+        // Cancel current subscription through SubscriptionManager (handles all subscriptions)
+        if (this.currentCodeReviewSubscription) {
+            this.currentCodeReviewSubscription.unsubscribe();
+            this.currentCodeReviewSubscription = null;
+        }
+
+        // Destroy prompt manager
         if (this.currentCodeReviewPromptManager) {
-            this.currentCodeReviewSubscription?.unsubscribe();
             this.currentCodeReviewPromptManager.destroy();
             this.currentCodeReviewPromptManager = null;
         }
+    }
+
+    private cleanupCodeReview(): void {
+        this.cleanupCurrentReviewResources();
         this.clearTerminal();
         this.consoleManager.showLoader('Watching for new Git commits...');
     }
 
     private cancelCurrentReview(): void {
         if (this.currentCodeReviewPromptManager) {
+            // Cancel the active prompt first
             this.currentCodeReviewPromptManager.cancel();
-
-            this.currentCodeReviewSubscription?.unsubscribe();
-            this.currentCodeReviewPromptManager.destroy();
-            this.currentCodeReviewPromptManager = null;
-            this.currentCodeReviewSubscription = null;
         }
 
+        // Clean up all resources
+        this.cleanupCurrentReviewResources();
+
+        // Signal cancellation to any ongoing operations
         this.destroyed$.next();
-        this.destroyed$.complete();
-        this.destroyed$ = new Subject<void>();
+
+        // Note: Don't complete and recreate destroyed$ here as it may interfere with other operations
+        // The subject will be properly managed by the main lifecycle
     }
 
     private async watchGitEvents(config: ValidConfig): Promise<void> {
@@ -317,21 +328,32 @@ class WatchGitManager {
                 // If we're currently processing a commit (showing review), cancel it for the new commit
                 if (this.isProcessingCommit) {
                     this.consoleManager.printInfo(`\n🔄 New commit detected, cancelling current review...`);
-                    this.cancelCurrentReview();
+                    try {
+                        this.cancelCurrentReview();
+                    } catch (cancelError) {
+                        console.warn('Error during review cancellation:', cancelError);
+                        // Continue with new commit processing even if cancellation fails
+                    }
                 }
 
                 this.isProcessingCommit = true;
 
-                this.consoleManager.stopLoader();
-                this.consoleManager.printInfo(`\n🔍 New commit detected: ${currentHash.substring(0, 8)}`);
+                try {
+                    this.consoleManager.stopLoader();
+                    this.consoleManager.printInfo(`\n🔍 New commit detected: ${currentHash.substring(0, 8)}`);
 
-                const previousHash = this.lastCommitHash;
-                this.lastCommitHash = currentHash;
+                    const previousHash = this.lastCommitHash;
+                    this.lastCommitHash = currentHash;
 
-                this.clearTerminal();
-                await this.handleCommitEvent(config, currentHash);
-
-                this.isProcessingCommit = false;
+                    this.clearTerminal();
+                    await this.handleCommitEvent(config, currentHash);
+                } catch (commitError) {
+                    this.consoleManager.printError(
+                        `Error processing commit ${currentHash.substring(0, 8)}: ${(commitError as Error).message}`
+                    );
+                } finally {
+                    this.isProcessingCommit = false;
+                }
             }
         } catch (error) {
             this.isProcessingCommit = false;
@@ -342,30 +364,32 @@ class WatchGitManager {
     }
 
     destroy(): void {
+        // Reset processing state
         this.isProcessingCommit = false;
         this.lastCommitHash = null;
 
-        this.subscriptionManager.destroy();
+        try {
+            // Clean up all subscriptions through SubscriptionManager (handles all managed subscriptions)
+            this.subscriptionManager.destroy();
 
-        if (this.currentCodeReviewPromptManager) {
-            this.currentCodeReviewPromptManager.destroy();
-            this.currentCodeReviewPromptManager = null;
+            // Clean up current review resources
+            this.cleanupCurrentReviewResources();
+
+            // Close file watcher
+            if (this.watcher) {
+                this.watcher.close();
+                this.watcher = null;
+            }
+
+            // Clean up console
+            this.consoleManager.stopLoader();
+
+            // Complete the destroyed subject
+            this.destroyed$.next();
+            this.destroyed$.complete();
+        } catch (error) {
+            console.warn('Error during WatchGitManager destruction:', error);
         }
-
-        if (this.currentCodeReviewSubscription) {
-            this.currentCodeReviewSubscription.unsubscribe();
-            this.currentCodeReviewSubscription = null;
-        }
-
-        if (this.watcher) {
-            this.watcher.close();
-            this.watcher = null;
-        }
-
-        this.consoleManager.stopLoader();
-
-        this.destroyed$.next();
-        this.destroyed$.complete();
     }
 }
 
