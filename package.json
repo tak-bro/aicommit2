@@ -89,7 +89,7 @@
         "formdata-node": "^6.0.3",
         "groq-sdk": "^0.7.0",
         "inquirer": "9.2.8",
-        "inquirer-reactive-list-prompt": "^1.0.15",
+        "inquirer-reactive-list-prompt": "file:inquirer-reactive-list-prompt-1.0.16.tgz",
         "ollama": "^0.5.15",
         "openai": "^5.0.1",
         "ora": "^8.2.0",

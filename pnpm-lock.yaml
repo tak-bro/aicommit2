@@ -57,8 +57,8 @@ importers:
         specifier: 9.2.8
         version: 9.2.8
       inquirer-reactive-list-prompt:
-        specifier: ^1.0.15
-        version: 1.0.15(inquirer@9.2.8)
+        specifier: file:inquirer-reactive-list-prompt-1.0.16.tgz
+        version: file:inquirer-reactive-list-prompt-1.0.16.tgz(inquirer@9.2.8)
       ollama:
         specifier: ^0.5.15
         version: 0.5.15
@@ -2593,8 +2593,9 @@ packages:
     resolution: {integrity: sha512-it4HyVAUTKBc6m8e1iXWvXSTdndF7HbdN713+kvLrymxTaU4AUBWrJ4vEooP+V7fexnVD3LKcBshjGGPefSMUQ==}
     engines: {node: ^12.13.0 || ^14.15.0 || >=16.0.0}
 
-  inquirer-reactive-list-prompt@1.0.15:
-    resolution: {integrity: sha512-WI6xE76up+s9tkm+Ud6nkp0aNwOevi58jBil9ST5jU+WueB11RcfpziQxtTtcdNsoXGxa4cuWRoJ4muKHwezsg==}
+  inquirer-reactive-list-prompt@file:inquirer-reactive-list-prompt-1.0.16.tgz:
+    resolution: {integrity: sha512-TYBKxEwMfyW8EUmJVazQM5FF+UJ+WoIgAf+YBQtNM/7w/B4dZQFyhv0ZePEd0cnpQdxWz6o1SzjrxMUrhke8lw==, tarball: file:inquirer-reactive-list-prompt-1.0.16.tgz}
+    version: 1.0.16
     peerDependencies:
       inquirer: 9.2.8
 
@@ -7515,7 +7516,7 @@ snapshots:
 
   ini@3.0.1: {}
 
-  inquirer-reactive-list-prompt@1.0.15(inquirer@9.2.8):
+  inquirer-reactive-list-prompt@file:inquirer-reactive-list-prompt-1.0.16.tgz(inquirer@9.2.8):
     dependencies:
       chalk: 5.4.1
       cli-cursor: 4.0.0

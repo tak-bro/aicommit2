@@ -58,7 +58,6 @@ class WatchGitManager {
         await assertGitRepo();
         const config = await this.initializeConfig(locale, generate, prompt, rawArgv);
 
-        // Initialize with current HEAD commit
         await this.initializeCurrentCommit();
 
         try {
@@ -144,16 +143,6 @@ class WatchGitManager {
         return !!value.key && value.key.length > 0 && watchMode;
     }
 
-    private async getCurrentBranch(): Promise<string> {
-        try {
-            const headContent = await fs.promises.readFile(this.HEAD_PATH, 'utf8');
-            const match = headContent.match(/ref: refs\/heads\/(.+)/);
-            return match ? match[1].trim() : 'HEAD';
-        } catch (error) {
-            return 'HEAD';
-        }
-    }
-
     private clearTerminal(): void {
         process.stdout.write('\x1Bc');
     }
@@ -203,10 +192,7 @@ class WatchGitManager {
     }
 
     private cleanupPreviousCodeReview(): void {
-        // Clean up any existing review resources
         this.cleanupCurrentReviewResources();
-
-        // Reset the destroyed subject for new operations
         this.destroyed$.next();
         this.destroyed$.complete();
         this.destroyed$ = new Subject<void>();
@@ -225,7 +211,6 @@ class WatchGitManager {
     }
 
     private subscribeToCodeReviewRequests(aiRequestManager: AIRequestManager, availableAIs: ModelName[]): Subscription {
-        // Use SubscriptionManager to handle the Observable properly
         return this.subscriptionManager.add(aiRequestManager.createCodeReviewRequests$(availableAIs), {
             next: (choice: ReactiveListChoice) => {
                 this.currentCodeReviewPromptManager?.refreshChoices(choice);
@@ -241,13 +226,11 @@ class WatchGitManager {
     }
 
     private cleanupCurrentReviewResources(): void {
-        // Cancel current subscription through SubscriptionManager (handles all subscriptions)
         if (this.currentCodeReviewSubscription) {
             this.currentCodeReviewSubscription.unsubscribe();
             this.currentCodeReviewSubscription = null;
         }
 
-        // Destroy prompt manager
         if (this.currentCodeReviewPromptManager) {
             this.currentCodeReviewPromptManager.destroy();
             this.currentCodeReviewPromptManager = null;
@@ -262,16 +245,12 @@ class WatchGitManager {
 
     private cancelCurrentReview(): void {
         if (this.currentCodeReviewPromptManager) {
-            // Cancel the active prompt first
             this.currentCodeReviewPromptManager.cancel();
         }
 
-        // Clean up all resources
         this.cleanupCurrentReviewResources();
 
-        // Signal cancellation to any ongoing operations
         this.destroyed$.next();
-
         // Note: Don't complete and recreate destroyed$ here as it may interfere with other operations
         // The subject will be properly managed by the main lifecycle
     }
@@ -279,7 +258,6 @@ class WatchGitManager {
     private async watchGitEvents(config: ValidConfig): Promise<void> {
         this.consoleManager.showLoader('Watching for new Git commits...');
 
-        // Watch multiple Git locations for better detection
         const watchPaths = [
             this.HEAD_PATH, // Direct HEAD changes
             this.REFS_PATH, // Branch updates
@@ -364,27 +342,20 @@ class WatchGitManager {
     }
 
     destroy(): void {
-        // Reset processing state
         this.isProcessingCommit = false;
         this.lastCommitHash = null;
 
         try {
-            // Clean up all subscriptions through SubscriptionManager (handles all managed subscriptions)
             this.subscriptionManager.destroy();
-
-            // Clean up current review resources
             this.cleanupCurrentReviewResources();
 
-            // Close file watcher
             if (this.watcher) {
                 this.watcher.close();
                 this.watcher = null;
             }
 
-            // Clean up console
             this.consoleManager.stopLoader();
 
-            // Complete the destroyed subject
             this.destroyed$.next();
             this.destroyed$.complete();
         } catch (error) {

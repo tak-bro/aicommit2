@@ -175,7 +175,7 @@ export class ReactivePromptManager {
     }
 
     private logEmptyCommitMessage() {
-        console.log(`${chalk.bold.yellow('⚠')} ${chalk.yellow(`${emptyCommitMessage}`)}`);
+        console.log(`\n${chalk.bold.yellow('⚠')} ${chalk.yellow(`${emptyCommitMessage}`)}`);
     }
 
     private get currentChoices(): ReactiveListChoice[] {
