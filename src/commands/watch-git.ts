@@ -193,8 +193,12 @@ class WatchGitManager {
 
     private cleanupPreviousCodeReview(): void {
         this.cleanupCurrentReviewResources();
-        this.destroyed$.next();
-        this.destroyed$.complete();
+
+        // Only signal if the subject is still active
+        if (!this.destroyed$.closed) {
+            this.destroyed$.next();
+            this.destroyed$.complete();
+        }
         this.destroyed$ = new Subject<void>();
     }
 
@@ -241,6 +245,20 @@ class WatchGitManager {
         this.cleanupCurrentReviewResources();
         this.clearTerminal();
         this.consoleManager.showLoader('Watching for new Git commits...');
+    }
+
+    private async isGitReset(currentHash: string): Promise<boolean> {
+        if (!this.lastCommitHash) {
+            return false;
+        }
+
+        try {
+            // Check if currentHash is an ancestor of lastCommitHash
+            const result = await this.executeGitCommand(`git merge-base --is-ancestor ${currentHash} ${this.lastCommitHash}`);
+            return true; // If command succeeds, currentHash is an ancestor (reset happened)
+        } catch {
+            return false; // If command fails, it's a new commit (not a reset)
+        }
     }
 
     private cancelCurrentReview(): void {
@@ -303,11 +321,28 @@ class WatchGitManager {
             const currentHash = currentCommit.trim();
 
             if (currentHash !== this.lastCommitHash) {
+                // Check if this is a git reset (going backward in history)
+                const isReset = await this.isGitReset(currentHash);
+
+                if (isReset) {
+                    this.consoleManager.printInfo(`\n↩️ Git reset detected: ${currentHash.substring(0, 8)}`);
+                    this.lastCommitHash = currentHash;
+
+                    // If we're processing a commit during reset, cancel it
+                    if (this.isProcessingCommit) {
+                        this.cancelCurrentReview();
+                        this.isProcessingCommit = false;
+                    }
+                    return;
+                }
+
                 // If we're currently processing a commit (showing review), cancel it for the new commit
                 if (this.isProcessingCommit) {
                     this.consoleManager.printInfo(`\n🔄 New commit detected, cancelling current review...`);
                     try {
                         this.cancelCurrentReview();
+                        // Add a small delay to ensure cleanup is complete
+                        await new Promise(resolve => setTimeout(resolve, 200));
                     } catch (cancelError) {
                         console.warn('Error during review cancellation:', cancelError);
                         // Continue with new commit processing even if cancellation fails
