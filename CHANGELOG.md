@@ -1,3 +1,16 @@
+## [2.4.7](https://github.com/tak-bro/aicommit2/compare/v2.4.6...v2.4.7) (2025-10-02)
+
+
+### Bug Fixes
+
+* **ui:** fix empty commit message ([8b2598b](https://github.com/tak-bro/aicommit2/commit/8b2598b3351b9765a97fc68763413bc1cd6cc656))
+* **watch-git:** handle git reset and improve commit processing ([534287a](https://github.com/tak-bro/aicommit2/commit/534287aaef21beb42f72f7aed0542d763b1c3b8b))
+
+
+### Features
+
+* improve commit monitoring with git events ([168c897](https://github.com/tak-bro/aicommit2/commit/168c89775c8d7de7e70395ed4ee310719512c0c7))
+
 ## [2.4.6](https://github.com/tak-bro/aicommit2/compare/v2.4.5...v2.4.6) (2025-09-12)
 
 
