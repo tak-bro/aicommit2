@@ -194,7 +194,6 @@ class WatchGitManager {
     private cleanupPreviousCodeReview(): void {
         this.cleanupCurrentReviewResources();
 
-        // Only signal if the subject is still active
         if (!this.destroyed$.closed) {
             this.destroyed$.next();
             this.destroyed$.complete();
@@ -253,11 +252,10 @@ class WatchGitManager {
         }
 
         try {
-            // Check if currentHash is an ancestor of lastCommitHash
             const result = await this.executeGitCommand(`git merge-base --is-ancestor ${currentHash} ${this.lastCommitHash}`);
-            return true; // If command succeeds, currentHash is an ancestor (reset happened)
+            return true;
         } catch {
-            return false; // If command fails, it's a new commit (not a reset)
+            return false;
         }
     }
 
@@ -321,14 +319,13 @@ class WatchGitManager {
             const currentHash = currentCommit.trim();
 
             if (currentHash !== this.lastCommitHash) {
-                // Check if this is a git reset (going backward in history)
                 const isReset = await this.isGitReset(currentHash);
 
                 if (isReset) {
-                    this.consoleManager.printInfo(`\n↩️ Git reset detected: ${currentHash.substring(0, 8)}`);
+                    this.clearTerminal();
+                    this.consoleManager.printInfo(`↩️ Git reset detected: ${currentHash.substring(0, 8)}`);
                     this.lastCommitHash = currentHash;
 
-                    // If we're processing a commit during reset, cancel it
                     if (this.isProcessingCommit) {
                         this.cancelCurrentReview();
                         this.isProcessingCommit = false;
@@ -341,7 +338,6 @@ class WatchGitManager {
                     this.consoleManager.printInfo(`\n🔄 New commit detected, cancelling current review...`);
                     try {
                         this.cancelCurrentReview();
-                        // Add a small delay to ensure cleanup is complete
                         await new Promise(resolve => setTimeout(resolve, 200));
                     } catch (cancelError) {
                         console.warn('Error during review cancellation:', cancelError);
