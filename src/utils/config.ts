@@ -338,6 +338,18 @@ const generalConfigParsers = {
         parseAssert('watchMode', /^(?:true|false)$/.test(watchMode), 'Must be a boolean(true or false)');
         return watchMode === 'true';
     },
+    forceGit(forceGit?: string | boolean) {
+        if (typeof forceGit === 'boolean') {
+            return forceGit;
+        }
+
+        if (forceGit === undefined || forceGit === null) {
+            return false;
+        }
+
+        parseAssert('forceGit', /^(?:true|false)$/.test(forceGit), 'Must be a boolean(true or false)');
+        return forceGit === 'true';
+    },
     disableLowerCase(disableLowerCase?: string | boolean) {
         if (typeof disableLowerCase === 'boolean') {
             return disableLowerCase;

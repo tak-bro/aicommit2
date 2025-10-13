@@ -1,3 +1,4 @@
+import { getConfig } from './config.js';
 import { KnownError } from './error.js';
 import { BaseVCSAdapter, VCSDiff } from './vcs-adapters/base.adapter.js';
 import { GitAdapter } from './vcs-adapters/git.adapter.js';
@@ -12,7 +13,7 @@ let vcsAdapter: BaseVCSAdapter | null = null;
 /**
  * Detect and return the appropriate VCS adapter
  * Priority: Jujutsu first (since jj repos are colocated with .git by default since v0.34.0),
- * unless FORCE_GIT="true" environment variable is set
+ * unless FORCE_GIT="true" environment variable or forceGit config is set
  */
 async function detectVCS(): Promise<BaseVCSAdapter> {
     const forceGitEnv = process.env.FORCE_GIT === 'true';
@@ -25,6 +26,26 @@ async function detectVCS(): Promise<BaseVCSAdapter> {
         } catch (error) {
             throw new KnownError(
                 `FORCE_GIT="true" environment variable is set, but Git is not available or not in a git repository.\n${error instanceof Error ? error.message : String(error)}`
+            );
+        }
+    }
+
+    let forceGitConfig = false;
+    try {
+        const config = await getConfig({});
+        forceGitConfig = config.forceGit === true;
+    } catch (error) {
+        forceGitConfig = false;
+    }
+
+    if (forceGitConfig) {
+        try {
+            const gitAdapter = new GitAdapter();
+            await gitAdapter.assertRepo();
+            return gitAdapter;
+        } catch (error) {
+            throw new KnownError(
+                `forceGit=true is set in config, but Git is not available or not in a git repository.\n${error instanceof Error ? error.message : String(error)}`
             );
         }
     }
@@ -66,7 +87,8 @@ Solutions:
 • Initialize a Jujutsu repository: jj init
 • Initialize a Git repository: git init
 • Navigate to an existing Jujutsu or Git repository
-• Set FORCE_GIT="true" environment variable to force Git detection in a jj repository`);
+• Set FORCE_GIT="true" environment variable to force Git detection in a jj repository
+• Set forceGit=true in config file to prefer Git detection`);
     }
 
     throw new KnownError('Unexpected error during VCS detection');

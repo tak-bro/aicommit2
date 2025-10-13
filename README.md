@@ -223,9 +223,10 @@ jj init
 
 ### Detection Priority
 
-1. Jujutsu repository (checked first - since jj v0.34.0+, repos are colocated with .git by default)
-2. Git repository (fallback)
-3. Environment override: `FORCE_GIT=true` forces Git detection in a jj repository
+1. `FORCE_GIT=true` environment variable (highest priority - forces Git)
+2. Config: `aicommit2 config set forceGit=true` (forces Git)
+3. Jujutsu repository (checked first - since jj v0.34.0+, repos are colocated with .git by default)
+4. Git repository (fallback)
 
 ## Usage
 
@@ -550,6 +551,18 @@ aicommit2 config set exclude="*.ts,*.json"
 ```
 
 > NOTE: `exclude` option does not support per model. It is **only** supported by General Settings.
+
+##### forceGit
+
+Default: `false`
+
+Force Git detection even in Jujutsu repositories (useful when you have both `.jj` and `.git` directories):
+
+```sh
+aicommit2 config set forceGit=true
+```
+
+This is equivalent to using the `FORCE_GIT=true` environment variable, but persistent across sessions.
 
 ##### type
 
