@@ -195,18 +195,21 @@ aicommit2
 AICommit2 also supports [Jujutsu (jj)](https://github.com/martinvonz/jj) repositories:
 
 ```bash
-# No staging needed
+# Automatic jj detection (no staging needed)
 aicommit2
 
-# Force use when both Git and jj present
-JJ=true aicommit2
+# Force Git when both .jj and .git exist (for colocated repos)
+FORCE_GIT=true aicommit2
+# or
+aicommit2 config set forceGit=true
 ```
 
 **Features:**
 
-- Automatic detection of `.jj` repositories
-- Uses `jj describe` for commits
+- Automatic detection of `.jj` repositories (prioritized over Git since jj v0.34.0+ uses colocated repos)
+- Uses `jj describe` and `jj new` for commits
 - Supports Jujutsu's fileset syntax for file exclusions
+- Works seamlessly with colocated Git repositories
 
 **Installation:**
 
