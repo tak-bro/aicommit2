@@ -1,4 +1,3 @@
-import { getConfig } from './config.js';
 import { KnownError } from './error.js';
 import { BaseVCSAdapter, VCSDiff } from './vcs-adapters/base.adapter.js';
 import { GitAdapter } from './vcs-adapters/git.adapter.js';
@@ -12,54 +11,28 @@ let vcsAdapter: BaseVCSAdapter | null = null;
 
 /**
  * Detect and return the appropriate VCS adapter
- * Priority: Git first, unless JJ="true" environment variable or jujutsu=true config is set
+ * Priority: Jujutsu first (since jj repos are colocated with .git by default since v0.34.0),
+ * unless FORCE_GIT="true" environment variable is set
  */
 async function detectVCS(): Promise<BaseVCSAdapter> {
-    const forceJJEnv = process.env.JJ === 'true';
+    const forceGitEnv = process.env.FORCE_GIT === 'true';
 
-    if (forceJJEnv) {
+    if (forceGitEnv) {
         try {
-            const jjAdapter = new JujutsuAdapter();
-            await jjAdapter.assertRepo();
-            return jjAdapter;
+            const gitAdapter = new GitAdapter();
+            await gitAdapter.assertRepo();
+            return gitAdapter;
         } catch (error) {
             throw new KnownError(
-                `JJ="true" environment variable is set, but Jujutsu is not available or not in a jj repository.\n${error instanceof Error ? error.message : String(error)}`
+                `FORCE_GIT="true" environment variable is set, but Git is not available or not in a git repository.\n${error instanceof Error ? error.message : String(error)}`
             );
         }
     }
 
-    let forceJJConfig = false;
-    try {
-        const config = await getConfig({});
-        forceJJConfig = config.jujutsu === true;
-    } catch (error) {
-        forceJJConfig = false;
-    }
-
-    if (forceJJConfig) {
-        try {
-            const jjAdapter = new JujutsuAdapter();
-            await jjAdapter.assertRepo();
-            return jjAdapter;
-        } catch (error) {
-            throw new KnownError(
-                `jujutsu=true is set in config, but Jujutsu is not available or not in a jj repository.\n${error instanceof Error ? error.message : String(error)}`
-            );
-        }
-    }
-
-    let gitError: Error | null = null;
     let jjError: Error | null = null;
+    let gitError: Error | null = null;
 
-    try {
-        const gitAdapter = new GitAdapter();
-        await gitAdapter.assertRepo();
-        return gitAdapter;
-    } catch (error) {
-        gitError = error instanceof Error ? error : new Error(String(error));
-    }
-
+    // Try Jujutsu first (since jj repos are colocated with .git by default since v0.34.0)
     try {
         const jjAdapter = new JujutsuAdapter();
         await jjAdapter.assertRepo();
@@ -68,24 +41,32 @@ async function detectVCS(): Promise<BaseVCSAdapter> {
         jjError = error instanceof Error ? error : new Error(String(error));
     }
 
-    if (gitError && jjError) {
-        const gitMsg = gitError.message.replace('KnownError: ', '').trim();
+    // If Jujutsu is not available or not a jj repo, try Git
+    try {
+        const gitAdapter = new GitAdapter();
+        await gitAdapter.assertRepo();
+        return gitAdapter;
+    } catch (error) {
+        gitError = error instanceof Error ? error : new Error(String(error));
+    }
+
+    if (jjError && gitError) {
         const jjMsg = jjError.message.replace('KnownError: ', '').trim();
+        const gitMsg = gitError.message.replace('KnownError: ', '').trim();
 
         throw new KnownError(`No supported VCS repository found.
-
-Git Error:
-${gitMsg}
 
 Jujutsu Error:
 ${jjMsg}
 
+Git Error:
+${gitMsg}
+
 Solutions:
-• Initialize a Git repository: git init
 • Initialize a Jujutsu repository: jj init
-• Navigate to an existing Git or Jujutsu repository
-• Set JJ="true" environment variable to force Jujutsu detection
-• Set jujutsu=true in config file to prefer Jujutsu`);
+• Initialize a Git repository: git init
+• Navigate to an existing Jujutsu or Git repository
+• Set FORCE_GIT="true" environment variable to force Git detection in a jj repository`);
     }
 
     throw new KnownError('Unexpected error during VCS detection');

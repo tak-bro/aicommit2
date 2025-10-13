@@ -6,10 +6,10 @@ const originalExeca = execa;
 let execaMock: any;
 
 describe('VCS Detection', ({ test: runTest }) => {
-    runTest('should detect Git repository by default', async () => {
-        // Mock successful git command
+    runTest('should detect Jujutsu repository first', async () => {
+        // Mock successful jj command
         const mockExeca = async (command: string, args: string[]) => {
-            if (command === 'git' && args[0] === 'rev-parse') {
+            if (command === 'jj' && args[0] === 'workspace') {
                 return { stdout: '/path/to/repo', failed: false };
             }
             throw new Error('Command not found');
@@ -20,53 +20,29 @@ describe('VCS Detection', ({ test: runTest }) => {
         expect(true).toBe(true); // Placeholder for actual test
     });
 
-    runTest('should force Jujutsu when JJ environment variable is set', async () => {
-        const originalEnv = process.env.JJ;
-        process.env.JJ = 'true';
+    runTest('should force Git when FORCE_GIT environment variable is set', async () => {
+        const originalEnv = process.env.FORCE_GIT;
+        process.env.FORCE_GIT = 'true';
 
         try {
-            // Test would verify that JJ is forced when environment variable is set
-            expect(process.env.JJ).toBe('true');
+            // Test would verify that Git is forced when environment variable is set
+            expect(process.env.FORCE_GIT).toBe('true');
         } finally {
             // Restore original environment
             if (originalEnv === undefined) {
-                delete process.env.JJ;
+                delete process.env.FORCE_GIT;
             } else {
-                process.env.JJ = originalEnv;
+                process.env.FORCE_GIT = originalEnv;
             }
         }
     });
 
-    runTest('should force Jujutsu when jujutsu=true in config', async () => {
-        // This test verifies that the VCS detection logic includes config-based selection
-        // Since we can't easily mock the config system in this test environment,
-        // we test that the logic is correctly implemented
-
-        // Verify that the config system can handle jujutsu setting by testing the config loading
-        const { getConfig } = await import('../../../src/utils/config.js');
-
-        // Test that getConfig function exists and can be called
-        expect(typeof getConfig).toBe('function');
-
-        // Test with a mock config that includes jujutsu setting
-        try {
-            const mockConfig = await getConfig({ jujutsu: true });
-            // If config loading succeeds, jujutsu should be properly parsed
-            expect(typeof mockConfig).toBe('object');
-            expect(typeof mockConfig.jujutsu).toBe('boolean');
-        } catch (error) {
-            // Config loading may fail in test environment, which is acceptable
-            expect(error).toBeDefined();
-        }
-    });
-
-    runTest('should prioritize Git over Jujutsu by default', async () => {
-        // Test that Git is attempted first when both might be available
+    runTest('should prioritize Jujutsu over Git by default', async () => {
+        // Test that Jujutsu is attempted first when both might be available
         // Verify the VCS detection logic implements the correct priority order:
-        // 1. JJ="true" environment variable (highest priority)
-        // 2. jujutsu=true config setting (second priority)
-        // 3. Git detection (default priority)
-        // 4. Jujutsu fallback (lowest priority)
+        // 1. FORCE_GIT="true" environment variable (highest priority - forces Git)
+        // 2. Jujutsu detection (default priority)
+        // 3. Git detection (fallback)
 
         // We can't easily test the full detection flow without mocking,
         // but we can verify the logic structure is correct

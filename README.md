@@ -223,10 +223,9 @@ jj init
 
 ### Detection Priority
 
-1. Git repository (default)
-2. Jujutsu repository (if Git not found)
-3. Environment override: `JJ=true` forces Jujutsu
-4. Config: `aicommit2 config set jujutsu=true`
+1. Jujutsu repository (checked first - since jj v0.34.0+, repos are colocated with .git by default)
+2. Git repository (fallback)
+3. Environment override: `FORCE_GIT=true` forces Git detection in a jj repository
 
 ## Usage
 
@@ -251,7 +250,7 @@ aicommit2 --all # or -a
 
 - `--locale` or `-l`: Locale to use for the generated commit messages (default: **en**)
 - `--all` or `-a`: Automatically stage changes in tracked files for the commit (default: **false**)
-- `--type` or `-t`: Git commit message format (default: **conventional**). It supports [`conventional`](https://conventionalcommits.org/), [`gitmoji`](https://gitmoji.dev/), and `jujutsu`
+- `--type` or `-t`: Git commit message format (default: **conventional**). It supports [`conventional`](https://conventionalcommits.org/) and [`gitmoji`](https://gitmoji.dev/)
 - `--confirm` or `-y`: Skip confirmation when committing after message generation (default: **false**)
 - `--clipboard` or `-c`: Copy the selected message to the clipboard (default: **false**).
   - If you give this option, **_aicommit2_ will not commit**.
@@ -285,8 +284,8 @@ Examples:
 # Generate multiple commit messages with clipboard and file exclusions
 aicommit2 --locale "jp" --all --type "conventional" --generate 3 --clipboard --exclude "*.json" --exclude "*.ts"
 
-# Generate and edit a Jujutsu-style commit message
-aicommit2 --edit --type jujutsu # or conventional, gitmoji
+# Generate and edit a commit message
+aicommit2 --edit --type conventional # or gitmoji
 ```
 
 ### Git hook
@@ -556,7 +555,7 @@ aicommit2 config set exclude="*.ts,*.json"
 
 Default: `conventional`
 
-Supported: `conventional`, `gitmoji`, `jujutsu`
+Supported: `conventional`, `gitmoji`
 
 The type of commit message to generate:
 
@@ -570,12 +569,6 @@ aicommit2 config set type="conventional"
 
 ```sh
 aicommit2 config set type="gitmoji"
-```
-
-**Jujutsu**: Use component-focused commit messages optimized for Jujutsu workflows:
-
-```sh
-aicommit2 config set type="jujutsu"
 ```
 
 ##### locale
@@ -887,7 +880,7 @@ Use curly braces `{}` to denote these placeholders for options. The following pl
 
 - [{locale}](#locale): The language for the commit message (**string**)
 - [{maxLength}](#max-length): The maximum length for the commit message (**number**)
-- [{type}](#type): The type of the commit message (**conventional**, **gitmoji**, or **jujutsu**)
+- [{type}](#type): The type of the commit message (**conventional** or **gitmoji**)
 - [{generate}](#generate): The number of commit messages to generate (**number**)
 
 #### Example Template

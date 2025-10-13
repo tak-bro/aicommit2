@@ -35,16 +35,12 @@ const commitTypeFormats: Record<CommitType, string> = {
 [optional body]
 
 [optional footer(s)]`,
-    jujutsu: `<component>: <brief description>
-
-[optional detailed explanation]`,
 };
 
 export const exampleCommitByType: Record<CommitType, string> = {
     '': '',
     conventional: `<type>(<optional scope>): <description>`,
     gitmoji: `:<emoji>: <description>`,
-    jujutsu: `<component>: <description>`,
 };
 
 const specifyCommitFormat = (type: CommitType = 'conventional') => {
@@ -63,7 +59,6 @@ get from gitmoji.dev
 */
 const commitTypes: Record<CommitType, string> = {
     '': '',
-    jujutsu: '',
     gitmoji: `\n${Object.entries({
         ':sparkles:': 'Introduce new features.',
         ':bug:': 'Fix a bug.',
@@ -178,81 +173,54 @@ const parseTemplate = (template: string, options: PromptOptions): string => {
 const defaultPrompt = (promptOptions: PromptOptions) => {
     const { type, maxLength, generate, locale } = promptOptions;
 
-    const systemDescription =
-        type === 'jujutsu'
-            ? `You are a Jujutsu commit message writer. You create simple, clear commit messages following Jujutsu's format.`
-            : `You are an expert Git commit message writer specializing in analyzing code changes and creating precise, meaningful commit messages.`;
+    const systemDescription = `You are an expert Git commit message writer specializing in analyzing code changes and creating precise, meaningful commit messages.`;
 
-    const taskDescription =
-        type === 'jujutsu'
-            ? `Generate exactly ${generate} Jujutsu-style commit message${generate !== 1 ? 's' : ''} based on the provided diff.`
-            : `Your task is to generate exactly ${generate} ${type} style commit message${generate !== 1 ? 's' : ''} based on the provided git diff.`;
+    const taskDescription = `Your task is to generate exactly ${generate} ${type} style commit message${generate !== 1 ? 's' : ''} based on the provided git diff.`;
 
     return [
         systemDescription,
         taskDescription,
         '',
-        type === 'jujutsu'
-            ? [
-                  `## Format:`,
-                  `<topic>: <description>`,
-                  '',
-                  `## Rules:`,
-                  `- Topic: The module/feature/scope being changed (e.g., cli, docs, config, next/prev)`,
-                  `- Description: Clear, imperative mood statement of what changed`,
-                  `- Maximum ${maxLength} characters`,
-                  `- Language: ${locale}`,
-                  `- Focus on clarity and simplicity - no conventional commit types or emojis`,
-                  `- Each commit should do one thing`,
-                  `- Explain the reason for change when not obvious`,
-                  '',
-                  `## Examples from Jujutsu's actual commits:`,
-                  `- "cli: make jj abandon print abandoned commit info"`,
-                  `- "docs: mention that @ can be used in revsets"`,
-                  `- "backend: make commit signature a property of the backend"`,
-                  `- "templater: add commit.annotate() method"`,
-                  `- "conflicts: simplify conflict marker parsing"`,
-              ].join('\n')
-            : [
-                  `## Requirements:`,
-                  `1. Language: Write all messages in ${locale}`,
-                  `2. Format: Strictly follow the ${type} commit format:`,
-                  `${commitTypeFormats[type]}`,
-                  `3. Allowed Types:${commitTypes[type]}`,
-                  '',
-                  `## Guidelines:`,
-                  `- Subject line: Max ${maxLength} characters, imperative mood, no period`,
-                  `- Analyze the diff to understand:`,
-                  `  * What files were changed`,
-                  `  * What functionality was added, modified, or removed`,
-                  `  * The scope and impact of changes`,
-                  `- For the commit type, choose based on:`,
-                  `  * feat: New functionality or feature`,
-                  `  * fix: Bug fixes or error corrections`,
-                  `  * refactor: Code restructuring without changing functionality`,
-                  `  * docs: Documentation changes only`,
-                  `  * style: Formatting, missing semi-colons, etc`,
-                  `  * test: Adding or modifying tests`,
-                  `  * chore: Maintenance tasks, dependency updates`,
-                  `  * perf: Performance improvements`,
-                  `  * build: Build system or external dependency changes`,
-                  `  * ci: CI configuration changes`,
-                  `- Scope: Extract from file paths or logical grouping (e.g., auth, api, ui)`,
-                  `- Body (when needed):`,
-                  `  * Explain the motivation for the change`,
-                  `  * Compare previous behavior with new behavior`,
-                  `  * Note any breaking changes or important details`,
-                  `- Footer: Include references to issues, breaking changes if applicable`,
-                  '',
-                  `## Analysis Approach:`,
-                  `1. Identify the primary purpose of the changes`,
-                  `2. Group related changes together`,
-                  `3. Determine the most appropriate type and scope`,
-                  `4. Write a clear, concise subject line`,
-                  `5. Add body details for complex changes`,
-                  '',
-                  `Remember: The commit message should help future developers understand WHY this change was made, not just WHAT was changed.`,
-              ].join('\n'),
+        [
+            `## Requirements:`,
+            `1. Language: Write all messages in ${locale}`,
+            `2. Format: Strictly follow the ${type} commit format:`,
+            `${commitTypeFormats[type]}`,
+            `3. Allowed Types:${commitTypes[type]}`,
+            '',
+            `## Guidelines:`,
+            `- Subject line: Max ${maxLength} characters, imperative mood, no period`,
+            `- Analyze the diff to understand:`,
+            `  * What files were changed`,
+            `  * What functionality was added, modified, or removed`,
+            `  * The scope and impact of changes`,
+            `- For the commit type, choose based on:`,
+            `  * feat: New functionality or feature`,
+            `  * fix: Bug fixes or error corrections`,
+            `  * refactor: Code restructuring without changing functionality`,
+            `  * docs: Documentation changes only`,
+            `  * style: Formatting, missing semi-colons, etc`,
+            `  * test: Adding or modifying tests`,
+            `  * chore: Maintenance tasks, dependency updates`,
+            `  * perf: Performance improvements`,
+            `  * build: Build system or external dependency changes`,
+            `  * ci: CI configuration changes`,
+            `- Scope: Extract from file paths or logical grouping (e.g., auth, api, ui)`,
+            `- Body (when needed):`,
+            `  * Explain the motivation for the change`,
+            `  * Compare previous behavior with new behavior`,
+            `  * Note any breaking changes or important details`,
+            `- Footer: Include references to issues, breaking changes if applicable`,
+            '',
+            `## Analysis Approach:`,
+            `1. Identify the primary purpose of the changes`,
+            `2. Group related changes together`,
+            `3. Determine the most appropriate type and scope`,
+            `4. Write a clear, concise subject line`,
+            `5. Add body details for complex changes`,
+            '',
+            `Remember: The commit message should help future developers understand WHY this change was made, not just WHAT was changed.`,
+        ].join('\n'),
     ]
         .filter(Boolean)
         .join('\n');
@@ -295,7 +263,7 @@ const finalPrompt = (type: CommitType, generate: number) => {
         `- "body": An optional detailed explanation of the changes. If not needed, use an empty string.`,
         `- "footer": An optional footer for metadata like BREAKING CHANGES. If not needed, use an empty string.`,
         `The array must always contain ${generate} element${generate !== 1 ? 's' : ''}, no more and no less.`,
-        type === 'jujutsu' ? '\n' : `Example response format: \n[${example(type)}\n]`,
+        `Example response format: \n[${example(type)}\n]`,
         `Ensure you generate exactly ${generate} commit message${generate !== 1 ? 's' : ''}, even if it requires creating slightly varied versions for similar changes.`,
         `The response should be valid JSON that can be parsed without errors.`,
     ]
@@ -332,12 +300,6 @@ export const isValidConventionalMessage = (message: string): boolean => {
 export const isValidGitmojiMessage = (message: string): boolean => {
     const gitmojiCommitMessageRegex = /:\w*:/;
     return gitmojiCommitMessageRegex.test(message);
-};
-
-export const isValidJujutsuMessage = (message: string): boolean => {
-    // Jujutsu format: component: description
-    const jujutsuReg = /^[a-zA-Z0-9_-]+: .+$/;
-    return jujutsuReg.test(message);
 };
 
 export const codeReviewPrompt = (promptOptions: PromptOptions) => {
