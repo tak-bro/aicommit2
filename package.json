@@ -87,6 +87,7 @@
         "copy-paste": "^1.5.3",
         "figlet": "^1.8.1",
         "formdata-node": "^6.0.3",
+        "gradient-string": "^3.0.0",
         "groq-sdk": "^0.7.0",
         "inquirer": "9.2.8",
         "inquirer-reactive-list-prompt": "^1.0.16",

@@ -2,6 +2,7 @@ import readline from 'readline';
 
 import chalk from 'chalk';
 import figlet from 'figlet';
+import gradient from 'gradient-string';
 import ora, { Ora } from 'ora';
 
 import { getDetectedMessage } from '../utils/vcs.js';
@@ -11,7 +12,14 @@ export class ConsoleManager {
     private loader: Ora | undefined;
 
     printTitle() {
-        console.log(figlet.textSync(this.title, { font: 'Small' }));
+        try {
+            const startColor = '#464646';
+            const endColor = '#A020F0';
+            const asciiArt = figlet.textSync(this.title, { font: 'Small Slant' });
+            console.log(gradient([startColor, endColor]).multiline(asciiArt));
+        } catch {
+            console.log(chalk.bold.white(this.title));
+        }
     }
 
     showLoader(text: string) {
