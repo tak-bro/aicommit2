@@ -1,3 +1,11 @@
+## [2.4.8](https://github.com/tak-bro/aicommit2/compare/v2.4.7...v2.4.8) (2025-10-13)
+
+
+### Features
+
+* allow forcing git with config or env var ([7f007ea](https://github.com/tak-bro/aicommit2/commit/7f007ea9422167b7a22aa3e16ac07703f3434bc4))
+* update jj detection flow and remove jujutsu type [#173](https://github.com/tak-bro/aicommit2/issues/173) ([b679812](https://github.com/tak-bro/aicommit2/commit/b679812aa58b3a3a5f7eeaeba388588f8011326b))
+
 ## [2.4.7](https://github.com/tak-bro/aicommit2/compare/v2.4.6...v2.4.7) (2025-10-02)
 
 
