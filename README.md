@@ -195,18 +195,21 @@ aicommit2
 AICommit2 also supports [Jujutsu (jj)](https://github.com/martinvonz/jj) repositories:
 
 ```bash
-# No staging needed
+# Automatic jj detection (no staging needed)
 aicommit2
 
-# Force use when both Git and jj present
-JJ=true aicommit2
+# Force Git when both .jj and .git exist (for colocated repos)
+FORCE_GIT=true aicommit2
+# or
+aicommit2 config set forceGit=true
 ```
 
 **Features:**
 
-- Automatic detection of `.jj` repositories
-- Uses `jj describe` for commits
+- Automatic detection of `.jj` repositories (prioritized over Git since jj v0.34.0+ uses colocated repos)
+- Uses `jj describe` and `jj new` for commits
 - Supports Jujutsu's fileset syntax for file exclusions
+- Works seamlessly with colocated Git repositories
 
 **Installation:**
 
@@ -223,10 +226,10 @@ jj init
 
 ### Detection Priority
 
-1. Git repository (default)
-2. Jujutsu repository (if Git not found)
-3. Environment override: `JJ=true` forces Jujutsu
-4. Config: `aicommit2 config set jujutsu=true`
+1. `FORCE_GIT=true` environment variable (highest priority - forces Git)
+2. Config: `aicommit2 config set forceGit=true` (forces Git)
+3. Jujutsu repository (checked first - since jj v0.34.0+, repos are colocated with .git by default)
+4. Git repository (fallback)
 
 ## Usage
 
@@ -251,7 +254,7 @@ aicommit2 --all # or -a
 
 - `--locale` or `-l`: Locale to use for the generated commit messages (default: **en**)
 - `--all` or `-a`: Automatically stage changes in tracked files for the commit (default: **false**)
-- `--type` or `-t`: Git commit message format (default: **conventional**). It supports [`conventional`](https://conventionalcommits.org/), [`gitmoji`](https://gitmoji.dev/), and `jujutsu`
+- `--type` or `-t`: Git commit message format (default: **conventional**). It supports [`conventional`](https://conventionalcommits.org/) and [`gitmoji`](https://gitmoji.dev/)
 - `--confirm` or `-y`: Skip confirmation when committing after message generation (default: **false**)
 - `--clipboard` or `-c`: Copy the selected message to the clipboard (default: **false**).
   - If you give this option, **_aicommit2_ will not commit**.
@@ -285,8 +288,8 @@ Examples:
 # Generate multiple commit messages with clipboard and file exclusions
 aicommit2 --locale "jp" --all --type "conventional" --generate 3 --clipboard --exclude "*.json" --exclude "*.ts"
 
-# Generate and edit a Jujutsu-style commit message
-aicommit2 --edit --type jujutsu # or conventional, gitmoji
+# Generate and edit a commit message
+aicommit2 --edit --type conventional # or gitmoji
 ```
 
 ### Git hook
@@ -552,11 +555,23 @@ aicommit2 config set exclude="*.ts,*.json"
 
 > NOTE: `exclude` option does not support per model. It is **only** supported by General Settings.
 
+##### forceGit
+
+Default: `false`
+
+Force Git detection even in Jujutsu repositories (useful when you have both `.jj` and `.git` directories):
+
+```sh
+aicommit2 config set forceGit=true
+```
+
+This is equivalent to using the `FORCE_GIT=true` environment variable, but persistent across sessions.
+
 ##### type
 
 Default: `conventional`
 
-Supported: `conventional`, `gitmoji`, `jujutsu`
+Supported: `conventional`, `gitmoji`
 
 The type of commit message to generate:
 
@@ -570,12 +585,6 @@ aicommit2 config set type="conventional"
 
 ```sh
 aicommit2 config set type="gitmoji"
-```
-
-**Jujutsu**: Use component-focused commit messages optimized for Jujutsu workflows:
-
-```sh
-aicommit2 config set type="jujutsu"
 ```
 
 ##### locale
@@ -887,7 +896,7 @@ Use curly braces `{}` to denote these placeholders for options. The following pl
 
 - [{locale}](#locale): The language for the commit message (**string**)
 - [{maxLength}](#max-length): The maximum length for the commit message (**number**)
-- [{type}](#type): The type of the commit message (**conventional**, **gitmoji**, or **jujutsu**)
+- [{type}](#type): The type of the commit message (**conventional** or **gitmoji**)
 - [{generate}](#generate): The number of commit messages to generate (**number**)
 
 #### Example Template

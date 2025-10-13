@@ -25,7 +25,7 @@ export const resolvePromptPath = (promptPath: string): string => {
     }
 };
 
-const commitTypes = ['', 'conventional', 'gitmoji', 'jujutsu'] as const;
+const commitTypes = ['', 'conventional', 'gitmoji'] as const;
 export type CommitType = (typeof commitTypes)[number];
 
 export const DEFAULT_OLLAMA_HOST = 'http://localhost:11434';
@@ -338,17 +338,17 @@ const generalConfigParsers = {
         parseAssert('watchMode', /^(?:true|false)$/.test(watchMode), 'Must be a boolean(true or false)');
         return watchMode === 'true';
     },
-    jujutsu(jujutsu?: string | boolean) {
-        if (typeof jujutsu === 'boolean') {
-            return jujutsu;
+    forceGit(forceGit?: string | boolean) {
+        if (typeof forceGit === 'boolean') {
+            return forceGit;
         }
 
-        if (jujutsu === undefined || jujutsu === null) {
+        if (forceGit === undefined || forceGit === null) {
             return false;
         }
 
-        parseAssert('jujutsu', /^(?:true|false)$/.test(jujutsu), 'Must be a boolean(true or false)');
-        return jujutsu === 'true';
+        parseAssert('forceGit', /^(?:true|false)$/.test(forceGit), 'Must be a boolean(true or false)');
+        return forceGit === 'true';
     },
     disableLowerCase(disableLowerCase?: string | boolean) {
         if (typeof disableLowerCase === 'boolean') {

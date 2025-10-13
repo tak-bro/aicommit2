@@ -89,8 +89,7 @@ export class ReactivePromptManager {
             return;
         }
 
-        const { value, isError } = choice;
-        if (!choice || !value) {
+        if (!choice || !choice.value) {
             return;
         }
         this.choices$.next([...this.currentChoices, choice].sort(sortByDisabled));
