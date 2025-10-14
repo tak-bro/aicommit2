@@ -140,6 +140,19 @@ const parseAssert = (name: string, condition: any, message: string) => {
     }
 };
 
+const createBoolParser =
+    (name: string, defaultValue = false) =>
+    (value?: string | boolean): boolean => {
+        if (typeof value === 'boolean') {
+            return value;
+        }
+        if (value === undefined || value === null) {
+            return defaultValue;
+        }
+        parseAssert(name, /^(?:true|false)$/.test(value), 'Must be a boolean(true or false)');
+        return value === 'true';
+    };
+
 const generalConfigParsers = {
     systemPrompt(systemPrompt?: string) {
         if (!systemPrompt) {
@@ -191,17 +204,6 @@ const generalConfigParsers = {
 
         parseAssert('maxTokens', /^\d+$/.test(maxTokens), 'Must be an integer');
         return Number(maxTokens);
-    },
-    logging(enable?: string | boolean) {
-        if (typeof enable === 'boolean') {
-            return enable;
-        }
-        if (enable === undefined || enable === null) {
-            return true;
-        }
-
-        parseAssert('logging', /^(?:true|false)$/.test(enable), 'Must be a boolean(true or false)');
-        return enable === 'true';
     },
     logLevel(logLevel?: string) {
         if (!logLevel) {
@@ -273,18 +275,6 @@ const generalConfigParsers = {
 
         return parsed;
     },
-    includeBody(includeBody?: string | boolean) {
-        if (typeof includeBody === 'boolean') {
-            return includeBody;
-        }
-
-        if (includeBody === undefined || includeBody === null) {
-            return false;
-        }
-
-        parseAssert('includeBody', /^(?:true|false)$/.test(includeBody), 'Must be a boolean(true or false)');
-        return includeBody === 'true';
-    },
     exclude: (exclude?: string | string[]): string[] => {
         if (!exclude) {
             return [];
@@ -302,66 +292,13 @@ const generalConfigParsers = {
         parseAssert('topP', parsed <= 1.0, 'Must be less than or equal to 1');
         return parsed;
     },
-    codeReview(codeReview?: string | boolean) {
-        if (typeof codeReview === 'boolean') {
-            return codeReview;
-        }
-
-        if (codeReview === undefined || codeReview === null) {
-            return false;
-        }
-
-        parseAssert('codeReview', /^(?:true|false)$/.test(codeReview), 'Must be a boolean(true or false)');
-        return codeReview === 'true';
-    },
-    disabled(disabled?: string | boolean) {
-        if (typeof disabled === 'boolean') {
-            return disabled;
-        }
-
-        if (disabled === undefined || disabled === null) {
-            return false;
-        }
-
-        parseAssert('disabled', /^(?:true|false)$/.test(disabled), 'Must be a boolean(true or false)');
-        return disabled === 'true';
-    },
-    watchMode(watchMode?: string | boolean) {
-        if (typeof watchMode === 'boolean') {
-            return watchMode;
-        }
-
-        if (watchMode === undefined || watchMode === null) {
-            return false;
-        }
-
-        parseAssert('watchMode', /^(?:true|false)$/.test(watchMode), 'Must be a boolean(true or false)');
-        return watchMode === 'true';
-    },
-    forceGit(forceGit?: string | boolean) {
-        if (typeof forceGit === 'boolean') {
-            return forceGit;
-        }
-
-        if (forceGit === undefined || forceGit === null) {
-            return false;
-        }
-
-        parseAssert('forceGit', /^(?:true|false)$/.test(forceGit), 'Must be a boolean(true or false)');
-        return forceGit === 'true';
-    },
-    disableLowerCase(disableLowerCase?: string | boolean) {
-        if (typeof disableLowerCase === 'boolean') {
-            return disableLowerCase;
-        }
-
-        if (disableLowerCase === undefined || disableLowerCase === null) {
-            return false;
-        }
-
-        parseAssert('disableLowerCase', /^(?:true|false)$/.test(disableLowerCase), 'Must be a boolean(true or false)');
-        return disableLowerCase === 'true';
-    },
+    logging: createBoolParser('logging', true),
+    includeBody: createBoolParser('includeBody'),
+    codeReview: createBoolParser('codeReview'),
+    disabled: createBoolParser('disabled'),
+    watchMode: createBoolParser('watchMode'),
+    forceGit: createBoolParser('forceGit'),
+    disableLowerCase: createBoolParser('disableLowerCase'),
 } as const;
 
 const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>> = {
@@ -1013,26 +950,8 @@ export const printConfigPath = async () => {
 };
 
 const createConfigParser = (serviceName: string) => ({
-    compatible: (compatible?: string | boolean) => {
-        if (typeof compatible === 'boolean') {
-            return compatible;
-        }
-        if (compatible === undefined || compatible === null) {
-            return false;
-        }
-        parseAssert('compatible', /^(?:true|false)$/.test(compatible), 'Must be a boolean(true or false)');
-        return compatible === 'true';
-    },
-    stream: (stream?: boolean) => {
-        if (typeof stream === 'boolean') {
-            return stream;
-        }
-        if (stream === undefined || stream === null) {
-            return false;
-        }
-        parseAssert('stream', /^(?:true|false)$/.test(stream), 'Must be a boolean(true or false)');
-        return stream === 'true';
-    },
+    compatible: createBoolParser('compatible'),
+    stream: createBoolParser('stream'),
     url: (url?: string) => {
         if (!url) {
             return '';
