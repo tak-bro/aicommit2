@@ -3,7 +3,7 @@ name: Update Flake Version
 on:
   workflow_dispatch:
   release:
-    types: [created]
+    types: [published]
 
 jobs:
   update-flake:
@@ -69,8 +69,8 @@ jobs:
         if: env.SKIP_PR == 'false'
         uses: peter-evans/create-pull-request@v7
         with:
-          commit-message: "Update flake.nix to version ${{ env.VERSION }} with new hash"
-          title: "Update flake.nix to version ${{ env.VERSION }}"
+          commit-message: "chore(nix): update flake.nix to version ${{ env.VERSION }} [skip ci]"
+          title: "chore(nix): update flake.nix to version ${{ env.VERSION }}"
           body: |
             This PR updates flake.nix with:
             - New version: ${{ env.VERSION }}
