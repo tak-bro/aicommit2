@@ -9,7 +9,6 @@ import { KnownError } from './error.js';
 import { generateUserPrompt } from './prompt.js';
 
 import type { ClientRequest, IncomingMessage } from 'http';
-import type { CreateChatCompletionRequest, CreateChatCompletionResponse } from 'openai';
 
 export const httpsGet = async (url: URL, path: string, headers: Record<string, string>, timeout: number, proxy?: string) =>
     new Promise<{
@@ -102,14 +101,7 @@ export const httpsPost = async (
         request.end();
     });
 
-const createChatCompletion = async (
-    url: string,
-    path: string,
-    apiKey: string,
-    json: CreateChatCompletionRequest,
-    timeout: number,
-    proxy?: string
-) => {
+const createChatCompletion = async (url: string, path: string, apiKey: string, json: any, timeout: number, proxy?: string) => {
     const openAIUrl = new URL(url);
     const { response, data } = await httpsPost(
         openAIUrl,
@@ -136,13 +128,36 @@ const createChatCompletion = async (
         throw new KnownError(errorMessage);
     }
 
-    return JSON.parse(data) as CreateChatCompletionResponse;
+    return JSON.parse(data);
 };
 
 export const sanitizeMessage = (message: string) => message.trim();
 
+/**
+ * List of GPT-5 model identifiers that require special API parameters.
+ * GPT-5 models use max_completion_tokens instead of max_tokens and don't support top_p.
+ */
+const GPT5_MODEL_PREFIXES = ['gpt-5', 'gpt-5-mini', 'gpt-5-nano', 'gpt-5-codex'] as const;
+
+/**
+ * Checks if the given model string represents a GPT-5 series model.
+ * GPT-5 models require different API parameters than other OpenAI models:
+ * - Use `max_completion_tokens` instead of `max_tokens`
+ * - Don't support `top_p` parameter
+ * - Require `temperature: 1`
+ *
+ * @param model - The model identifier (e.g., "gpt-5", "gpt-5-mini", "gpt-5-codex-preview")
+ * @returns true if the model is a GPT-5 variant, false otherwise
+ *
+ * @example
+ * isGPT5Model('gpt-5') // true
+ * isGPT5Model('gpt-5-codex') // true
+ * isGPT5Model('gpt-5-preview') // true (version suffix)
+ * isGPT5Model('gpt-4o') // false
+ * isGPT5Model('gpt-50') // false (avoids false positive)
+ */
 export const isGPT5Model = (model: string): boolean => {
-    return ['gpt-5', 'gpt-5-mini', 'gpt-5-nano'].some(gpt5Model => model.includes(gpt5Model));
+    return GPT5_MODEL_PREFIXES.some(prefix => model === prefix || model.startsWith(`${prefix}-`));
 };
 
 export const generateCommitMessage = async (
@@ -166,7 +181,7 @@ export const generateCommitMessage = async (
 
         const gpt5Model = isGPT5Model(model);
 
-        const request: CreateChatCompletionRequest = {
+        const request: any = {
             model,
             messages: [
                 { role: 'system', content: systemPrompt },

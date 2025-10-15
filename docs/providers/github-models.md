@@ -21,9 +21,9 @@ Currently, GitHub does not officially support direct access to the GitHub Copilo
 
 This approach allows AI-powered commit message generation within the GitHub ecosystem using a stable and officially supported solution.
 
-## 🚀 Quick Setup
+## 🚀 Quick setup
 
-### Option 1: Automatic Login (Recommended)
+### Option 1: Automatic login (recommended)
 
 Use the built-in GitHub login command for seamless authentication:
 
@@ -38,11 +38,11 @@ This command will:
 3. Verify GitHub Models access
 4. Store the configuration for immediate use
 
-### Option 2: Manual Token Setup
+### Option 2: Manual token setup
 
 If you prefer manual setup or need to use a specific token:
 
-1. Create a Personal Access Token at [github.com/settings/tokens](https://github.com/settings/tokens)
+1. Create a [Personal Access Token](https://github.com/settings/tokens)
 2. Select the "Models" permission scope
 3. Use the token directly:
 
@@ -78,9 +78,9 @@ sudo apt update
 sudo apt install gh
 ```
 
-## Usage Examples
+## Usage examples
 
-### Basic Usage
+### Basic usage
 
 After authentication, you can immediately start using GitHub Models:
 
@@ -94,11 +94,25 @@ git add .
 aicommit2
 ```
 
-### Advanced Configuration
+### Advanced configuration
 
 ```sh
-aicommit2 config set GITHUB_MODELS.key="ghp_xxxxxxxxxxxxxxxxxxxx" \
-    GITHUB_MODELS.model="gpt-4o-mini" \
+# Recommended for general use (default)
+aicommit2 config set GITHUB_MODELS.model="gpt-4o-mini"
+
+# For complex reasoning tasks
+aicommit2 config set GITHUB_MODELS.model="gpt-5"
+
+# For cost-sensitive applications
+aicommit2 config set GITHUB_MODELS.model="gpt-5-mini"
+
+# For code-focused tasks
+aicommit2 config set GITHUB_MODELS.model="gpt-5-codex"
+
+# Full configuration
+aicommit2 config set \
+    GITHUB_MODELS.key="ghp_xxxxxxxxxxxxxxxxxxxx" \
+    GITHUB_MODELS.model="gpt-5" \
     GITHUB_MODELS.temperature=0.7 \
     GITHUB_MODELS.maxTokens=1024 \
     GITHUB_MODELS.locale="en" \
@@ -113,9 +127,9 @@ aicommit2 config set GITHUB_MODELS.key="ghp_xxxxxxxxxxxxxxxxxxxx" \
 | `key`   | GitHub token | -             |
 | `model` | Model to use | `gpt-4o-mini` |
 
-## Configuration Details
+## Configuration details
 
-### Authentication Setup
+### Authentication setup
 
 #### GITHUB_MODELS.key
 
@@ -141,20 +155,138 @@ aicommit2 config set GITHUB_MODELS.key="ghp_xxxxxxxxxxxxxxxxxxxx"
 
 Default: `gpt-4o-mini`
 
-**Available Models:**
+**Available Models (40+):**
 
-| Model                          | Provider  | Context | Best For              |
-| ------------------------------ | --------- | ------- | --------------------- |
-| `gpt-4o-mini`                  | OpenAI    | 128K    | General use (default) |
-| `gpt-4o`                       | OpenAI    | 128K    | Complex reasoning     |
-| `gpt-3.5-turbo`                | OpenAI    | 16K     | Fast responses        |
-| `meta-llama-3.1-405b-instruct` | Meta      | 128K    | Advanced reasoning    |
-| `meta-llama-3.1-70b-instruct`  | Meta      | 128K    | Balanced performance  |
-| `meta-llama-3.1-8b-instruct`   | Meta      | 128K    | Fast, efficient       |
-| `phi-3-medium-4k-instruct`     | Microsoft | 4K      | Code-focused          |
-| `phi-3-mini-4k-instruct`       | Microsoft | 4K      | Lightweight           |
-| `phi-3-small-8k-instruct`      | Microsoft | 8K      | Balanced              |
+GitHub Models provides access to leading AI models from multiple providers. Use `gh models list` to see the latest catalog.
+
+##### OpenAI Models
+
+| Model            | Context | Best For                          | Status                   |
+| ---------------- | ------- | --------------------------------- | ------------------------ |
+| `gpt-5`          | 200K    | Complex reasoning, multi-step     | GA                       |
+| `gpt-5-mini`     | 200K    | Fast, lightweight responses       | GA                       |
+| `gpt-5-nano`     | 200K    | Speed-optimized tasks             | GA                       |
+| `gpt-5-codex`    | 200K    | Code generation and refactoring   | Preview                  |
+| `gpt-4.1`        | 128K    | Advanced reasoning                | GA                       |
+| `gpt-4.1-mini`   | 128K    | Cost-efficient                    | GA                       |
+| `gpt-4.1-nano`   | 128K    | Fast responses                    | GA                       |
+| `gpt-4o`         | 128K    | Multimodal, general use           | GA                       |
+| `gpt-4o-mini`    | 128K    | General use (default)             | GA                       |
+| `o3`             | 128K    | Advanced reasoning                | ⚠️ Closing 2025-10-23    |
+| `o4-mini`        | 128K    | Fast reasoning                    | ⚠️ Closing 2025-10-23    |
+
+##### Anthropic Models
+
+| Model                  | Context | Best For                     | Status                   |
+| ---------------------- | ------- | ---------------------------- | ------------------------ |
+| `claude-opus-4.1`      | 200K    | Sophisticated reasoning      | GA                       |
+| `claude-sonnet-4.5`    | 200K    | Complex problem-solving      | GA                       |
+| `claude-sonnet-4`      | 200K    | Balanced performance         | GA                       |
+| `claude-opus-4`        | 200K    | High capability              | ⚠️ Closing 2025-10-23    |
+| `claude-sonnet-3.7`    | 200K    | Fast responses               | ⚠️ Closing 2025-10-23    |
+
+##### Meta Models (Llama)
+
+| Model                            | Context | Best For                  | Status |
+| -------------------------------- | ------- | ------------------------- | ------ |
+| `llama-3.2-11b`                  | 128K    | Efficient reasoning       | GA     |
+| `llama-3.2-90b`                  | 128K    | Advanced capability       | GA     |
+| `llama-4-scout-17b-16e-instruct` | 128K    | Multi-document analysis   | GA     |
+| `meta-llama-3.1-405b-instruct`   | 128K    | Advanced reasoning        | GA     |
+| `meta-llama-3.1-70b-instruct`    | 128K    | Balanced performance      | GA     |
+| `meta-llama-3.1-8b-instruct`     | 128K    | Fast, efficient           | GA     |
+
+##### Microsoft Models (Phi)
+
+| Model                        | Context | Best For           | Status |
+| ---------------------------- | ------- | ------------------ | ------ |
+| `phi-3.5-moe-instruct`       | 128K    | Code-focused       | GA     |
+| `phi-3.5-mini-instruct`      | 128K    | Lightweight tasks  | GA     |
+| `phi-3.5-vision-instruct`    | 128K    | Visual reasoning   | GA     |
+| `phi-3-medium-4k-instruct`   | 4K      | Code-focused       | GA     |
+| `phi-3-mini-4k-instruct`     | 4K      | Lightweight        | GA     |
+| `phi-3-small-8k-instruct`    | 8K      | Balanced           | GA     |
+
+##### Google Models
+
+| Model              | Context | Best For                  | Status |
+| ------------------ | ------- | ------------------------- | ------ |
+| `gemini-2.5-pro`   | 1M      | Large codebase analysis   | GA     |
+
+##### Other Providers
+
+- **DeepSeek**: `deepseek-v3-0324`, `deepseek-coder`
+- **Mistral AI**: `mistral-large-2`
+- **Cohere**: `cohere-command-r`, `cohere-command-r-plus`
+- **AI21 Labs**: `ai21-jamba-1.5-large`, `ai21-jamba-1.5-mini`
+- **xAI**: `grok-code-fast-1` (Preview)
+
+**Model Naming:**
+
+- Full model IDs include provider prefix: `openai/gpt-5`, `anthropic/claude-opus-4.1`
+- You can omit the prefix in aicommit2: `gpt-5`, `claude-opus-4.1` (provider inferred)
+
+**Checking Available Models:**
+
+```bash
+# Install GitHub Models CLI extension
+gh extension install https://github.com/github/gh-models
+
+# List all current models
+gh models list
+```
+
+### Choosing the right model
+
+**For quick commits and simple tasks**
+→ Recommended: `gpt-4o-mini` (default), `gpt-5-mini`, `o4-mini`
+
+- Fast responses
+- Cost-effective
+- Suitable for standard commit messages
+
+**For complex reasoning and architecture**
+→ Recommended: `gpt-5`, `claude-opus-4.1`, `claude-sonnet-4.5`
+
+- Multi-step problem solving
+- Complex code analysis
+- Architecture-level decisions
+
+**For large codebase analysis**
+→ Recommended: `gemini-2.5-pro` (1M context window)
+
+- Repository-wide understanding
+- Multi-file refactoring
+- Cross-file dependencies
+
+**For code generation**
+→ Recommended: `gpt-5-codex`, `deepseek-coder`
+
+- Code-specialized models
+- Function generation
+- Code refactoring
+
+**Performance Comparison**: According to [Artificial Analysis benchmarks](https://artificialanalysis.ai/models/comparisons/gpt-5-vs-o4-mini), `gpt-5` demonstrates superior intelligence scores compared to `o4-mini`, with improved reasoning capabilities for complex tasks.
+
+### Version pinning
+
+For consistent behavior in CI/CD pipelines, use full model IDs with provider prefix:
+
+```bash
+aicommit2 config set GITHUB_MODELS.model="openai/gpt-4o-mini"
+```
+
+### Deprecated models
+
+⚠️ **Sunset schedule**:
+
+- `o3`, `o4-mini` - Closing 2025-10-23
+- `claude-opus-4`, `claude-sonnet-3.7` - Closing 2025-10-23
+
+Migrate to newer alternatives before sunset dates.
+
+**Configuration Example:**
 
 ```sh
-aicommit2 config set GITHUB_MODELS.model="meta-llama-3.1-70b-instruct"
+aicommit2 config set GITHUB_MODELS.model="gpt-5"
 ```
