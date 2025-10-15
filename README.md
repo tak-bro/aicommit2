@@ -61,7 +61,7 @@ AICommit2 automatically generates commit messages using AI. It primarily support
 - [Groq](docs/providers/groq.md)
 - [Perplexity](docs/providers/perplexity.md)
 - [DeepSeek](docs/providers/deepseek.md)
-- [GitHub Models](docs/providers/github-models.md) - 40+ models from OpenAI, Anthropic, Meta, Microsoft, and more
+- [GitHub Models](docs/providers/github-models.md) 
 - [OpenAI API Compatibility](docs/providers/compatible.md)
 
 ### Local AI Services

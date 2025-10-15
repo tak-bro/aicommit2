@@ -97,19 +97,6 @@ aicommit2
 ### Advanced configuration
 
 ```sh
-# Recommended for general use (default)
-aicommit2 config set GITHUB_MODELS.model="gpt-4o-mini"
-
-# For complex reasoning tasks
-aicommit2 config set GITHUB_MODELS.model="gpt-5"
-
-# For cost-sensitive applications
-aicommit2 config set GITHUB_MODELS.model="gpt-5-mini"
-
-# For code-focused tasks
-aicommit2 config set GITHUB_MODELS.model="gpt-5-codex"
-
-# Full configuration
 aicommit2 config set \
     GITHUB_MODELS.key="ghp_xxxxxxxxxxxxxxxxxxxx" \
     GITHUB_MODELS.model="gpt-5" \
@@ -221,11 +208,6 @@ GitHub Models provides access to leading AI models from multiple providers. Use 
 - **AI21 Labs**: `ai21-jamba-1.5-large`, `ai21-jamba-1.5-mini`
 - **xAI**: `grok-code-fast-1` (Preview)
 
-**Model Naming:**
-
-- Full model IDs include provider prefix: `openai/gpt-5`, `anthropic/claude-opus-4.1`
-- You can omit the prefix in aicommit2: `gpt-5`, `claude-opus-4.1` (provider inferred)
-
 **Checking Available Models:**
 
 ```bash
@@ -236,57 +218,9 @@ gh extension install https://github.com/github/gh-models
 gh models list
 ```
 
-### Choosing the right model
-
-**For quick commits and simple tasks**
-→ Recommended: `gpt-4o-mini` (default), `gpt-5-mini`, `o4-mini`
-
-- Fast responses
-- Cost-effective
-- Suitable for standard commit messages
-
-**For complex reasoning and architecture**
-→ Recommended: `gpt-5`, `claude-opus-4.1`, `claude-sonnet-4.5`
-
-- Multi-step problem solving
-- Complex code analysis
-- Architecture-level decisions
-
-**For large codebase analysis**
-→ Recommended: `gemini-2.5-pro` (1M context window)
-
-- Repository-wide understanding
-- Multi-file refactoring
-- Cross-file dependencies
-
-**For code generation**
-→ Recommended: `gpt-5-codex`, `deepseek-coder`
-
-- Code-specialized models
-- Function generation
-- Code refactoring
-
-**Performance Comparison**: According to [Artificial Analysis benchmarks](https://artificialanalysis.ai/models/comparisons/gpt-5-vs-o4-mini), `gpt-5` demonstrates superior intelligence scores compared to `o4-mini`, with improved reasoning capabilities for complex tasks.
-
-### Version pinning
-
-For consistent behavior in CI/CD pipelines, use full model IDs with provider prefix:
-
-```bash
-aicommit2 config set GITHUB_MODELS.model="openai/gpt-4o-mini"
-```
-
 ### Deprecated models
 
 ⚠️ **Sunset schedule**:
 
 - `o3`, `o4-mini` - Closing 2025-10-23
 - `claude-opus-4`, `claude-sonnet-3.7` - Closing 2025-10-23
-
-Migrate to newer alternatives before sunset dates.
-
-**Configuration Example:**
-
-```sh
-aicommit2 config set GITHUB_MODELS.model="gpt-5"
-```
