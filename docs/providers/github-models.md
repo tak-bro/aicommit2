@@ -21,7 +21,7 @@ Currently, GitHub does not officially support direct access to the GitHub Copilo
 
 This approach allows AI-powered commit message generation within the GitHub ecosystem using a stable and officially supported solution.
 
-## 🚀 Quick setup
+## 🚀 Quick Setup
 
 ### Option 1: Automatic login (recommended)
 
@@ -78,7 +78,7 @@ sudo apt update
 sudo apt install gh
 ```
 
-## Usage examples
+## Usage Examples
 
 ### Basic usage
 
@@ -114,7 +114,7 @@ aicommit2 config set \
 | `key`   | GitHub token | -             |
 | `model` | Model to use | `gpt-4o-mini` |
 
-## Configuration details
+## Configuration Details
 
 ### Authentication setup
 
@@ -142,63 +142,63 @@ aicommit2 config set GITHUB_MODELS.key="ghp_xxxxxxxxxxxxxxxxxxxx"
 
 Default: `gpt-4o-mini`
 
-**Available Models (40+):**
+**Available Models (40-plus)**
 
 GitHub Models provides access to leading AI models from multiple providers. Use `gh models list` to see the latest catalog.
 
 ##### OpenAI Models
 
-| Model            | Context | Best For                          | Status                   |
-| ---------------- | ------- | --------------------------------- | ------------------------ |
-| `gpt-5`          | 200K    | Complex reasoning, multi-step     | GA                       |
-| `gpt-5-mini`     | 200K    | Fast, lightweight responses       | GA                       |
-| `gpt-5-nano`     | 200K    | Speed-optimized tasks             | GA                       |
-| `gpt-5-codex`    | 200K    | Code generation and refactoring   | Preview                  |
-| `gpt-4.1`        | 128K    | Advanced reasoning                | GA                       |
-| `gpt-4.1-mini`   | 128K    | Cost-efficient                    | GA                       |
-| `gpt-4.1-nano`   | 128K    | Fast responses                    | GA                       |
-| `gpt-4o`         | 128K    | Multimodal, general use           | GA                       |
-| `gpt-4o-mini`    | 128K    | General use (default)             | GA                       |
-| `o3`             | 128K    | Advanced reasoning                | ⚠️ Closing 2025-10-23    |
-| `o4-mini`        | 128K    | Fast reasoning                    | ⚠️ Closing 2025-10-23    |
+| Model            | Status                   |
+| ---------------- | ------------------------ |
+| `gpt-5`          | GA                       |
+| `gpt-5-mini`     | GA                       |
+| `gpt-5-nano`     | GA                       |
+| `gpt-5-codex`    | Preview                  |
+| `gpt-4.1`        | GA                       |
+| `gpt-4.1-mini`   | GA                       |
+| `gpt-4.1-nano`   | GA                       |
+| `gpt-4o`         | GA                       |
+| `gpt-4o-mini`    | GA                       |
+| `o3`             | ⚠️ Closing 2025-10-23    |
+| `o4-mini`        | ⚠️ Closing 2025-10-23    |
 
 ##### Anthropic Models
 
-| Model                  | Context | Best For                     | Status                   |
-| ---------------------- | ------- | ---------------------------- | ------------------------ |
-| `claude-opus-4.1`      | 200K    | Sophisticated reasoning      | GA                       |
-| `claude-sonnet-4.5`    | 200K    | Complex problem-solving      | GA                       |
-| `claude-sonnet-4`      | 200K    | Balanced performance         | GA                       |
-| `claude-opus-4`        | 200K    | High capability              | ⚠️ Closing 2025-10-23    |
-| `claude-sonnet-3.7`    | 200K    | Fast responses               | ⚠️ Closing 2025-10-23    |
+| Model                  | Status                   |
+| ---------------------- | ------------------------ |
+| `claude-opus-4.1`      | GA                       |
+| `claude-sonnet-4.5`    | GA                       |
+| `claude-sonnet-4`      | GA                       |
+| `claude-opus-4`        | ⚠️ Closing 2025-10-23    |
+| `claude-sonnet-3.7`    | ⚠️ Closing 2025-10-23    |
 
 ##### Meta Models (Llama)
 
-| Model                            | Context | Best For                  | Status |
-| -------------------------------- | ------- | ------------------------- | ------ |
-| `llama-3.2-11b`                  | 128K    | Efficient reasoning       | GA     |
-| `llama-3.2-90b`                  | 128K    | Advanced capability       | GA     |
-| `llama-4-scout-17b-16e-instruct` | 128K    | Multi-document analysis   | GA     |
-| `meta-llama-3.1-405b-instruct`   | 128K    | Advanced reasoning        | GA     |
-| `meta-llama-3.1-70b-instruct`    | 128K    | Balanced performance      | GA     |
-| `meta-llama-3.1-8b-instruct`     | 128K    | Fast, efficient           | GA     |
+| Model                            | Status |
+| -------------------------------- | ------ |
+| `llama-3.2-11b`                  | GA     |
+| `llama-3.2-90b`                  | GA     |
+| `llama-4-scout-17b-16e-instruct` | GA     |
+| `meta-llama-3.1-405b-instruct`   | GA     |
+| `meta-llama-3.1-70b-instruct`    | GA     |
+| `meta-llama-3.1-8b-instruct`     | GA     |
 
 ##### Microsoft Models (Phi)
 
-| Model                        | Context | Best For           | Status |
-| ---------------------------- | ------- | ------------------ | ------ |
-| `phi-3.5-moe-instruct`       | 128K    | Code-focused       | GA     |
-| `phi-3.5-mini-instruct`      | 128K    | Lightweight tasks  | GA     |
-| `phi-3.5-vision-instruct`    | 128K    | Visual reasoning   | GA     |
-| `phi-3-medium-4k-instruct`   | 4K      | Code-focused       | GA     |
-| `phi-3-mini-4k-instruct`     | 4K      | Lightweight        | GA     |
-| `phi-3-small-8k-instruct`    | 8K      | Balanced           | GA     |
+| Model                        | Status |
+| ---------------------------- | ------ |
+| `phi-3.5-moe-instruct`       | GA     |
+| `phi-3.5-mini-instruct`      | GA     |
+| `phi-3.5-vision-instruct`    | GA     |
+| `phi-3-medium-4k-instruct`   | GA     |
+| `phi-3-mini-4k-instruct`     | GA     |
+| `phi-3-small-8k-instruct`    | GA     |
 
 ##### Google Models
 
-| Model              | Context | Best For                  | Status |
-| ------------------ | ------- | ------------------------- | ------ |
-| `gemini-2.5-pro`   | 1M      | Large codebase analysis   | GA     |
+| Model              | Status |
+| ------------------ | ------ |
+| `gemini-2.5-pro`   | GA     |
 
 ##### Other Providers
 
@@ -208,7 +208,7 @@ GitHub Models provides access to leading AI models from multiple providers. Use 
 - **AI21 Labs**: `ai21-jamba-1.5-large`, `ai21-jamba-1.5-mini`
 - **xAI**: `grok-code-fast-1` (Preview)
 
-**Checking Available Models:**
+**Checking available models**
 
 ```bash
 # Install GitHub Models CLI extension
@@ -218,9 +218,9 @@ gh extension install https://github.com/github/gh-models
 gh models list
 ```
 
-### Deprecated models
+### Deprecated Models
 
-⚠️ **Sunset schedule**:
+⚠️ **Sunset schedule**
 
 - `o3`, `o4-mini` - Closing 2025-10-23
 - `claude-opus-4`, `claude-sonnet-3.7` - Closing 2025-10-23
