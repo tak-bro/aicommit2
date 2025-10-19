@@ -1,3 +1,17 @@
+## [2.4.10](https://github.com/tak-bro/aicommit2/compare/v2.4.9...v2.4.10) (2025-10-19)
+
+
+### Bug Fixes
+
+* **ci:** update Node.js version to v22.15.1 for semantic-release compatibility ([888edea](https://github.com/tak-bro/aicommit2/commit/888edea7905a1331fb08244c05382f65e4844094))
+* **prompt:** add missing ui properties to type ([9af9ec0](https://github.com/tak-bro/aicommit2/commit/9af9ec08481e754ec19099c8db8b1cfdc22dd461))
+* **prompt:** prevent closing already closed readline ([16dab11](https://github.com/tak-bro/aicommit2/commit/16dab11cba46d3b759b186cb390d12fd0906a136))
+
+
+### Features
+
+* add gradient title printing ([f2b2d43](https://github.com/tak-bro/aicommit2/commit/f2b2d433e4e6908cbe95711ba10b53e8c5fc9077))
+
 ## [2.4.9](https://github.com/tak-bro/aicommit2/compare/v2.4.8...v2.4.9) (2025-10-14)
 
 ## [2.4.8](https://github.com/tak-bro/aicommit2/compare/v2.4.7...v2.4.8) (2025-10-13)
