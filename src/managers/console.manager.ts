@@ -12,15 +12,12 @@ export class ConsoleManager {
     private loader: Ora | undefined;
 
     printTitle() {
-        // console.log(figlet.textSync(this.title, { font: 'Small Slant' }));
-        // TODO: research awesome ascii art
         try {
-            const startColor = '#464646';
-            const endColor = '#A020F0';
             const asciiArt = figlet.textSync(this.title, { font: 'Small Slant' });
-            console.log(gradient([startColor, endColor]).multiline(asciiArt));
+            const purpleGradient = gradient(['#8B5CF6', '#A020F0', '#D946EF']);
+            console.log(chalk.bold(purpleGradient.multiline(asciiArt)));
         } catch {
-            console.log(figlet.textSync(this.title, { font: 'Small Slant' }));
+            console.log(chalk.bold(figlet.textSync(this.title, { font: 'Small Slant' })));
         }
     }
 
