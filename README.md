@@ -4,7 +4,7 @@
     <h1 align="center">AICommit2</h1>
   </div>
   <p>
-    A Reactive CLI that generates commit messages for Git and Jujutsu with Ollama, ChatGPT, Gemini, Claude, Mistral and other AI
+    A Reactive CLI that generates commit messages for Git and Jujutsu with Ollama, ChatGPT, Gemini, Claude, Mistral, and other AI
   </p>
 </div>
 

@@ -2,31 +2,27 @@
 
 ## [2.4.8](https://github.com/tak-bro/aicommit2/compare/v2.4.7...v2.4.8) (2025-10-13)
 
-
 ### Features
 
-* allow forcing git with config or env var ([7f007ea](https://github.com/tak-bro/aicommit2/commit/7f007ea9422167b7a22aa3e16ac07703f3434bc4))
-* update jj detection flow and remove jujutsu type [#173](https://github.com/tak-bro/aicommit2/issues/173) ([b679812](https://github.com/tak-bro/aicommit2/commit/b679812aa58b3a3a5f7eeaeba388588f8011326b))
+- allow forcing git with config or env var ([7f007ea](https://github.com/tak-bro/aicommit2/commit/7f007ea9422167b7a22aa3e16ac07703f3434bc4))
+- update jj detection flow and remove jujutsu type [#173](https://github.com/tak-bro/aicommit2/issues/173) ([b679812](https://github.com/tak-bro/aicommit2/commit/b679812aa58b3a3a5f7eeaeba388588f8011326b))
 
 ## [2.4.7](https://github.com/tak-bro/aicommit2/compare/v2.4.6...v2.4.7) (2025-10-02)
 
-
 ### Bug Fixes
 
-* **ui:** fix empty commit message ([8b2598b](https://github.com/tak-bro/aicommit2/commit/8b2598b3351b9765a97fc68763413bc1cd6cc656))
-* **watch-git:** handle git reset and improve commit processing ([534287a](https://github.com/tak-bro/aicommit2/commit/534287aaef21beb42f72f7aed0542d763b1c3b8b))
-
+- **ui:** fix empty commit message ([8b2598b](https://github.com/tak-bro/aicommit2/commit/8b2598b3351b9765a97fc68763413bc1cd6cc656))
+- **watch-git:** handle git reset and improve commit processing ([534287a](https://github.com/tak-bro/aicommit2/commit/534287aaef21beb42f72f7aed0542d763b1c3b8b))
 
 ### Features
 
-* improve commit monitoring with git events ([168c897](https://github.com/tak-bro/aicommit2/commit/168c89775c8d7de7e70395ed4ee310719512c0c7))
+- improve commit monitoring with git events ([168c897](https://github.com/tak-bro/aicommit2/commit/168c89775c8d7de7e70395ed4ee310719512c0c7))
 
 ## [2.4.6](https://github.com/tak-bro/aicommit2/compare/v2.4.5...v2.4.6) (2025-09-12)
 
-
 ### Features
 
-* prevents memory leaks and refactor code ([2dfab71](https://github.com/tak-bro/aicommit2/commit/2dfab716d5e0b5cfdc294aba27bc47f0ba7809f4))
+- prevents memory leaks and refactor code ([2dfab71](https://github.com/tak-bro/aicommit2/commit/2dfab716d5e0b5cfdc294aba27bc47f0ba7809f4))
 
 ## [2.4.5](https://github.com/tak-bro/aicommit2/compare/v2.4.4...v2.4.5) (2025-08-25)
 

@@ -1,4 +1,7 @@
 .serena/
+.claude/
+CLAUDE.md
+CLAUDE_ARCHIVE.md
 
 # macOS
 .DS_Store

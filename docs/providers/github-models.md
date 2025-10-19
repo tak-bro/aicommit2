@@ -23,7 +23,7 @@ This approach allows AI-powered commit message generation within the GitHub ecos
 
 ## 🚀 Quick Setup
 
-### Option 1: Automatic Login (Recommended)
+### Option 1: Automatic login (recommended)
 
 Use the built-in GitHub login command for seamless authentication:
 
@@ -38,11 +38,11 @@ This command will:
 3. Verify GitHub Models access
 4. Store the configuration for immediate use
 
-### Option 2: Manual Token Setup
+### Option 2: Manual token setup
 
 If you prefer manual setup or need to use a specific token:
 
-1. Create a Personal Access Token at [github.com/settings/tokens](https://github.com/settings/tokens)
+1. Create a [Personal Access Token](https://github.com/settings/tokens)
 2. Select the "Models" permission scope
 3. Use the token directly:
 
@@ -80,7 +80,7 @@ sudo apt install gh
 
 ## Usage Examples
 
-### Basic Usage
+### Basic usage
 
 After authentication, you can immediately start using GitHub Models:
 
@@ -94,11 +94,12 @@ git add .
 aicommit2
 ```
 
-### Advanced Configuration
+### Advanced configuration
 
 ```sh
-aicommit2 config set GITHUB_MODELS.key="ghp_xxxxxxxxxxxxxxxxxxxx" \
-    GITHUB_MODELS.model="gpt-4o-mini" \
+aicommit2 config set \
+    GITHUB_MODELS.key="ghp_xxxxxxxxxxxxxxxxxxxx" \
+    GITHUB_MODELS.model="gpt-5" \
     GITHUB_MODELS.temperature=0.7 \
     GITHUB_MODELS.maxTokens=1024 \
     GITHUB_MODELS.locale="en" \
@@ -115,7 +116,7 @@ aicommit2 config set GITHUB_MODELS.key="ghp_xxxxxxxxxxxxxxxxxxxx" \
 
 ## Configuration Details
 
-### Authentication Setup
+### Authentication setup
 
 #### GITHUB_MODELS.key
 
@@ -141,20 +142,85 @@ aicommit2 config set GITHUB_MODELS.key="ghp_xxxxxxxxxxxxxxxxxxxx"
 
 Default: `gpt-4o-mini`
 
-**Available Models:**
+**Available Models (40-plus)**
 
-| Model                          | Provider  | Context | Best For              |
-| ------------------------------ | --------- | ------- | --------------------- |
-| `gpt-4o-mini`                  | OpenAI    | 128K    | General use (default) |
-| `gpt-4o`                       | OpenAI    | 128K    | Complex reasoning     |
-| `gpt-3.5-turbo`                | OpenAI    | 16K     | Fast responses        |
-| `meta-llama-3.1-405b-instruct` | Meta      | 128K    | Advanced reasoning    |
-| `meta-llama-3.1-70b-instruct`  | Meta      | 128K    | Balanced performance  |
-| `meta-llama-3.1-8b-instruct`   | Meta      | 128K    | Fast, efficient       |
-| `phi-3-medium-4k-instruct`     | Microsoft | 4K      | Code-focused          |
-| `phi-3-mini-4k-instruct`       | Microsoft | 4K      | Lightweight           |
-| `phi-3-small-8k-instruct`      | Microsoft | 8K      | Balanced              |
+GitHub Models provides access to leading AI models from multiple providers. Use `gh models list` to see the latest catalog.
 
-```sh
-aicommit2 config set GITHUB_MODELS.model="meta-llama-3.1-70b-instruct"
+##### OpenAI Models
+
+| Model            | Status                   |
+| ---------------- | ------------------------ |
+| `gpt-5`          | GA                       |
+| `gpt-5-mini`     | GA                       |
+| `gpt-5-nano`     | GA                       |
+| `gpt-5-codex`    | Preview                  |
+| `gpt-4.1`        | GA                       |
+| `gpt-4.1-mini`   | GA                       |
+| `gpt-4.1-nano`   | GA                       |
+| `gpt-4o`         | GA                       |
+| `gpt-4o-mini`    | GA                       |
+| `o3`             | ⚠️ Closing 2025-10-23    |
+| `o4-mini`        | ⚠️ Closing 2025-10-23    |
+
+##### Anthropic Models
+
+| Model                  | Status                   |
+| ---------------------- | ------------------------ |
+| `claude-opus-4.1`      | GA                       |
+| `claude-sonnet-4.5`    | GA                       |
+| `claude-sonnet-4`      | GA                       |
+| `claude-opus-4`        | ⚠️ Closing 2025-10-23    |
+| `claude-sonnet-3.7`    | ⚠️ Closing 2025-10-23    |
+
+##### Meta Models (Llama)
+
+| Model                            | Status |
+| -------------------------------- | ------ |
+| `llama-3.2-11b`                  | GA     |
+| `llama-3.2-90b`                  | GA     |
+| `llama-4-scout-17b-16e-instruct` | GA     |
+| `meta-llama-3.1-405b-instruct`   | GA     |
+| `meta-llama-3.1-70b-instruct`    | GA     |
+| `meta-llama-3.1-8b-instruct`     | GA     |
+
+##### Microsoft Models (Phi)
+
+| Model                        | Status |
+| ---------------------------- | ------ |
+| `phi-3.5-moe-instruct`       | GA     |
+| `phi-3.5-mini-instruct`      | GA     |
+| `phi-3.5-vision-instruct`    | GA     |
+| `phi-3-medium-4k-instruct`   | GA     |
+| `phi-3-mini-4k-instruct`     | GA     |
+| `phi-3-small-8k-instruct`    | GA     |
+
+##### Google Models
+
+| Model              | Status |
+| ------------------ | ------ |
+| `gemini-2.5-pro`   | GA     |
+
+##### Other Providers
+
+- **DeepSeek**: `deepseek-v3-0324`, `deepseek-coder`
+- **Mistral AI**: `mistral-large-2`
+- **Cohere**: `cohere-command-r`, `cohere-command-r-plus`
+- **AI21 Labs**: `ai21-jamba-1.5-large`, `ai21-jamba-1.5-mini`
+- **xAI**: `grok-code-fast-1` (Preview)
+
+**Checking available models**
+
+```bash
+# Install GitHub Models CLI extension
+gh extension install https://github.com/github/gh-models
+
+# List all current models
+gh models list
 ```
+
+### Deprecated Models
+
+⚠️ **Sunset schedule**
+
+- `o3`, `o4-mini` - Closing 2025-10-23
+- `claude-opus-4`, `claude-sonnet-3.7` - Closing 2025-10-23

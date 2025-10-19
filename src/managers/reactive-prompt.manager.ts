@@ -36,6 +36,13 @@ export const DEFAULT_INQUIRER_OPTIONS = {
     stopMessage: 'Changes analyzed',
 };
 
+type InquirerPromptInstance = Awaited<ReturnType<typeof inquirer.prompt>> & {
+    ui: {
+        rl: { closed: boolean };
+        close: () => void;
+    };
+};
+
 export class ReactivePromptManager {
     private choices$: BehaviorSubject<ChoiceItem[]> = new BehaviorSubject<ChoiceItem[]>([]);
     private loader$: BehaviorSubject<ReactiveListLoader>;
@@ -43,7 +50,7 @@ export class ReactivePromptManager {
     private stopMessage = 'Changes analyzed';
     private isDestroyed = false;
     private subscriptions: Subscription = new Subscription();
-    inquirerInstance: Promise<any> | null = null;
+    inquirerInstance: InquirerPromptInstance | null = null;
 
     constructor(loader: ReactiveListLoader) {
         this.loader$ = new BehaviorSubject<ReactiveListLoader>(loader);
@@ -130,7 +137,12 @@ export class ReactivePromptManager {
         if (!this.inquirerInstance) {
             return;
         }
-        this.inquirerInstance.ui.close();
+
+        // Check if readline interface is already closed before calling close()
+        const ui = this.inquirerInstance.ui;
+        if (ui?.rl && !ui.rl.closed) {
+            ui.close();
+        }
     }
 
     cancel() {
