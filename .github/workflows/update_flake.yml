@@ -9,10 +9,15 @@ jobs:
   update-flake:
     name: Update version and hash in flake.nix
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
 
       - name: Install Nix
         uses: cachix/install-nix-action@v26
@@ -69,6 +74,7 @@ jobs:
         if: env.SKIP_PR == 'false'
         uses: peter-evans/create-pull-request@v7
         with:
+          token: ${{ secrets.PAT_TOKEN }}
           commit-message: "chore(nix): update flake.nix to version ${{ env.VERSION }} [skip ci]"
           title: "chore(nix): update flake.nix to version ${{ env.VERSION }}"
           body: |
