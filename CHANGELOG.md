@@ -1,3 +1,10 @@
+## [2.4.11](https://github.com/tak-bro/aicommit2/compare/v2.4.10...v2.4.11) (2025-10-19)
+
+
+### Bug Fixes
+
+* **ci:** use PAT_TOKEN to trigger release workflows ([99e8cbf](https://github.com/tak-bro/aicommit2/commit/99e8cbf8f5ca51f512154b653238347c2a4aa6c4))
+
 ## [2.4.10](https://github.com/tak-bro/aicommit2/compare/v2.4.9...v2.4.10) (2025-10-19)
 
 
