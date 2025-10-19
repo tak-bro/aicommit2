@@ -76,7 +76,7 @@ jobs:
         with:
           token: ${{ secrets.PAT_TOKEN }}
           commit-message: "chore(nix): update flake.nix to version ${{ env.VERSION }} [skip ci]"
-          title: "chore(nix): update flake.nix to version ${{ env.VERSION }}"
+          title: "chore(nix): update flake.nix to version ${{ env.VERSION }} [skip ci]"
           body: |
             This PR updates flake.nix with:
             - New version: ${{ env.VERSION }}
