@@ -15,6 +15,7 @@
 [![version](https://img.shields.io/npm/v/aicommit2?logo=semanticrelease&label=release&color=A51C2D)](https://www.npmjs.com/package/aicommit2)
 [![downloads](https://img.shields.io/npm/dt/aicommit2?color=F33535&logo=npm)](https://www.npmjs.com/package/aicommit2)
 [![Nix](https://img.shields.io/badge/Nix-5277C3?logo=nixos&logoColor=fff)](#nix-installation)
+[![Homebrew](https://img.shields.io/badge/Homebrew-FBB040?logo=homebrew&logoColor=000)](#homebrew-installation)
 
 </div>
 
@@ -149,6 +150,24 @@ nix develop github:tak-bro/aicommit2
 ```
 
 After setting up with Nix, you'll still need to configure API keys as described in the [Setup](#setup) section.
+
+#### Homebrew Installation
+
+If you use Homebrew on macOS or Linux:
+
+```sh
+# Install directly in one command
+brew install tak-bro/aicommit2
+
+# Or add tap first, then install
+brew tap tak-bro/aicommit2
+brew install aicommit2
+
+# Verify installation
+aicommit2 --version
+```
+
+After installation, you'll still need to configure API keys as described in the [Setup](#setup) section.
 
 #### From Source
 

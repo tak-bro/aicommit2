@@ -13,13 +13,18 @@ jobs:
         permissions:
             contents: write
             id-token: write
+        outputs:
+            new_release_published: ${{ steps.semantic.outputs.new_release_published }}
+            new_release_version: ${{ steps.semantic.outputs.new_release_version }}
 
         steps:
             - name: Checkout
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
+              with:
+                  token: ${{ secrets.PAT_TOKEN }}
 
             - name: Setup Node.js
-              uses: actions/setup-node@v3
+              uses: actions/setup-node@v4
               with:
                   node-version-file: '.nvmrc'
 
@@ -29,8 +34,114 @@ jobs:
                   version: 8
                   run_install: true
 
-            - name: Release
+            - name: Semantic Release
+              id: semantic
+              uses: cycjimmy/semantic-release-action@v4
               env:
                   GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
                   NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-              run: pnpm dlx semantic-release
+
+    update-nix:
+        name: Update Nix Flake
+        needs: release
+        if: needs.release.outputs.new_release_published == 'true'
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+              with:
+                  token: ${{ secrets.PAT_TOKEN }}
+                  ref: main
+
+            - name: Install Nix
+              uses: cachix/install-nix-action@v26
+              with:
+                  nix_path: nixpkgs=channel:nixos-unstable
+
+            - name: Update flake.nix
+              run: |
+                  VERSION="v${{ needs.release.outputs.new_release_version }}"
+                  echo "📦 Updating to version: $VERSION"
+
+                  # Update version
+                  sed -i "s/version = \".*\";/version = \"${VERSION}\";/" flake.nix
+
+                  # Force invalid hash to trigger mismatch
+                  sed -i 's|hash = "sha256-.*";|hash = "sha256-INVALIDHASHPLACEHOLDER000000000000000000000=";|' flake.nix
+
+                  # Build to get correct hash
+                  nix_output=$(nix build --print-out-paths .#packages.x86_64-linux.default 2>&1 || true)
+                  HASH=$(echo "$nix_output" | grep -o 'got:.*' | awk '{print $2}')
+
+                  if [[ -z "$HASH" || "$HASH" == *"INVALID"* ]]; then
+                    echo "❌ Failed to extract hash"
+                    exit 1
+                  fi
+
+                  # Update with correct hash
+                  sed -i "s|hash = \"sha256-.*\";|hash = \"${HASH}\";|" flake.nix
+                  echo "✅ Updated: $VERSION with hash $HASH"
+
+            - name: Commit and push
+              run: |
+                  git config user.name "github-actions[bot]"
+                  git config user.email "github-actions[bot]@users.noreply.github.com"
+
+                  if git diff --quiet flake.nix; then
+                    echo "No changes to commit"
+                    exit 0
+                  fi
+
+                  git add flake.nix
+                  git commit -m "chore(nix): update flake.nix to version v${{ needs.release.outputs.new_release_version }} [skip ci]"
+                  git push origin main
+
+    update-homebrew:
+        name: Update Homebrew Formula
+        needs: release
+        if: needs.release.outputs.new_release_published == 'true'
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+
+        steps:
+            - name: Checkout tap repository
+              uses: actions/checkout@v4
+              with:
+                  repository: tak-bro/homebrew-aicommit2
+                  token: ${{ secrets.PAT_TOKEN }}
+                  path: homebrew-tap
+
+            - name: Update formula
+              run: |
+                  cd homebrew-tap
+                  VERSION="${{ needs.release.outputs.new_release_version }}"
+                  echo "📦 Updating to version: $VERSION"
+
+                  # Download tarball and calculate SHA256
+                  TARBALL_URL="https://registry.npmjs.org/aicommit2/-/aicommit2-${VERSION}.tgz"
+                  SHA256=$(curl -sL "$TARBALL_URL" | shasum -a 256 | awk '{print $1}')
+
+                  echo "✅ SHA256: $SHA256"
+
+                  # Update formula
+                  sed -i "s|url \"https://registry.npmjs.org/aicommit2/-/aicommit2-.*.tgz\"|url \"https://registry.npmjs.org/aicommit2/-/aicommit2-${VERSION}.tgz\"|" Formula/aicommit2.rb
+                  sed -i "s|sha256 \".*\"|sha256 \"${SHA256}\"|" Formula/aicommit2.rb
+
+            - name: Commit and push
+              run: |
+                  cd homebrew-tap
+                  git config user.name "github-actions[bot]"
+                  git config user.email "github-actions[bot]@users.noreply.github.com"
+
+                  if git diff --quiet Formula/aicommit2.rb; then
+                    echo "No changes to commit"
+                    exit 0
+                  fi
+
+                  git add Formula/aicommit2.rb
+                  git commit -m "chore: update aicommit2 to ${{ needs.release.outputs.new_release_version }} [skip ci]"
+                  git push origin main
