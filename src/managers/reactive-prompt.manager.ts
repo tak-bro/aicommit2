@@ -36,7 +36,12 @@ export const DEFAULT_INQUIRER_OPTIONS = {
     stopMessage: 'Changes analyzed',
 };
 
-type InquirerPromptInstance = ReturnType<typeof inquirer.prompt>;
+type InquirerPromptInstance = Awaited<ReturnType<typeof inquirer.prompt>> & {
+    ui: {
+        rl: { closed: boolean };
+        close: () => void;
+    };
+};
 
 export class ReactivePromptManager {
     private choices$: BehaviorSubject<ChoiceItem[]> = new BehaviorSubject<ChoiceItem[]>([]);
