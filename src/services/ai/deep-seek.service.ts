@@ -10,6 +10,21 @@ import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt
 
 export interface DeepSeekServiceError extends AIServiceError {}
 
+interface DeepSeekMessage extends OpenAI.Chat.Completions.ChatCompletionMessage {
+    reasoning_content?: string;
+}
+
+interface DeepSeekChoice {
+    message: DeepSeekMessage;
+    finish_reason: string | null;
+    index: number;
+    logprobs?: any;
+}
+
+interface DeepSeekChatCompletion extends Omit<OpenAI.Chat.Completions.ChatCompletion, 'choices'> {
+    choices: DeepSeekChoice[];
+}
+
 export class DeepSeekService extends AIService {
     private deepSeek: OpenAI;
 
@@ -159,12 +174,24 @@ export class DeepSeekService extends AIService {
         const startTime = Date.now();
 
         try {
-            const chatCompletion = await this.deepSeek.chat.completions.create(payload, {
+            const chatCompletion = (await this.deepSeek.chat.completions.create(payload, {
                 timeout: this.params.config.timeout,
-            });
+            })) as DeepSeekChatCompletion;
 
             const duration = Date.now() - startTime;
-            const result = chatCompletion.choices[0].message.content || '';
+
+            // Validate response structure
+            const firstChoice = chatCompletion.choices?.[0];
+            if (!firstChoice?.message) {
+                throw new Error('DeepSeek API returned invalid response structure');
+            }
+
+            // DeepSeek-reasoner returns reasoning in reasoning_content, final answer in content
+            const result = firstChoice.message.content || firstChoice.message.reasoning_content || '';
+
+            if (!result) {
+                throw new Error('DeepSeek API returned empty response');
+            }
 
             logAIResponse(diff, requestType, 'DeepSeek', chatCompletion, logging);
             logAIComplete(diff, requestType, 'DeepSeek', duration, result, logging);

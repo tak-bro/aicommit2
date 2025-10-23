@@ -49,7 +49,8 @@ You can use any DeepSeek model name. The system no longer validates specific mod
 
 Popular models include:
 
-- `deepseek-chat` (default), `deepseek-reasoner` (general purpose)
+- `deepseek-chat` (default) - Standard chat model for general purpose tasks
+- `deepseek-reasoner` - Reasoning model with Chain of Thought (CoT) capabilities
 - `deepseek-coder`, `deepseek-coder-v2` (recommended for coding tasks)
 - `deepseek-v2`, `deepseek-v2.5` (advanced models)
 
@@ -57,4 +58,8 @@ For the most up-to-date list of available models, please check [DeepSeek Platfor
 
 ```sh
 aicommit2 config set DEEPSEEK.model="deepseek-chat"
+# or use the reasoner model for enhanced reasoning
+aicommit2 config set DEEPSEEK.model="deepseek-reasoner"
 ```
+
+> **Note**: The `deepseek-reasoner` model generates detailed Chain of Thought (CoT) reasoning before providing the final answer. Both the reasoning process and final response are properly handled by aicommit2.
