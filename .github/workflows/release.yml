@@ -61,29 +61,97 @@ jobs:
               with:
                   nix_path: nixpkgs=channel:nixos-unstable
 
+            - name: Wait for NPM package availability
+              run: |
+                  VERSION="${{ needs.release.outputs.new_release_version }}"
+                  MAX_ATTEMPTS=12
+                  WAIT_SECONDS=10
+
+                  echo "⏳ Waiting for npm package aicommit2@${VERSION} to be available..."
+
+                  for attempt in $(seq 1 $MAX_ATTEMPTS); do
+                    if npm view aicommit2@${VERSION} version >/dev/null 2>&1; then
+                      echo "✅ Package aicommit2@${VERSION} is available on npm registry"
+                      npm view aicommit2@${VERSION} version
+                      exit 0
+                    fi
+                    echo "⏳ Attempt $attempt/$MAX_ATTEMPTS: Package not yet available, waiting ${WAIT_SECONDS}s..."
+                    sleep $WAIT_SECONDS
+                  done
+
+                  echo "❌ Package aicommit2@${VERSION} not available after $((MAX_ATTEMPTS * WAIT_SECONDS)) seconds"
+                  exit 1
+
             - name: Update flake.nix
               run: |
                   VERSION="v${{ needs.release.outputs.new_release_version }}"
-                  echo "📦 Updating to version: $VERSION"
+                  echo "📦 Updating flake.nix to version: $VERSION"
+
+                  # Backup current flake.nix
+                  cp flake.nix flake.nix.backup
+                  echo "💾 Created backup: flake.nix.backup"
 
                   # Update version
                   sed -i "s/version = \".*\";/version = \"${VERSION}\";/" flake.nix
+                  echo "✅ Updated version to: $VERSION"
 
                   # Force invalid hash to trigger mismatch
                   sed -i 's|hash = "sha256-.*";|hash = "sha256-INVALIDHASHPLACEHOLDER000000000000000000000=";|' flake.nix
+                  echo "🔄 Set invalid hash to trigger recalculation"
 
-                  # Build to get correct hash
-                  nix_output=$(nix build --print-out-paths .#packages.x86_64-linux.default 2>&1 || true)
-                  HASH=$(echo "$nix_output" | grep -o 'got:.*' | awk '{print $2}')
+                  # Build to get correct hash with retry logic
+                  MAX_ATTEMPTS=3
+                  HASH=""
 
+                  for attempt in $(seq 1 $MAX_ATTEMPTS); do
+                    echo "🔨 Build attempt $attempt/$MAX_ATTEMPTS..."
+                    nix_output=$(nix build --print-out-paths .#packages.x86_64-linux.default 2>&1 || true)
+                    HASH=$(echo "$nix_output" | grep -o 'got:.*' | awk '{print $2}')
+
+                    if [[ -n "$HASH" && "$HASH" != *"INVALID"* ]]; then
+                      echo "✅ Successfully extracted hash: $HASH"
+                      break
+                    fi
+
+                    echo "⚠️  Attempt $attempt failed to extract valid hash"
+                    if [[ $attempt -lt $MAX_ATTEMPTS ]]; then
+                      echo "🔄 Retrying in 5 seconds..."
+                      sleep 5
+                    fi
+                  done
+
+                  # Validate hash was extracted
                   if [[ -z "$HASH" || "$HASH" == *"INVALID"* ]]; then
-                    echo "❌ Failed to extract hash"
+                    echo "❌ Failed to extract valid hash after $MAX_ATTEMPTS attempts"
+                    echo "📋 Nix build output:"
+                    echo "$nix_output"
+                    echo "🔙 Restoring backup..."
+                    mv flake.nix.backup flake.nix
                     exit 1
                   fi
 
                   # Update with correct hash
                   sed -i "s|hash = \"sha256-.*\";|hash = \"${HASH}\";|" flake.nix
-                  echo "✅ Updated: $VERSION with hash $HASH"
+                  echo "✅ Updated hash: $HASH"
+
+                  # Validate the updated flake
+                  echo "🔍 Validating flake.nix..."
+                  if ! nix flake check --no-build 2>&1; then
+                    echo "❌ Flake validation failed"
+                    echo "🔙 Restoring backup..."
+                    mv flake.nix.backup flake.nix
+                    exit 1
+                  fi
+
+                  echo "✅ Flake validation successful"
+                  echo "🗑️  Removing backup..."
+                  rm -f flake.nix.backup
+
+                  # Show diff for verification
+                  echo "📝 Changes made:"
+                  git diff flake.nix
+
+                  echo "✅ Update complete: $VERSION with hash $HASH"
 
             - name: Commit and push
               run: |
@@ -145,3 +213,10 @@ jobs:
                   git add Formula/aicommit2.rb
                   git commit -m "chore: update aicommit2 to ${{ needs.release.outputs.new_release_version }} [skip ci]"
                   git push origin main
+
+    # TODO: Enable after initial formula is merged into homebrew-core
+    # update-homebrew-core:
+    #     name: Submit PR to Homebrew-Core
+    #     needs: release
+    #     if: false  # Disabled for now
+    #     runs-on: ubuntu-latest
