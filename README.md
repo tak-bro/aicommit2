@@ -279,7 +279,7 @@ aicommit2 --all # or -a
   - This mode is automatically enabled when running through the Git hook system
   - See [Git hook](#git-hook) section for more details
 - `--pre-commit`: Run in [pre-commit](https://pre-commit.com/) framework mode (default: **false**)
-  - This option is specifically for use with the pre-commit framework
+  - This option is specifically for use with the pre-commit framework or manually in a [`prepare-commit-msg` hook](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks#_committing_workflow_hooks)
   - See [Integration with pre-commit framework](#integration-with-pre-commit-framework) section for setup instructions
 
 Examples:
@@ -353,6 +353,12 @@ aicommit2 hook uninstall
 ```
 
 Or manually delete the `.git/hooks/prepare-commit-msg` file.
+
+#### Manual setup without the pre-commit Framework
+
+Add the line `aicommit2 --pre-commit "$@"` to the `.git/hooks/prepare-commit-msg` file in your Git repository.
+
+If you are using [`husky`](https://typicode.github.io/husky/)** or have configured a custom [`core.hooksPath`](https://git-scm.com/docs/git-config#Documentation/git-config.txt-corehooksPath), update the corresponding hooks file instead. For Husky users, this file is `.husky/prepare-commit-message`.
 
 ### Configuration
 
