@@ -275,7 +275,7 @@ aicommit2 --all # or -a
 - `--disable-lowercase`: Disable automatic lowercase conversion of commit messages (default: **false**)
   - Preserves the original casing of commit types and descriptions
   - Useful when working with custom commit conventions that require specific casing
-- `--hook-mode`: Run as a Git hook, typically used with prepare-commit-msg hook (default: **false**)
+- `--hook-mode`: Run as a Git hook, typically used with [`prepare-commit-msg` hook](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks#_committing_workflow_hooks) hook (default: **false**)
   - This mode is automatically enabled when running through the Git hook system
   - See [Git hook](#git-hook) section for more details
 - `--pre-commit`: Run in [pre-commit](https://pre-commit.com/) framework mode (default: **false**)
@@ -319,6 +319,10 @@ Make the hook executable:
 ```sh
 chmod +x .git/hooks/prepare-commit-msg
 ```
+
+##### Use with a custom `core.hooksPath`
+
+If you are using [`husky`](https://typicode.github.io/husky/)** or have configured a custom [`core.hooksPath`](https://git-scm.com/docs/git-config#Documentation/git-config.txt-corehooksPath), update the corresponding hooks file instead. For Husky users, this file is `.husky/prepare-commit-message`.
 
 #### Integration with pre-commit Framework
 
