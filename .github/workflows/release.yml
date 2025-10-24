@@ -213,10 +213,3 @@ jobs:
                   git add Formula/aicommit2.rb
                   git commit -m "chore: update aicommit2 to ${{ needs.release.outputs.new_release_version }} [skip ci]"
                   git push origin main
-
-    # TODO: Enable after initial formula is merged into homebrew-core
-    # update-homebrew-core:
-    #     name: Submit PR to Homebrew-Core
-    #     needs: release
-    #     if: false  # Disabled for now
-    #     runs-on: ubuntu-latest

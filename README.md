@@ -15,17 +15,21 @@
 [![version](https://img.shields.io/npm/v/aicommit2?logo=semanticrelease&label=release&color=A51C2D)](https://www.npmjs.com/package/aicommit2)
 [![downloads](https://img.shields.io/npm/dt/aicommit2?color=F33535&logo=npm)](https://www.npmjs.com/package/aicommit2)
 [![Nix](https://img.shields.io/badge/Nix-5277C3?logo=nixos&logoColor=fff)](#nix-installation)
-[![Homebrew](https://img.shields.io/badge/Homebrew-FBB040?logo=homebrew&logoColor=000)](#homebrew-installation)
+![Homebrew](https://img.shields.io/badge/Homebrew-FBB040?logo=homebrew&logoColor=000)
 
 </div>
 
 ______________________________________________________________________
 
-## 🚀 Quick Start
+## Quick start
 
 ```bash
-# Install globally
+# Install via Homebrew (macOS/Linux)
+brew install aicommit2
+
+# Or install via npm
 npm install -g aicommit2
+
 # Set up at least one AI provider
 aicommit2 config set OPENAI.key=<your-key>
 
@@ -37,11 +41,11 @@ aicommit2
 aicommit2
 ```
 
-## 📖 Introduction
+## Introduction
 
-AICommit2 automatically generates commit messages using AI. It primarily supports [Git](https://git-scm.com/) and also works with [Jujutsu](https://github.com/jj-vcs/jj)(jj) repositories. The core functionalities and architecture of this project are inspired by [AICommits](https://github.com/Nutlope/aicommits).
+AICommit2 automatically generates commit messages using AI. It primarily supports [Git](https://git-scm.com/) and also works with [Jujutsu](https://github.com/jj-vcs/jj)(jj) repositories. [AICommits](https://github.com/Nutlope/aicommits) inspired the core functionalities and architecture of this project.
 
-## ✨ Key Features
+## Key features
 
 - **[VCS Support](#version-control-systems)**: Works with both Git and Jujutsu repositories
 - **[Multi-AI Support](#cloud-ai-services)**: Integrates with OpenAI, Anthropic Claude, Google Gemini, Mistral AI, Cohere, Groq, Ollama and more
@@ -50,7 +54,7 @@ AICommit2 automatically generates commit messages using AI. It primarily support
 - **[Git Hook Integration](#git-hook)**: Can be used as a prepare-commit-msg hook
 - **[Custom Prompt](#custom-prompt-template)**: Supports user-defined system prompt templates
 
-## 🤖 Supported Providers
+## Supported providers
 
 ### Cloud AI Services
 
@@ -71,13 +75,19 @@ AICommit2 automatically generates commit messages using AI. It primarily support
 
 ## Setup
 
-> ⚠️ The minimum supported version of Node.js is the v18. Check your Node.js version with `node --version`.
-
 1. Install _aicommit2_:
 
+**Via Homebrew (recommended for macOS/Linux):**
+```sh
+brew install aicommit2
+```
+
+**Via npm:**
 ```sh
 npm install -g aicommit2
 ```
+
+> ⚠️ For npm installation, the minimum supported version of Node.js is v18. Check your Node.js version with `node --version`.
 
 2. Set up API keys (**at least ONE key must be set**):
 
@@ -150,24 +160,6 @@ nix develop github:tak-bro/aicommit2
 ```
 
 After setting up with Nix, you'll still need to configure API keys as described in the [Setup](#setup) section.
-
-#### Homebrew Installation
-
-If you use Homebrew on macOS or Linux:
-
-```sh
-# Install directly in one command
-brew install tak-bro/aicommit2
-
-# Or add tap first, then install
-brew tap tak-bro/aicommit2
-brew install aicommit2
-
-# Verify installation
-aicommit2 --version
-```
-
-After installation, you'll still need to configure API keys as described in the [Setup](#setup) section.
 
 #### From Source
 
@@ -1040,6 +1032,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/mdeweerd"><img src="https://avatars.githubusercontent.com/mdeweerd" width="100px;" alt=""/><br /><sub><b>@mdeweerd</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=mdeweerd" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/DivitMittal"><img src="https://avatars.githubusercontent.com/DivitMittal" width="100px;" alt=""/><br /><sub><b>@DivitMittal</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=DivitMittal" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/aaccioly"><img src="https://avatars.githubusercontent.com/aaccioly" width="100px;" alt=""/><br /><sub><b>@aaccioly</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=aaccioly" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/forivall"><img src="https://avatars.githubusercontent.com/forivall" width="100px;" alt=""/><br /><sub><b>@forivall</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=forivall" title="Documentation">📖</a></td>
   </tr>
 </table>
 <!-- markdownlint-restore -->
