@@ -7,6 +7,7 @@ import { AICOMMIT_EXCEPTION_LOG_FILE_PATH, AICOMMIT_MAIN_LOG_FILE_PATH } from '.
 import { ensureDirectoryExists } from './utils.js';
 
 let loggerInstance: winston.Logger | undefined = undefined;
+let currentLogLevel: string = 'info';
 
 export async function initializeLogger(options?: {
     logLevel?: string;
@@ -20,6 +21,7 @@ export async function initializeLogger(options?: {
     }
 
     const logLevel = options?.logLevel || 'info';
+    currentLogLevel = logLevel;
     const logFilePath = options?.logFilePath || AICOMMIT_MAIN_LOG_FILE_PATH;
     const exceptionLogFilePath = options?.exceptionLogFilePath || AICOMMIT_EXCEPTION_LOG_FILE_PATH;
     const logging = options?.logging ?? true; // Default to true
@@ -90,3 +92,13 @@ export const logger: winston.Logger = new Proxy({} as winston.Logger, {
         return Reflect.get(loggerInstance, prop, receiver);
     },
 });
+
+export function getCurrentLogLevel(): string {
+    return currentLogLevel;
+}
+
+export function isVerboseLoggingEnabled(): boolean {
+    const levels = winston.config.npm.levels;
+    const levelValue = levels[currentLogLevel] ?? levels.info;
+    return levelValue >= levels.verbose;
+}

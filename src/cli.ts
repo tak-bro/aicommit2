@@ -9,7 +9,7 @@ import logCommand from './commands/log.js';
 import preCommitHook from './commands/pre-commit-hook.js';
 import prepareCommitMessageHook from './commands/prepare-commit-msg-hook.js';
 import watchGit from './commands/watch-git.js';
-import { getConfig } from './utils/config.js';
+import { RawConfig, getConfig } from './utils/config.js';
 import { initializeLogger, logger } from './utils/logger.js';
 
 const rawArgv = process.argv.slice(2);
@@ -105,6 +105,12 @@ cli(
                 description: 'Disable automatic lowercase conversion of commit messages',
                 default: false,
             },
+            verbose: {
+                type: Boolean,
+                description: 'Enable verbose logging for this run',
+                alias: 'v',
+                default: false,
+            },
         },
 
         commands: [configCommand, githubLoginCommand, hookCommand, logCommand],
@@ -116,11 +122,16 @@ cli(
         ignoreArgv: type => type === 'unknown-flag' || type === 'argument',
     },
     async argv => {
-        const config = await getConfig({});
+        const cliOverrides: RawConfig = {};
+        if (argv.flags.verbose) {
+            cliOverrides.logLevel = 'verbose';
+        }
+
+        const config = await getConfig(cliOverrides, rawArgv);
         await initializeLogger(config);
         logger.info(`aicommit2 version: ${version}`);
         if (argv.flags['pre-commit']) {
-            preCommitHook();
+            preCommitHook(argv.flags.verbose);
             return;
         }
 
@@ -131,13 +142,14 @@ cli(
                 argv.flags.exclude,
                 argv.flags.type,
                 argv.flags.prompt,
-                argv.flags['include-body']
+                argv.flags['include-body'],
+                argv.flags.verbose
             );
             return;
         }
 
         if (argv.flags['watch-commit']) {
-            watchGit(argv.flags.locale, argv.flags.generate, argv.flags.exclude, argv.flags.prompt, rawArgv);
+            watchGit(argv.flags.locale, argv.flags.generate, argv.flags.exclude, argv.flags.prompt, argv.flags.verbose, rawArgv);
             return;
         }
 
@@ -154,6 +166,7 @@ cli(
             argv.flags['auto-select'],
             argv.flags.edit,
             argv.flags['disable-lowercase'],
+            argv.flags.verbose,
             rawArgv
         );
     },

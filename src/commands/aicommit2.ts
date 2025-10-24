@@ -36,6 +36,7 @@ export default async (
     autoSelect: boolean,
     edit: boolean,
     disableLowerCase: boolean,
+    verbose: boolean,
     rawArgv: string[]
 ) =>
     (async () => {
@@ -50,17 +51,20 @@ export default async (
             // For Jujutsu, no staging needed - working copy is already staged
         }
 
-        const config = await getConfig(
-            {
-                locale: locale?.toString() as string,
-                generate: generate?.toString() as string,
-                type: commitType?.toString() as string,
-                systemPrompt: prompt?.toString() as string,
-                includeBody: includeBody?.toString() as string,
-                disableLowerCase: disableLowerCase?.toString() as string,
-            },
-            rawArgv
-        );
+        const configOverrides: RawConfig = {
+            locale: locale?.toString() as string,
+            generate: generate?.toString() as string,
+            type: commitType?.toString() as string,
+            systemPrompt: prompt?.toString() as string,
+            includeBody: includeBody?.toString() as string,
+            disableLowerCase: disableLowerCase?.toString() as string,
+        };
+
+        if (verbose) {
+            configOverrides.logLevel = 'verbose';
+        }
+
+        const config = await getConfig(configOverrides, rawArgv);
 
         const shouldIncludeBody = includeBody === true || config.includeBody === true;
         if (shouldIncludeBody) {
