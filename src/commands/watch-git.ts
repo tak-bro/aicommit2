@@ -52,11 +52,12 @@ class WatchGitManager {
         generate: number | undefined,
         excludeFiles: string[],
         prompt: string | undefined,
+        verbose: boolean,
         rawArgv: string[]
     ): Promise<void> {
         this.consoleManager.printTitle();
         await assertGitRepo();
-        const config = await this.initializeConfig(locale, generate, prompt, rawArgv);
+        const config = await this.initializeConfig(locale, generate, prompt, verbose, rawArgv);
 
         await this.initializeCurrentCommit();
 
@@ -64,7 +65,7 @@ class WatchGitManager {
             await this.watchGitEvents(config);
         } catch (error) {
             await this.handleWatchGitError(error as Error);
-            return this.watch(locale, generate, excludeFiles, prompt, rawArgv);
+            return this.watch(locale, generate, excludeFiles, prompt, verbose, rawArgv);
         }
     }
 
@@ -72,16 +73,20 @@ class WatchGitManager {
         locale: string | undefined,
         generate: number | undefined,
         prompt: string | undefined,
+        verbose: boolean,
         rawArgv: string[]
     ): Promise<ValidConfig> {
-        const config = await getConfig(
-            {
-                locale: locale?.toString() as string,
-                generate: generate?.toString() as string,
-                systemPrompt: prompt?.toString() as string,
-            },
-            rawArgv
-        );
+        const configOverrides: RawConfig = {
+            locale: locale?.toString() as string,
+            generate: generate?.toString() as string,
+            systemPrompt: prompt?.toString() as string,
+        };
+
+        if (verbose) {
+            configOverrides.logLevel = 'verbose';
+        }
+
+        const config = await getConfig(configOverrides, rawArgv);
         await validateSystemPrompt(config);
         const availableAIs = this.getAvailableAIs(config);
         if (availableAIs.length === 0) {
@@ -402,9 +407,10 @@ export const watchGit = async (
     generate: number | undefined,
     excludeFiles: string[],
     prompt: string | undefined,
+    verbose: boolean,
     rawArgv: string[]
 ) => {
-    return watchGitManager.watch(locale, generate, excludeFiles, prompt, rawArgv);
+    return watchGitManager.watch(locale, generate, excludeFiles, prompt, verbose, rawArgv);
 };
 
 export default watchGit;

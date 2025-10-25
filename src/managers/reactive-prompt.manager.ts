@@ -3,6 +3,7 @@ import inquirer from 'inquirer';
 import ReactiveListPrompt, { ChoiceItem, ReactiveListChoice, ReactiveListLoader } from 'inquirer-reactive-list-prompt';
 import { BehaviorSubject, ReplaySubject, Subscription } from 'rxjs';
 
+import { isVerboseLoggingEnabled } from '../utils/logger.js';
 import { sortByDisabled } from '../utils/utils.js';
 
 export const commitMsgLoader = {
@@ -164,7 +165,9 @@ export class ReactivePromptManager {
             this.subscriptions.unsubscribe();
             this.completeSubject();
         } catch (error) {
-            console.warn('Error during ReactivePromptManager destruction:', error);
+            if (isVerboseLoggingEnabled()) {
+                console.warn('Error during ReactivePromptManager destruction:', error);
+            }
         } finally {
             this.inquirerInstance = null;
         }

@@ -44,7 +44,8 @@ export default (
     excludeFiles: string[],
     commitType: string | undefined,
     prompt: string | undefined,
-    includeBody: boolean | undefined
+    includeBody: boolean | undefined,
+    verbose: boolean
 ) =>
     (async () => {
         if (!messageFilePath) {
@@ -68,16 +69,19 @@ export default (
         const consoleManager = new ConsoleManager();
         consoleManager.printTitle();
 
-        const config = await getConfig(
-            {
-                locale: locale?.toString() as string,
-                generate: generate?.toString() as string,
-                type: commitType?.toString() as string,
-                systemPrompt: prompt?.toString() as string,
-                includeBody: includeBody?.toString() as string,
-            },
-            excludeFiles
-        );
+        const configOverrides: RawConfig = {
+            locale: locale?.toString() as string,
+            generate: generate?.toString() as string,
+            type: commitType?.toString() as string,
+            systemPrompt: prompt?.toString() as string,
+            includeBody: includeBody?.toString() as string,
+        };
+
+        if (verbose) {
+            configOverrides.logLevel = 'verbose';
+        }
+
+        const config = await getConfig(configOverrides, excludeFiles);
         if (config.systemPromptPath) {
             try {
                 await fs.readFile(path.resolve(config.systemPromptPath), 'utf-8');

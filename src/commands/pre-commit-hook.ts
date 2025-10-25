@@ -12,7 +12,7 @@ import { getStagedDiff } from '../utils/vcs.js';
 const args = process.argv.slice(2).filter(arg => !arg.startsWith('--pre-commit'));
 const [messageFilePath, commitSource] = args;
 
-export default () =>
+export default (verbose = false) =>
     (async () => {
         if (!messageFilePath) {
             throw new KnownError('Commit message file path is missing. This file should be called from the "pre-commit framework"');
@@ -33,7 +33,12 @@ export default () =>
         const consoleManager = new ConsoleManager();
         consoleManager.printTitle();
 
-        const config = await getConfig({});
+        const cliOverrides: RawConfig = {};
+        if (verbose) {
+            cliOverrides.logLevel = 'verbose';
+        }
+
+        const config = await getConfig(cliOverrides);
         if (config.systemPromptPath) {
             try {
                 await fs.readFile(path.resolve(config.systemPromptPath), 'utf-8');
