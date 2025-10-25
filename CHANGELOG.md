@@ -1,3 +1,10 @@
+## [2.4.13](https://github.com/tak-bro/aicommit2/compare/v2.4.12...v2.4.13) (2025-10-25)
+
+
+### Features
+
+* **cli:** add verbose logging option for enhanced debugging ([254042d](https://github.com/tak-bro/aicommit2/commit/254042d743c2b4991e5734b00f643794fb0ef6bd))
+
 ## [2.4.12](https://github.com/tak-bro/aicommit2/compare/v2.4.11...v2.4.12) (2025-10-24)
 
 ## [2.4.11](https://github.com/tak-bro/aicommit2/compare/v2.4.10...v2.4.11) (2025-10-19)
