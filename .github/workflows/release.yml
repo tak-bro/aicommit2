@@ -106,13 +106,32 @@ jobs:
                   for attempt in $(seq 1 $MAX_ATTEMPTS); do
                     echo "🔨 Build attempt $attempt/$MAX_ATTEMPTS..."
                     nix_output=$(nix build --print-out-paths .#packages.x86_64-linux.default 2>&1 || true)
-                    HASH=$(echo "$nix_output" | grep -o 'got:.*' | awk '{print $2}')
+
+                    # Try multiple patterns to extract hash (improved from update_flake.yml)
+                    # Pattern 1: "got: sha256-..." or "got:sha256-..."
+                    if [[ -z "$HASH" ]]; then
+                      HASH=$(echo "$nix_output" | grep -oP '(?<=got:\s{0,5})sha256-[A-Za-z0-9+/=]{44}' | head -n1)
+                      [[ -n "$HASH" ]] && echo "✅ Extracted hash using pattern 1 (got: ...): $HASH"
+                    fi
+
+                    # Pattern 2: "got sha256-..." (without colon)
+                    if [[ -z "$HASH" ]]; then
+                      HASH=$(echo "$nix_output" | grep -oP '(?<=got\s{1,5})sha256-[A-Za-z0-9+/=]{44}' | head -n1)
+                      [[ -n "$HASH" ]] && echo "✅ Extracted hash using pattern 2 (got ...): $HASH"
+                    fi
+
+                    # Pattern 3: Any sha256 hash (fallback)
+                    if [[ -z "$HASH" ]]; then
+                      HASH=$(echo "$nix_output" | grep -oP 'sha256-[A-Za-z0-9+/=]{44}' | grep -v "INVALIDHASHPLACEHOLDER" | head -n1)
+                      [[ -n "$HASH" ]] && echo "✅ Extracted hash using pattern 3 (any sha256): $HASH"
+                    fi
 
                     if [[ -n "$HASH" && "$HASH" != *"INVALID"* ]]; then
                       echo "✅ Successfully extracted hash: $HASH"
                       break
                     fi
 
+                    HASH=""  # Reset for next attempt
                     echo "⚠️  Attempt $attempt failed to extract valid hash"
                     if [[ $attempt -lt $MAX_ATTEMPTS ]]; then
                       echo "🔄 Retrying in 5 seconds..."
@@ -165,51 +184,4 @@ jobs:
 
                   git add flake.nix
                   git commit -m "chore(nix): update flake.nix to version v${{ needs.release.outputs.new_release_version }} [skip ci]"
-                  git push origin main
-
-    update-homebrew:
-        name: Update Homebrew Formula
-        needs: release
-        if: needs.release.outputs.new_release_published == 'true'
-        runs-on: ubuntu-latest
-        permissions:
-            contents: write
-
-        steps:
-            - name: Checkout tap repository
-              uses: actions/checkout@v4
-              with:
-                  repository: tak-bro/homebrew-aicommit2
-                  token: ${{ secrets.PAT_TOKEN }}
-                  path: homebrew-tap
-
-            - name: Update formula
-              run: |
-                  cd homebrew-tap
-                  VERSION="${{ needs.release.outputs.new_release_version }}"
-                  echo "📦 Updating to version: $VERSION"
-
-                  # Download tarball and calculate SHA256
-                  TARBALL_URL="https://registry.npmjs.org/aicommit2/-/aicommit2-${VERSION}.tgz"
-                  SHA256=$(curl -sL "$TARBALL_URL" | shasum -a 256 | awk '{print $1}')
-
-                  echo "✅ SHA256: $SHA256"
-
-                  # Update formula
-                  sed -i "s|url \"https://registry.npmjs.org/aicommit2/-/aicommit2-.*.tgz\"|url \"https://registry.npmjs.org/aicommit2/-/aicommit2-${VERSION}.tgz\"|" Formula/aicommit2.rb
-                  sed -i "s|sha256 \".*\"|sha256 \"${SHA256}\"|" Formula/aicommit2.rb
-
-            - name: Commit and push
-              run: |
-                  cd homebrew-tap
-                  git config user.name "github-actions[bot]"
-                  git config user.email "github-actions[bot]@users.noreply.github.com"
-
-                  if git diff --quiet Formula/aicommit2.rb; then
-                    echo "No changes to commit"
-                    exit 0
-                  fi
-
-                  git add Formula/aicommit2.rb
-                  git commit -m "chore: update aicommit2 to ${{ needs.release.outputs.new_release_version }} [skip ci]"
                   git push origin main

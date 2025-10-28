@@ -1,0 +1,140 @@
+name: Update Homebrew Core
+
+on:
+    workflow_dispatch:
+        inputs:
+            version:
+                description: 'Version to update (e.g., 2.4.12)'
+                required: true
+                type: string
+
+jobs:
+    update-homebrew-core:
+        name: Create PR to Homebrew Core
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+
+        steps:
+            - name: Wait for NPM package availability
+              run: |
+                  VERSION="${{ github.event.inputs.version }}"
+                  MAX_ATTEMPTS=12
+                  WAIT_SECONDS=10
+
+                  echo "⏳ Waiting for npm package aicommit2@${VERSION} to be available..."
+
+                  for attempt in $(seq 1 $MAX_ATTEMPTS); do
+                    if npm view aicommit2@${VERSION} version >/dev/null 2>&1; then
+                      echo "✅ Package aicommit2@${VERSION} is available on npm registry"
+                      npm view aicommit2@${VERSION} version
+                      exit 0
+                    fi
+                    echo "⏳ Attempt $attempt/$MAX_ATTEMPTS: Package not yet available, waiting ${WAIT_SECONDS}s..."
+                    sleep $WAIT_SECONDS
+                  done
+
+                  echo "❌ Package aicommit2@${VERSION} not available after $((MAX_ATTEMPTS * WAIT_SECONDS)) seconds"
+                  exit 1
+
+            - name: Checkout Homebrew Core fork
+              uses: actions/checkout@v4
+              with:
+                  repository: ${{ github.repository_owner }}/homebrew-core
+                  token: ${{ secrets.PAT_TOKEN }}
+                  path: homebrew-core
+
+            - name: Configure Git
+              run: |
+                  cd homebrew-core
+                  git config user.name "github-actions[bot]"
+                  git config user.email "github-actions[bot]@users.noreply.github.com"
+
+            - name: Create update branch
+              run: |
+                  cd homebrew-core
+                  BRANCH="bump-aicommit2-${{ github.event.inputs.version }}"
+
+                  # Sync with upstream
+                  git remote add upstream https://github.com/Homebrew/homebrew-core.git
+                  git fetch upstream master
+                  git checkout -b "$BRANCH" upstream/master
+
+            - name: Update formula
+              run: |
+                  cd homebrew-core
+                  VERSION="${{ github.event.inputs.version }}"
+                  FORMULA_PATH="Formula/a/aicommit2.rb"
+
+                  echo "📦 Updating formula to version: $VERSION"
+
+                  # Download tarball and calculate SHA256
+                  TARBALL_URL="https://registry.npmjs.org/aicommit2/-/aicommit2-${VERSION}.tgz"
+                  SHA256=$(curl -sL "$TARBALL_URL" | shasum -a 256 | awk '{print $1}')
+
+                  echo "✅ SHA256: $SHA256"
+
+                  # Update version in URL
+                  sed -i "s|url \"https://registry.npmjs.org/aicommit2/-/aicommit2-.*.tgz\"|url \"https://registry.npmjs.org/aicommit2/-/aicommit2-${VERSION}.tgz\"|" "$FORMULA_PATH"
+
+                  # Update SHA256
+                  sed -i "s|sha256 \".*\"|sha256 \"${SHA256}\"|" "$FORMULA_PATH"
+
+                  # Remove bottle block (Homebrew CI will regenerate)
+                  sed -i '/bottle do/,/end/d' "$FORMULA_PATH"
+
+                  echo "📝 Updated formula:"
+                  cat "$FORMULA_PATH"
+
+            - name: Verify formula
+              run: |
+                  cd homebrew-core
+
+                  # Install Homebrew for testing
+                  HOMEBREW_PREFIX=/home/linuxbrew/.linuxbrew
+                  if [ ! -d "$HOMEBREW_PREFIX" ]; then
+                    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+                  fi
+
+                  eval "$($HOMEBREW_PREFIX/bin/brew shellenv)"
+
+                  # Audit formula
+                  brew audit --strict --online Formula/a/aicommit2.rb
+
+            - name: Commit changes
+              run: |
+                  cd homebrew-core
+                  git add Formula/a/aicommit2.rb
+                  git commit -m "aicommit2 ${{ github.event.inputs.version }}"
+
+            - name: Push branch
+              run: |
+                  cd homebrew-core
+                  BRANCH="bump-aicommit2-${{ github.event.inputs.version }}"
+                  git push -f origin "$BRANCH"
+
+            - name: Create Pull Request
+              env:
+                  GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+              run: |
+                  cd homebrew-core
+                  BRANCH="bump-aicommit2-${{ github.event.inputs.version }}"
+                  VERSION="${{ github.event.inputs.version }}"
+
+                  # Create PR body
+                  PR_BODY="Created with brew bump-formula-pr.
+
+                  ### Release Notes
+                  https://github.com/tak-bro/aicommit2/releases/tag/v$VERSION
+
+                  - [x] Have you followed the [contribution guidelines](https://github.com/Homebrew/homebrew-core/blob/HEAD/CONTRIBUTING.md)?
+                  - [x] Have you ensured that your commits follow the [commit style guide](https://docs.brew.sh/Formula-Cookbook#commit)?
+                  - [x] Have you checked that there aren't other open [pull requests](https://github.com/Homebrew/homebrew-core/pulls) for the same formula update/change?"
+
+                  # Create PR to upstream Homebrew/homebrew-core
+                  gh pr create \
+                    --repo Homebrew/homebrew-core \
+                    --base master \
+                    --head "${{ github.repository_owner }}:$BRANCH" \
+                    --title "aicommit2 $VERSION" \
+                    --body "$PR_BODY"

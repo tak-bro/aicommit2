@@ -292,6 +292,10 @@ aicommit2 --all # or -a
 - `--pre-commit`: Run in [pre-commit](https://pre-commit.com/) framework mode (default: **false**)
   - This option is specifically for use with the pre-commit framework
   - See [Integration with pre-commit framework](#integration-with-pre-commit-framework) section for setup instructions
+- `--verbose` or `-v`: Enable verbose logging for enhanced debugging output (default: **false**)
+  - When enabled, shows detailed log messages including readline errors and other diagnostic information
+  - Useful for troubleshooting issues or understanding the tool's internal operations
+  - Can also be set via config: `aicommit2 config set logLevel=verbose`
 
 Examples:
 
@@ -301,6 +305,9 @@ aicommit2 --locale "jp" --all --type "conventional" --generate 3 --clipboard --e
 
 # Generate and edit a commit message
 aicommit2 --edit --type conventional # or gitmoji
+
+# Enable verbose logging for debugging
+aicommit2 --verbose # or -v
 ```
 
 ### Git hook
@@ -1033,6 +1040,9 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/DivitMittal"><img src="https://avatars.githubusercontent.com/DivitMittal" width="100px;" alt=""/><br /><sub><b>@DivitMittal</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=DivitMittal" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/aaccioly"><img src="https://avatars.githubusercontent.com/aaccioly" width="100px;" alt=""/><br /><sub><b>@aaccioly</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=aaccioly" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/forivall"><img src="https://avatars.githubusercontent.com/forivall" width="100px;" alt=""/><br /><sub><b>@forivall</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=forivall" title="Documentation">📖</a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/jaytaylor"><img src="https://avatars.githubusercontent.com/jaytaylor" width="100px;" alt=""/><br /><sub><b>@jaytaylor</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=jaytaylor" title="Code">💻</a></td>
   </tr>
 </table>
 <!-- markdownlint-restore -->
