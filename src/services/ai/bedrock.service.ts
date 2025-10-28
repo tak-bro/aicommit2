@@ -1,6 +1,3 @@
-import https from 'https';
-import { URL } from 'url';
-
 import chalk from 'chalk';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Observable, catchError, concatMap, from, map } from 'rxjs';
@@ -10,17 +7,13 @@ import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.ser
 import { RequestType, logAIComplete, logAIError, logAIPayload, logAIPrompt, logAIRequest, logAIResponse } from '../../utils/ai-log.js';
 import { ModelConfig } from '../../utils/config.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt, generateUserPrompt } from '../../utils/prompt.js';
-import { safeJsonParse } from '../../utils/utils.js';
 
 const SERVICE_NAME = 'Bedrock';
 
 const ERROR_NAMES = {
     MISSING_DEPENDENCY: 'MissingDependencyError',
     MISSING_REGION: 'MissingRegionError',
-    INVALID_URL: 'InvalidURLError',
-    MISSING_APPLICATION_ENDPOINT: 'MissingApplicationEndpoint',
-    MISSING_APPLICATION_KEY: 'MissingApplicationKeyError',
-    INVALID_RESPONSE: 'InvalidResponseError',
+    MISSING_MODEL_ID: 'MissingModelIdError',
     EMPTY_RESPONSE: 'EmptyResponseError',
 } as const;
 
@@ -116,28 +109,20 @@ export class BedrockService extends AIService {
 
     private validateConfiguration(): void {
         const config = this.bedrockConfig;
-        const runtimeMode = config.runtimeMode as RuntimeMode;
 
-        // Validate application mode has an API key
-        if (runtimeMode === 'application' && !isNonEmptyString(config.key)) {
+        // Validate region is set
+        if (!this.getRegion()) {
             const error: AIServiceError = new Error(
-                'Application mode requires a Bedrock API key. Set BEDROCK.key or BEDROCK_APPLICATION_API_KEY environment variable.'
+                'AWS region is required to use Bedrock. Configure BEDROCK.region or set AWS_REGION/AWS_DEFAULT_REGION.'
             );
-            error.name = ERROR_NAMES.MISSING_APPLICATION_KEY;
-            throw error;
-        }
-
-        // Validate region is set for foundation mode
-        if (runtimeMode === 'foundation' && !this.getRegion()) {
-            const error: AIServiceError = new Error('AWS region is required to use Bedrock foundation models.');
             error.name = ERROR_NAMES.MISSING_REGION;
             throw error;
         }
 
-        // Validate application mode has necessary endpoint configuration
-        if (runtimeMode === 'application' && !this.buildApplicationUrl(config.model)) {
-            const error: AIServiceError = new Error('Application mode requires applicationBaseUrl or region with applicationEndpointId.');
-            error.name = ERROR_NAMES.MISSING_APPLICATION_ENDPOINT;
+        // Validate model ID is set
+        if (!isNonEmptyString(config.model)) {
+            const error: AIServiceError = new Error('Model ID or inference profile ARN is required.');
+            error.name = ERROR_NAMES.MISSING_MODEL_ID;
             throw error;
         }
     }
@@ -201,7 +186,6 @@ export class BedrockService extends AIService {
         const diff = this.params.stagedDiff.diff;
         const config = this.bedrockConfig;
         const model = config.model;
-        const runtimeMode = config.runtimeMode as RuntimeMode;
         const { logging, temperature, topP, maxTokens } = config;
 
         const promptOptions: PromptOptions = {
@@ -219,23 +203,13 @@ export class BedrockService extends AIService {
         const userPrompt = generateUserPrompt(diff, requestType);
 
         // SECURITY: Ensure credentials are never logged - only configuration metadata
-        const loggingHeaders: Record<string, unknown> =
-            runtimeMode === 'foundation'
-                ? {
-                      region: this.getRegion(),
-                      profile: config.profile,
-                      runtimeMode,
-                  }
-                : {
-                      runtimeMode,
-                      applicationEndpointId: config.applicationEndpointId,
-                      applicationInferenceProfileArn: config.applicationInferenceProfileArn,
-                  };
+        const loggingHeaders: Record<string, unknown> = {
+            region: this.getRegion(),
+            profile: config.profile,
+            modelId: model,
+        };
 
-        const loggingUrl =
-            runtimeMode === 'foundation'
-                ? `https://bedrock-runtime.${this.getRegion() || 'unknown'}.amazonaws.com/model/${encodeURIComponent(model)}`
-                : this.buildApplicationUrl(model);
+        const loggingUrl = `https://bedrock-runtime.${this.getRegion() || 'unknown'}.amazonaws.com/model/${encodeURIComponent(model)}/converse`;
 
         logAIRequest(diff, requestType, SERVICE_NAME, model, loggingUrl, loggingHeaders, logging);
         logAIPrompt(diff, requestType, SERVICE_NAME, generatedSystemPrompt, userPrompt, logging);
@@ -255,26 +229,15 @@ export class BedrockService extends AIService {
         const startTime = Date.now();
 
         try {
-            const completion =
-                runtimeMode === 'application'
-                    ? await this.invokeApplicationEndpoint({
-                          model,
-                          systemPrompt: generatedSystemPrompt,
-                          userPrompt,
-                          logging,
-                          requestType,
-                          diff,
-                          inferenceConfig: payload.inferenceConfig,
-                      })
-                    : await this.invokeFoundationModel({
-                          model,
-                          systemPrompt: generatedSystemPrompt,
-                          userPrompt,
-                          logging,
-                          requestType,
-                          diff,
-                          inferenceConfig: payload.inferenceConfig,
-                      });
+            const completion = await this.invokeModel({
+                model,
+                systemPrompt: generatedSystemPrompt,
+                userPrompt,
+                logging,
+                requestType,
+                diff,
+                inferenceConfig: payload.inferenceConfig,
+            });
 
             const duration = Date.now() - startTime;
             logAIComplete(diff, requestType, SERVICE_NAME, duration, completion, logging);
@@ -294,7 +257,7 @@ export class BedrockService extends AIService {
         }
     }
 
-    private async invokeFoundationModel(args: {
+    private async invokeModel(args: {
         model: string;
         systemPrompt: string;
         userPrompt: string;
@@ -303,7 +266,6 @@ export class BedrockService extends AIService {
         requestType: RequestType;
         diff: string;
     }): Promise<string> {
-        // Region validation is done in constructor, so we can safely use it here
         const region = this.getRegion();
         const { model, systemPrompt, userPrompt, inferenceConfig, logging, requestType, diff } = args;
 
@@ -348,156 +310,16 @@ export class BedrockService extends AIService {
 
         const response = await client.send(command);
         logAIResponse(diff, requestType, SERVICE_NAME, response, logging);
-        return this.extractTextFromStructuredResponse(response) || '';
-    }
 
-    private invokeApplicationEndpoint(args: {
-        model: string;
-        systemPrompt: string;
-        userPrompt: string;
-        inferenceConfig: { temperature: number; topP: number; maxTokens: number };
-        logging: boolean;
-        requestType: RequestType;
-        diff: string;
-    }): Promise<string> {
-        const { model, systemPrompt, userPrompt, inferenceConfig, logging, requestType, diff } = args;
-        const config = this.bedrockConfig;
-
-        // Validation is done in constructor, so we can safely use the URL here
-        const urlString = this.buildApplicationUrl(model)!; // Non-null assertion safe due to constructor validation
-        const url = new URL(urlString);
-
-        // Use Bedrock Converse API format
-        const requestBody: any = {
-            modelId: model,
-            messages: [
-                {
-                    role: 'user',
-                    content: [{ text: userPrompt }],
-                },
-            ],
-            inferenceConfig: {
-                // Only include temperature OR topP, not both (some models don't support both)
-                ...(typeof inferenceConfig.temperature === 'number' && { temperature: inferenceConfig.temperature }),
-                // ...(typeof inferenceConfig.topP === 'number' && { topP: inferenceConfig.topP }),
-                ...(typeof inferenceConfig.maxTokens === 'number' && { maxTokens: inferenceConfig.maxTokens }),
-            },
-        };
-
-        // Add system prompt if provided
-        if (systemPrompt) {
-            requestBody.system = [{ text: systemPrompt }];
+        const text = response.output?.message?.content?.[0]?.text || '';
+        if (!text) {
+            const error: AIServiceError = new Error('No text content found in Bedrock response.');
+            error.name = ERROR_NAMES.EMPTY_RESPONSE;
+            error.content = response;
+            throw error;
         }
 
-        const body = JSON.stringify(requestBody);
-
-        const headers: Record<string, string> = {
-            'Content-Type': 'application/json',
-            'Content-Length': Buffer.byteLength(body).toString(),
-        };
-
-        // Use Authorization Bearer token for authentication
-        if (isNonEmptyString(config.key)) {
-            headers['Authorization'] = `Bearer ${config.key}`;
-        }
-        if (isNonEmptyString(config.applicationInferenceProfileArn)) {
-            headers['x-amzn-bedrock-inference-profile-arn'] = config.applicationInferenceProfileArn;
-        }
-        if (isNonEmptyString(config.applicationEndpointId)) {
-            headers['x-amzn-bedrock-endpoint-id'] = config.applicationEndpointId;
-        }
-
-        return new Promise((resolve, reject) => {
-            const request = https.request(
-                {
-                    method: 'POST',
-                    protocol: url.protocol,
-                    hostname: url.hostname,
-                    port: url.port,
-                    path: url.pathname + url.search,
-                    headers,
-                    timeout: config.timeout,
-                },
-                response => {
-                    const chunks: Buffer[] = [];
-
-                    response.on('data', chunk => chunks.push(chunk));
-                    response.on('end', () => {
-                        const responseBody = Buffer.concat(chunks).toString('utf8');
-
-                        if (response.statusCode && response.statusCode >= 400) {
-                            const error: AIServiceError = new Error(
-                                `Bedrock application endpoint responded with status ${response.statusCode}.`
-                            );
-                            error.status = response.statusCode;
-                            error.content = responseBody;
-                            logAIError(diff, requestType, SERVICE_NAME, error, logging);
-                            return reject(error);
-                        }
-
-                        // Bedrock Converse API should always return JSON-formatted responses
-                        const parsed = safeJsonParse(responseBody);
-                        if (!parsed.ok) {
-                            const error: AIServiceError = new Error(
-                                'Failed to parse Bedrock application response as JSON. The Bedrock Converse API should always return valid JSON.'
-                            );
-                            error.name = ERROR_NAMES.INVALID_RESPONSE;
-                            error.content = responseBody;
-                            logAIError(diff, requestType, SERVICE_NAME, error, logging);
-                            return reject(error);
-                        }
-
-                        const parsedResponse = parsed.data;
-                        logAIResponse(diff, requestType, SERVICE_NAME, parsedResponse, logging);
-
-                        const text = this.extractTextFromStructuredResponse(parsedResponse) || '';
-                        if (!text) {
-                            const error: AIServiceError = new Error('No text content found in Bedrock response.');
-                            error.name = ERROR_NAMES.EMPTY_RESPONSE;
-                            error.content = parsedResponse;
-                            logAIError(diff, requestType, SERVICE_NAME, error, logging);
-                            return reject(error);
-                        }
-                        resolve(text);
-                    });
-                }
-            );
-
-            request.on('error', error => {
-                const aiError: AIServiceError = error as AIServiceError;
-                logAIError(diff, requestType, SERVICE_NAME, aiError, logging);
-                reject(aiError);
-            });
-
-            request.write(body);
-            request.end();
-        });
-    }
-
-    private buildApplicationUrl(model: string): string {
-        const config = this.bedrockConfig;
-        const baseUrl = config.applicationBaseUrl;
-        const region = this.getRegion();
-
-        if (baseUrl) {
-            try {
-                const url = new URL(baseUrl);
-                return url.toString();
-            } catch (error) {
-                const aiError: AIServiceError = new Error(`Invalid application base URL: ${baseUrl}`);
-                aiError.name = ERROR_NAMES.INVALID_URL;
-                aiError.originalError = error;
-                throw aiError;
-            }
-        }
-
-        // Default to Converse API endpoint: /model/{modelId}/converse
-        if (region && model) {
-            const encodedModelId = encodeURIComponent(model);
-            return `https://bedrock-runtime.${region}.amazonaws.com/model/${encodedModelId}/converse`;
-        }
-
-        return '';
+        return text;
     }
 
     private getRegion(): string {
@@ -520,22 +342,27 @@ export class BedrockService extends AIService {
 
         let credentials: AwsCredentialIdentityProvider | AwsCredentialIdentity | undefined;
 
+        // If explicit profile is configured, use fromIni
         if (isNonEmptyString(profile)) {
             const { fromIni } = await loadCredentialProvidersModule();
             credentials = fromIni({ profile });
-        } else if (isNonEmptyString(accessKeyId) && isNonEmptyString(secretAccessKey)) {
+        }
+        // If explicit credentials are configured, use them
+        else if (isNonEmptyString(accessKeyId) && isNonEmptyString(secretAccessKey)) {
             credentials = async () => ({
                 accessKeyId,
                 secretAccessKey,
                 sessionToken: sessionToken || process.env.AWS_SESSION_TOKEN || undefined,
             });
-        } else if (process.env.AWS_PROFILE && !profile) {
+        }
+        // If AWS_PROFILE is set in environment, use fromIni
+        else if (process.env.AWS_PROFILE) {
             const { fromIni } = await loadCredentialProvidersModule();
             credentials = fromIni({ profile: process.env.AWS_PROFILE });
-        } else if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY && !isNonEmptyString(accessKeyId)) {
-            const { fromEnv } = await loadCredentialProvidersModule();
-            credentials = fromEnv();
         }
+        // Otherwise, return undefined to use SDK's default credential provider chain
+        // which automatically checks env vars (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY),
+        // EC2 instance metadata, ECS container credentials, etc.
 
         // Update cache
         if (credentials) {
@@ -544,94 +371,5 @@ export class BedrockService extends AIService {
         }
 
         return credentials;
-    }
-
-    private extractTextFromStructuredResponse(response: any, depth: number = 0): string | null {
-        // Prevent deep recursion
-        if (depth > 10) {
-            return null;
-        }
-
-        if (!response) {
-            return null;
-        }
-
-        if (typeof response === 'string') {
-            return response;
-        }
-
-        if (Array.isArray(response)) {
-            const merged = response
-                .map(item => this.extractTextFromStructuredResponse(item, depth + 1))
-                .filter(Boolean)
-                .join('\n')
-                .trim();
-            return merged || null;
-        }
-
-        if (typeof response === 'object') {
-            if (typeof response.text === 'string') {
-                return response.text;
-            }
-            if (typeof response.outputText === 'string') {
-                return response.outputText;
-            }
-            if (typeof response.message === 'string') {
-                return response.message;
-            }
-            if (response.message) {
-                const messageContent = this.extractTextFromStructuredResponse(response.message, depth + 1);
-                if (messageContent) {
-                    return messageContent;
-                }
-            }
-            if (response.output) {
-                const outputText = this.extractTextFromStructuredResponse(response.output, depth + 1);
-                if (outputText) {
-                    return outputText;
-                }
-            }
-            if (Array.isArray(response.results)) {
-                const combined = response.results
-                    .map((item: any) => this.extractTextFromStructuredResponse(item, depth + 1))
-                    .filter(Boolean)
-                    .join('\n')
-                    .trim();
-                if (combined) {
-                    return combined;
-                }
-            }
-            if (Array.isArray(response.content)) {
-                const contentText = response.content
-                    .map((item: any) => this.extractTextFromStructuredResponse(item, depth + 1))
-                    .filter(Boolean)
-                    .join('\n')
-                    .trim();
-                if (contentText) {
-                    return contentText;
-                }
-            }
-            if (Array.isArray(response.message?.content)) {
-                const contentText = response.message.content
-                    .map((item: any) => this.extractTextFromStructuredResponse(item, depth + 1))
-                    .filter(Boolean)
-                    .join('\n')
-                    .trim();
-                if (contentText) {
-                    return contentText;
-                }
-            }
-            if (typeof response.generation === 'string') {
-                return response.generation;
-            }
-            if (response.generations) {
-                const generationsText = this.extractTextFromStructuredResponse(response.generations, depth + 1);
-                if (generationsText) {
-                    return generationsText;
-                }
-            }
-        }
-
-        return null;
     }
 }
