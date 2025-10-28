@@ -61,5 +61,3 @@ aicommit2 config set DEEPSEEK.model="deepseek-chat"
 # or use the reasoner model for enhanced reasoning
 aicommit2 config set DEEPSEEK.model="deepseek-reasoner"
 ```
-
-> **Note**: The `deepseek-reasoner` model generates detailed Chain of Thought (CoT) reasoning before providing the final answer. Both the reasoning process and final response are properly handled by aicommit2.

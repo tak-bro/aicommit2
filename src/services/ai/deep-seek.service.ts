@@ -180,13 +180,11 @@ export class DeepSeekService extends AIService {
 
             const duration = Date.now() - startTime;
 
-            // Validate response structure
             const firstChoice = chatCompletion.choices?.[0];
             if (!firstChoice?.message) {
                 throw new Error('DeepSeek API returned invalid response structure');
             }
 
-            // DeepSeek-reasoner returns reasoning in reasoning_content, final answer in content
             const result = firstChoice.message.content || firstChoice.message.reasoning_content || '';
 
             if (!result) {
