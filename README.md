@@ -62,6 +62,7 @@ AICommit2 automatically generates commit messages using AI. It primarily support
 - [Perplexity](docs/providers/perplexity.md)
 - [DeepSeek](docs/providers/deepseek.md)
 - [GitHub Models](docs/providers/github-models.md)
+- [Amazon Bedrock](docs/providers/bedrock.md)
 - [OpenAI API Compatibility](docs/providers/compatible.md)
 
 ### Local AI Services
