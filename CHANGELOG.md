@@ -1,3 +1,18 @@
+## [2.4.14](https://github.com/tak-bro/aicommit2/compare/v2.4.13...v2.4.14) (2025-10-28)
+
+
+### Bug Fixes
+
+* **ci:** update title in update_flake.yml workflow ([a368d18](https://github.com/tak-bro/aicommit2/commit/a368d18c3551ae2ff1d723b0620b2e7f8a433689))
+
+
+### Features
+
+* add Homebrew installation support ([c2661be](https://github.com/tak-bro/aicommit2/commit/c2661be4cdc0a4198f8763981c0543e285d7fd2a)), closes [#178](https://github.com/tak-bro/aicommit2/issues/178)
+* **ci:** comprehensive CI/CD workflow improvements ([db50c17](https://github.com/tak-bro/aicommit2/commit/db50c173980aad93e3dffad85f7c45f8d7d28bcb))
+* **deepseek:** enhance reasoning model support ([1a8a632](https://github.com/tak-bro/aicommit2/commit/1a8a632c03b44b47e25f25c15248655357135e7a))
+* **prompt:** support localized examples in prompts ([0275d18](https://github.com/tak-bro/aicommit2/commit/0275d1894b34a20aed3203b2d1935bb8244c6964))
+
 ## [2.4.13](https://github.com/tak-bro/aicommit2/compare/v2.4.12...v2.4.13) (2025-10-25)
 
 
