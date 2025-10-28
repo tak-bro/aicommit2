@@ -13,13 +13,18 @@ jobs:
         permissions:
             contents: write
             id-token: write
+        outputs:
+            new_release_published: ${{ steps.semantic.outputs.new_release_published }}
+            new_release_version: ${{ steps.semantic.outputs.new_release_version }}
 
         steps:
             - name: Checkout
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
+              with:
+                  token: ${{ secrets.PAT_TOKEN }}
 
             - name: Setup Node.js
-              uses: actions/setup-node@v3
+              uses: actions/setup-node@v4
               with:
                   node-version-file: '.nvmrc'
 
@@ -29,8 +34,154 @@ jobs:
                   version: 8
                   run_install: true
 
-            - name: Release
+            - name: Semantic Release
+              id: semantic
+              uses: cycjimmy/semantic-release-action@v4
               env:
                   GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
                   NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-              run: pnpm dlx semantic-release
+
+    update-nix:
+        name: Update Nix Flake
+        needs: release
+        if: needs.release.outputs.new_release_published == 'true'
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+              with:
+                  token: ${{ secrets.PAT_TOKEN }}
+                  ref: main
+
+            - name: Install Nix
+              uses: cachix/install-nix-action@v26
+              with:
+                  nix_path: nixpkgs=channel:nixos-unstable
+
+            - name: Wait for NPM package availability
+              run: |
+                  VERSION="${{ needs.release.outputs.new_release_version }}"
+                  MAX_ATTEMPTS=12
+                  WAIT_SECONDS=10
+
+                  echo "⏳ Waiting for npm package aicommit2@${VERSION} to be available..."
+
+                  for attempt in $(seq 1 $MAX_ATTEMPTS); do
+                    if npm view aicommit2@${VERSION} version >/dev/null 2>&1; then
+                      echo "✅ Package aicommit2@${VERSION} is available on npm registry"
+                      npm view aicommit2@${VERSION} version
+                      exit 0
+                    fi
+                    echo "⏳ Attempt $attempt/$MAX_ATTEMPTS: Package not yet available, waiting ${WAIT_SECONDS}s..."
+                    sleep $WAIT_SECONDS
+                  done
+
+                  echo "❌ Package aicommit2@${VERSION} not available after $((MAX_ATTEMPTS * WAIT_SECONDS)) seconds"
+                  exit 1
+
+            - name: Update flake.nix
+              run: |
+                  VERSION="v${{ needs.release.outputs.new_release_version }}"
+                  echo "📦 Updating flake.nix to version: $VERSION"
+
+                  # Backup current flake.nix
+                  cp flake.nix flake.nix.backup
+                  echo "💾 Created backup: flake.nix.backup"
+
+                  # Update version
+                  sed -i "s/version = \".*\";/version = \"${VERSION}\";/" flake.nix
+                  echo "✅ Updated version to: $VERSION"
+
+                  # Force invalid hash to trigger mismatch
+                  sed -i 's|hash = "sha256-.*";|hash = "sha256-INVALIDHASHPLACEHOLDER000000000000000000000=";|' flake.nix
+                  echo "🔄 Set invalid hash to trigger recalculation"
+
+                  # Build to get correct hash with retry logic
+                  MAX_ATTEMPTS=3
+                  HASH=""
+
+                  for attempt in $(seq 1 $MAX_ATTEMPTS); do
+                    echo "🔨 Build attempt $attempt/$MAX_ATTEMPTS..."
+                    nix_output=$(nix build --print-out-paths .#packages.x86_64-linux.default 2>&1 || true)
+
+                    # Try multiple patterns to extract hash (improved from update_flake.yml)
+                    # Pattern 1: "got: sha256-..." or "got:sha256-..."
+                    if [[ -z "$HASH" ]]; then
+                      HASH=$(echo "$nix_output" | grep -oP '(?<=got:\s{0,5})sha256-[A-Za-z0-9+/=]{44}' | head -n1)
+                      [[ -n "$HASH" ]] && echo "✅ Extracted hash using pattern 1 (got: ...): $HASH"
+                    fi
+
+                    # Pattern 2: "got sha256-..." (without colon)
+                    if [[ -z "$HASH" ]]; then
+                      HASH=$(echo "$nix_output" | grep -oP '(?<=got\s{1,5})sha256-[A-Za-z0-9+/=]{44}' | head -n1)
+                      [[ -n "$HASH" ]] && echo "✅ Extracted hash using pattern 2 (got ...): $HASH"
+                    fi
+
+                    # Pattern 3: Any sha256 hash (fallback)
+                    if [[ -z "$HASH" ]]; then
+                      HASH=$(echo "$nix_output" | grep -oP 'sha256-[A-Za-z0-9+/=]{44}' | grep -v "INVALIDHASHPLACEHOLDER" | head -n1)
+                      [[ -n "$HASH" ]] && echo "✅ Extracted hash using pattern 3 (any sha256): $HASH"
+                    fi
+
+                    if [[ -n "$HASH" && "$HASH" != *"INVALID"* ]]; then
+                      echo "✅ Successfully extracted hash: $HASH"
+                      break
+                    fi
+
+                    HASH=""  # Reset for next attempt
+                    echo "⚠️  Attempt $attempt failed to extract valid hash"
+                    if [[ $attempt -lt $MAX_ATTEMPTS ]]; then
+                      echo "🔄 Retrying in 5 seconds..."
+                      sleep 5
+                    fi
+                  done
+
+                  # Validate hash was extracted
+                  if [[ -z "$HASH" || "$HASH" == *"INVALID"* ]]; then
+                    echo "❌ Failed to extract valid hash after $MAX_ATTEMPTS attempts"
+                    echo "📋 Nix build output:"
+                    echo "$nix_output"
+                    echo "🔙 Restoring backup..."
+                    mv flake.nix.backup flake.nix
+                    exit 1
+                  fi
+
+                  # Update with correct hash
+                  sed -i "s|hash = \"sha256-.*\";|hash = \"${HASH}\";|" flake.nix
+                  echo "✅ Updated hash: $HASH"
+
+                  # Validate the updated flake
+                  echo "🔍 Validating flake.nix..."
+                  if ! nix flake check --no-build 2>&1; then
+                    echo "❌ Flake validation failed"
+                    echo "🔙 Restoring backup..."
+                    mv flake.nix.backup flake.nix
+                    exit 1
+                  fi
+
+                  echo "✅ Flake validation successful"
+                  echo "🗑️  Removing backup..."
+                  rm -f flake.nix.backup
+
+                  # Show diff for verification
+                  echo "📝 Changes made:"
+                  git diff flake.nix
+
+                  echo "✅ Update complete: $VERSION with hash $HASH"
+
+            - name: Commit and push
+              run: |
+                  git config user.name "github-actions[bot]"
+                  git config user.email "github-actions[bot]@users.noreply.github.com"
+
+                  if git diff --quiet flake.nix; then
+                    echo "No changes to commit"
+                    exit 0
+                  fi
+
+                  git add flake.nix
+                  git commit -m "chore(nix): update flake.nix to version v${{ needs.release.outputs.new_release_version }} [skip ci]"
+                  git push origin main

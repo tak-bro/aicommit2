@@ -170,6 +170,77 @@ const parseTemplate = (template: string, options: PromptOptions): string => {
     });
 };
 
+const getLocalizedExample = (type: CommitType, locale: string): { subject: string; body: string } => {
+    const baseLocale = locale.split('-')[0].toLowerCase();
+
+    const examples: Record<CommitType, Record<string, { subject: string; body: string }>> = {
+        conventional: {
+            en: {
+                subject: 'fix(auth): fix bug in user authentication process',
+                body: '- Update login function to handle edge cases\\n- Add additional error logging for debugging',
+            },
+            zh: {
+                subject: 'fix(auth): 修复用户认证过程中的错误',
+                body: '- 更新登录函数以处理边缘情况\\n- 添加额外的错误日志用于调试',
+            },
+            ja: {
+                subject: 'fix(auth): ユーザー認証プロセスのバグを修正',
+                body: '- エッジケースを処理するためにログイン機能を更新\\n- デバッグ用の追加エラーログを追加',
+            },
+            ko: {
+                subject: 'fix(auth): 사용자 인증 프로세스의 버그 수정',
+                body: '- 엣지 케이스를 처리하도록 로그인 함수 업데이트\\n- 디버깅을 위한 추가 오류 로깅 추가',
+            },
+            es: {
+                subject: 'fix(auth): corregir error en el proceso de autenticación',
+                body: '- Actualizar función de inicio de sesión para manejar casos extremos\\n- Agregar registro de errores adicional para depuración',
+            },
+            fr: {
+                subject: "fix(auth): corriger un bug dans le processus d'authentification",
+                body: "- Mettre à jour la fonction de connexion pour gérer les cas limites\\n- Ajouter une journalisation d'erreurs supplémentaire pour le débogage",
+            },
+            de: {
+                subject: 'fix(auth): Fehler im Benutzerauthentifizierungsprozess beheben',
+                body: '- Login-Funktion aktualisiert, um Randfälle zu behandeln\\n- Zusätzliche Fehlerprotokollierung für Debugging hinzugefügt',
+            },
+        },
+        gitmoji: {
+            en: {
+                subject: ':sparkles: Add real-time chat feature',
+                body: '- Implement WebSocket connection\\n- Add message encryption\\n- Include typing indicators',
+            },
+            zh: {
+                subject: ':sparkles: 添加实时聊天功能',
+                body: '- 实现WebSocket连接\\n- 添加消息加密\\n- 包含输入指示器',
+            },
+            ja: {
+                subject: ':sparkles: リアルタイムチャット機能を追加',
+                body: '- WebSocket接続を実装\\n- メッセージ暗号化を追加\\n- 入力インジケーターを含む',
+            },
+            ko: {
+                subject: ':sparkles: 실시간 채팅 기능 추가',
+                body: '- WebSocket 연결 구현\\n- 메시지 암호화 추가\\n- 입력 표시기 포함',
+            },
+            es: {
+                subject: ':sparkles: Agregar función de chat en tiempo real',
+                body: '- Implementar conexión WebSocket\\n- Agregar cifrado de mensajes\\n- Incluir indicadores de escritura',
+            },
+            fr: {
+                subject: ':sparkles: Ajouter une fonctionnalité de chat en temps réel',
+                body: '- Implémenter une connexion WebSocket\\n- Ajouter le chiffrement des messages\\n- Inclure des indicateurs de saisie',
+            },
+            de: {
+                subject: ':sparkles: Echtzeit-Chat-Funktion hinzufügen',
+                body: '- WebSocket-Verbindung implementieren\\n- Nachrichtenverschlüsselung hinzufügen\\n- Tippindikatoren einschließen',
+            },
+        },
+        '': { en: { subject: '', body: '' } },
+    };
+
+    const typeExamples = examples[type] || examples[''];
+    return typeExamples[baseLocale] || typeExamples['en'];
+};
+
 const defaultPrompt = (promptOptions: PromptOptions) => {
     const { type, maxLength, generate, locale } = promptOptions;
 
@@ -226,29 +297,18 @@ const defaultPrompt = (promptOptions: PromptOptions) => {
         .join('\n');
 };
 
-const finalPrompt = (type: CommitType, generate: number) => {
+const finalPrompt = (type: CommitType, generate: number, locale: string) => {
     const example = (type: CommitType) => {
-        if (type === 'conventional') {
+        const localizedExample = getLocalizedExample(type, locale);
+
+        if (type === 'conventional' || type === 'gitmoji') {
             return `${Array(generate)
                 .fill(null)
                 .map(
                     (_, index) => `
   {
-    "subject": "fix(auth): fix bug in user authentication process",
-    "body": "- Update login function to handle edge cases\\n- Add additional error logging for debugging",
-    "footer": ""
-  }`
-                )
-                .join(',')}`;
-        }
-        if (type === 'gitmoji') {
-            return `${Array(generate)
-                .fill(null)
-                .map(
-                    (_, index) => `
-  {
-    "subject": ":sparkles: Add real-time chat feature",
-    "body": "- Implement WebSocket connection\\n- Add message encryption\\n- Include typing indicators",
+    "subject": "${localizedExample.subject}",
+    "body": "${localizedExample.body}",
     "footer": ""
   }`
                 )
@@ -272,20 +332,20 @@ const finalPrompt = (type: CommitType, generate: number) => {
 };
 
 export const generatePrompt = (promptOptions: PromptOptions) => {
-    const { systemPrompt, systemPromptPath, type, generate } = promptOptions;
+    const { systemPrompt, systemPromptPath, type, generate, locale } = promptOptions;
     if (systemPrompt) {
-        return `${systemPrompt}\n${finalPrompt(type, generate)}`;
+        return `${systemPrompt}\n${finalPrompt(type, generate, locale)}`;
     }
 
     if (!systemPromptPath) {
-        return `${defaultPrompt(promptOptions)}\n${finalPrompt(type, generate)}`;
+        return `${defaultPrompt(promptOptions)}\n${finalPrompt(type, generate, locale)}`;
     }
 
     try {
         const systemPromptTemplate = fs.readFileSync(resolvePromptPath(systemPromptPath), 'utf-8');
-        return `${parseTemplate(systemPromptTemplate, promptOptions)}\n${finalPrompt(type, generate)}`;
+        return `${parseTemplate(systemPromptTemplate, promptOptions)}\n${finalPrompt(type, generate, locale)}`;
     } catch (error) {
-        return `${defaultPrompt(promptOptions)}\n${finalPrompt(type, generate)}`;
+        return `${defaultPrompt(promptOptions)}\n${finalPrompt(type, generate, locale)}`;
     }
 };
 
