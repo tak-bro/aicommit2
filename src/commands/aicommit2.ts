@@ -6,6 +6,7 @@ import { execa } from 'execa';
 import inquirer from 'inquirer';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 
+import { getAvailableAIs } from './get-available-ais.js';
 import { AIRequestManager } from '../managers/ai-request.manager.js';
 import { ConsoleManager } from '../managers/console.manager.js';
 import {
@@ -15,11 +16,12 @@ import {
     commitMsgLoader,
     emptyCodeReview,
 } from '../managers/reactive-prompt.manager.js';
-import { RequestType } from '../utils/ai-log.js';
-import { BUILTIN_SERVICES, BuiltinService, ModelName, RawConfig, ValidConfig, getConfig } from '../utils/config.js';
+import { ModelName, RawConfig, getConfig } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
 import { validateSystemPrompt } from '../utils/prompt.js';
 import { assertGitRepo, getStagedDiff, getVCSName, commitChanges as vcsCommitChanges } from '../utils/vcs.js';
+
+import type { Subscription } from 'rxjs';
 
 const consoleManager = new ConsoleManager();
 
@@ -155,35 +157,6 @@ export default async (
         handleCliError(error);
         process.exit(1);
     });
-
-function getAvailableAIs(config: ValidConfig, requestType: RequestType): ModelName[] {
-    return Object.entries(config)
-        .map(([key, value]) => [key, value] as [ModelName, RawConfig])
-        .filter(([key, value]) => !value.disabled)
-        .filter(([key, value]) => BUILTIN_SERVICES.includes(key as BuiltinService) || value.compatible === true)
-        .filter(([key, value]) => {
-            switch (requestType) {
-                case 'commit':
-                    if (key === 'OLLAMA') {
-                        return !!value && !!value.model && (value.model as string[]).length > 0;
-                    }
-                    if (key === 'HUGGINGFACE') {
-                        return !!value && !!value.cookie;
-                    }
-                    return !!value.key && value.key.length > 0;
-                case 'review':
-                    const codeReview = config.codeReview || value.codeReview;
-                    if (key === 'OLLAMA') {
-                        return !!value && !!value.model && (value.model as string[]).length > 0 && codeReview;
-                    }
-                    if (key === 'HUGGINGFACE') {
-                        return !!value && !!value.cookie && codeReview;
-                    }
-                    return !!value.key && value.key.length > 0 && codeReview;
-            }
-        })
-        .map(([key]) => key);
-}
 
 async function handleCodeReview(aiRequestManager: AIRequestManager, availableAIs: ModelName[]) {
     const codeReviewPromptManager = new ReactivePromptManager(codeReviewLoader);

@@ -47,6 +47,7 @@ export const BUILTIN_SERVICES = [
     'PERPLEXITY',
     'DEEPSEEK',
     'GITHUB_MODELS',
+    'BEDROCK',
 ] as const;
 export type BuiltinService = (typeof BUILTIN_SERVICES)[number];
 
@@ -673,6 +674,80 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         watchMode: generalConfigParsers.watchMode,
         disableLowerCase: generalConfigParsers.disableLowerCase,
     },
+    BEDROCK: {
+        key: (key?: string) => key || '',
+        envKey: (envKey?: string) => (envKey && envKey.length > 0 ? envKey : 'BEDROCK_API_KEY'),
+        model: (model?: string | string[]): string[] => {
+            if (!model) {
+                return ['anthropic.claude-haiku-4-5-20251001-v1:0'];
+            }
+            const modelList = typeof model === 'string' ? model?.split(',') : model;
+            return modelList
+                .map(m => {
+                    const trimmed = m.trim();
+                    // Validate Bedrock model ID format: should contain a dot or be an ARN
+                    if (trimmed && !trimmed.includes('.') && !trimmed.includes(':')) {
+                        console.warn(
+                            `[Bedrock] Model ID "${trimmed}" may be invalid. Expected format: "provider.model-name-version" or ARN`
+                        );
+                    }
+                    return trimmed;
+                })
+                .filter(m => !!m && m.length > 0);
+        },
+        runtimeMode: (runtimeMode?: string, context?: { model?: string | string[] }) => {
+            // If explicitly set, validate and use it
+            if (runtimeMode) {
+                const normalized = runtimeMode.toString().trim().toLowerCase();
+                parseAssert(
+                    'BEDROCK.runtimeMode',
+                    ['foundation', 'application'].includes(normalized),
+                    'Must be either "foundation" or "application"'
+                );
+                return normalized;
+            }
+
+            // Auto-detect from model string if not specified
+            const modelValue = context?.model;
+            if (modelValue) {
+                const modelList = typeof modelValue === 'string' ? [modelValue] : modelValue;
+                // Check if any model contains "application-inference-profile"
+                const hasApplicationProfile = modelList.some(m => m.includes('application-inference-profile'));
+                if (hasApplicationProfile) {
+                    return 'application';
+                }
+            }
+
+            // Default to foundation mode
+            return 'foundation';
+        },
+        region: (region?: string) => region || process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || '',
+        profile: (profile?: string) => profile || process.env.AWS_PROFILE || '',
+        accessKeyId: (value?: string) => value || process.env.AWS_ACCESS_KEY_ID || '',
+        secretAccessKey: (value?: string) => value || process.env.AWS_SECRET_ACCESS_KEY || '',
+        sessionToken: (value?: string) => value || process.env.AWS_SESSION_TOKEN || '',
+        applicationEndpointId: (value?: string) => value || process.env.BEDROCK_APPLICATION_ENDPOINT_ID || '',
+        applicationInferenceProfileArn: (value?: string) =>
+            value || process.env.BEDROCK_APPLICATION_INFERENCE_PROFILE_ARN || process.env.BEDROCK_INFERENCE_PROFILE_ARN || '',
+        applicationBaseUrl: (value?: string) => value || process.env.BEDROCK_APPLICATION_BASE_URL || '',
+        systemPrompt: generalConfigParsers.systemPrompt,
+        systemPromptPath: generalConfigParsers.systemPromptPath,
+        codeReviewPromptPath: generalConfigParsers.codeReviewPromptPath,
+        timeout: generalConfigParsers.timeout,
+        temperature: generalConfigParsers.temperature,
+        maxTokens: generalConfigParsers.maxTokens,
+        logging: generalConfigParsers.logging,
+        locale: generalConfigParsers.locale,
+        generate: generalConfigParsers.generate,
+        type: generalConfigParsers.type,
+        maxLength: generalConfigParsers.maxLength,
+        includeBody: generalConfigParsers.includeBody,
+        topP: generalConfigParsers.topP,
+        codeReview: generalConfigParsers.codeReview,
+        disabled: generalConfigParsers.disabled,
+        watchMode: generalConfigParsers.watchMode,
+        disableLowerCase: generalConfigParsers.disableLowerCase,
+    },
 };
 
 export type RawConfig = {
@@ -767,9 +842,23 @@ export const getConfig = async (cliConfig: RawConfig, rawArgv: string[] = []): P
 
     for (const service of services) {
         const configuredEnvKey = (config[service] as Record<string, any>)?.envKey;
-        const envKey = configuredEnvKey || `${service}_API_KEY`;
+        let envKeys: (string | undefined)[];
 
-        const apiKey = process.env[envKey];
+        if (configuredEnvKey) {
+            envKeys = [configuredEnvKey];
+            if (service === 'BEDROCK' && configuredEnvKey !== 'BEDROCK_APPLICATION_API_KEY') {
+                envKeys.push('BEDROCK_APPLICATION_API_KEY');
+            }
+        } else if (service === 'BEDROCK') {
+            envKeys = ['BEDROCK_API_KEY', 'BEDROCK_APPLICATION_API_KEY'];
+        } else {
+            envKeys = [`${service}_API_KEY`];
+        }
+
+        const apiKey = envKeys
+            .map(key => (key ? process.env[key] : undefined))
+            .find((value): value is string => typeof value === 'string' && value.length > 0);
+
         if (apiKey) {
             envConfig[service] = { key: apiKey };
         }
@@ -796,7 +885,14 @@ export const getConfig = async (cliConfig: RawConfig, rawArgv: string[] = []): P
 
         for (const [key, parser] of Object.entries(modelParsers)) {
             const value = getValueWithPriority(modelName, key);
-            (parsedConfig[modelName] as Record<string, any>)[key] = (parser as any)(value); // Add type assertion
+
+            // Special handling for BEDROCK runtimeMode: pass model as context for auto-detection
+            if (modelName === 'BEDROCK' && key === 'runtimeMode') {
+                const modelValue = getValueWithPriority(modelName, 'model');
+                (parsedConfig[modelName] as Record<string, any>)[key] = (parser as any)(value, { model: modelValue });
+            } else {
+                (parsedConfig[modelName] as Record<string, any>)[key] = (parser as any)(value);
+            }
         }
     }
 
@@ -830,7 +926,14 @@ export const setConfigs = async (keyValues: [key: string, value: any][]) => {
             if (!parser) {
                 throw new KnownError(`Invalid config property: ${key}`);
             }
-            (config[modelName] as Record<string, any>)[modelKey] = (parser as any)(value);
+
+            // Special handling for BEDROCK runtimeMode: pass model as context for auto-detection
+            if (modelName === 'BEDROCK' && modelKey === 'runtimeMode') {
+                const modelValue = (config[modelName] as Record<string, any>)?.model;
+                (config[modelName] as Record<string, any>)[modelKey] = (parser as any)(value, { model: modelValue });
+            } else {
+                (config[modelName] as Record<string, any>)[modelKey] = (parser as any)(value);
+            }
             continue;
         }
 

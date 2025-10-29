@@ -11,6 +11,12 @@ importers:
       '@anthropic-ai/sdk':
         specifier: ^0.39.0
         version: 0.39.0
+      '@aws-sdk/client-bedrock-runtime':
+        specifier: ^3.678.0
+        version: 3.678.0
+      '@aws-sdk/credential-providers':
+        specifier: ^3.678.0
+        version: 3.678.0
       '@dqbd/tiktoken':
         specifier: ^1.0.21
         version: 1.0.21
