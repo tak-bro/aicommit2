@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import { CohereClient } from 'cohere-ai';
+import { CohereClientV2 } from 'cohere-ai';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Observable, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
@@ -12,7 +12,7 @@ import { getRandomNumber } from '../../utils/utils.js';
 const DEFAULT_TIMEOUT = 2 * 60 * 1000; // 2 minutes in milliseconds
 
 export class CohereService extends AIService {
-    private cohere: CohereClient;
+    private cohere: CohereClientV2;
 
     constructor(protected readonly params: AIServiceParams) {
         super(params);
@@ -22,7 +22,7 @@ export class CohereService extends AIService {
         };
         this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold('[Cohere]');
         this.errorPrefix = chalk.red.bold(`[Cohere]`);
-        this.cohere = new CohereClient({
+        this.cohere = new CohereClientV2({
             token: this.params.config.key,
         });
     }
@@ -101,9 +101,21 @@ export class CohereService extends AIService {
         const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
         const userPrompt = `Here is the diff: ${diff}`;
 
-        // 상세 로깅 (config URL 사용)
+        // Build messages array for v2 API
+        const messages = [];
+        if (generatedSystemPrompt) {
+            messages.push({
+                role: 'system',
+                content: generatedSystemPrompt,
+            });
+        }
+        messages.push({
+            role: 'user',
+            content: userPrompt,
+        });
+
         const baseUrl = this.params.config.url || 'https://api.cohere.ai';
-        const url = `${baseUrl}/v1/chat`;
+        const url = `${baseUrl}/v2/chat`;
         const headers = {
             Authorization: `Bearer ${this.params.config.key}`,
             'Content-Type': 'application/json',
@@ -113,12 +125,10 @@ export class CohereService extends AIService {
         logAIPrompt(diff, requestType, 'Cohere', generatedSystemPrompt, userPrompt, logging);
 
         const payload = {
-            chatHistory: generatedSystemPrompt ? [{ role: 'SYSTEM', message: generatedSystemPrompt }] : [],
-            message: userPrompt,
-            connectors: [{ id: 'web-search' }],
-            maxTokens,
-            temperature,
             model: this.params.config.model,
+            messages,
+            max_tokens: maxTokens,
+            temperature,
             seed: getRandomNumber(10, 1000),
             p: this.params.config.topP,
         };
@@ -133,7 +143,7 @@ export class CohereService extends AIService {
             });
 
             const duration = Date.now() - startTime;
-            const result = prediction.text;
+            const result = prediction.message.content[0].text;
 
             logAIResponse(diff, requestType, 'Cohere', prediction, logging);
             logAIComplete(diff, requestType, 'Cohere', duration, result, logging);
