@@ -1,3 +1,10 @@
+## [2.4.16](https://github.com/tak-bro/aicommit2/compare/v2.4.15...v2.4.16) (2025-11-04)
+
+
+### Bug Fixes
+
+* **ai:** use generic Error for invalid Cohere response ([7bffe33](https://github.com/tak-bro/aicommit2/commit/7bffe33b8c0a508024b499219856793068e403f5))
+
 ## [2.4.15](https://github.com/tak-bro/aicommit2/compare/v2.4.14...v2.4.15) (2025-11-04)
 
 
