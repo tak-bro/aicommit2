@@ -151,7 +151,7 @@ export class CohereService extends AIService {
 
             const duration = Date.now() - startTime;
             if (!this.isValidCohereV2Response(prediction)) {
-                throw new AIServiceError('Invalid response structure from Cohere v2 API');
+                throw new Error('Invalid response structure from Cohere v2 API');
             }
 
             const result = prediction.message.content[0].text;
