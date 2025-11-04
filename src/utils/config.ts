@@ -174,7 +174,7 @@ const generalConfigParsers = {
     },
     timeout(timeout?: string) {
         if (!timeout) {
-            return 10_000;
+            return 60_000;
         }
 
         parseAssert('timeout', /^\d+$/.test(timeout), 'Must be an integer');
@@ -379,6 +379,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
         codeReviewPromptPath: generalConfigParsers.codeReviewPromptPath,
+        timeout: generalConfigParsers.timeout,
         temperature: generalConfigParsers.temperature,
         maxTokens: generalConfigParsers.maxTokens,
         logging: generalConfigParsers.logging,
@@ -406,6 +407,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
         codeReviewPromptPath: generalConfigParsers.codeReviewPromptPath,
+        timeout: generalConfigParsers.timeout,
         temperature: generalConfigParsers.temperature,
         maxTokens: generalConfigParsers.maxTokens,
         logging: generalConfigParsers.logging,
@@ -536,9 +538,16 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
     COHERE: {
         key: (key?: string) => key || '',
         envKey: (envKey?: string) => envKey || '',
+        url: (url?: string) => {
+            if (!url) {
+                return 'https://api.cohere.ai';
+            }
+            parseAssert('COHERE.url', /^https?:\/\//.test(url), 'Must be a valid URL');
+            return url;
+        },
         model: (model?: string | string[]): string[] => {
             if (!model) {
-                return ['command-r'];
+                return ['command-a-03-2025'];
             }
             const modelList = typeof model === 'string' ? model?.split(',') : model;
             return modelList.map(m => m.trim()).filter(m => !!m && m.length > 0);
@@ -550,6 +559,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         maxTokens: generalConfigParsers.maxTokens,
         logging: generalConfigParsers.logging,
         locale: generalConfigParsers.locale,
+        timeout: generalConfigParsers.timeout,
         generate: generalConfigParsers.generate,
         type: generalConfigParsers.type,
         maxLength: generalConfigParsers.maxLength,

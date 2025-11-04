@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import { CohereClient } from 'cohere-ai';
+import { CohereClientV2 } from 'cohere-ai';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Observable, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
@@ -9,10 +9,19 @@ import { RequestType, logAIComplete, logAIError, logAIPayload, logAIPrompt, logA
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 import { getRandomNumber } from '../../utils/utils.js';
 
-const DEFAULT_TIMEOUT = 2 * 60 * 1000; // 2 minutes in milliseconds
+type CohereV2Message = {
+    role: 'system' | 'user';
+    content: string;
+};
+
+type CohereV2Response = {
+    message: {
+        content: Array<{ text: string }>;
+    };
+};
 
 export class CohereService extends AIService {
-    private cohere: CohereClient;
+    private cohere: CohereClientV2;
 
     constructor(protected readonly params: AIServiceParams) {
         super(params);
@@ -22,9 +31,19 @@ export class CohereService extends AIService {
         };
         this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold('[Cohere]');
         this.errorPrefix = chalk.red.bold(`[Cohere]`);
-        this.cohere = new CohereClient({
+        this.cohere = new CohereClientV2({
             token: this.params.config.key,
         });
+    }
+
+    private isValidCohereV2Response(response: unknown): response is CohereV2Response {
+        const pred = response as any;
+        return (
+            pred?.message?.content !== undefined &&
+            Array.isArray(pred.message.content) &&
+            pred.message.content.length > 0 &&
+            typeof pred.message.content[0]?.text === 'string'
+        );
     }
 
     protected getServiceSpecificErrorMessage(error: AIServiceError): string | null {
@@ -101,24 +120,22 @@ export class CohereService extends AIService {
         const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
         const userPrompt = `Here is the diff: ${diff}`;
 
-        // 상세 로깅 (config URL 사용)
-        const baseUrl = this.params.config.url || 'https://api.cohere.ai';
-        const url = `${baseUrl}/v1/chat`;
-        const headers = {
-            Authorization: `Bearer ${this.params.config.key}`,
-            'Content-Type': 'application/json',
-        };
+        const messages: CohereV2Message[] = [
+            ...(generatedSystemPrompt ? [{ role: 'system' as const, content: generatedSystemPrompt }] : []),
+            { role: 'user' as const, content: userPrompt },
+        ];
 
-        logAIRequest(diff, requestType, 'Cohere', this.params.config.model, url, headers, logging);
+        const baseUrl = this.params.config.url;
+        const url = `${baseUrl}/v2/chat`;
+
+        logAIRequest(diff, requestType, 'Cohere', this.params.config.model, url, {}, logging);
         logAIPrompt(diff, requestType, 'Cohere', generatedSystemPrompt, userPrompt, logging);
 
         const payload = {
-            chatHistory: generatedSystemPrompt ? [{ role: 'SYSTEM', message: generatedSystemPrompt }] : [],
-            message: userPrompt,
-            connectors: [{ id: 'web-search' }],
-            maxTokens,
-            temperature,
             model: this.params.config.model,
+            messages,
+            max_tokens: maxTokens,
+            temperature,
             seed: getRandomNumber(10, 1000),
             p: this.params.config.topP,
         };
@@ -133,7 +150,11 @@ export class CohereService extends AIService {
             });
 
             const duration = Date.now() - startTime;
-            const result = prediction.text;
+            if (!this.isValidCohereV2Response(prediction)) {
+                throw new AIServiceError('Invalid response structure from Cohere v2 API');
+            }
+
+            const result = prediction.message.content[0].text;
 
             logAIResponse(diff, requestType, 'Cohere', prediction, logging);
             logAIComplete(diff, requestType, 'Cohere', duration, result, logging);
