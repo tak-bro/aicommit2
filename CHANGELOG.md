@@ -1,3 +1,10 @@
+## [2.4.15](https://github.com/tak-bro/aicommit2/compare/v2.4.14...v2.4.15) (2025-11-04)
+
+
+### Features
+
+* **cohere:** upgrade to v2 API and improve timeout ([0f94439](https://github.com/tak-bro/aicommit2/commit/0f94439a1afb84a7e0936d1096e59dd85860953c))
+
 ## [2.4.14](https://github.com/tak-bro/aicommit2/compare/v2.4.13...v2.4.14) (2025-10-28)
 
 
