@@ -538,6 +538,13 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
     COHERE: {
         key: (key?: string) => key || '',
         envKey: (envKey?: string) => envKey || '',
+        url: (url?: string) => {
+            if (!url) {
+                return 'https://api.cohere.ai';
+            }
+            parseAssert('COHERE.url', /^https?:\/\//.test(url), 'Must be a valid URL');
+            return url;
+        },
         model: (model?: string | string[]): string[] => {
             if (!model) {
                 return ['command-a-03-2025'];

@@ -9,7 +9,16 @@ import { RequestType, logAIComplete, logAIError, logAIPayload, logAIPrompt, logA
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 import { getRandomNumber } from '../../utils/utils.js';
 
-const DEFAULT_TIMEOUT = 2 * 60 * 1000; // 2 minutes in milliseconds
+type CohereV2Message = {
+    role: 'system' | 'user';
+    content: string;
+};
+
+type CohereV2Response = {
+    message: {
+        content: Array<{ text: string }>;
+    };
+};
 
 export class CohereService extends AIService {
     private cohere: CohereClientV2;
@@ -25,6 +34,16 @@ export class CohereService extends AIService {
         this.cohere = new CohereClientV2({
             token: this.params.config.key,
         });
+    }
+
+    private isValidCohereV2Response(response: unknown): response is CohereV2Response {
+        const pred = response as any;
+        return (
+            pred?.message?.content !== undefined &&
+            Array.isArray(pred.message.content) &&
+            pred.message.content.length > 0 &&
+            typeof pred.message.content[0]?.text === 'string'
+        );
     }
 
     protected getServiceSpecificErrorMessage(error: AIServiceError): string | null {
@@ -101,27 +120,15 @@ export class CohereService extends AIService {
         const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
         const userPrompt = `Here is the diff: ${diff}`;
 
-        // Build messages array for v2 API
-        const messages = [];
-        if (generatedSystemPrompt) {
-            messages.push({
-                role: 'system',
-                content: generatedSystemPrompt,
-            });
-        }
-        messages.push({
-            role: 'user',
-            content: userPrompt,
-        });
+        const messages: CohereV2Message[] = [
+            ...(generatedSystemPrompt ? [{ role: 'system' as const, content: generatedSystemPrompt }] : []),
+            { role: 'user' as const, content: userPrompt },
+        ];
 
-        const baseUrl = this.params.config.url || 'https://api.cohere.ai';
+        const baseUrl = this.params.config.url;
         const url = `${baseUrl}/v2/chat`;
-        const headers = {
-            Authorization: `Bearer ${this.params.config.key}`,
-            'Content-Type': 'application/json',
-        };
 
-        logAIRequest(diff, requestType, 'Cohere', this.params.config.model, url, headers, logging);
+        logAIRequest(diff, requestType, 'Cohere', this.params.config.model, url, {}, logging);
         logAIPrompt(diff, requestType, 'Cohere', generatedSystemPrompt, userPrompt, logging);
 
         const payload = {
@@ -143,6 +150,10 @@ export class CohereService extends AIService {
             });
 
             const duration = Date.now() - startTime;
+            if (!this.isValidCohereV2Response(prediction)) {
+                throw new AIServiceError('Invalid response structure from Cohere v2 API');
+            }
+
             const result = prediction.message.content[0].text;
 
             logAIResponse(diff, requestType, 'Cohere', prediction, logging);
