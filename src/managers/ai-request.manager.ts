@@ -4,6 +4,7 @@ import { Observable, catchError, from, mergeMap, of } from 'rxjs';
 
 import { AIServiceFactory } from '../services/ai/ai-service.factory.js';
 import { AnthropicService } from '../services/ai/anthropic.service.js';
+import { BedrockService } from '../services/ai/bedrock.service.js';
 import { CodestralService } from '../services/ai/codestral.service.js';
 import { CohereService } from '../services/ai/cohere.service.js';
 import { DeepSeekService } from '../services/ai/deep-seek.service.js';
@@ -131,6 +132,14 @@ export class AIRequestManager {
                             case 'PERPLEXITY': {
                                 const service = AIServiceFactory.create(PerplexityService, {
                                     config: { ...this.config.PERPLEXITY, model: model },
+                                    stagedDiff: this.stagedDiff,
+                                    keyName: model as ModelName,
+                                });
+                                return requestType === 'commit' ? service.generateCommitMessage$() : service.generateCodeReview$();
+                            }
+                            case 'BEDROCK': {
+                                const service = AIServiceFactory.create(BedrockService, {
+                                    config: { ...this.config.BEDROCK, model: model },
                                     stagedDiff: this.stagedDiff,
                                     keyName: model as ModelName,
                                 });
