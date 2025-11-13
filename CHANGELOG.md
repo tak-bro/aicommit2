@@ -1,3 +1,10 @@
+## [2.4.17](https://github.com/tak-bro/aicommit2/compare/v2.4.16...v2.4.17) (2025-11-13)
+
+
+### Bug Fixes
+
+* **editor:** improve editor command handling with flags ([c5a6094](https://github.com/tak-bro/aicommit2/commit/c5a6094d6a58135cb845347b8238840f56ec8bcb))
+
 ## [2.4.16](https://github.com/tak-bro/aicommit2/compare/v2.4.15...v2.4.16) (2025-11-04)
 
 
