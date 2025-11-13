@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
@@ -309,11 +310,21 @@ async function handleCommitMessage(aiRequestManager: AIRequestManager, available
 
 async function openEditor(message: string): Promise<string> {
     const editor = process.env.VISUAL || process.env.EDITOR || (process.platform === 'win32' ? 'notepad' : 'vi');
-    const tempFile = path.join(os.tmpdir(), `aicommit2-${Date.now()}.txt`);
+    // Add random suffix to prevent file name collisions
+    const tempFile = path.join(os.tmpdir(), `aicommit2-${Date.now()}-${crypto.randomBytes(4).toString('hex')}.txt`);
 
     try {
         fs.writeFileSync(tempFile, message, 'utf8');
-        await execa(editor, [tempFile], { stdio: 'inherit' });
+
+        // Parse EDITOR string to handle flags (e.g., "zed --new --wait")
+        // Simple space-split handles most cases while being more secure than shell interpolation
+        // Previously failed because execa() treated entire string as binary name
+        // See: https://github.com/tak-bro/aicommit2/issues/197
+        const editorParts = editor.split(' ');
+        const [binary, ...flags] = editorParts;
+
+        await execa(binary, [...flags, tempFile], { stdio: 'inherit' });
+
         const editedMessage = fs.readFileSync(tempFile, 'utf8').trim();
         fs.unlinkSync(tempFile);
 
@@ -343,7 +354,12 @@ async function openEditor(message: string): Promise<string> {
                 `Failed to open editor "${editor}". Please set your EDITOR or VISUAL environment variable to a valid editor command.`
             );
         } else {
-            throw new KnownError(`Failed to open editor "${editor}". Please check that the editor command is valid and available.`);
+            throw new KnownError(
+                `Failed to open editor "${editor}". Please check:\n` +
+                    '  - Editor binary exists in PATH\n' +
+                    '  - Editor flags are correct\n' +
+                    '  - EDITOR/VISUAL is set correctly'
+            );
         }
     }
 }
