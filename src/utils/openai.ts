@@ -134,31 +134,55 @@ const createChatCompletion = async (url: string, path: string, apiKey: string, j
 export const sanitizeMessage = (message: string) => message.trim();
 
 /**
- * List of GPT-5 model identifiers that require special API parameters.
- * GPT-5 models use max_completion_tokens instead of max_tokens and don't support top_p.
+ * List of model prefixes that require special API parameters.
+ * These models use max_completion_tokens instead of max_tokens and don't support top_p.
+ * Includes:
+ * - GPT-5 series (gpt-5, gpt-5-mini, gpt-5-nano, gpt-5-codex)
+ * - O-series reasoning models (o1, o1-mini, o1-pro, o3, o3-mini, o3-pro, o4-mini)
  */
-const GPT5_MODEL_PREFIXES = ['gpt-5', 'gpt-5-mini', 'gpt-5-nano', 'gpt-5-codex'] as const;
+const REASONING_MODEL_PREFIXES = [
+    // GPT-5 series
+    'gpt-5',
+    'gpt-5-mini',
+    'gpt-5-nano',
+    'gpt-5-codex',
+    // O-series reasoning models
+    'o1',
+    'o1-mini',
+    'o1-pro',
+    'o3',
+    'o3-mini',
+    'o3-pro',
+    'o4-mini',
+] as const;
 
 /**
- * Checks if the given model string represents a GPT-5 series model.
- * GPT-5 models require different API parameters than other OpenAI models:
+ * Checks if the given model requires special reasoning model parameters.
+ * These models require different API parameters than standard OpenAI models:
  * - Use `max_completion_tokens` instead of `max_tokens`
  * - Don't support `top_p` parameter
  * - Require `temperature: 1`
  *
- * @param model - The model identifier (e.g., "gpt-5", "gpt-5-mini", "gpt-5-codex-preview")
- * @returns true if the model is a GPT-5 variant, false otherwise
+ * @param model - The model identifier (e.g., "o1", "o3-mini", "gpt-5")
+ * @returns true if the model is a reasoning model, false otherwise
  *
  * @example
- * isGPT5Model('gpt-5') // true
- * isGPT5Model('gpt-5-codex') // true
- * isGPT5Model('gpt-5-preview') // true (version suffix)
- * isGPT5Model('gpt-4o') // false
- * isGPT5Model('gpt-50') // false (avoids false positive)
+ * isReasoningModel('o1') // true
+ * isReasoningModel('o3-mini') // true
+ * isReasoningModel('o3-mini-2025-01-31') // true (version suffix)
+ * isReasoningModel('gpt-5') // true
+ * isReasoningModel('gpt-4o') // false
+ * isReasoningModel('gpt-4') // false
  */
-export const isGPT5Model = (model: string): boolean => {
-    return GPT5_MODEL_PREFIXES.some(prefix => model === prefix || model.startsWith(`${prefix}-`));
+export const isReasoningModel = (model: string): boolean => {
+    const normalizedModel = model.toLowerCase();
+    return REASONING_MODEL_PREFIXES.some(prefix => normalizedModel === prefix || normalizedModel.startsWith(`${prefix}-`));
 };
+
+/**
+ * @deprecated Use isReasoningModel instead. This alias is kept for backward compatibility.
+ */
+export const isGPT5Model = isReasoningModel;
 
 export const generateCommitMessage = async (
     serviceName: string,
@@ -179,7 +203,7 @@ export const generateCommitMessage = async (
     try {
         const userPrompt = generateUserPrompt(diff, requestType);
 
-        const gpt5Model = isGPT5Model(model);
+        const reasoningModel = isReasoningModel(model);
 
         const request: any = {
             model,
@@ -191,14 +215,14 @@ export const generateCommitMessage = async (
             n: 1,
             frequency_penalty: 0,
             presence_penalty: 0,
-            ...(gpt5Model
+            ...(reasoningModel
                 ? {
-                      // GPT-5 models use max_completion_tokens instead of max_tokens and don't support top_p
+                      // Reasoning models (o1, o3, gpt-5) use max_completion_tokens instead of max_tokens and don't support top_p
                       max_completion_tokens: maxTokens,
                       temperature: 1,
                   }
                 : {
-                      // Non-GPT-5 models use standard parameters
+                      // Standard models use traditional parameters
                       max_tokens: maxTokens,
                       top_p: topP,
                       temperature: temperature,

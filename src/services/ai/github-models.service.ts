@@ -5,7 +5,7 @@ import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
 import { RequestType, logAIComplete, logAIError, logAIPayload, logAIPrompt, logAIRequest, logAIResponse } from '../../utils/ai-log.js';
-import { isGPT5Model } from '../../utils/openai.js';
+import { isReasoningModel } from '../../utils/openai.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 
 export class GitHubModelsService extends AIService {
@@ -109,14 +109,14 @@ export class GitHubModelsService extends AIService {
             },
         ];
 
-        // GPT-5 series models have different parameter requirements
-        const isGPT5 = isGPT5Model(model);
+        // Reasoning models (o1, o3, gpt-5) have different parameter requirements
+        const reasoningModel = isReasoningModel(model);
 
         const body: any = {
             messages,
             model,
             stream: false,
-            ...(isGPT5
+            ...(reasoningModel
                 ? {
                       max_completion_tokens: this.params.config.maxTokens || 1024,
                       temperature: 1,
