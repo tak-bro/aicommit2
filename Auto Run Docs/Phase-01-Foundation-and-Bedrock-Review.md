@@ -8,7 +8,23 @@ This phase establishes the foundation for reviewing the Bedrock integration PR. 
   - **Note**: Repository already forked to `denniswebb/aicommit2` and cloned to `/Users/dennis/Repositories/github.com/denniswebb/aicommit2`
   - Configured upstream remote pointing to `https://github.com/tak-bro/aicommit2.git`
   - Fetched all upstream branches and tags successfully
-- [ ] Locate the draft PR containing Bedrock integration changes on the upstream repository
+- [x] Locate the draft PR containing Bedrock integration changes on the upstream repository
+  - **PR Details**:
+    - Number: #193
+    - Title: "Adds AWS Bedrock support"
+    - URL: https://github.com/tak-bro/aicommit2/pull/193
+    - Status: DRAFT, OPEN
+    - Author: denniswebb
+    - Branch: main → main
+    - Changes: +1557 additions, -36 deletions across 14 files
+  - **Key Files Modified**:
+    - `src/services/ai/bedrock.service.ts` (528 lines added) - Core Bedrock service implementation
+    - `docs/providers/bedrock.md` (273 lines added) - Documentation
+    - `tests/specs/bedrock/index.ts` (167 lines added) - Bedrock-specific tests
+    - `src/utils/config.ts` (107 additions, 4 deletions) - Configuration updates
+    - `src/commands/get-available-ais.ts` (91 lines added) - AI provider availability
+    - `src/commands/aicommit2.ts` (4 additions, 31 deletions) - Command integration
+    - Package dependencies updated for AWS SDK support
 - [ ] Check out the PR branch locally for detailed code review
 - [ ] Read and document the project's contribution guidelines from CONTRIBUTING.md or similar files
 - [ ] Review the existing AI provider implementations (OpenAI, Anthropic, etc.) to understand the project's architectural patterns
