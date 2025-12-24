@@ -199,7 +199,7 @@ const generalConfigParsers = {
     },
     maxTokens(maxTokens?: string) {
         if (!maxTokens) {
-            return 1024;
+            return 8192;
         }
 
         parseAssert('maxTokens', /^\d+$/.test(maxTokens), 'Must be an integer');
