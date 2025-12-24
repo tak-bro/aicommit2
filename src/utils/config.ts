@@ -371,7 +371,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         envKey: (envKey?: string) => envKey || '',
         model: (model?: string | string[]): string[] => {
             if (!model) {
-                return ['gemini-2.0-flash'];
+                return ['gemini-2.5-flash'];
             }
             const modelList = typeof model === 'string' ? model?.split(',') : model;
             return modelList.map(m => m.trim()).filter(m => !!m && m.length > 0);
