@@ -1,3 +1,15 @@
+## [2.4.19](https://github.com/tak-bro/aicommit2/compare/v2.4.18...v2.4.19) (2025-12-24)
+
+
+### Bug Fixes
+
+* handle response truncation due to token limit ([e05dbc8](https://github.com/tak-bro/aicommit2/commit/e05dbc89f0017ab20d3272ffd814c9b94ff61d70))
+
+
+### Features
+
+* **cli:** add --dry-run option to generate commit message without committing ([87231da](https://github.com/tak-bro/aicommit2/commit/87231dac8daac2d135bf3a4e3e244d312236af0c))
+
 ## [2.4.18](https://github.com/tak-bro/aicommit2/compare/v2.4.17...v2.4.18) (2025-12-24)
 
 
