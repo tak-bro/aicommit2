@@ -4,7 +4,7 @@ export interface VCSDiff {
 }
 
 export abstract class BaseVCSAdapter {
-    abstract name: 'git' | 'jujutsu';
+    abstract name: 'git' | 'jujutsu' | 'yadm';
 
     /**
      * Assert that we're in a VCS repository and return the repo root path

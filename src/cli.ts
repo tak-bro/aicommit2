@@ -111,6 +111,21 @@ cli(
                 alias: 'v',
                 default: false,
             },
+            git: {
+                type: Boolean,
+                description: 'Force use Git (overrides auto-detection)',
+                default: false,
+            },
+            yadm: {
+                type: Boolean,
+                description: 'Force use YADM (overrides auto-detection)',
+                default: false,
+            },
+            jj: {
+                type: Boolean,
+                description: 'Force use Jujutsu (overrides auto-detection)',
+                default: false,
+            },
         },
 
         commands: [configCommand, githubLoginCommand, hookCommand, logCommand],

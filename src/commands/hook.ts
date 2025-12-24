@@ -7,16 +7,63 @@ import { command } from 'cleye';
 
 import { KnownError, handleCliError } from '../utils/error.js';
 import { fileExists } from '../utils/fs.js';
-import { assertGitRepo } from '../utils/vcs.js';
+import { assertGitRepo, getVCSName } from '../utils/vcs.js';
 
 const hookName = 'prepare-commit-msg';
-const symlinkPath = `.git/hooks/${hookName}`;
+
+const getHookPath = async (): Promise<string> => {
+    const vcsName = await getVCSName();
+
+    if (vcsName === 'git') {
+        return `.git/hooks/${hookName}`;
+    }
+
+    if (vcsName === 'yadm') {
+        // YADM hooks location can vary, use yadm introspect to get correct path
+        const home = process.env.HOME || process.env.USERPROFILE;
+        if (!home) {
+            throw new KnownError('HOME environment variable not set. Cannot determine YADM hook path.');
+        }
+
+        try {
+            // Use yadm introspect to get the correct hooks directory
+            const { execa } = await import('execa');
+            const { stdout } = await execa('yadm', ['introspect', 'repo']);
+            const yadmRepo = stdout.trim();
+
+            if (yadmRepo) {
+                // Hook path is in the repo's hooks directory
+                return path.join(yadmRepo, 'hooks', hookName);
+            }
+        } catch (error) {
+            // Fallback: if introspect fails, try standard locations
+        }
+
+        // Fallback: Check both standard locations
+        const xdgPath = path.join(home, '.config/yadm/hooks');
+        const legacyPath = path.join(home, '.yadm/hooks');
+
+        // Prefer XDG standard location if it exists, otherwise use legacy
+        try {
+            await fs.access(xdgPath);
+            return path.join(xdgPath, hookName);
+        } catch {
+            return path.join(legacyPath, hookName);
+        }
+    }
+
+    if (vcsName === 'jujutsu') {
+        throw new KnownError('Hooks are not supported for Jujutsu repositories.');
+    }
+
+    throw new KnownError(`Hooks are not supported for ${vcsName} repositories.`);
+};
 
 const hookPath = fileURLToPath(new URL('cli.mjs', import.meta.url));
 
 export const isCalledFromGitHook = process.argv[1]
     .replace(/\\/g, '/') // Replace Windows back slashes with forward slashes
-    .endsWith(`/${symlinkPath}`);
+    .includes(`/hooks/${hookName}`);
 
 const isWindows = process.platform === 'win32';
 const windowsHook = `
@@ -38,7 +85,8 @@ export default command(
             const gitRepoPath = await assertGitRepo();
             const { installUninstall: mode } = argv._;
 
-            const absoltueSymlinkPath = path.join(gitRepoPath, symlinkPath);
+            const symlinkPath = await getHookPath();
+            const absoltueSymlinkPath = path.isAbsolute(symlinkPath) ? symlinkPath : path.join(gitRepoPath, symlinkPath);
             const hookExists = await fileExists(absoltueSymlinkPath);
             if (mode === 'install') {
                 if (hookExists) {
