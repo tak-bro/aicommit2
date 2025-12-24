@@ -47,7 +47,13 @@ export default async (
         if (stageAll) {
             const vcsName = await getVCSName();
             if (vcsName === 'git') {
-                await execa('git', ['add', '--update']); // NOTE: should be equivalent behavior to `git commit --all`
+                // Use 'git add .' to stage all changes including untracked files in the project directory
+                // This is safe for Git projects (unlike YADM in home directory)
+                await execa('git', ['add', '.']);
+            } else if (vcsName === 'yadm') {
+                // Use '--update' for YADM to only stage already-tracked files
+                // This prevents accidentally staging thousands of files in the home directory
+                await execa('yadm', ['add', '--update']);
             }
             // For Jujutsu, no staging needed - working copy is already staged
         }
@@ -91,9 +97,23 @@ export default async (
         detectingFilesSpinner.stop();
 
         if (!staged) {
-            throw new KnownError(
-                'No staged changes found. Stage your changes manually, or automatically stage all changes with the `--all` flag.'
-            );
+            const vcsName = await getVCSName();
+            let errorMessage = 'No staged changes found.';
+
+            if (vcsName === 'yadm') {
+                errorMessage += '\n\nStage your changes with: yadm add <file>';
+                errorMessage += '\nOr stage tracked file modifications: aicommit2 --all';
+                errorMessage += '\n\nNote: The --all flag only stages already-tracked files (YADM best practice).';
+                errorMessage += '\nTo track new dotfiles, explicitly add them first: yadm add <file>';
+            } else if (vcsName === 'git') {
+                errorMessage += '\n\nStage your changes with: git add <file>';
+                errorMessage += '\nOr automatically stage all changes: aicommit2 --all';
+            } else if (vcsName === 'jujutsu') {
+                errorMessage += '\n\nJujutsu automatically tracks all changes in the working copy.';
+                errorMessage += '\nMake some changes to your files and try again.';
+            }
+
+            throw new KnownError(errorMessage);
         }
 
         consoleManager.printStagedFiles(staged);

@@ -4,7 +4,7 @@
     <h1 align="center">AICommit2</h1>
   </div>
   <p>
-    A Reactive CLI that generates commit messages for Git and Jujutsu with Ollama, ChatGPT, Gemini, Claude, Mistral, and other AI
+    A Reactive CLI that generates commit messages for Git, YADM, and Jujutsu with Ollama, ChatGPT, Gemini, Claude, Mistral, and other AI
   </p>
 </div>
 
@@ -37,17 +37,18 @@ aicommit2 config set OPENAI.key=<your-key>
 git add .
 aicommit2
 
-# Also works with Jujutsu repositories (auto-detected)
+# Also works with YADM and Jujutsu repositories (auto-detected)
+yadm add <file>
 aicommit2
 ```
 
 ## Introduction
 
-AICommit2 automatically generates commit messages using AI. It primarily supports [Git](https://git-scm.com/) and also works with [Jujutsu](https://github.com/jj-vcs/jj)(jj) repositories. [AICommits](https://github.com/Nutlope/aicommits) inspired the core functionalities and architecture of this project.
+AICommit2 automatically generates commit messages using AI. It supports [Git](https://git-scm.com/), [YADM](https://yadm.io/) (Yet Another Dotfiles Manager), and [Jujutsu](https://github.com/jj-vcs/jj)(jj) repositories with automatic detection. [AICommits](https://github.com/Nutlope/aicommits) inspired the core functionalities and architecture of this project.
 
 ## Key features
 
-- **[VCS Support](#version-control-systems)**: Works with both Git and Jujutsu repositories
+- **[VCS Support](#version-control-systems)**: Works with Git, YADM, and Jujutsu repositories
 - **[Multi-AI Support](#cloud-ai-services)**: Integrates with OpenAI, Anthropic Claude, Google Gemini, Mistral AI, Cohere, Groq, Ollama and more
 - **[OpenAI API Compatibility](docs/providers/compatible.md)**: Support for any service that implements the OpenAI API specification
 - **[Reactive CLI](#usage)**: Enables simultaneous requests to multiple AIs and selection of the best commit message
@@ -201,6 +202,41 @@ aicommit2
 - Supports all Git features and hooks
 - Requires staging changes before commit
 
+### YADM Support
+
+AICommit2 supports [YADM (Yet Another Dotfiles Manager)](https://yadm.io/) for managing dotfiles:
+
+```bash
+# Standard YADM workflow
+yadm add <files>
+aicommit2
+```
+
+**Features:**
+
+- Automatic detection of YADM repositories (prioritized before Git)
+- Uses `yadm` commands instead of `git` for all operations
+- Supports all YADM features including encryption and alternate files
+- Works with dotfiles in `$HOME` directory
+- Hook installation: `aicommit2 hook install` (installs to `~/.config/yadm/hooks/`)
+- **Note:** Watch mode (`--watch-commit`) is not supported for YADM repositories
+
+**Installation:**
+
+```bash
+# macOS
+brew install yadm
+
+# Linux
+apt-get install yadm  # Debian/Ubuntu
+dnf install yadm      # Fedora
+
+# Initialize repository
+yadm init
+# or clone existing dotfiles
+yadm clone <url>
+```
+
 ### Jujutsu Support
 
 AICommit2 also supports [Jujutsu (jj)](https://github.com/martinvonz/jj) repositories:
@@ -237,10 +273,35 @@ jj init
 
 ### Detection Priority
 
-1. `FORCE_GIT=true` environment variable (highest priority - forces Git)
-2. Config: `aicommit2 config set forceGit=true` (forces Git)
-3. Jujutsu repository (checked first - since jj v0.34.0+, repos are colocated with .git by default)
-4. Git repository (fallback)
+1. **CLI flags** (highest priority - overrides everything):
+   - `--git`: Force use Git
+   - `--yadm`: Force use YADM
+   - `--jj`: Force use Jujutsu
+2. **Environment variables**:
+   - `FORCE_GIT=true`: Forces Git
+   - `FORCE_YADM=true`: Forces YADM
+   - `FORCE_JJ=true`: Forces Jujutsu
+3. **Config**: `aicommit2 config set forceGit=true` (forces Git)
+4. **Auto-detection**:
+   - Jujutsu repository (checked first - since jj v0.34.0+, repos are colocated with .git)
+   - Git repository (checked for .git directories - regular Git repos)
+   - YADM repository (checked last - for dotfiles in $HOME without .git directory)
+
+### Force VCS Selection
+
+Sometimes you may want to use a specific VCS even when multiple are available:
+
+```bash
+# Use YADM in a directory that has both .git and YADM tracking
+cd ~/my-project  # Has .git directory
+aicommit2 --yadm  # Forces YADM usage instead of Git
+
+# Use Git explicitly
+aicommit2 --git
+
+# Use Jujutsu explicitly
+aicommit2 --jj
+```
 
 ## Usage
 

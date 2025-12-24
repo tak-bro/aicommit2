@@ -11,10 +11,10 @@ import { AIRequestManager } from '../managers/ai-request.manager.js';
 import { ConsoleManager } from '../managers/console.manager.js';
 import { DEFAULT_INQUIRER_OPTIONS, ReactivePromptManager, codeReviewLoader, emptyCodeReview } from '../managers/reactive-prompt.manager.js';
 import { BUILTIN_SERVICES, ModelName, RawConfig, ValidConfig, getConfig } from '../utils/config.js';
-import { handleCliError } from '../utils/error.js';
+import { KnownError, handleCliError } from '../utils/error.js';
 import { validateSystemPrompt } from '../utils/prompt.js';
 import { SubscriptionManager } from '../utils/subscription-manager.js';
-import { assertGitRepo, getCommitDiff } from '../utils/vcs.js';
+import { assertGitRepo, getCommitDiff, getVCSName } from '../utils/vcs.js';
 
 class WatchGitManager {
     private destroyed$ = new Subject<void>();
@@ -57,6 +57,13 @@ class WatchGitManager {
     ): Promise<void> {
         this.consoleManager.printTitle();
         await assertGitRepo();
+
+        // Check if watch mode is supported for the current VCS
+        const vcsName = await getVCSName();
+        if (vcsName !== 'git') {
+            throw new KnownError(`Watch mode is only supported for Git repositories. Current VCS: ${vcsName}`);
+        }
+
         const config = await this.initializeConfig(locale, generate, prompt, verbose, rawArgv);
 
         await this.initializeCurrentCommit();

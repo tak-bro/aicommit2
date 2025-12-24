@@ -1,8 +1,8 @@
 import { getConfig } from './config.js';
 import { KnownError } from './error.js';
-import { BaseVCSAdapter, VCSDiff } from './vcs-adapters/base.adapter.js';
-import { GitAdapter } from './vcs-adapters/git.adapter.js';
-import { JujutsuAdapter } from './vcs-adapters/jujutsu.adapter.js';
+import { GitAdapter, JujutsuAdapter, YadmAdapter } from './vcs-adapters/index.js';
+
+import type { BaseVCSAdapter, VCSDiff } from './vcs-adapters/index.js';
 
 // Re-export types for backward compatibility
 export interface GitDiff extends VCSDiff {}
@@ -12,11 +12,59 @@ let vcsAdapter: BaseVCSAdapter | null = null;
 
 /**
  * Detect and return the appropriate VCS adapter
- * Priority: Jujutsu first (since jj repos are colocated with .git by default since v0.34.0),
- * unless FORCE_GIT="true" environment variable or forceGit config is set
+ * Priority:
+ * 1. CLI flags (--git, --yadm, --jj)
+ * 2. Environment variables (FORCE_GIT, FORCE_YADM, FORCE_JJ)
+ * 3. Config (forceGit)
+ * 4. Auto-detection (Jujutsu → Git → YADM)
  */
 async function detectVCS(): Promise<BaseVCSAdapter> {
+    // Check CLI flags from process.argv
+    const hasGitFlag = process.argv.includes('--git');
+    const hasYadmFlag = process.argv.includes('--yadm');
+    const hasJjFlag = process.argv.includes('--jj');
+
+    // CLI flags have highest priority
+    if (hasGitFlag) {
+        try {
+            const gitAdapter = new GitAdapter();
+            await gitAdapter.assertRepo();
+            return gitAdapter;
+        } catch (error) {
+            throw new KnownError(
+                `--git flag is set, but Git is not available or not in a git repository.\n${error instanceof Error ? error.message : String(error)}`
+            );
+        }
+    }
+
+    if (hasYadmFlag) {
+        try {
+            const yadmAdapter = new YadmAdapter();
+            await yadmAdapter.assertRepo();
+            return yadmAdapter;
+        } catch (error) {
+            throw new KnownError(
+                `--yadm flag is set, but YADM is not available or not in a YADM repository.\n${error instanceof Error ? error.message : String(error)}`
+            );
+        }
+    }
+
+    if (hasJjFlag) {
+        try {
+            const jjAdapter = new JujutsuAdapter();
+            await jjAdapter.assertRepo();
+            return jjAdapter;
+        } catch (error) {
+            throw new KnownError(
+                `--jj flag is set, but Jujutsu is not available or not in a jj repository.\n${error instanceof Error ? error.message : String(error)}`
+            );
+        }
+    }
+
+    // Check environment variables
     const forceGitEnv = process.env.FORCE_GIT === 'true';
+    const forceYadmEnv = process.env.FORCE_YADM === 'true';
+    const forceJjEnv = process.env.FORCE_JJ === 'true';
 
     if (forceGitEnv) {
         try {
@@ -30,6 +78,31 @@ async function detectVCS(): Promise<BaseVCSAdapter> {
         }
     }
 
+    if (forceYadmEnv) {
+        try {
+            const yadmAdapter = new YadmAdapter();
+            await yadmAdapter.assertRepo();
+            return yadmAdapter;
+        } catch (error) {
+            throw new KnownError(
+                `FORCE_YADM="true" environment variable is set, but YADM is not available or not in a YADM repository.\n${error instanceof Error ? error.message : String(error)}`
+            );
+        }
+    }
+
+    if (forceJjEnv) {
+        try {
+            const jjAdapter = new JujutsuAdapter();
+            await jjAdapter.assertRepo();
+            return jjAdapter;
+        } catch (error) {
+            throw new KnownError(
+                `FORCE_JJ="true" environment variable is set, but Jujutsu is not available or not in a jj repository.\n${error instanceof Error ? error.message : String(error)}`
+            );
+        }
+    }
+
+    // Check config
     let forceGitConfig = false;
     try {
         const config = await getConfig({});
@@ -52,6 +125,7 @@ async function detectVCS(): Promise<BaseVCSAdapter> {
 
     let jjError: Error | null = null;
     let gitError: Error | null = null;
+    let yadmError: Error | null = null;
 
     // Try Jujutsu first (since jj repos are colocated with .git by default since v0.34.0)
     try {
@@ -62,7 +136,8 @@ async function detectVCS(): Promise<BaseVCSAdapter> {
         jjError = error instanceof Error ? error : new Error(String(error));
     }
 
-    // If Jujutsu is not available or not a jj repo, try Git
+    // Try Git before YADM (since .git directories indicate regular Git repos)
+    // YADM is a Git wrapper that manages dotfiles in $HOME, so it should be checked last
     try {
         const gitAdapter = new GitAdapter();
         await gitAdapter.assertRepo();
@@ -71,9 +146,19 @@ async function detectVCS(): Promise<BaseVCSAdapter> {
         gitError = error instanceof Error ? error : new Error(String(error));
     }
 
-    if (jjError && gitError) {
+    // Try YADM last (only for dotfiles in $HOME without a .git directory)
+    try {
+        const yadmAdapter = new YadmAdapter();
+        await yadmAdapter.assertRepo();
+        return yadmAdapter;
+    } catch (error) {
+        yadmError = error instanceof Error ? error : new Error(String(error));
+    }
+
+    if (jjError && gitError && yadmError) {
         const jjMsg = jjError.message.replace('KnownError: ', '').trim();
         const gitMsg = gitError.message.replace('KnownError: ', '').trim();
+        const yadmMsg = yadmError.message.replace('KnownError: ', '').trim();
 
         throw new KnownError(`No supported VCS repository found.
 
@@ -83,11 +168,15 @@ ${jjMsg}
 Git Error:
 ${gitMsg}
 
+YADM Error:
+${yadmMsg}
+
 Solutions:
 • Initialize a Jujutsu repository: jj init
 • Initialize a Git repository: git init
-• Navigate to an existing Jujutsu or Git repository
-• Set FORCE_GIT="true" environment variable to force Git detection in a jj repository
+• Initialize a YADM repository: yadm init (or yadm clone <url>)
+• Navigate to an existing Jujutsu, Git, or YADM repository
+• Set FORCE_GIT="true" environment variable to force Git detection
 • Set forceGit=true in config file to prefer Git detection`);
     }
 
