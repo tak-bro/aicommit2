@@ -74,7 +74,7 @@ export default (
             generate: generate?.toString() as string,
             type: commitType?.toString() as string,
             systemPrompt: prompt?.toString() as string,
-            includeBody: includeBody?.toString() as string,
+            ...(includeBody === true && { includeBody: 'true' }),
         };
 
         if (verbose) {

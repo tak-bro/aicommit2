@@ -63,8 +63,8 @@ export default async (
             generate: generate?.toString() as string,
             type: commitType?.toString() as string,
             systemPrompt: prompt?.toString() as string,
-            includeBody: includeBody?.toString() as string,
-            disableLowerCase: disableLowerCase?.toString() as string,
+            ...(includeBody === true && { includeBody: 'true' }),
+            ...(disableLowerCase === true && { disableLowerCase: 'true' }),
         };
 
         if (verbose) {
