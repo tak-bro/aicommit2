@@ -1,3 +1,10 @@
+## [2.4.18](https://github.com/tak-bro/aicommit2/compare/v2.4.17...v2.4.18) (2025-12-24)
+
+
+### Features
+
+* **vcs:** add YADM dotfiles manager support ([17a3ce6](https://github.com/tak-bro/aicommit2/commit/17a3ce67add69b79f8692516a2f7f00eddfa316f))
+
 ## [2.4.17](https://github.com/tak-bro/aicommit2/compare/v2.4.16...v2.4.17) (2025-11-13)
 
 
