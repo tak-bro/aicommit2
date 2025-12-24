@@ -38,6 +38,7 @@ export default async (
     edit: boolean,
     disableLowerCase: boolean,
     verbose: boolean,
+    dryRun: boolean,
     rawArgv: string[]
 ) =>
     (async () => {
@@ -140,7 +141,7 @@ export default async (
             }
 
             consoleManager.printSuccess('Commit message edited successfully!');
-            console.log(`\n${selectedCommitMessage}\n`);
+            consoleManager.print(`\n${selectedCommitMessage}\n`);
         }
 
         if (useClipboard) {
@@ -148,6 +149,13 @@ export default async (
             const ncp = require('copy-paste');
             ncp.copy(selectedCommitMessage);
             consoleManager.printCopied();
+            if (!dryRun) {
+                process.exit();
+            }
+        }
+
+        if (dryRun) {
+            process.stdout.write(selectedCommitMessage + '\n');
             process.exit();
         }
 
