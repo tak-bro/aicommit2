@@ -13,14 +13,14 @@
 
 ```sh
 aicommit2 config set GEMINI.key="your-api-key"
-aicommit2 config set GEMINI.model="gemini-2.0-flash"
+aicommit2 config set GEMINI.model="gemini-2.5-flash"
 ```
 
 ### Advanced Setup
 
 ```sh
 aicommit2 config set GEMINI.key="your-api-key" \
-    GEMINI.model="gemini-2.0-flash" \
+    GEMINI.model="gemini-2.5-flash" \
     GEMINI.temperature=0.7 \
     GEMINI.maxTokens=4000 \
     GEMINI.locale="en" \
@@ -33,7 +33,7 @@ aicommit2 config set GEMINI.key="your-api-key" \
 | Setting | Description  | Default            |
 | ------- | ------------ | ------------------ |
 | `key`   | API key      | -                  |
-| `model` | Model to use | `gemini-2.0-flash` |
+| `model` | Model to use | `gemini-2.5-flash` |
 
 ## Configuration
 
@@ -47,20 +47,20 @@ aicommit2 config set GEMINI.key="your api key"
 
 #### GEMINI.model
 
-Default: `gemini-2.0-flash`
+Default: `gemini-2.5-flash`
 
 You can use any Gemini model name. The system no longer validates specific model names, allowing you to use new models as soon as they become available.
 
 Popular models include:
 
-- `gemini-2.5-flash`, `gemini-2.5-pro` (latest generation)
-- `gemini-2.0-flash` (default), `gemini-2.0-flash-lite` (current generation)
-- `gemini-1.5-pro`, `gemini-1.5-flash` (previous generation)
+- `gemini-2.5-flash` (default), `gemini-2.5-pro` (latest generation)
+- `gemini-2.0-flash`, `gemini-2.0-flash-lite` (previous generation)
+- `gemini-1.5-pro`, `gemini-1.5-flash` (legacy)
 
 For the most up-to-date list of available models, please check [Google AI Studio](https://aistudio.google.com/).
 
 ```sh
-aicommit2 config set GEMINI.model="gemini-2.0-flash"
+aicommit2 config set GEMINI.model="gemini-2.5-flash"
 ```
 
 #### Unsupported Options

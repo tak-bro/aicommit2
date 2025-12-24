@@ -38,6 +38,7 @@ export default async (
     edit: boolean,
     disableLowerCase: boolean,
     verbose: boolean,
+    dryRun: boolean,
     rawArgv: string[]
 ) =>
     (async () => {
@@ -63,8 +64,8 @@ export default async (
             generate: generate?.toString() as string,
             type: commitType?.toString() as string,
             systemPrompt: prompt?.toString() as string,
-            includeBody: includeBody?.toString() as string,
-            disableLowerCase: disableLowerCase?.toString() as string,
+            ...(includeBody === true && { includeBody: 'true' }),
+            ...(disableLowerCase === true && { disableLowerCase: 'true' }),
         };
 
         if (verbose) {
@@ -140,7 +141,7 @@ export default async (
             }
 
             consoleManager.printSuccess('Commit message edited successfully!');
-            console.log(`\n${selectedCommitMessage}\n`);
+            consoleManager.print(`\n${selectedCommitMessage}\n`);
         }
 
         if (useClipboard) {
@@ -148,6 +149,13 @@ export default async (
             const ncp = require('copy-paste');
             ncp.copy(selectedCommitMessage);
             consoleManager.printCopied();
+            if (!dryRun) {
+                process.exit();
+            }
+        }
+
+        if (dryRun) {
+            process.stdout.write(selectedCommitMessage + '\n');
             process.exit();
         }
 

@@ -50,6 +50,9 @@ export class GeminiService extends AIService {
         if (errorMsg.includes('500') || errorMsg.includes('Internal Server Error')) {
             return 'Google AI service error. Try again later';
         }
+        if (errorMsg.includes('MAX_TOKENS') || errorMsg.includes('truncated') || errorMsg.includes('maxOutputTokens')) {
+            return 'Response truncated due to token limit. Gemini 2.5+ models use thinking tokens. Try increasing maxTokens (recommended: 8192+)';
+        }
 
         return null;
     }
@@ -189,6 +192,19 @@ export class GeminiService extends AIService {
 
             const result = await model.generateContent(userPrompt, generateOptions);
             const response = result.response;
+
+            // Check if response was truncated due to token limit
+            const candidate = response.candidates?.[0];
+            if (candidate?.finishReason === 'MAX_TOKENS') {
+                const usage = response.usageMetadata as { thoughtsTokenCount?: number; candidatesTokenCount?: number } | undefined;
+                throw new Error(
+                    `Response truncated: maxOutputTokens exceeded. ` +
+                        `Thinking tokens: ${usage?.thoughtsTokenCount ?? 'N/A'}, ` +
+                        `Output tokens: ${usage?.candidatesTokenCount ?? 'N/A'}. ` +
+                        `Increase maxTokens config for Gemini 2.5+ thinking models.`
+                );
+            }
+
             const completion = response.text();
             const duration = Date.now() - startTime;
 

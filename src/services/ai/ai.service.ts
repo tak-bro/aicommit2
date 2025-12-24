@@ -174,19 +174,79 @@ export abstract class AIService {
         return response;
     }
 
+    /**
+     * Extracts a valid JSON string from the response using bracket matching.
+     * This is more reliable than regex for handling nested structures and escaped characters.
+     */
+    protected extractJsonFromResponse(response: string): string | null {
+        // First try to find a JSON array starting with [
+        let startIndex = response.indexOf('[');
+        if (startIndex !== -1) {
+            const result = this.extractBalancedJson(response, startIndex, '[', ']');
+            if (result) {return result;}
+        }
+
+        // Then try to find a JSON object starting with {
+        startIndex = response.indexOf('{');
+        if (startIndex !== -1) {
+            const result = this.extractBalancedJson(response, startIndex, '{', '}');
+            if (result) {return result;}
+        }
+
+        return null;
+    }
+
+    /**
+     * Extracts balanced JSON by matching opening and closing brackets.
+     * Handles nested structures, strings with escaped quotes, and special characters.
+     */
+    private extractBalancedJson(text: string, startIndex: number, openChar: string, closeChar: string): string | null {
+        let depth = 0;
+        let inString = false;
+        let escapeNext = false;
+
+        for (let i = startIndex; i < text.length; i++) {
+            const char = text[i];
+
+            if (escapeNext) {
+                escapeNext = false;
+                continue;
+            }
+
+            if (char === '\\' && inString) {
+                escapeNext = true;
+                continue;
+            }
+
+            if (char === '"') {
+                inString = !inString;
+                continue;
+            }
+
+            if (!inString) {
+                if (char === openChar) {depth++;}
+                if (char === closeChar) {depth--;}
+
+                if (depth === 0) {
+                    return text.slice(startIndex, i + 1);
+                }
+            }
+        }
+
+        return null;
+    }
+
     protected parseMessage(aiGeneratedText: string, type: CommitType, maxCount: number): AIResponse[] {
         const cleanedText = this.cleanJsonCodeBlock(aiGeneratedText);
 
-        const jsonContentPattern = /(\[\s*\{[\s\S]*?\}\s*\]|\{[\s\S]*?\})/;
-        const matchedJsonContent = cleanedText.match(jsonContentPattern);
-        if (!matchedJsonContent) {
+        // Use bracket-matching extraction for robust JSON parsing
+        const jsonString = this.extractJsonFromResponse(cleanedText);
+        if (!jsonString) {
             const error: AIServiceError = new Error('AI response did not contain a valid JSON object or array.');
             error.name = 'InvalidJsonResponse';
             error.content = aiGeneratedText;
             throw error;
         }
-
-        const jsonString = matchedJsonContent[0];
         const parseResult = safeJsonParse(jsonString);
         if (!parseResult.ok) {
             const error: AIServiceError = new Error(`Failed to parse AI response as JSON`);

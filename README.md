@@ -330,6 +330,10 @@ aicommit2 --all # or -a
 - `--confirm` or `-y`: Skip confirmation when committing after message generation (default: **false**)
 - `--clipboard` or `-c`: Copy the selected message to the clipboard (default: **false**).
   - If you give this option, **_aicommit2_ will not commit**.
+- `--dry-run` or `-d`: Generate commit message without committing (default: **false**).
+  - Outputs the generated message without executing a commit.
+  - Useful for reviewing messages before manual commit (e.g., with GitHub Desktop).
+  - Can be combined with `--clipboard` to copy the message for use in other tools.
 - `--edit` or `-e`: Open the AI-generated commit message in your default editor for modification (default: **false**)
   - Opens the message in the editor specified by `$VISUAL`, `$EDITOR`, or platform default
   - Works with both Git and Jujutsu repositories
@@ -366,6 +370,12 @@ aicommit2 --locale "jp" --all --type "conventional" --generate 3 --clipboard --e
 
 # Generate and edit a commit message
 aicommit2 --edit --type conventional # or gitmoji
+
+# Generate message without committing (dry-run)
+aicommit2 --dry-run # or -d
+
+# Dry-run with clipboard (generate, select, then copy)
+aicommit2 -d -c
 
 # Enable verbose logging for debugging
 aicommit2 --verbose # or -v
@@ -550,7 +560,7 @@ _aicommit2_ offers flexible configuration options for all AI services, including
    key="<your-api-key>"
    generate=5
    includeBody=true
-   model="gemini-2.0-flash,gemini-1.5-pro"
+   model="gemini-2.5-flash,gemini-2.5-pro"
 
    [OLLAMA]
    temperature=0.7

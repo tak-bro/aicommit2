@@ -126,6 +126,12 @@ cli(
                 description: 'Force use Jujutsu (overrides auto-detection)',
                 default: false,
             },
+            'dry-run': {
+                type: Boolean,
+                description: 'Generate commit message without committing (output only)',
+                alias: 'd',
+                default: false,
+            },
         },
 
         commands: [configCommand, githubLoginCommand, hookCommand, logCommand],
@@ -182,6 +188,7 @@ cli(
             argv.flags.edit,
             argv.flags['disable-lowercase'],
             argv.flags.verbose,
+            argv.flags['dry-run'],
             rawArgv
         );
     },

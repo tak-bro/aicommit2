@@ -6,7 +6,7 @@ import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
 import { RequestType, logAIComplete, logAIError, logAIPayload, logAIPrompt, logAIRequest, logAIResponse } from '../../utils/ai-log.js';
-import { isGPT5Model } from '../../utils/openai.js';
+import { isReasoningModel } from '../../utils/openai.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 import { capitalizeFirstLetter, generateColors } from '../../utils/utils.js';
 
@@ -132,8 +132,8 @@ export class OpenAICompatibleService extends AIService {
         logAIRequest(diff, requestType, serviceName, this.params.config.model, url, headers, logging);
         logAIPrompt(diff, requestType, serviceName, generatedSystemPrompt, userPrompt, logging);
 
-        // GPT-5 series models have different parameter requirements
-        const isGPT5 = isGPT5Model(this.params.config.model);
+        // Reasoning models (o1, o3, gpt-5) have different parameter requirements
+        const reasoningModel = isReasoningModel(this.params.config.model);
 
         const payload: any = {
             messages: [
@@ -148,7 +148,7 @@ export class OpenAICompatibleService extends AIService {
             ],
             model: this.params.config.model,
             stream,
-            ...(isGPT5
+            ...(reasoningModel
                 ? {
                       max_completion_tokens: maxTokens,
                       temperature: 1,
