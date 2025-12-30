@@ -1,3 +1,10 @@
+## [2.4.20](https://github.com/tak-bro/aicommit2/compare/v2.4.19...v2.4.20) (2025-12-30)
+
+
+### Features
+
+* add support for dot notation versions in isReasoningModel ([cfa02ee](https://github.com/tak-bro/aicommit2/commit/cfa02ee9ce932f64829de30dee1faf2da2d93af1))
+
 ## [2.4.19](https://github.com/tak-bro/aicommit2/compare/v2.4.18...v2.4.19) (2025-12-24)
 
 
