@@ -8,6 +8,7 @@ import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
 import { RequestType, logAIComplete, logAIError, logAIPayload, logAIPrompt, logAIRequest, logAIResponse } from '../../utils/ai-log.js';
 import { ModelConfig } from '../../utils/config.js';
+import { isVerboseLoggingEnabled } from '../../utils/logger.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt, generateUserPrompt } from '../../utils/prompt.js';
 import { safeJsonParse } from '../../utils/utils.js';
 
@@ -106,29 +107,6 @@ export class BedrockService extends AIService {
         };
         this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold(`[${SERVICE_NAME}]`);
         this.errorPrefix = chalk.red.bold(`[${SERVICE_NAME}]`);
-
-        // Auto-migrate old config to new inferenceParameters format
-        if (!this.bedrockConfig.inferenceParameters || Object.keys(this.bedrockConfig.inferenceParameters).length === 0) {
-            const migrated: Record<string, any> = {};
-            if (typeof this.bedrockConfig.temperature === 'number') {
-                migrated.temperature = this.bedrockConfig.temperature;
-            }
-            if (typeof this.bedrockConfig.topP === 'number') {
-                migrated.topP = this.bedrockConfig.topP;
-            }
-            if (typeof this.bedrockConfig.maxTokens === 'number') {
-                migrated.maxTokens = this.bedrockConfig.maxTokens;
-            }
-
-            if (Object.keys(migrated).length > 0) {
-                this.bedrockConfig.inferenceParameters = migrated;
-                if (this.bedrockConfig.logging) {
-                    console.warn(
-                        chalk.yellow('[Bedrock] DEPRECATION: temperature, topP, maxTokens are deprecated. Use inferenceParameters instead.')
-                    );
-                }
-            }
-        }
 
         // Validate configuration early to fail fast
         this.validateConfiguration();
@@ -300,7 +278,7 @@ export class BedrockService extends AIService {
             const authMethod = this.determineAuthMethod();
 
             // Enhanced debug logging
-            if (logging) {
+            if (isVerboseLoggingEnabled()) {
                 console.log(chalk.cyan(`[Bedrock] Authentication method: ${authMethod}`));
                 console.log(chalk.cyan(`[Bedrock] Model ID: ${model}`));
                 console.log(chalk.cyan(`[Bedrock] Region: ${this.getRegion()}`));
@@ -395,7 +373,7 @@ export class BedrockService extends AIService {
             ...(inferenceConfig && Object.keys(inferenceConfig).length > 0 && { inferenceConfig }),
         });
 
-        if (logging) {
+        if (isVerboseLoggingEnabled()) {
             console.log(chalk.cyan(`[Bedrock] Sending ConverseCommand with modelId: ${model}`));
         }
 
@@ -404,7 +382,7 @@ export class BedrockService extends AIService {
             response = await client.send(command);
             logAIResponse(diff, requestType, SERVICE_NAME, response, logging);
         } catch (error: any) {
-            if (logging) {
+            if (isVerboseLoggingEnabled()) {
                 console.error(chalk.red(`[Bedrock] AWS SDK Error: ${error.name}`));
                 console.error(chalk.red(`[Bedrock] Error message: ${error.message}`));
                 if (error.$metadata) {

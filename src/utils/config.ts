@@ -716,15 +716,41 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         systemPromptPath: generalConfigParsers.systemPromptPath,
         codeReviewPromptPath: generalConfigParsers.codeReviewPromptPath,
         timeout: generalConfigParsers.timeout,
-        temperature: generalConfigParsers.temperature,
-        maxTokens: generalConfigParsers.maxTokens,
+        // Bedrock-specific parsers that return undefined instead of defaults
+        // This ensures NO parameters are sent unless explicitly configured
+        temperature: (temperature?: string) => {
+            if (!temperature) {
+                return undefined;
+            }
+            parseAssert('temperature', /^(2|\d)(\.\d{1,2})?$/.test(temperature), 'Must be decimal between 0 and 2');
+            const parsed = Number(temperature);
+            parseAssert('temperature', parsed > 0.0, 'Must be greater than 0');
+            parseAssert('temperature', parsed <= 2.0, 'Must be less than or equal to 2');
+            return parsed;
+        },
+        maxTokens: (maxTokens?: string) => {
+            if (!maxTokens) {
+                return undefined;
+            }
+            parseAssert('maxTokens', /^\d+$/.test(maxTokens), 'Must be an integer');
+            return Number(maxTokens);
+        },
         logging: generalConfigParsers.logging,
         locale: generalConfigParsers.locale,
         generate: generalConfigParsers.generate,
         type: generalConfigParsers.type,
         maxLength: generalConfigParsers.maxLength,
         includeBody: generalConfigParsers.includeBody,
-        topP: generalConfigParsers.topP,
+        topP: (topP?: string) => {
+            if (!topP) {
+                return undefined;
+            }
+            parseAssert('topP', /^(1|\d)(\.\d{1,2})?$/.test(topP), 'Must be decimal between 0 and 1');
+            const parsed = Number(topP);
+            parseAssert('topP', parsed > 0.0, 'Must be greater than 0');
+            parseAssert('topP', parsed <= 1.0, 'Must be less than or equal to 1');
+            return parsed;
+        },
         codeReview: generalConfigParsers.codeReview,
         disabled: generalConfigParsers.disabled,
         watchMode: generalConfigParsers.watchMode,

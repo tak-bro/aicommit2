@@ -99,7 +99,7 @@ If your config has `runtimeMode`:
 | `applicationEndpointId`                 | Optional Bedrock application endpoint ID appended to the base URL                                    | –                                              |
 | `applicationInferenceProfileArn`        | Optional inference profile ARN sent in requests                                                       | –                                              |
 | `codeReview`                            | Enable Bedrock for code review prompts                                                                | `false`                                        |
-| `inferenceParameters`                   | JSON object with model-specific inference parameters (replaces deprecated `temperature`, `topP`, `maxTokens`) | `{}` (use model defaults)                      |
+| `inferenceParameters`                   | JSON object with model-specific inference parameters                                                  | `{}` (use model defaults)                      |
 
 ## Inference Parameters
 
@@ -133,7 +133,7 @@ aicommit2 config set 'BEDROCK.inferenceParameters={"temperature":0.8,"maxTokens"
 - Validation is YOUR responsibility - wrong parameters will fail at runtime
 - See [AWS Bedrock documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/inference-parameters.html) for model-specific details
 
-**Deprecated:** The old `temperature`, `topP`, and `maxTokens` config fields are deprecated. They still work (auto-migrated to `inferenceParameters`) but will show a deprecation warning.
+**Note:** The old standalone `temperature`, `topP`, and `maxTokens` config fields are not supported for BEDROCK. Only `inferenceParameters` is used. If you need to set these values, use the `inferenceParameters` JSON object as shown above.
 
 ## Environment Variables
 
@@ -237,10 +237,16 @@ For the complete list of available models, visit the [AWS Bedrock Model IDs docu
 
 **Solution**:
 - Some Claude models (particularly via Application Inference Profiles) don't support both `temperature` and `topP` simultaneously
-- **Important**: When using Bearer token authentication with application endpoints, the aicommit2 Bedrock integration intentionally excludes `topP` from requests and only sends `temperature` to avoid this error
-- AWS SDK authentication includes both parameters, which works with most foundation models
-- This is a known limitation of certain Bedrock Application Inference Profiles and is handled automatically by the integration
-- If you need precise control over `topP`, consider using AWS SDK authentication instead of Bearer token authentication
+- By default, aicommit2 sends NO inference parameters - models use their own defaults
+- If you explicitly set both parameters in `inferenceParameters`, you'll get this error
+- Only include ONE of these parameters in your `inferenceParameters` configuration:
+  ```bash
+  # Use temperature only
+  aicommit2 config set 'BEDROCK.inferenceParameters={"temperature":0.8}'
+
+  # OR use topP only
+  aicommit2 config set 'BEDROCK.inferenceParameters={"topP":0.9}'
+  ```
 
 ### Configuration Issues
 
