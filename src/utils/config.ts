@@ -679,6 +679,8 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         envKey: (envKey?: string) => (envKey && envKey.length > 0 ? envKey : 'BEDROCK_API_KEY'),
         model: (model?: string | string[]): string[] => {
             if (!model) {
+                // Default uses foundation model ID format for backward compatibility
+                // For production, consider using inference profiles (e.g., us.anthropic.claude-haiku-4-5-20251001-v1:0)
                 return ['anthropic.claude-haiku-4-5-20251001-v1:0'];
             }
             const modelList = typeof model === 'string' ? model?.split(',') : model;
@@ -688,7 +690,12 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
                     // Validate Bedrock model ID format: should contain a dot or be an ARN
                     if (trimmed && !trimmed.includes('.') && !trimmed.includes(':')) {
                         console.warn(
-                            `[Bedrock] Model ID "${trimmed}" may be invalid. Expected format: "provider.model-name-version" or ARN`
+                            `[Bedrock] Model ID "${trimmed}" may be invalid.\n` +
+                                `Expected formats:\n` +
+                                `  - Foundation model: "provider.model-name-version" (e.g., "anthropic.claude-haiku-4-5-20251001-v1:0")\n` +
+                                `  - Inference profile: "prefix.provider.model-name-version" (e.g., "us.anthropic.claude-haiku-4-5-20251001-v1:0")\n` +
+                                `  - ARN: Full Amazon Resource Name\n` +
+                                `See https://docs.aws.amazon.com/bedrock/latest/userguide/inference-profiles.html`
                         );
                     }
                     return trimmed;

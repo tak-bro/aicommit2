@@ -169,11 +169,74 @@ export default testSuite(({ describe }) => {
                 expect(() => new BedrockService(params as any)).not.toThrow();
             });
 
-            test('works with cross-region profile', async () => {
+            test('works with cross-region profile (US)', async () => {
                 const params = {
                     config: {
                         model: 'us.anthropic.claude-3-5-sonnet-20240620-v1:0',
                         region: 'us-east-1',
+                        profile: 'test-profile',
+                        codeReview: false,
+                        inferenceParameters: {},
+                        timeout: 120000,
+                        logging: false,
+                        locale: 'en',
+                        generate: 1,
+                        type: '',
+                    },
+                    stagedDiff: { diff: 'test diff', files: [] },
+                    keyName: 'BEDROCK' as const,
+                };
+
+                expect(() => new BedrockService(params as any)).not.toThrow();
+            });
+
+            test('works with global inference profile', async () => {
+                const params = {
+                    config: {
+                        model: 'global.anthropic.claude-sonnet-4-5-20250929-v1:0',
+                        region: 'us-east-1',
+                        profile: 'test-profile',
+                        codeReview: false,
+                        inferenceParameters: {},
+                        timeout: 120000,
+                        logging: false,
+                        locale: 'en',
+                        generate: 1,
+                        type: '',
+                    },
+                    stagedDiff: { diff: 'test diff', files: [] },
+                    keyName: 'BEDROCK' as const,
+                };
+
+                expect(() => new BedrockService(params as any)).not.toThrow();
+            });
+
+            test('works with EU inference profile', async () => {
+                const params = {
+                    config: {
+                        model: 'eu.anthropic.claude-haiku-4-5-20251001-v1:0',
+                        region: 'eu-west-1',
+                        profile: 'test-profile',
+                        codeReview: false,
+                        inferenceParameters: {},
+                        timeout: 120000,
+                        logging: false,
+                        locale: 'en',
+                        generate: 1,
+                        type: '',
+                    },
+                    stagedDiff: { diff: 'test diff', files: [] },
+                    keyName: 'BEDROCK' as const,
+                };
+
+                expect(() => new BedrockService(params as any)).not.toThrow();
+            });
+
+            test('works with APAC inference profile', async () => {
+                const params = {
+                    config: {
+                        model: 'apac.anthropic.claude-sonnet-4-5-20250929-v1:0',
+                        region: 'ap-southeast-1',
                         profile: 'test-profile',
                         codeReview: false,
                         inferenceParameters: {},

@@ -7,6 +7,20 @@
 - [Configuration Guide](../../README.md#configuration) - How to configure providers
 - [General Settings](../../README.md#general-settings) - Common settings applicable to all providers
 
+## Quick Reference: Model ID Formats
+
+| Format Type | Example | Use When | Availability |
+|-------------|---------|----------|--------------|
+| **Foundation Model** | `anthropic.claude-haiku-4-5-20251001-v1:0` | Single region, simple setup | Single AWS region |
+| **US Inference Profile** | `us.anthropic.claude-haiku-4-5-20251001-v1:0` | US-based production | Multiple US regions |
+| **EU Inference Profile** | `eu.anthropic.claude-haiku-4-5-20251001-v1:0` | EU data sovereignty | EU regions only |
+| **Global Inference Profile** | `global.anthropic.claude-haiku-4-5-20251001-v1:0` | Best availability + cost savings | All commercial AWS regions |
+| **Application Profile ARN** | `arn:aws:bedrock:...:application-inference-profile/...` | Custom app endpoints | Custom configuration |
+
+💡 **Tip:** Start with foundation model format for development, switch to inference profiles for production.
+
+See [Understanding Model ID Formats](#understanding-model-id-formats) below for detailed guidance.
+
 ## Authentication Methods
 
 Bedrock supports two authentication approaches:
@@ -148,15 +162,89 @@ Amazon Bedrock honours the standard AWS environment variables in addition to pro
 
 Use `BEDROCK.envKey` if you prefer to point to a custom environment variable for your API key.
 
+## Understanding Model ID Formats
+
+Amazon Bedrock supports two types of model identifiers:
+
+### Foundation Model IDs (Region-Specific)
+
+**Format:** `provider.model-name-version:0`
+
+**Example:** `anthropic.claude-haiku-4-5-20251001-v1:0`
+
+Use foundation model IDs when:
+- You want requests sent to a single, specific AWS region
+- You're working in a controlled environment with fixed regional requirements
+- You need simple, straightforward configuration
+
+**Configuration example:**
+```sh
+aicommit2 config set BEDROCK.model="anthropic.claude-haiku-4-5-20251001-v1:0" \
+    BEDROCK.region="us-west-2" \
+    BEDROCK.profile="my-aws-profile"
+```
+
+### Cross-Region Inference Profile IDs (Multi-Region)
+
+**Format:** `[prefix].provider.model-name-version:0`
+
+**Example:** `us.anthropic.claude-haiku-4-5-20251001-v1:0`
+
+Cross-region inference profiles route requests across multiple AWS regions for improved:
+- **Availability**: Automatic failover if a region is unavailable
+- **Throughput**: Higher request limits across multiple regions
+- **Latency**: Routing to the optimal region
+
+**Available Prefixes:**
+- `global.` - Worldwide routing (best availability, ~10% cost savings)
+- `us.` - US regions only
+- `eu.` - European regions only
+- `apac.` - Asia-Pacific regions only
+- `ca.` - Canada regions only
+- `jp.` - Japan regions only
+- `au.` - Australia regions only
+- `us-gov.` - US Government regions only
+
+**Configuration example:**
+```sh
+aicommit2 config set BEDROCK.model="us.anthropic.claude-haiku-4-5-20251001-v1:0" \
+    BEDROCK.region="us-east-1" \
+    BEDROCK.profile="my-aws-profile"
+```
+
+**Important:** Some newer models (e.g., Claude 3.7 Sonnet) only support inference profiles and require the prefixed format.
+
+### Which Format Should You Use?
+
+| Scenario | Recommended Format | Example |
+|----------|-------------------|---------|
+| Production workloads requiring high availability | Cross-region (global or regional) | `global.anthropic.claude-sonnet-4-5-20250929-v1:0` |
+| Data sovereignty requirements (EU only) | Regional inference profile | `eu.anthropic.claude-haiku-4-5-20251001-v1:0` |
+| Cost optimization for high-volume use | Global inference profile | `global.anthropic.claude-haiku-4-5-20251001-v1:0` |
+| Simple single-region deployment | Foundation model ID | `anthropic.claude-haiku-4-5-20251001-v1:0` |
+| Newer models that require inference profiles | Cross-region inference profile | `us.anthropic.claude-3-7-sonnet-20250219-v1:0` |
+
+For most production use cases, AWS recommends using cross-region inference profiles for better availability and throughput.
+
+**Learn more:**
+- [Amazon Bedrock Inference profiles](https://docs.aws.amazon.com/bedrock/latest/userguide/inference-profiles.html)
+- [Cross-Region inference](https://docs.aws.amazon.com/bedrock/latest/userguide/cross-region-inference.html)
+- [Supported Regions and models for inference profiles](https://docs.aws.amazon.com/bedrock/latest/userguide/inference-profiles-support.html)
+
 ## Example Model IDs
 
-Amazon Bedrock supports various foundation models from different providers:
+Amazon Bedrock supports various foundation models from different providers. Models are shown in both formats - use the one that matches your requirements (see [Understanding Model ID Formats](#understanding-model-id-formats) above).
 
 ### Anthropic Claude Models (Latest)
-- `anthropic.claude-sonnet-4-5-20250929-v1:0` - Claude Sonnet 4.5 (most intelligent, best for coding and complex agents)
-- `anthropic.claude-haiku-4-5-20251001-v1:0` - Claude Haiku 4.5 (near-frontier performance at lower cost)
-- `anthropic.claude-opus-4-1-20250805-v1:0` - Claude Opus 4.1
-- `anthropic.claude-3-7-sonnet-20250219-v1:0` - Claude 3.7 Sonnet
+
+| Model | Foundation Model Format | Cross-Region Inference Profile Format |
+|-------|------------------------|--------------------------------------|
+| **Claude Sonnet 4.5** <br/> Most intelligent, best for coding and complex agents | `anthropic.claude-sonnet-4-5-20250929-v1:0` | `global.anthropic.claude-sonnet-4-5-20250929-v1:0`<br/>`us.anthropic.claude-sonnet-4-5-20250929-v1:0` |
+| **Claude Haiku 4.5** <br/> Near-frontier performance at lower cost | `anthropic.claude-haiku-4-5-20251001-v1:0` | `global.anthropic.claude-haiku-4-5-20251001-v1:0`<br/>`us.anthropic.claude-haiku-4-5-20251001-v1:0` |
+| **Claude Opus 4.1** <br/> Previous generation flagship | `anthropic.claude-opus-4-1-20250805-v1:0` | `global.anthropic.claude-opus-4-1-20250805-v1:0`<br/>`us.anthropic.claude-opus-4-1-20250805-v1:0` |
+| **Claude 3.7 Sonnet** ⚠️ <br/> Requires inference profile | N/A - Not available | `us.anthropic.claude-3-7-sonnet-20250219-v1:0` |
+
+⚠️ = This model only supports inference profiles (prefixed format required)
 
 ### Meta Llama Models (Latest)
 - `meta.llama4-scout-17b-instruct-v1:0` - Llama 4 Scout 17B
@@ -178,7 +266,11 @@ Amazon Bedrock supports various foundation models from different providers:
 - `deepseek.r1-v1:0` - DeepSeek-R1
 - `qwen.qwen3-235b-a22b-2507-v1:0` - Qwen3 235B
 
-For the complete list of available models, visit the [AWS Bedrock Model IDs documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/model-ids.html).
+**Note:** Other model providers (Meta Llama, Amazon Nova, Mistral, etc.) also support both foundation model and inference profile formats. Use the same pattern: add `global.`, `us.`, `eu.`, or other regional prefixes as needed.
+
+**Learn more:**
+- [AWS Bedrock Model IDs documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/model-ids.html)
+- [Model availability by region](https://docs.aws.amazon.com/bedrock/latest/userguide/bedrock-regions.html)
 
 ## Tips
 
@@ -220,11 +312,34 @@ For the complete list of available models, visit the [AWS Bedrock Model IDs docu
 
 **Problem**: `ResourceNotFoundException` - Model not found
 
-**Solution**:
-- Verify the model ID is correct and properly formatted (e.g., `anthropic.claude-haiku-4-5-20251001-v1:0`)
-- Ensure the model is available in your selected region: not all models are available in all regions
-- Check [AWS Bedrock regions](https://docs.aws.amazon.com/bedrock/latest/userguide/bedrock-regions.html) for model availability
-- Enable model access in the AWS Bedrock console under "Model access"
+**Solutions**:
+
+1. **Check model ID format** - Try both foundation model and inference profile formats:
+   - Foundation model: `anthropic.claude-haiku-4-5-20251001-v1:0`
+   - Cross-region inference profile: `us.anthropic.claude-haiku-4-5-20251001-v1:0`
+   - Global inference profile: `global.anthropic.claude-haiku-4-5-20251001-v1:0`
+   - See [Understanding Model ID Formats](#understanding-model-id-formats) for guidance
+
+2. **Some models require inference profile format:**
+   - Claude 3.7 Sonnet and other newer models only support prefixed format
+   - If a foundation model ID fails, try adding a regional prefix (e.g., `us.` or `global.`)
+
+3. **Enable model access in AWS Bedrock console:**
+   - Go to AWS Bedrock Console → Model access
+   - Request access for the specific model
+   - Wait for approval (usually instant)
+   - [Model access documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/model-access.html)
+
+4. **Verify regional availability:**
+   - Not all models are available in all regions
+   - Check [AWS Bedrock regions](https://docs.aws.amazon.com/bedrock/latest/userguide/bedrock-regions.html)
+   - Consider using cross-region inference profiles for better availability
+
+5. **Verify you have the correct permissions:**
+   - Ensure your IAM user/role has `bedrock:InvokeModel` permission
+   - For inference profiles, you may need additional permissions
+
+**Tip**: If a foundation model ID doesn't work, try adding a regional prefix (e.g., change `anthropic.claude-haiku-4-5-20251001-v1:0` to `us.anthropic.claude-haiku-4-5-20251001-v1:0` or `global.anthropic.claude-haiku-4-5-20251001-v1:0`)
 
 **Problem**: `ValidationException` - Invalid request
 
@@ -316,3 +431,67 @@ aicommit2 config get BEDROCK
 # Make a test commit with verbose output
 aicommit2 --verbose
 ```
+
+## Common Configuration Examples
+
+### Example 1: Simple single-region setup (development)
+```sh
+aicommit2 config set \
+    BEDROCK.model="anthropic.claude-haiku-4-5-20251001-v1:0" \
+    BEDROCK.region="us-east-1" \
+    BEDROCK.profile="default"
+```
+
+Use this for development or when you need a simple single-region deployment.
+
+### Example 2: High-availability production setup (US regions)
+```sh
+aicommit2 config set \
+    BEDROCK.model="us.anthropic.claude-sonnet-4-5-20250929-v1:0" \
+    BEDROCK.region="us-east-1" \
+    BEDROCK.profile="prod" \
+    BEDROCK.codeReview=true
+```
+
+Use US inference profile for production workloads requiring high availability across US regions.
+
+### Example 3: Global deployment with cost optimization
+```sh
+aicommit2 config set \
+    BEDROCK.model="global.anthropic.claude-haiku-4-5-20251001-v1:0" \
+    BEDROCK.region="us-west-2" \
+    BEDROCK.profile="prod"
+```
+
+Use global inference profile for best availability and ~10% cost savings through cross-region routing.
+
+### Example 4: EU data sovereignty compliance
+```sh
+aicommit2 config set \
+    BEDROCK.model="eu.anthropic.claude-sonnet-4-5-20250929-v1:0" \
+    BEDROCK.region="eu-west-1" \
+    BEDROCK.profile="eu-prod"
+```
+
+Use EU inference profile to ensure all requests stay within European regions for data compliance.
+
+### Example 5: Multiple models with mixed formats
+```sh
+aicommit2 config set \
+    BEDROCK.model="anthropic.claude-haiku-4-5-20251001-v1:0,us.anthropic.claude-sonnet-4-5-20250929-v1:0" \
+    BEDROCK.region="us-east-1" \
+    BEDROCK.profile="default"
+```
+
+Combine foundation model and inference profile formats for flexibility.
+
+### Example 6: Using newer models requiring inference profiles
+```sh
+# Claude 3.7 Sonnet requires inference profile format
+aicommit2 config set \
+    BEDROCK.model="us.anthropic.claude-3-7-sonnet-20250219-v1:0" \
+    BEDROCK.region="us-east-1" \
+    BEDROCK.profile="default"
+```
+
+Some newer models only work with the prefixed inference profile format.

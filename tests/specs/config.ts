@@ -585,6 +585,93 @@ export default testSuite(({ describe }) => {
                 await fixture.rm();
                 restoreEnv(snapshot);
             });
+
+            await test('parses foundation model ID format', async () => {
+                const { fixture } = await createFixture();
+                const configPath = path.join(fixture.path, '.config', 'aicommit2', 'config.ini');
+                await ensureDirectoryExists(path.dirname(configPath));
+                await fs.writeFile(configPath, '[BEDROCK]\nmodel=anthropic.claude-haiku-4-5-20251001-v1:0\n');
+
+                process.env.AICOMMIT_CONFIG_PATH = configPath;
+
+                const config = (await getConfig({}, [])) as ValidConfig;
+                const bedrock = config.BEDROCK as any;
+
+                expect(bedrock.model).toEqual(['anthropic.claude-haiku-4-5-20251001-v1:0']);
+
+                await fixture.rm();
+            });
+
+            await test('parses US inference profile ID format', async () => {
+                const { fixture } = await createFixture();
+                const configPath = path.join(fixture.path, '.config', 'aicommit2', 'config.ini');
+                await ensureDirectoryExists(path.dirname(configPath));
+                await fs.writeFile(configPath, '[BEDROCK]\nmodel=us.anthropic.claude-sonnet-4-5-20250929-v1:0\n');
+
+                process.env.AICOMMIT_CONFIG_PATH = configPath;
+
+                const config = (await getConfig({}, [])) as ValidConfig;
+                const bedrock = config.BEDROCK as any;
+
+                expect(bedrock.model).toEqual(['us.anthropic.claude-sonnet-4-5-20250929-v1:0']);
+
+                await fixture.rm();
+            });
+
+            await test('parses global inference profile ID format', async () => {
+                const { fixture } = await createFixture();
+                const configPath = path.join(fixture.path, '.config', 'aicommit2', 'config.ini');
+                await ensureDirectoryExists(path.dirname(configPath));
+                await fs.writeFile(configPath, '[BEDROCK]\nmodel=global.anthropic.claude-opus-4-5-20251101-v1:0\n');
+
+                process.env.AICOMMIT_CONFIG_PATH = configPath;
+
+                const config = (await getConfig({}, [])) as ValidConfig;
+                const bedrock = config.BEDROCK as any;
+
+                expect(bedrock.model).toEqual(['global.anthropic.claude-opus-4-5-20251101-v1:0']);
+
+                await fixture.rm();
+            });
+
+            await test('parses EU inference profile ID format', async () => {
+                const { fixture } = await createFixture();
+                const configPath = path.join(fixture.path, '.config', 'aicommit2', 'config.ini');
+                await ensureDirectoryExists(path.dirname(configPath));
+                await fs.writeFile(configPath, '[BEDROCK]\nmodel=eu.anthropic.claude-haiku-4-5-20251001-v1:0\n');
+
+                process.env.AICOMMIT_CONFIG_PATH = configPath;
+
+                const config = (await getConfig({}, [])) as ValidConfig;
+                const bedrock = config.BEDROCK as any;
+
+                expect(bedrock.model).toEqual(['eu.anthropic.claude-haiku-4-5-20251001-v1:0']);
+
+                await fixture.rm();
+            });
+
+            await test('parses multiple model IDs with mixed formats', async () => {
+                const { fixture } = await createFixture();
+                const configPath = path.join(fixture.path, '.config', 'aicommit2', 'config.ini');
+                await ensureDirectoryExists(path.dirname(configPath));
+                await fs.writeFile(
+                    configPath,
+                    '[BEDROCK]\nmodel=anthropic.claude-haiku-4-5-20251001-v1:0,us.anthropic.claude-sonnet-4-5-20250929-v1:0,global.anthropic.claude-opus-4-5-20251101-v1:0\n'
+                );
+
+                process.env.AICOMMIT_CONFIG_PATH = configPath;
+
+                const config = (await getConfig({}, [])) as ValidConfig;
+                const bedrock = config.BEDROCK as any;
+
+                expect(bedrock.model).toEqual([
+                    'anthropic.claude-haiku-4-5-20251001-v1:0',
+                    'us.anthropic.claude-sonnet-4-5-20250929-v1:0',
+                    'global.anthropic.claude-opus-4-5-20251101-v1:0',
+                ]);
+
+                await fixture.rm();
+            });
         });
     });
 });

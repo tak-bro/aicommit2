@@ -92,6 +92,28 @@ const loadCredentialProvidersModule = async (): Promise<CredentialProvidersModul
     }
 };
 
+/**
+ * Amazon Bedrock AI Service
+ *
+ * Supports two model ID formats:
+ *
+ * 1. Foundation Model IDs (region-specific):
+ *    Format: provider.model-name-version:0
+ *    Example: anthropic.claude-haiku-4-5-20251001-v1:0
+ *    Use for: Single-region deployments
+ *
+ * 2. Cross-Region Inference Profile IDs (multi-region):
+ *    Format: [prefix].provider.model-name-version:0
+ *    Examples:
+ *      - us.anthropic.claude-haiku-4-5-20251001-v1:0
+ *      - eu.anthropic.claude-sonnet-4-5-20250929-v1:0
+ *      - global.anthropic.claude-opus-4-5-20251101-v1:0
+ *    Use for: Production workloads requiring high availability
+ *
+ * Available prefixes: global, us, eu, apac, ca, jp, au, us-gov
+ *
+ * @see https://docs.aws.amazon.com/bedrock/latest/userguide/inference-profiles.html
+ */
 export class BedrockService extends AIService {
     private readonly bedrockConfig: BedrockConfig;
     private credentialCache: AwsCredentialIdentity | AwsCredentialIdentityProvider | undefined = undefined;
