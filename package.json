@@ -74,6 +74,8 @@
     },
     "dependencies": {
         "@anthropic-ai/sdk": "^0.39.0",
+        "@aws-sdk/client-bedrock-runtime": "^3.678.0",
+        "@aws-sdk/credential-providers": "^3.678.0",
         "@dqbd/tiktoken": "^1.0.21",
         "@google/generative-ai": "^0.24.1",
         "@inquirer/prompts": "^3.3.2",
