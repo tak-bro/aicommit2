@@ -17,7 +17,7 @@
       perSystem = {pkgs, ...}: {
         packages.default = pkgs.stdenvNoCC.mkDerivation (finalAttrs: {
           pname = "aicommit2";
-          version = "v2.4.19";
+          version = "v2.4.20";
           src = self;
 
           pnpmDeps = pkgs.pnpm.fetchDeps {
