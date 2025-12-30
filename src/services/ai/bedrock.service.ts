@@ -279,6 +279,16 @@ export class BedrockService extends AIService {
 
         try {
             const authMethod = this.determineAuthMethod();
+
+            // Enhanced debug logging
+            if (logging) {
+                console.log(chalk.cyan(`[Bedrock] Authentication method: ${authMethod}`));
+                console.log(chalk.cyan(`[Bedrock] Model ID: ${model}`));
+                console.log(chalk.cyan(`[Bedrock] Region: ${this.getRegion()}`));
+                console.log(chalk.cyan(`[Bedrock] Has AWS credentials: ${this.canUseAwsSdk()}`));
+                console.log(chalk.cyan(`[Bedrock] Has API key: ${isNonEmptyString(config.key)}`));
+            }
+
             const completion =
                 authMethod === 'bearer-token'
                     ? await this.invokeWithBearerToken({
@@ -369,8 +379,28 @@ export class BedrockService extends AIService {
             },
         });
 
-        const response = await client.send(command);
-        logAIResponse(diff, requestType, SERVICE_NAME, response, logging);
+        if (logging) {
+            console.log(chalk.cyan(`[Bedrock] Sending ConverseCommand with modelId: ${model}`));
+        }
+
+        let response;
+        try {
+            response = await client.send(command);
+            logAIResponse(diff, requestType, SERVICE_NAME, response, logging);
+        } catch (error: any) {
+            if (logging) {
+                console.error(chalk.red(`[Bedrock] AWS SDK Error: ${error.name}`));
+                console.error(chalk.red(`[Bedrock] Error message: ${error.message}`));
+                if (error.$metadata) {
+                    console.error(chalk.red(`[Bedrock] Request ID: ${error.$metadata.requestId}`));
+                    console.error(chalk.red(`[Bedrock] HTTP Status: ${error.$metadata.httpStatusCode}`));
+                }
+                if (error.$fault) {
+                    console.error(chalk.red(`[Bedrock] Fault: ${error.$fault}`));
+                }
+            }
+            throw error;
+        }
 
         const text = response.output?.message?.content?.[0]?.text || '';
         if (!text) {
