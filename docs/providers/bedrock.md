@@ -99,7 +99,41 @@ If your config has `runtimeMode`:
 | `applicationEndpointId`                 | Optional Bedrock application endpoint ID appended to the base URL                                    | –                                              |
 | `applicationInferenceProfileArn`        | Optional inference profile ARN sent in requests                                                       | –                                              |
 | `codeReview`                            | Enable Bedrock for code review prompts                                                                | `false`                                        |
-| `temperature`, `topP`, `maxTokens` etc. | Generation settings shared with other providers                                                       | See [General Settings](../../README.md#general-settings) |
+| `inferenceParameters`                   | JSON object with model-specific inference parameters (replaces deprecated `temperature`, `topP`, `maxTokens`) | `{}` (use model defaults)                      |
+
+## Inference Parameters
+
+By default, Bedrock does NOT send any inference parameters - models use their own defaults.
+
+To customize inference behavior, use `inferenceParameters` with JSON format:
+
+**Config file:**
+```ini
+[BEDROCK]
+model="anthropic.claude-haiku-4-5-20251001-v1:0"
+region="us-east-1"
+inferenceParameters={"temperature":0.8,"maxTokens":2048}
+```
+
+**CLI:**
+```bash
+aicommit2 config set 'BEDROCK.inferenceParameters={"temperature":0.8,"maxTokens":2048}'
+```
+
+**Supported parameters** (varies by model):
+- `temperature` - Controls randomness (0.0-2.0)
+- `topP` - Nucleus sampling (0.0-1.0)
+- `maxTokens` - Maximum response length
+- `topK` - Top-k sampling
+- `stopSequences` - Array of stop strings
+
+**Important:**
+- Different models support different parameters
+- Some models (Claude 4.5) don't support both `temperature` AND `topP` together
+- Validation is YOUR responsibility - wrong parameters will fail at runtime
+- See [AWS Bedrock documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/inference-parameters.html) for model-specific details
+
+**Deprecated:** The old `temperature`, `topP`, and `maxTokens` config fields are deprecated. They still work (auto-migrated to `inferenceParameters`) but will show a deprecation warning.
 
 ## Environment Variables
 

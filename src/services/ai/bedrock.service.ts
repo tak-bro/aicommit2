@@ -107,6 +107,29 @@ export class BedrockService extends AIService {
         this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold(`[${SERVICE_NAME}]`);
         this.errorPrefix = chalk.red.bold(`[${SERVICE_NAME}]`);
 
+        // Auto-migrate old config to new inferenceParameters format
+        if (!this.bedrockConfig.inferenceParameters || Object.keys(this.bedrockConfig.inferenceParameters).length === 0) {
+            const migrated: Record<string, any> = {};
+            if (typeof this.bedrockConfig.temperature === 'number') {
+                migrated.temperature = this.bedrockConfig.temperature;
+            }
+            if (typeof this.bedrockConfig.topP === 'number') {
+                migrated.topP = this.bedrockConfig.topP;
+            }
+            if (typeof this.bedrockConfig.maxTokens === 'number') {
+                migrated.maxTokens = this.bedrockConfig.maxTokens;
+            }
+
+            if (Object.keys(migrated).length > 0) {
+                this.bedrockConfig.inferenceParameters = migrated;
+                if (this.bedrockConfig.logging) {
+                    console.warn(
+                        chalk.yellow('[Bedrock] DEPRECATION: temperature, topP, maxTokens are deprecated. Use inferenceParameters instead.')
+                    );
+                }
+            }
+        }
+
         // Validate configuration early to fail fast
         this.validateConfiguration();
     }
@@ -235,7 +258,7 @@ export class BedrockService extends AIService {
         const diff = this.params.stagedDiff.diff;
         const config = this.bedrockConfig;
         const model = config.model;
-        const { logging, temperature, topP, maxTokens } = config;
+        const { logging, inferenceParameters } = config;
 
         const promptOptions: PromptOptions = {
             ...DEFAULT_PROMPT_OPTIONS,
@@ -267,11 +290,7 @@ export class BedrockService extends AIService {
             modelId: model,
             systemPrompt: generatedSystemPrompt,
             userPrompt,
-            inferenceConfig: {
-                temperature,
-                topP,
-                maxTokens,
-            },
+            ...(inferenceParameters && Object.keys(inferenceParameters).length > 0 && { inferenceConfig: inferenceParameters }),
         };
         logAIPayload(diff, requestType, SERVICE_NAME, payload, logging);
 
@@ -298,7 +317,7 @@ export class BedrockService extends AIService {
                           logging,
                           requestType,
                           diff,
-                          inferenceConfig: payload.inferenceConfig,
+                          inferenceConfig: inferenceParameters,
                       })
                     : await this.invokeWithAwsSdk({
                           model,
@@ -307,7 +326,7 @@ export class BedrockService extends AIService {
                           logging,
                           requestType,
                           diff,
-                          inferenceConfig: payload.inferenceConfig,
+                          inferenceConfig: inferenceParameters,
                       });
 
             const duration = Date.now() - startTime;
@@ -332,7 +351,7 @@ export class BedrockService extends AIService {
         model: string;
         systemPrompt: string;
         userPrompt: string;
-        inferenceConfig: { temperature: number; topP: number; maxTokens: number };
+        inferenceConfig?: Record<string, any>;
         logging: boolean;
         requestType: RequestType;
         diff: string;
@@ -372,11 +391,8 @@ export class BedrockService extends AIService {
                       ],
                   }
                 : {}),
-            inferenceConfig: {
-                ...(typeof inferenceConfig.temperature === 'number' && { temperature: inferenceConfig.temperature }),
-                ...(typeof inferenceConfig.topP === 'number' && { topP: inferenceConfig.topP }),
-                ...(typeof inferenceConfig.maxTokens === 'number' && { maxTokens: inferenceConfig.maxTokens }),
-            },
+            // Only include inferenceConfig if user provided parameters
+            ...(inferenceConfig && Object.keys(inferenceConfig).length > 0 && { inferenceConfig }),
         });
 
         if (logging) {
@@ -417,7 +433,7 @@ export class BedrockService extends AIService {
         model: string;
         systemPrompt: string;
         userPrompt: string;
-        inferenceConfig: { temperature: number; topP: number; maxTokens: number };
+        inferenceConfig?: Record<string, any>;
         logging: boolean;
         requestType: RequestType;
         diff: string;
@@ -440,13 +456,8 @@ export class BedrockService extends AIService {
                     content: [{ text: userPrompt }],
                 },
             ],
-            inferenceConfig: {
-                // Only include temperature OR topP, not both (some models don't support both)
-                ...(typeof inferenceConfig.temperature === 'number' && { temperature: inferenceConfig.temperature }),
-                // Skip topP if temperature is set
-                // ...(typeof inferenceConfig.topP === 'number' && { topP: inferenceConfig.topP }),
-                ...(typeof inferenceConfig.maxTokens === 'number' && { maxTokens: inferenceConfig.maxTokens }),
-            },
+            // Only include inferenceConfig if user provided parameters
+            ...(inferenceConfig && Object.keys(inferenceConfig).length > 0 && { inferenceConfig }),
         };
 
         // Add system prompt if provided

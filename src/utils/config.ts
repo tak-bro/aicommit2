@@ -729,6 +729,29 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         disabled: generalConfigParsers.disabled,
         watchMode: generalConfigParsers.watchMode,
         disableLowerCase: generalConfigParsers.disableLowerCase,
+        inferenceParameters: (value?: string | Record<string, any>): Record<string, any> => {
+            if (!value) {
+                return {};
+            }
+
+            // If already an object (from CLI or code), return as-is
+            if (typeof value === 'object') {
+                return value;
+            }
+
+            // Parse JSON string from config file
+            try {
+                const parsed = JSON.parse(value);
+                parseAssert(
+                    'BEDROCK.inferenceParameters',
+                    typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed),
+                    'Must be a valid JSON object'
+                );
+                return parsed;
+            } catch (error) {
+                throw new KnownError(`Invalid BEDROCK.inferenceParameters: Must be valid JSON. Error: ${(error as Error).message}`);
+            }
+        },
     },
 };
 
