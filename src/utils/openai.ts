@@ -171,12 +171,15 @@ const REASONING_MODEL_PREFIXES = [
  * isReasoningModel('o3-mini') // true
  * isReasoningModel('o3-mini-2025-01-31') // true (version suffix)
  * isReasoningModel('gpt-5') // true
+ * isReasoningModel('gpt-5.2') // true (dot version suffix)
  * isReasoningModel('gpt-4o') // false
  * isReasoningModel('gpt-4') // false
  */
 export const isReasoningModel = (model: string): boolean => {
     const normalizedModel = model.toLowerCase();
-    return REASONING_MODEL_PREFIXES.some(prefix => normalizedModel === prefix || normalizedModel.startsWith(`${prefix}-`));
+    return REASONING_MODEL_PREFIXES.some(
+        prefix => normalizedModel === prefix || normalizedModel.startsWith(`${prefix}-`) || normalizedModel.startsWith(`${prefix}.`)
+    );
 };
 
 /**
