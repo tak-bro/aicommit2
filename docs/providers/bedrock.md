@@ -7,80 +7,91 @@
 - [Configuration Guide](../../README.md#configuration) - How to configure providers
 - [General Settings](../../README.md#general-settings) - Common settings applicable to all providers
 
-## Example Configuration
+## Authentication Methods
 
-### IAM (Foundation Model Runtime)
+Bedrock supports two authentication approaches:
 
+### AWS SDK Authentication (Recommended)
+
+Uses IAM credentials with AWS SDK's ConverseCommand API.
+Works with ALL model types: foundation models, cross-region inference profiles, application inference profiles.
+
+**Configuration options:**
+- AWS Profile: `BEDROCK.profile=your-profile`
+- Access Keys: `BEDROCK.accessKeyId` + `BEDROCK.secretAccessKey`
+- Environment variables: `AWS_PROFILE`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`
+- IAM roles: Automatic on EC2/ECS/Lambda
+
+**Example config:**
 ```sh
 aicommit2 config set BEDROCK.model="anthropic.claude-haiku-4-5-20251001-v1:0" \
     BEDROCK.region="us-west-2" \
+    BEDROCK.profile="my-aws-profile" \
     BEDROCK.codeReview=true
 ```
 
-**Note**: The `runtimeMode` parameter is optional and will automatically default to `foundation` for standard model IDs.
-
-Set the following environment variables (or use your existing AWS profile):
-
+Or using environment variables:
 ```sh
 export AWS_ACCESS_KEY_ID="AKIA..."
 export AWS_SECRET_ACCESS_KEY="<secret>"
 export AWS_SESSION_TOKEN="<optional-session-token>"
 export AWS_REGION="us-west-2"
 # or export AWS_DEFAULT_REGION
-# optional profile support
-aicommit2 config set BEDROCK.profile=your-profile
 ```
 
-### Application Endpoint Runtime (Application Inference Profiles)
+### Bearer Token Authentication
 
-For Application Inference Profiles, the configuration automatically detects the runtime mode from the model ARN:
+Uses API key with HTTP Bearer token for application endpoints.
+For use cases where AWS SDK auth cannot be used.
 
+**Configuration:**
+- API Key: `BEDROCK.key` or `BEDROCK_API_KEY` environment variable
+- Region or `applicationBaseUrl` required
+
+**Example config:**
 ```sh
-aicommit2 config set BEDROCK.model="arn:aws:bedrock:us-east-1:123456789012:application-inference-profile/abc123" \
+aicommit2 config set BEDROCK.model="anthropic.claude-haiku-4-5-20251001-v1:0" \
     BEDROCK.region="us-east-1" \
     BEDROCK.key="your-api-key" \
     BEDROCK.codeReview=true
 ```
 
-**Note**: When the model contains `application-inference-profile` in the ARN, `runtimeMode` automatically defaults to `application`. You can still explicitly set `BEDROCK.runtimeMode=application` if desired.
-
 Or set the API key via environment variable:
-
 ```sh
-export BEDROCK_APPLICATION_API_KEY="your-application-api-key"
+export BEDROCK_API_KEY="your-api-key"
 ```
 
-### Application Endpoint Runtime (Custom Endpoints)
-
-For custom application endpoints, specify the base URL and endpoint ID:
-
+For custom application endpoints:
 ```sh
 aicommit2 config set BEDROCK.model="anthropic.claude-haiku-4-5-20251001-v1:0" \
-    BEDROCK.runtimeMode=application \
     BEDROCK.applicationBaseUrl="https://bedrock-runtime.us-west-2.amazonaws.com/application-inference" \
     BEDROCK.applicationEndpointId="your-endpoint-id" \
+    BEDROCK.key="your-api-key" \
     BEDROCK.codeReview=true
 ```
 
-**Note**: For custom endpoints (not using Application Inference Profile ARNs), you should explicitly set `runtimeMode=application`.
+### Auto-Detection
 
-Set the application API key:
+Authentication method is automatically selected:
+- If AWS credentials configured → Uses AWS SDK (preferred)
+- If only API key configured → Uses Bearer token
+- If both configured → Uses AWS SDK (better integration)
 
-```sh
-export BEDROCK_APPLICATION_API_KEY="your-application-api-key"
-# Optional helpers when working with application endpoints
-export BEDROCK_APPLICATION_INFERENCE_PROFILE_ARN="arn:aws:bedrock:..."
-```
+## Migration from runtimeMode
+
+If your config has `runtimeMode`:
+- Remove it (field is deprecated and ignored)
+- Authentication method is now auto-detected from your credentials
+- No other changes needed
 
 ## Settings
 
 | Setting                                 | Description                                                                                           | Default                                        |
 | --------------------------------------- | ----------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
-| `model`                                 | Bedrock model identifier (foundation or application)                                                  | `anthropic.claude-haiku-4-5-20251001-v1:0`     |
-| `runtimeMode`                           | `foundation` for the Bedrock runtime or `application` for application inference endpoints. **Optional**: Auto-detects from model string (detects `application` if model contains `application-inference-profile`, otherwise defaults to `foundation`) | Auto-detected (default: `foundation`)          |
-| `key`                                   | API key for application endpoints (falls back to environment variables)                               | –                                              |
+| `model`                                 | Bedrock model identifier                                                                              | `anthropic.claude-haiku-4-5-20251001-v1:0`     |
+| `key`                                   | API key for Bearer token authentication (falls back to environment variables)                         | –                                              |
 | `envKey`                                | Environment variable name that holds the API key                                                      | `BEDROCK_API_KEY` (also checks application key) |
-| `region`                                | AWS region for IAM authentication                                                                     | `AWS_REGION`/`AWS_DEFAULT_REGION` if available |
+| `region`                                | AWS region                                                                                            | `AWS_REGION`/`AWS_DEFAULT_REGION` if available |
 | `profile`                               | Named AWS profile to load from `~/.aws/credentials`                                                   | `AWS_PROFILE` if available                     |
 | `accessKeyId` / `secretAccessKey`       | Explicit IAM credentials                                                                              | `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`  |
 | `sessionToken`                          | Optional STS session token                                                                            | `AWS_SESSION_TOKEN`                            |
@@ -94,12 +105,12 @@ export BEDROCK_APPLICATION_INFERENCE_PROFILE_ARN="arn:aws:bedrock:..."
 
 Amazon Bedrock honours the standard AWS environment variables in addition to provider-specific keys:
 
-- `BEDROCK_API_KEY` – default API key variable for application endpoints.
+- `BEDROCK_API_KEY` – default API key variable for Bearer token authentication.
 - `BEDROCK_APPLICATION_API_KEY` – fallback API key when `BEDROCK_API_KEY` is not defined.
-- `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN` – IAM credentials for foundation runtime access.
+- `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN` – IAM credentials for AWS SDK authentication.
 - `AWS_REGION`, `AWS_DEFAULT_REGION` – region selection.
 - `AWS_PROFILE` – named profile when using shared credentials files.
-- `BEDROCK_APPLICATION_BASE_URL`, `BEDROCK_APPLICATION_ENDPOINT_ID`, `BEDROCK_APPLICATION_INFERENCE_PROFILE_ARN` – optional helpers for application mode.
+- `BEDROCK_APPLICATION_BASE_URL`, `BEDROCK_APPLICATION_ENDPOINT_ID`, `BEDROCK_APPLICATION_INFERENCE_PROFILE_ARN` – optional helpers for application endpoints.
 
 Use `BEDROCK.envKey` if you prefer to point to a custom environment variable for your API key.
 
@@ -137,14 +148,8 @@ For the complete list of available models, visit the [AWS Bedrock Model IDs docu
 
 ## Tips
 
-- **Auto-detection**: The `runtimeMode` is now optional and automatically detected:
-  - Models containing `application-inference-profile` in the ARN automatically use `application` mode
-  - Standard model IDs (e.g., `anthropic.claude-haiku-4-5-20251001-v1:0`) automatically use `foundation` mode
-  - You can still explicitly set `BEDROCK.runtimeMode` if needed
-- **Foundation mode** relies on IAM credentials or AWS profiles. The CLI automatically checks IAM-related environment variables and does not require an API key when they are present.
-- **Application mode** configuration:
-  - For Application Inference Profiles: Just set the model ARN (e.g., `arn:aws:bedrock:us-east-1:123456789012:application-inference-profile/abc123`), region, and API key
-  - For custom endpoints: Provide an application API key and either a base URL or endpoint/inference profile identifiers, and explicitly set `runtimeMode=application`
+- **AWS SDK Authentication** (recommended) relies on IAM credentials or AWS profiles. The CLI automatically checks IAM-related environment variables and does not require an API key when they are present.
+- **Bearer Token Authentication** requires an API key and either a region or custom application endpoint configuration.
 - The CLI logs every request/response via `~/.local/state/aicommit2/logs` when `logging=true` to help diagnose AWS-specific errors.
 - Combine multiple Bedrock models by comma separating `BEDROCK.model` values.
 
@@ -158,7 +163,7 @@ For the complete list of available models, visit the [AWS Bedrock Model IDs docu
 - Verify your AWS credentials are correct: `aws sts get-caller-identity`
 - Ensure `AWS_REGION` or `AWS_DEFAULT_REGION` is set when using IAM credentials
 - Check that your IAM credentials haven't expired (especially session tokens)
-- For application mode, verify your `BEDROCK_APPLICATION_API_KEY` is correct
+- For Bearer token auth, verify your `BEDROCK_API_KEY` is correct
 
 **Problem**: `AccessDeniedException`
 
@@ -198,10 +203,10 @@ For the complete list of available models, visit the [AWS Bedrock Model IDs docu
 
 **Solution**:
 - Some Claude models (particularly via Application Inference Profiles) don't support both `temperature` and `topP` simultaneously
-- **Important**: In application mode, the aicommit2 Bedrock integration intentionally excludes `topP` from requests and only sends `temperature` to avoid this error
-- Foundation mode includes both parameters, which works with most foundation models
+- **Important**: When using Bearer token authentication with application endpoints, the aicommit2 Bedrock integration intentionally excludes `topP` from requests and only sends `temperature` to avoid this error
+- AWS SDK authentication includes both parameters, which works with most foundation models
 - This is a known limitation of certain Bedrock Application Inference Profiles and is handled automatically by the integration
-- If you need precise control over `topP`, consider using foundation mode instead of application mode
+- If you need precise control over `topP`, consider using AWS SDK authentication instead of Bearer token authentication
 
 ### Configuration Issues
 
@@ -209,8 +214,8 @@ For the complete list of available models, visit the [AWS Bedrock Model IDs docu
 
 **Solution**:
 - Ensure you have configured at least one of:
-  - IAM credentials (foundation mode): Set `AWS_REGION` + (`AWS_ACCESS_KEY_ID` & `AWS_SECRET_ACCESS_KEY` OR `AWS_PROFILE`)
-  - Application Inference Profile (application mode): Set `BEDROCK.region` + `BEDROCK.key` (or `BEDROCK_APPLICATION_API_KEY`)
+  - AWS SDK auth: Set `AWS_REGION` + (`AWS_ACCESS_KEY_ID` & `AWS_SECRET_ACCESS_KEY` OR `AWS_PROFILE`)
+  - Bearer token auth: Set `BEDROCK.region` + `BEDROCK.key` (or `BEDROCK_API_KEY`)
   - Custom application endpoint: Set `BEDROCK.applicationBaseUrl` or `BEDROCK.applicationEndpointId` + `BEDROCK.key`
 - Verify you have a model configured: `aicommit2 config get BEDROCK.model`
 - For code reviews, ensure `BEDROCK.codeReview=true`
@@ -259,7 +264,7 @@ To get detailed logs for troubleshooting:
 Verify your setup with these commands:
 
 ```sh
-# Check your AWS identity (for IAM mode)
+# Check your AWS identity (for AWS SDK auth)
 aws sts get-caller-identity
 
 # Verify AWS Bedrock access

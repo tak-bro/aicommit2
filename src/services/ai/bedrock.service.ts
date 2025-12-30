@@ -17,14 +17,13 @@ const ERROR_NAMES = {
     MISSING_DEPENDENCY: 'MissingDependencyError',
     MISSING_REGION: 'MissingRegionError',
     MISSING_MODEL_ID: 'MissingModelIdError',
+    MISSING_API_KEY: 'MissingApiKeyError',
     MISSING_APPLICATION_KEY: 'MissingApplicationKeyError',
     INVALID_RESPONSE: 'InvalidResponseError',
     EMPTY_RESPONSE: 'EmptyResponseError',
 } as const;
 
 const isNonEmptyString = (value?: string): value is string => typeof value === 'string' && value.length > 0;
-
-type RuntimeMode = 'foundation' | 'application';
 
 // Type-safe config interface derived from the config parsers
 type BedrockConfig = ModelConfig<'BEDROCK'> & {
@@ -114,25 +113,6 @@ export class BedrockService extends AIService {
 
     private validateConfiguration(): void {
         const config = this.bedrockConfig;
-        const runtimeMode = config.runtimeMode as RuntimeMode;
-
-        // Validate application mode has an API key
-        if (runtimeMode === 'application' && !isNonEmptyString(config.key)) {
-            const error: AIServiceError = new Error(
-                'Application mode requires a Bedrock API key. Set BEDROCK.key or BEDROCK_APPLICATION_API_KEY environment variable.'
-            );
-            error.name = ERROR_NAMES.MISSING_APPLICATION_KEY;
-            throw error;
-        }
-
-        // Validate region is set (required for both modes)
-        if (!this.getRegion()) {
-            const error: AIServiceError = new Error(
-                'AWS region is required to use Bedrock. Configure BEDROCK.region or set AWS_REGION/AWS_DEFAULT_REGION.'
-            );
-            error.name = ERROR_NAMES.MISSING_REGION;
-            throw error;
-        }
 
         // Validate model ID is set
         if (!isNonEmptyString(config.model)) {
@@ -140,6 +120,60 @@ export class BedrockService extends AIService {
             error.name = ERROR_NAMES.MISSING_MODEL_ID;
             throw error;
         }
+
+        // Validate region is set
+        if (!this.getRegion()) {
+            const error: AIServiceError = new Error(
+                'AWS region is required. Configure BEDROCK.region or set AWS_REGION/AWS_DEFAULT_REGION.'
+            );
+            error.name = ERROR_NAMES.MISSING_REGION;
+            throw error;
+        }
+
+        // Validate at least one auth method is configured
+        const hasApiKey = isNonEmptyString(config.key);
+        const hasAwsCredentials = this.canUseAwsSdk();
+
+        if (!hasApiKey && !hasAwsCredentials) {
+            const error: AIServiceError = new Error(
+                'Authentication required: Configure AWS credentials (profile, access keys, IAM role) or API key (BEDROCK.key).'
+            );
+            error.name = ERROR_NAMES.MISSING_API_KEY;
+            throw error;
+        }
+
+        // If using API key only, need endpoint configuration
+        if (hasApiKey && !hasAwsCredentials && !this.getRegion() && !isNonEmptyString(config.applicationBaseUrl)) {
+            const error: AIServiceError = new Error(
+                'Bearer token authentication requires region or applicationBaseUrl to construct endpoint.'
+            );
+            error.name = ERROR_NAMES.MISSING_REGION;
+            throw error;
+        }
+    }
+
+    private canUseAwsSdk(): boolean {
+        const config = this.bedrockConfig;
+        const hasProfile = isNonEmptyString(config.profile) || isNonEmptyString(process.env.AWS_PROFILE);
+        const hasAccessKeys =
+            (isNonEmptyString(config.accessKeyId) && isNonEmptyString(config.secretAccessKey)) ||
+            (isNonEmptyString(process.env.AWS_ACCESS_KEY_ID) && isNonEmptyString(process.env.AWS_SECRET_ACCESS_KEY));
+        return hasProfile || hasAccessKeys;
+    }
+
+    private determineAuthMethod(): 'aws-sdk' | 'bearer-token' {
+        const hasApiKey = isNonEmptyString(this.bedrockConfig.key);
+        const hasAwsCredentials = this.canUseAwsSdk();
+
+        // Prefer AWS SDK if available (recommended by AWS)
+        if (hasAwsCredentials) {
+            return 'aws-sdk';
+        }
+        if (hasApiKey) {
+            return 'bearer-token';
+        }
+
+        throw new Error('No authentication method configured');
     }
 
     protected getServiceSpecificErrorMessage(error: AIServiceError): string | null {
@@ -244,10 +278,10 @@ export class BedrockService extends AIService {
         const startTime = Date.now();
 
         try {
-            const runtimeMode = config.runtimeMode as RuntimeMode;
+            const authMethod = this.determineAuthMethod();
             const completion =
-                runtimeMode === 'application'
-                    ? await this.invokeApplicationEndpoint({
+                authMethod === 'bearer-token'
+                    ? await this.invokeWithBearerToken({
                           model,
                           systemPrompt: generatedSystemPrompt,
                           userPrompt,
@@ -256,7 +290,7 @@ export class BedrockService extends AIService {
                           diff,
                           inferenceConfig: payload.inferenceConfig,
                       })
-                    : await this.invokeFoundationModel({
+                    : await this.invokeWithAwsSdk({
                           model,
                           systemPrompt: generatedSystemPrompt,
                           userPrompt,
@@ -284,7 +318,7 @@ export class BedrockService extends AIService {
         }
     }
 
-    private async invokeFoundationModel(args: {
+    private async invokeWithAwsSdk(args: {
         model: string;
         systemPrompt: string;
         userPrompt: string;
@@ -349,7 +383,7 @@ export class BedrockService extends AIService {
         return text;
     }
 
-    private invokeApplicationEndpoint(args: {
+    private invokeWithBearerToken(args: {
         model: string;
         systemPrompt: string;
         userPrompt: string;

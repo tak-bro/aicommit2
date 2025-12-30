@@ -13,44 +13,18 @@ const hasConfiguredModels = (value: RawConfig): boolean => {
 };
 
 const hasBedrockAccess = (value: RawConfig): boolean => {
-    const runtimeMode = isNonEmptyString(value.runtimeMode)
-        ? ((value.runtimeMode as string).toLowerCase() as 'foundation' | 'application')
-        : 'foundation';
-
     const hasApiKey = isNonEmptyString(value.key as string);
-
-    // Check region from config or environment variables (matching bedrock.service.ts getRegion())
     const hasRegion =
         isNonEmptyString(value.region as string) ||
         isNonEmptyString(process.env.AWS_REGION) ||
         isNonEmptyString(process.env.AWS_DEFAULT_REGION);
-
-    // Check profile from config or environment variable
     const hasProfile = isNonEmptyString(value.profile as string) || isNonEmptyString(process.env.AWS_PROFILE);
-
-    // Check access keys from config or environment variables
     const hasAccessKeys =
         (isNonEmptyString(value.accessKeyId as string) && isNonEmptyString(value.secretAccessKey as string)) ||
         (isNonEmptyString(process.env.AWS_ACCESS_KEY_ID) && isNonEmptyString(process.env.AWS_SECRET_ACCESS_KEY));
 
-    // Foundation mode: requires region and IAM credentials (profile or access keys)
-    const hasFoundationAccess = runtimeMode === 'foundation' && hasRegion && (hasProfile || hasAccessKeys);
-
-    // Application mode: REQUIRES an API key and region
-    // If no specific application endpoint config is provided, will default to Converse API endpoint
-    const hasApplicationAccess =
-        runtimeMode === 'application' &&
-        hasApiKey &&
-        (hasRegion ||
-            isNonEmptyString(value.applicationBaseUrl as string) ||
-            isNonEmptyString(value.applicationEndpointId as string) ||
-            isNonEmptyString(value.applicationInferenceProfileArn as string) ||
-            isNonEmptyString(process.env.BEDROCK_APPLICATION_BASE_URL) ||
-            isNonEmptyString(process.env.BEDROCK_APPLICATION_ENDPOINT_ID) ||
-            isNonEmptyString(process.env.BEDROCK_APPLICATION_INFERENCE_PROFILE_ARN) ||
-            isNonEmptyString(process.env.BEDROCK_INFERENCE_PROFILE_ARN));
-
-    return hasFoundationAccess || hasApplicationAccess;
+    // Bedrock available if: region + at least one auth method
+    return hasRegion && (hasApiKey || hasProfile || hasAccessKeys);
 };
 
 export const getAvailableAIs = (config: ValidConfig, requestType: RequestType): ModelName[] => {
