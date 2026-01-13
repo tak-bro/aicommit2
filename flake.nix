@@ -17,13 +17,13 @@
       perSystem = {pkgs, ...}: {
         packages.default = pkgs.stdenvNoCC.mkDerivation (finalAttrs: {
           pname = "aicommit2";
-          version = "v2.4.20";
+          version = "v2.4.23";
           src = self;
 
           pnpmDeps = pkgs.pnpm.fetchDeps {
             inherit (finalAttrs) pname version src;
             fetcherVersion = 1;
-            hash = "sha256-CQJ9CqUxxRZr4iJCh/scvA/9pRZYT48x/dRsBxBaoOM=";
+            hash = "sha256-96/qySx4dKfVCoIgwKXv6c7B3AG0S1HbLxt86/y/qTw=";
           };
 
           nativeBuildInputs = [
