@@ -3,8 +3,23 @@ import path from 'path';
 
 import { expect, testSuite } from 'manten';
 
+import { getAvailableAIs } from '../../src/commands/get-available-ais.js';
+import { ValidConfig, getConfig } from '../../src/utils/config.js';
 import { ensureDirectoryExists } from '../../src/utils/utils.js';
 import { createFixture } from '../utils.js';
+
+const snapshotEnv = (keys: string[]) =>
+    Object.fromEntries(keys.map(key => [key, Object.prototype.hasOwnProperty.call(process.env, key) ? process.env[key] : undefined]));
+
+const restoreEnv = (snapshot: Record<string, string | undefined>) => {
+    for (const [key, value] of Object.entries(snapshot)) {
+        if (value === undefined) {
+            delete process.env[key];
+        } else {
+            process.env[key] = value;
+        }
+    }
+};
 
 export default testSuite(({ describe }) => {
     describe('config', async ({ test, describe }) => {
@@ -229,6 +244,432 @@ export default testSuite(({ describe }) => {
                     reject: false,
                 });
                 expect(stdout).toMatch('\n✖ Invalid config property disableLowerCase: Must be a boolean(true or false)');
+                await fixture.rm();
+            });
+        });
+
+        await describe('Bedrock configuration', async ({ test }) => {
+            const envKeys = [
+                'AICOMMIT_CONFIG_PATH',
+                'AWS_REGION',
+                'AWS_DEFAULT_REGION',
+                'AWS_ACCESS_KEY_ID',
+                'AWS_SECRET_ACCESS_KEY',
+                'AWS_SESSION_TOKEN',
+                'AWS_PROFILE',
+                'BEDROCK_API_KEY',
+                'BEDROCK_APPLICATION_API_KEY',
+                'BEDROCK_APPLICATION_BASE_URL',
+                'BEDROCK_APPLICATION_ENDPOINT_ID',
+                'BEDROCK_APPLICATION_INFERENCE_PROFILE_ARN',
+            ];
+
+            await test('parses IAM environment fallbacks', async () => {
+                const { fixture } = await createFixture();
+                const configPath = path.join(fixture.path, '.config', 'aicommit2', 'config.ini');
+                await ensureDirectoryExists(path.dirname(configPath));
+                await fs.writeFile(configPath, '[BEDROCK]\nmodel=anthropic.claude\n');
+
+                const snapshot = snapshotEnv(envKeys);
+
+                process.env.AICOMMIT_CONFIG_PATH = configPath;
+                process.env.AWS_REGION = 'us-west-2';
+                process.env.AWS_DEFAULT_REGION = 'us-west-2';
+                process.env.AWS_ACCESS_KEY_ID = 'AKIA_TEST';
+                process.env.AWS_SECRET_ACCESS_KEY = 'SECRET_TEST';
+                delete process.env.BEDROCK_API_KEY;
+                delete process.env.BEDROCK_APPLICATION_API_KEY;
+
+                const config = (await getConfig({}, [])) as ValidConfig;
+                const bedrock = config.BEDROCK as any;
+
+                expect(bedrock.region).toBe('us-west-2');
+                expect(bedrock.accessKeyId).toBe('AKIA_TEST');
+                expect(bedrock.secretAccessKey).toBe('SECRET_TEST');
+                expect(bedrock.envKey).toBe('BEDROCK_API_KEY');
+
+                await fixture.rm();
+                restoreEnv(snapshot);
+            });
+
+            await test('uses application API key environment fallback', async () => {
+                const { fixture } = await createFixture();
+                const configPath = path.join(fixture.path, '.config', 'aicommit2', 'config.ini');
+                await ensureDirectoryExists(path.dirname(configPath));
+                await fs.writeFile(configPath, ['[BEDROCK]', 'model=anthropic.claude', ''].join('\n'));
+
+                const snapshot = snapshotEnv(envKeys);
+
+                process.env.AICOMMIT_CONFIG_PATH = configPath;
+                delete process.env.BEDROCK_API_KEY;
+                delete process.env.BEDROCK_APPLICATION_API_KEY;
+                process.env.BEDROCK_APPLICATION_API_KEY = 'app-key-123';
+
+                const config = (await getConfig({}, [])) as ValidConfig;
+                const bedrock = config.BEDROCK as any;
+
+                expect(bedrock.key).toBe('app-key-123');
+
+                await fixture.rm();
+                restoreEnv(snapshot);
+            });
+
+            await test('considers Bedrock available with IAM credentials', async () => {
+                const { fixture } = await createFixture();
+                const configPath = path.join(fixture.path, '.config', 'aicommit2', 'config.ini');
+                await ensureDirectoryExists(path.dirname(configPath));
+                await fs.writeFile(configPath, ['[BEDROCK]', 'model=anthropic.claude', 'codeReview=true', ''].join('\n'));
+
+                const snapshot = snapshotEnv(envKeys);
+
+                process.env.AICOMMIT_CONFIG_PATH = configPath;
+                process.env.AWS_REGION = 'us-east-1';
+                process.env.AWS_ACCESS_KEY_ID = 'AKIA_EXAMPLE';
+                process.env.AWS_SECRET_ACCESS_KEY = 'SECRET_EXAMPLE';
+                delete process.env.BEDROCK_API_KEY;
+                delete process.env.BEDROCK_APPLICATION_API_KEY;
+
+                const config = (await getConfig({}, [])) as ValidConfig;
+
+                const commitAIs = getAvailableAIs(config, 'commit');
+                const reviewAIs = getAvailableAIs(config, 'review');
+
+                expect(commitAIs).toContain('BEDROCK');
+                expect(reviewAIs).toContain('BEDROCK');
+
+                await fixture.rm();
+                restoreEnv(snapshot);
+            });
+
+            await test('considers Bedrock available with application endpoint details', async () => {
+                const { fixture } = await createFixture();
+                const configPath = path.join(fixture.path, '.config', 'aicommit2', 'config.ini');
+                await ensureDirectoryExists(path.dirname(configPath));
+                await fs.writeFile(
+                    configPath,
+                    [
+                        '[BEDROCK]',
+                        'model=anthropic.claude',
+                        'applicationBaseUrl=https://example.com/invoke',
+                        'key=test-api-key',
+                        'codeReview=true',
+                        '',
+                    ].join('\n')
+                );
+
+                const snapshot = snapshotEnv(envKeys);
+
+                process.env.AICOMMIT_CONFIG_PATH = configPath;
+                delete process.env.BEDROCK_API_KEY;
+                delete process.env.BEDROCK_APPLICATION_API_KEY;
+
+                const config = (await getConfig({}, [])) as ValidConfig;
+
+                const commitAIs = getAvailableAIs(config, 'commit');
+                const reviewAIs = getAvailableAIs(config, 'review');
+
+                expect(commitAIs).toContain('BEDROCK');
+                expect(reviewAIs).toContain('BEDROCK');
+
+                await fixture.rm();
+                restoreEnv(snapshot);
+            });
+
+            await test('considers Bedrock available with AWS_PROFILE environment variable', async () => {
+                const { fixture } = await createFixture();
+                const configPath = path.join(fixture.path, '.config', 'aicommit2', 'config.ini');
+                await ensureDirectoryExists(path.dirname(configPath));
+                await fs.writeFile(configPath, ['[BEDROCK]', 'model=anthropic.claude-3', 'codeReview=true', ''].join('\n'));
+
+                const snapshot = snapshotEnv(envKeys);
+
+                process.env.AICOMMIT_CONFIG_PATH = configPath;
+                process.env.AWS_REGION = 'eu-west-1';
+                process.env.AWS_PROFILE = 'my-profile';
+                delete process.env.AWS_ACCESS_KEY_ID;
+                delete process.env.AWS_SECRET_ACCESS_KEY;
+                delete process.env.BEDROCK_API_KEY;
+
+                const config = (await getConfig({}, [])) as ValidConfig;
+
+                const commitAIs = getAvailableAIs(config, 'commit');
+                const reviewAIs = getAvailableAIs(config, 'review');
+
+                expect(commitAIs).toContain('BEDROCK');
+                expect(reviewAIs).toContain('BEDROCK');
+
+                await fixture.rm();
+                restoreEnv(snapshot);
+            });
+
+            await test('considers Bedrock available with application endpoint environment variables', async () => {
+                const { fixture } = await createFixture();
+                const configPath = path.join(fixture.path, '.config', 'aicommit2', 'config.ini');
+                await ensureDirectoryExists(path.dirname(configPath));
+                await fs.writeFile(configPath, ['[BEDROCK]', 'model=anthropic.claude-3', 'codeReview=true', ''].join('\n'));
+
+                const snapshot = snapshotEnv(envKeys);
+
+                process.env.AICOMMIT_CONFIG_PATH = configPath;
+                process.env.BEDROCK_APPLICATION_ENDPOINT_ID = 'my-endpoint-123';
+                process.env.BEDROCK_APPLICATION_API_KEY = 'test-api-key';
+                delete process.env.BEDROCK_APPLICATION_BASE_URL;
+
+                const config = (await getConfig({}, [])) as ValidConfig;
+
+                const commitAIs = getAvailableAIs(config, 'commit');
+                const reviewAIs = getAvailableAIs(config, 'review');
+
+                expect(commitAIs).toContain('BEDROCK');
+                expect(reviewAIs).toContain('BEDROCK');
+
+                await fixture.rm();
+                restoreEnv(snapshot);
+            });
+
+            await test('considers Bedrock available with region and API key only', async () => {
+                const { fixture } = await createFixture();
+                const configPath = path.join(fixture.path, '.config', 'aicommit2', 'config.ini');
+                await ensureDirectoryExists(path.dirname(configPath));
+                await fs.writeFile(
+                    configPath,
+                    [
+                        '[BEDROCK]',
+                        'model=arn:aws:bedrock:us-east-1:123456789012:application-inference-profile/abc123',
+                        'region=us-east-1',
+                        'key=test-api-key',
+                        'codeReview=true',
+                        '',
+                    ].join('\n')
+                );
+
+                const snapshot = snapshotEnv(envKeys);
+
+                process.env.AICOMMIT_CONFIG_PATH = configPath;
+                delete process.env.BEDROCK_APPLICATION_BASE_URL;
+                delete process.env.BEDROCK_APPLICATION_ENDPOINT_ID;
+                delete process.env.BEDROCK_APPLICATION_INFERENCE_PROFILE_ARN;
+
+                const config = (await getConfig({}, [])) as ValidConfig;
+
+                const commitAIs = getAvailableAIs(config, 'commit');
+                const reviewAIs = getAvailableAIs(config, 'review');
+
+                expect(commitAIs).toContain('BEDROCK');
+                expect(reviewAIs).toContain('BEDROCK');
+
+                await fixture.rm();
+                restoreEnv(snapshot);
+            });
+
+            await test('does not consider Bedrock available without credentials or endpoints', async () => {
+                const { fixture } = await createFixture();
+                const configPath = path.join(fixture.path, '.config', 'aicommit2', 'config.ini');
+                await ensureDirectoryExists(path.dirname(configPath));
+                await fs.writeFile(configPath, ['[BEDROCK]', 'model=anthropic.claude-3', ''].join('\n'));
+
+                const snapshot = snapshotEnv(envKeys);
+
+                process.env.AICOMMIT_CONFIG_PATH = configPath;
+                delete process.env.AWS_REGION;
+                delete process.env.AWS_DEFAULT_REGION;
+                delete process.env.AWS_ACCESS_KEY_ID;
+                delete process.env.AWS_SECRET_ACCESS_KEY;
+                delete process.env.AWS_PROFILE;
+                delete process.env.BEDROCK_API_KEY;
+                delete process.env.BEDROCK_APPLICATION_API_KEY;
+                delete process.env.BEDROCK_APPLICATION_BASE_URL;
+                delete process.env.BEDROCK_APPLICATION_ENDPOINT_ID;
+
+                const config = (await getConfig({}, [])) as ValidConfig;
+
+                const commitAIs = getAvailableAIs(config, 'commit');
+
+                expect(commitAIs).not.toContain('BEDROCK');
+
+                await fixture.rm();
+                restoreEnv(snapshot);
+            });
+
+            await test('Bedrock available with either auth method', async () => {
+                const { fixture } = await createFixture();
+                const configPath = path.join(fixture.path, '.config', 'aicommit2', 'config.ini');
+                await ensureDirectoryExists(path.dirname(configPath));
+
+                const snapshot = snapshotEnv(envKeys);
+
+                // Test a: Only profile configured
+                await fs.writeFile(configPath, ['[BEDROCK]', 'model=anthropic.claude', 'codeReview=true', ''].join('\n'));
+                process.env.AICOMMIT_CONFIG_PATH = configPath;
+                process.env.AWS_REGION = 'us-east-1';
+                process.env.AWS_PROFILE = 'my-profile';
+                delete process.env.AWS_ACCESS_KEY_ID;
+                delete process.env.AWS_SECRET_ACCESS_KEY;
+                delete process.env.BEDROCK_API_KEY;
+                delete process.env.BEDROCK_APPLICATION_API_KEY;
+
+                let config = (await getConfig({}, [])) as ValidConfig;
+                let commitAIs = getAvailableAIs(config, 'commit');
+                let reviewAIs = getAvailableAIs(config, 'review');
+                expect(commitAIs).toContain('BEDROCK');
+                expect(reviewAIs).toContain('BEDROCK');
+
+                // Test b: Only access keys configured
+                await fs.writeFile(configPath, ['[BEDROCK]', 'model=anthropic.claude', 'codeReview=true', ''].join('\n'));
+                delete process.env.AWS_PROFILE;
+                process.env.AWS_ACCESS_KEY_ID = 'AKIA_TEST';
+                process.env.AWS_SECRET_ACCESS_KEY = 'SECRET_TEST';
+
+                config = (await getConfig({}, [])) as ValidConfig;
+                commitAIs = getAvailableAIs(config, 'commit');
+                reviewAIs = getAvailableAIs(config, 'review');
+                expect(commitAIs).toContain('BEDROCK');
+                expect(reviewAIs).toContain('BEDROCK');
+
+                // Test c: Only API key configured
+                await fs.writeFile(
+                    configPath,
+                    ['[BEDROCK]', 'model=anthropic.claude', 'key=test-api-key', 'codeReview=true', ''].join('\n')
+                );
+                delete process.env.AWS_ACCESS_KEY_ID;
+                delete process.env.AWS_SECRET_ACCESS_KEY;
+                delete process.env.AWS_PROFILE;
+
+                config = (await getConfig({}, [])) as ValidConfig;
+                commitAIs = getAvailableAIs(config, 'commit');
+                reviewAIs = getAvailableAIs(config, 'review');
+                expect(commitAIs).toContain('BEDROCK');
+                expect(reviewAIs).toContain('BEDROCK');
+
+                // Test d: Both profile and API key configured
+                await fs.writeFile(
+                    configPath,
+                    ['[BEDROCK]', 'model=anthropic.claude', 'key=test-api-key', 'codeReview=true', ''].join('\n')
+                );
+                process.env.AWS_PROFILE = 'my-profile';
+
+                config = (await getConfig({}, [])) as ValidConfig;
+                commitAIs = getAvailableAIs(config, 'commit');
+                reviewAIs = getAvailableAIs(config, 'review');
+                expect(commitAIs).toContain('BEDROCK');
+                expect(reviewAIs).toContain('BEDROCK');
+
+                await fixture.rm();
+                restoreEnv(snapshot);
+            });
+
+            await test('explicit runtimeMode is deprecated and ignored', async () => {
+                const { fixture } = await createFixture();
+                const configPath = path.join(fixture.path, '.config', 'aicommit2', 'config.ini');
+                await ensureDirectoryExists(path.dirname(configPath));
+                await fs.writeFile(
+                    configPath,
+                    ['[BEDROCK]', 'model=anthropic.claude-haiku-4-5-20251001-v1:0', 'runtimeMode=application', 'region=us-east-1', ''].join(
+                        '\n'
+                    )
+                );
+
+                const snapshot = snapshotEnv(envKeys);
+
+                process.env.AICOMMIT_CONFIG_PATH = configPath;
+                process.env.BEDROCK_APPLICATION_API_KEY = 'test-api-key';
+
+                const config = (await getConfig({}, [])) as ValidConfig;
+                const bedrock = config.BEDROCK as any;
+
+                // runtimeMode is deprecated and should return undefined
+                // Authentication method is auto-detected at runtime
+                expect(bedrock.runtimeMode).toBeUndefined();
+                expect(bedrock.key).toBe('test-api-key');
+
+                await fixture.rm();
+                restoreEnv(snapshot);
+            });
+
+            await test('parses foundation model ID format', async () => {
+                const { fixture } = await createFixture();
+                const configPath = path.join(fixture.path, '.config', 'aicommit2', 'config.ini');
+                await ensureDirectoryExists(path.dirname(configPath));
+                await fs.writeFile(configPath, '[BEDROCK]\nmodel=anthropic.claude-haiku-4-5-20251001-v1:0\n');
+
+                process.env.AICOMMIT_CONFIG_PATH = configPath;
+
+                const config = (await getConfig({}, [])) as ValidConfig;
+                const bedrock = config.BEDROCK as any;
+
+                expect(bedrock.model).toEqual(['anthropic.claude-haiku-4-5-20251001-v1:0']);
+
+                await fixture.rm();
+            });
+
+            await test('parses US inference profile ID format', async () => {
+                const { fixture } = await createFixture();
+                const configPath = path.join(fixture.path, '.config', 'aicommit2', 'config.ini');
+                await ensureDirectoryExists(path.dirname(configPath));
+                await fs.writeFile(configPath, '[BEDROCK]\nmodel=us.anthropic.claude-sonnet-4-5-20250929-v1:0\n');
+
+                process.env.AICOMMIT_CONFIG_PATH = configPath;
+
+                const config = (await getConfig({}, [])) as ValidConfig;
+                const bedrock = config.BEDROCK as any;
+
+                expect(bedrock.model).toEqual(['us.anthropic.claude-sonnet-4-5-20250929-v1:0']);
+
+                await fixture.rm();
+            });
+
+            await test('parses global inference profile ID format', async () => {
+                const { fixture } = await createFixture();
+                const configPath = path.join(fixture.path, '.config', 'aicommit2', 'config.ini');
+                await ensureDirectoryExists(path.dirname(configPath));
+                await fs.writeFile(configPath, '[BEDROCK]\nmodel=global.anthropic.claude-opus-4-5-20251101-v1:0\n');
+
+                process.env.AICOMMIT_CONFIG_PATH = configPath;
+
+                const config = (await getConfig({}, [])) as ValidConfig;
+                const bedrock = config.BEDROCK as any;
+
+                expect(bedrock.model).toEqual(['global.anthropic.claude-opus-4-5-20251101-v1:0']);
+
+                await fixture.rm();
+            });
+
+            await test('parses EU inference profile ID format', async () => {
+                const { fixture } = await createFixture();
+                const configPath = path.join(fixture.path, '.config', 'aicommit2', 'config.ini');
+                await ensureDirectoryExists(path.dirname(configPath));
+                await fs.writeFile(configPath, '[BEDROCK]\nmodel=eu.anthropic.claude-haiku-4-5-20251001-v1:0\n');
+
+                process.env.AICOMMIT_CONFIG_PATH = configPath;
+
+                const config = (await getConfig({}, [])) as ValidConfig;
+                const bedrock = config.BEDROCK as any;
+
+                expect(bedrock.model).toEqual(['eu.anthropic.claude-haiku-4-5-20251001-v1:0']);
+
+                await fixture.rm();
+            });
+
+            await test('parses multiple model IDs with mixed formats', async () => {
+                const { fixture } = await createFixture();
+                const configPath = path.join(fixture.path, '.config', 'aicommit2', 'config.ini');
+                await ensureDirectoryExists(path.dirname(configPath));
+                await fs.writeFile(
+                    configPath,
+                    '[BEDROCK]\nmodel=anthropic.claude-haiku-4-5-20251001-v1:0,us.anthropic.claude-sonnet-4-5-20250929-v1:0,global.anthropic.claude-opus-4-5-20251101-v1:0\n'
+                );
+
+                process.env.AICOMMIT_CONFIG_PATH = configPath;
+
+                const config = (await getConfig({}, [])) as ValidConfig;
+                const bedrock = config.BEDROCK as any;
+
+                expect(bedrock.model).toEqual([
+                    'anthropic.claude-haiku-4-5-20251001-v1:0',
+                    'us.anthropic.claude-sonnet-4-5-20250929-v1:0',
+                    'global.anthropic.claude-opus-4-5-20251101-v1:0',
+                ]);
+
                 await fixture.rm();
             });
         });

@@ -47,6 +47,7 @@ export const BUILTIN_SERVICES = [
     'PERPLEXITY',
     'DEEPSEEK',
     'GITHUB_MODELS',
+    'BEDROCK',
 ] as const;
 export type BuiltinService = (typeof BUILTIN_SERVICES)[number];
 
@@ -683,6 +684,118 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         watchMode: generalConfigParsers.watchMode,
         disableLowerCase: generalConfigParsers.disableLowerCase,
     },
+    BEDROCK: {
+        key: (key?: string) => key || '',
+        envKey: (envKey?: string) => (envKey && envKey.length > 0 ? envKey : 'BEDROCK_API_KEY'),
+        model: (model?: string | string[]): string[] => {
+            if (!model) {
+                // Default uses foundation model ID format for backward compatibility
+                // For production, consider using inference profiles (e.g., us.anthropic.claude-haiku-4-5-20251001-v1:0)
+                return ['anthropic.claude-haiku-4-5-20251001-v1:0'];
+            }
+            const modelList = typeof model === 'string' ? model?.split(',') : model;
+            return modelList
+                .map(m => {
+                    const trimmed = m.trim();
+                    // Validate Bedrock model ID format: should contain a dot or be an ARN
+                    if (trimmed && !trimmed.includes('.') && !trimmed.includes(':')) {
+                        console.warn(
+                            `[Bedrock] Model ID "${trimmed}" may be invalid.\n` +
+                                `Expected formats:\n` +
+                                `  - Foundation model: "provider.model-name-version" (e.g., "anthropic.claude-haiku-4-5-20251001-v1:0")\n` +
+                                `  - Inference profile: "prefix.provider.model-name-version" (e.g., "us.anthropic.claude-haiku-4-5-20251001-v1:0")\n` +
+                                `  - ARN: Full Amazon Resource Name\n` +
+                                `See https://docs.aws.amazon.com/bedrock/latest/userguide/inference-profiles.html`
+                        );
+                    }
+                    return trimmed;
+                })
+                .filter(m => !!m && m.length > 0);
+        },
+        runtimeMode: (runtimeMode?: string) => {
+            if (runtimeMode) {
+                console.warn(
+                    '[Bedrock] DEPRECATION: runtimeMode is no longer used. Authentication method is now auto-detected from configured credentials.'
+                );
+            }
+            return undefined;
+        },
+        region: (region?: string) => region || process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || '',
+        profile: (profile?: string) => profile || process.env.AWS_PROFILE || '',
+        accessKeyId: (value?: string) => value || process.env.AWS_ACCESS_KEY_ID || '',
+        secretAccessKey: (value?: string) => value || process.env.AWS_SECRET_ACCESS_KEY || '',
+        sessionToken: (value?: string) => value || process.env.AWS_SESSION_TOKEN || '',
+        applicationEndpointId: (value?: string) => value || process.env.BEDROCK_APPLICATION_ENDPOINT_ID || '',
+        applicationInferenceProfileArn: (value?: string) =>
+            value || process.env.BEDROCK_APPLICATION_INFERENCE_PROFILE_ARN || process.env.BEDROCK_INFERENCE_PROFILE_ARN || '',
+        applicationBaseUrl: (value?: string) => value || process.env.BEDROCK_APPLICATION_BASE_URL || '',
+        systemPrompt: generalConfigParsers.systemPrompt,
+        systemPromptPath: generalConfigParsers.systemPromptPath,
+        codeReviewPromptPath: generalConfigParsers.codeReviewPromptPath,
+        timeout: generalConfigParsers.timeout,
+        // Bedrock-specific parsers that return undefined instead of defaults
+        // This ensures NO parameters are sent unless explicitly configured
+        temperature: (temperature?: string) => {
+            if (!temperature) {
+                return undefined;
+            }
+            parseAssert('temperature', /^(2|\d)(\.\d{1,2})?$/.test(temperature), 'Must be decimal between 0 and 2');
+            const parsed = Number(temperature);
+            parseAssert('temperature', parsed > 0.0, 'Must be greater than 0');
+            parseAssert('temperature', parsed <= 2.0, 'Must be less than or equal to 2');
+            return parsed;
+        },
+        maxTokens: (maxTokens?: string) => {
+            if (!maxTokens) {
+                return undefined;
+            }
+            parseAssert('maxTokens', /^\d+$/.test(maxTokens), 'Must be an integer');
+            return Number(maxTokens);
+        },
+        logging: generalConfigParsers.logging,
+        locale: generalConfigParsers.locale,
+        generate: generalConfigParsers.generate,
+        type: generalConfigParsers.type,
+        maxLength: generalConfigParsers.maxLength,
+        includeBody: generalConfigParsers.includeBody,
+        topP: (topP?: string) => {
+            if (!topP) {
+                return undefined;
+            }
+            parseAssert('topP', /^(1|\d)(\.\d{1,2})?$/.test(topP), 'Must be decimal between 0 and 1');
+            const parsed = Number(topP);
+            parseAssert('topP', parsed > 0.0, 'Must be greater than 0');
+            parseAssert('topP', parsed <= 1.0, 'Must be less than or equal to 1');
+            return parsed;
+        },
+        codeReview: generalConfigParsers.codeReview,
+        disabled: generalConfigParsers.disabled,
+        watchMode: generalConfigParsers.watchMode,
+        disableLowerCase: generalConfigParsers.disableLowerCase,
+        inferenceParameters: (value?: string | Record<string, any>): Record<string, any> => {
+            if (!value) {
+                return {};
+            }
+
+            // If already an object (from CLI or code), return as-is
+            if (typeof value === 'object') {
+                return value;
+            }
+
+            // Parse JSON string from config file
+            try {
+                const parsed = JSON.parse(value);
+                parseAssert(
+                    'BEDROCK.inferenceParameters',
+                    typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed),
+                    'Must be a valid JSON object'
+                );
+                return parsed;
+            } catch (error) {
+                throw new KnownError(`Invalid BEDROCK.inferenceParameters: Must be valid JSON. Error: ${(error as Error).message}`);
+            }
+        },
+    },
 };
 
 export type RawConfig = {
@@ -777,9 +890,23 @@ export const getConfig = async (cliConfig: RawConfig, rawArgv: string[] = []): P
 
     for (const service of services) {
         const configuredEnvKey = (config[service] as Record<string, any>)?.envKey;
-        const envKey = configuredEnvKey || `${service}_API_KEY`;
+        let envKeys: (string | undefined)[];
 
-        const apiKey = process.env[envKey];
+        if (configuredEnvKey) {
+            envKeys = [configuredEnvKey];
+            if (service === 'BEDROCK' && configuredEnvKey !== 'BEDROCK_APPLICATION_API_KEY') {
+                envKeys.push('BEDROCK_APPLICATION_API_KEY');
+            }
+        } else if (service === 'BEDROCK') {
+            envKeys = ['BEDROCK_API_KEY', 'BEDROCK_APPLICATION_API_KEY'];
+        } else {
+            envKeys = [`${service}_API_KEY`];
+        }
+
+        const apiKey = envKeys
+            .map(key => (key ? process.env[key] : undefined))
+            .find((value): value is string => typeof value === 'string' && value.length > 0);
+
         if (apiKey) {
             envConfig[service] = { key: apiKey };
         }
@@ -806,7 +933,7 @@ export const getConfig = async (cliConfig: RawConfig, rawArgv: string[] = []): P
 
         for (const [key, parser] of Object.entries(modelParsers)) {
             const value = getValueWithPriority(modelName, key);
-            (parsedConfig[modelName] as Record<string, any>)[key] = (parser as any)(value); // Add type assertion
+            (parsedConfig[modelName] as Record<string, any>)[key] = (parser as any)(value);
         }
     }
 

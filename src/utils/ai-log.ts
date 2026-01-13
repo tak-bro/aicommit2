@@ -52,7 +52,7 @@ const getOrCreateServiceLogger = (aiName: string, diff: string, requestType: Req
 
 const maskApiKeys = (headers: any): any => {
     const masked = { ...headers };
-    const keyFields = ['authorization', 'x-api-key', 'x-goog-api-key', 'api-key'];
+    const keyFields = ['authorization', 'x-api-key', 'x-goog-api-key', 'api-key', 'x-amzn-bedrock-application-key'];
 
     for (const field of keyFields) {
         const lowerField = field.toLowerCase();
