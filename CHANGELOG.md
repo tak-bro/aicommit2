@@ -1,3 +1,18 @@
+## [2.4.21](https://github.com/tak-bro/aicommit2/compare/v2.4.20...v2.4.21) (2026-01-13)
+
+
+### Bug Fixes
+
+* **bedrock:** eliminate default params & fix debug logging ([adcc716](https://github.com/tak-bro/aicommit2/commit/adcc716fc1993fd6c7bda89c6528ad86406729b0))
+
+
+### Features
+
+* add Amazon Bedrock AI provider with dual runtime support ([1318989](https://github.com/tak-bro/aicommit2/commit/1318989c863197352e4861d2d264e76e04d15680))
+* **bedrock:** add application endpoint support with API key auth ([33cb9b8](https://github.com/tak-bro/aicommit2/commit/33cb9b8be48a7381dfc8fdfa2f7671c1424f197c))
+* **bedrock:** add enhanced debug logging for authentication and AWS SDK errors ([1fa77cd](https://github.com/tak-bro/aicommit2/commit/1fa77cd471df1c0968fd1405a51187ed51d98661))
+* **bedrock:** add flexible inferenceParameters config field ([63c3726](https://github.com/tak-bro/aicommit2/commit/63c37261045b310d89e959ea23b9dd4e578fc7f4))
+
 ## [2.4.20](https://github.com/tak-bro/aicommit2/compare/v2.4.19...v2.4.20) (2025-12-30)
 
 
