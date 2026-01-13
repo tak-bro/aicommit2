@@ -1,3 +1,10 @@
+## [2.4.22](https://github.com/tak-bro/aicommit2/compare/v2.4.21...v2.4.22) (2026-01-13)
+
+
+### Features
+
+* **vcs:** add branch name to AI request manager ([3c8c36b](https://github.com/tak-bro/aicommit2/commit/3c8c36b884d39421371e2b9ca83c2701ffb03dbe))
+
 ## [2.4.21](https://github.com/tak-bro/aicommit2/compare/v2.4.20...v2.4.21) (2026-01-13)
 
 
