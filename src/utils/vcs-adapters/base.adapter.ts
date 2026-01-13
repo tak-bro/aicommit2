@@ -32,6 +32,11 @@ export abstract class BaseVCSAdapter {
     abstract getCommentChar(): Promise<string>;
 
     /**
+     * Get the current branch name
+     */
+    abstract getBranchName(): Promise<string>;
+
+    /**
      * Get detected message for current changes
      */
     getDetectedMessage(staged: VCSDiff): string {

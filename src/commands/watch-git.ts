@@ -14,7 +14,7 @@ import { BUILTIN_SERVICES, ModelName, RawConfig, ValidConfig, getConfig } from '
 import { KnownError, handleCliError } from '../utils/error.js';
 import { validateSystemPrompt } from '../utils/prompt.js';
 import { SubscriptionManager } from '../utils/subscription-manager.js';
-import { assertGitRepo, getCommitDiff, getVCSName } from '../utils/vcs.js';
+import { assertGitRepo, getBranchName, getCommitDiff, getVCSName } from '../utils/vcs.js';
 
 class WatchGitManager {
     private destroyed$ = new Subject<void>();
@@ -188,7 +188,8 @@ class WatchGitManager {
     private async performCodeReview(config: ValidConfig, diffInfo: any, availableAIs: ModelName[]): Promise<void> {
         this.cleanupPreviousCodeReview();
 
-        const aiRequestManager = new AIRequestManager(config, diffInfo);
+        const branchName = await getBranchName();
+        const aiRequestManager = new AIRequestManager(config, diffInfo, branchName);
         this.currentCodeReviewPromptManager = new ReactivePromptManager(codeReviewLoader);
 
         try {

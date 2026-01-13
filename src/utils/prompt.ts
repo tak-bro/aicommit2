@@ -11,6 +11,8 @@ export interface PromptOptions {
     systemPrompt?: string;
     systemPromptPath?: string;
     codeReviewPromptPath?: string;
+    // VCS context placeholder
+    vcs_branch?: string;
 }
 
 export const DEFAULT_PROMPT_OPTIONS: PromptOptions = {
@@ -21,6 +23,7 @@ export const DEFAULT_PROMPT_OPTIONS: PromptOptions = {
     systemPrompt: '',
     systemPromptPath: '',
     codeReviewPromptPath: '',
+    vcs_branch: '',
 };
 
 const commitTypeFormats: Record<CommitType, string> = {
@@ -334,7 +337,7 @@ const finalPrompt = (type: CommitType, generate: number, locale: string) => {
 export const generatePrompt = (promptOptions: PromptOptions) => {
     const { systemPrompt, systemPromptPath, type, generate, locale } = promptOptions;
     if (systemPrompt) {
-        return `${systemPrompt}\n${finalPrompt(type, generate, locale)}`;
+        return `${parseTemplate(systemPrompt, promptOptions)}\n${finalPrompt(type, generate, locale)}`;
     }
 
     if (!systemPromptPath) {

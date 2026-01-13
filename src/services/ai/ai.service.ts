@@ -23,6 +23,7 @@ export interface AIServiceParams {
     stagedDiff: GitDiff;
     keyName: ModelName;
     logSessionId?: string;
+    branchName?: string;
 }
 
 export interface AIServiceError extends Error {
@@ -183,14 +184,18 @@ export abstract class AIService {
         let startIndex = response.indexOf('[');
         if (startIndex !== -1) {
             const result = this.extractBalancedJson(response, startIndex, '[', ']');
-            if (result) {return result;}
+            if (result) {
+                return result;
+            }
         }
 
         // Then try to find a JSON object starting with {
         startIndex = response.indexOf('{');
         if (startIndex !== -1) {
             const result = this.extractBalancedJson(response, startIndex, '{', '}');
-            if (result) {return result;}
+            if (result) {
+                return result;
+            }
         }
 
         return null;
@@ -224,8 +229,12 @@ export abstract class AIService {
             }
 
             if (!inString) {
-                if (char === openChar) {depth++;}
-                if (char === closeChar) {depth--;}
+                if (char === openChar) {
+                    depth++;
+                }
+                if (char === closeChar) {
+                    depth--;
+                }
 
                 if (depth === 0) {
                     return text.slice(startIndex, i + 1);

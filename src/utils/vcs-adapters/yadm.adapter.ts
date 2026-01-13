@@ -261,4 +261,18 @@ export class YadmAdapter extends BaseVCSAdapter {
             return '#';
         }
     }
+
+    async getBranchName(): Promise<string> {
+        try {
+            const { stdout } = await execa('yadm', ['branch', '--show-current']);
+            const branchName = stdout.trim();
+            if (!branchName) {
+                const { stdout: headRef } = await execa('yadm', ['rev-parse', '--short', 'HEAD']);
+                return `HEAD@${headRef.trim()}`;
+            }
+            return branchName;
+        } catch {
+            return 'HEAD';
+        }
+    }
 }

@@ -7,7 +7,7 @@ import { AIRequestManager } from '../managers/ai-request.manager.js';
 import { ConsoleManager } from '../managers/console.manager.js';
 import { BUILTIN_SERVICES, ModelName, RawConfig, getConfig } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
-import { getStagedDiff } from '../utils/vcs.js';
+import { getBranchName, getStagedDiff } from '../utils/vcs.js';
 
 const args = process.argv.slice(2).filter(arg => !arg.startsWith('--pre-commit'));
 const [messageFilePath, commitSource] = args;
@@ -68,7 +68,8 @@ export default (verbose = false) =>
             throw new KnownError('Please set at least one API key via the `aicommit2 config set` command');
         }
 
-        const aiRequestManager = new AIRequestManager(config, staged);
+        const branchName = await getBranchName();
+        const aiRequestManager = new AIRequestManager(config, staged, branchName);
         let messages: string[];
         try {
             messages = await lastValueFrom(

@@ -226,4 +226,19 @@ export class GitAdapter extends BaseVCSAdapter {
             return '#';
         }
     }
+
+    async getBranchName(): Promise<string> {
+        try {
+            const { stdout } = await execa('git', ['branch', '--show-current']);
+            const branchName = stdout.trim();
+            if (!branchName) {
+                // Detached HEAD state - use short commit hash
+                const { stdout: headRef } = await execa('git', ['rev-parse', '--short', 'HEAD']);
+                return `HEAD@${headRef.trim()}`;
+            }
+            return branchName;
+        } catch {
+            return 'HEAD';
+        }
+    }
 }
