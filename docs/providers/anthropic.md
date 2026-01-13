@@ -49,12 +49,14 @@ You can use any Claude model name. The system no longer validates specific model
 
 Popular models include:
 
-- `claude-opus-4-20250514`, `claude-sonnet-4-20250514` (Claude 4 series)
+- `claude-opus-4-20250514`, `claude-sonnet-4-20250514`, `claude-haiku-4-5-20251001` (Claude 4 series)
 - `claude-3-5-sonnet-20241022`, `claude-3-5-haiku-20241022` (default) (Claude 3.5 series)
 - `claude-3-opus-20240229`, `claude-3-sonnet-20240229` (Claude 3 series)
 - `claude-2.1`, `claude-2.0` (Claude 2 legacy)
 
 For the most up-to-date list of available models, please check [Anthropic Console](https://console.anthropic.com/).
+
+> **Note**: Claude 4.x models (e.g., `claude-haiku-4-*`, `claude-sonnet-4-*`, `claude-opus-4-*`) do not support using `temperature` and `top_p` parameters simultaneously. When using Claude 4.x models, the `top_p` parameter is automatically excluded from API requests.
 
 ```sh
 aicommit2 config set ANTHROPIC.model="claude-3-5-sonnet-20240620"
