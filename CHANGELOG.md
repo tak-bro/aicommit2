@@ -1,3 +1,10 @@
+## [2.4.23](https://github.com/tak-bro/aicommit2/compare/v2.4.22...v2.4.23) (2026-01-13)
+
+
+### Bug Fixes
+
+* **anthropic:** handle Claude 4.x model limitations ([2e7f2a2](https://github.com/tak-bro/aicommit2/commit/2e7f2a2c678ae0712186f546f3f891cfde47bbf7))
+
 ## [2.4.22](https://github.com/tak-bro/aicommit2/compare/v2.4.21...v2.4.22) (2026-01-13)
 
 
