@@ -23,7 +23,8 @@ import { GitDiff } from '../utils/vcs.js';
 export class AIRequestManager {
     constructor(
         private readonly config: ValidConfig,
-        private readonly stagedDiff: GitDiff
+        private readonly stagedDiff: GitDiff,
+        private readonly branchName: string = ''
     ) {}
 
     createCommitMsgRequests$(modelNames: ModelName[]): Observable<ReactiveListChoice> {
@@ -52,6 +53,7 @@ export class AIRequestManager {
                                 },
                                 stagedDiff: this.stagedDiff,
                                 keyName: model as ModelName,
+                                branchName: this.branchName,
                             });
                             return requestType === 'commit' ? service.generateCommitMessage$() : service.generateCodeReview$();
                         }
@@ -62,6 +64,7 @@ export class AIRequestManager {
                                     config: { ...this.config.OPENAI, model: model },
                                     stagedDiff: this.stagedDiff,
                                     keyName: model as ModelName,
+                                    branchName: this.branchName,
                                 });
                                 return requestType === 'commit' ? service.generateCommitMessage$() : service.generateCodeReview$();
                             }
@@ -70,6 +73,7 @@ export class AIRequestManager {
                                     config: { ...this.config.GEMINI, model: model },
                                     stagedDiff: this.stagedDiff,
                                     keyName: model as ModelName,
+                                    branchName: this.branchName,
                                 });
                                 return requestType === 'commit' ? service.generateCommitMessage$() : service.generateCodeReview$();
                             }
@@ -78,6 +82,7 @@ export class AIRequestManager {
                                     config: { ...this.config.ANTHROPIC, model: model },
                                     stagedDiff: this.stagedDiff,
                                     keyName: model as ModelName,
+                                    branchName: this.branchName,
                                 });
                                 return requestType === 'commit' ? service.generateCommitMessage$() : service.generateCodeReview$();
                             }
@@ -86,6 +91,7 @@ export class AIRequestManager {
                                     config: { ...this.config.HUGGINGFACE, model: model },
                                     stagedDiff: this.stagedDiff,
                                     keyName: model as ModelName,
+                                    branchName: this.branchName,
                                 });
                                 return requestType === 'commit' ? service.generateCommitMessage$() : service.generateCodeReview$();
                             }
@@ -94,6 +100,7 @@ export class AIRequestManager {
                                     config: { ...this.config.MISTRAL, model: model },
                                     stagedDiff: this.stagedDiff,
                                     keyName: model as ModelName,
+                                    branchName: this.branchName,
                                 });
                                 return requestType === 'commit' ? service.generateCommitMessage$() : service.generateCodeReview$();
                             }
@@ -102,6 +109,7 @@ export class AIRequestManager {
                                     config: { ...this.config.CODESTRAL, model: model },
                                     stagedDiff: this.stagedDiff,
                                     keyName: model as ModelName,
+                                    branchName: this.branchName,
                                 });
                                 return requestType === 'commit' ? service.generateCommitMessage$() : service.generateCodeReview$();
                             }
@@ -110,6 +118,7 @@ export class AIRequestManager {
                                     config: { ...this.config.OLLAMA, model: model },
                                     keyName: model as ModelName,
                                     stagedDiff: this.stagedDiff,
+                                    branchName: this.branchName,
                                 });
                                 return requestType === 'commit' ? service.generateCommitMessage$() : service.generateCodeReview$();
                             }
@@ -118,6 +127,7 @@ export class AIRequestManager {
                                     config: { ...this.config.COHERE, model: model },
                                     stagedDiff: this.stagedDiff,
                                     keyName: model as ModelName,
+                                    branchName: this.branchName,
                                 });
                                 return requestType === 'commit' ? service.generateCommitMessage$() : service.generateCodeReview$();
                             }
@@ -126,6 +136,7 @@ export class AIRequestManager {
                                     config: { ...this.config.GROQ, model: model },
                                     stagedDiff: this.stagedDiff,
                                     keyName: model as ModelName,
+                                    branchName: this.branchName,
                                 });
                                 return requestType === 'commit' ? service.generateCommitMessage$() : service.generateCodeReview$();
                             }
@@ -134,6 +145,7 @@ export class AIRequestManager {
                                     config: { ...this.config.PERPLEXITY, model: model },
                                     stagedDiff: this.stagedDiff,
                                     keyName: model as ModelName,
+                                    branchName: this.branchName,
                                 });
                                 return requestType === 'commit' ? service.generateCommitMessage$() : service.generateCodeReview$();
                             }
@@ -150,6 +162,7 @@ export class AIRequestManager {
                                     config: { ...this.config.GITHUB_MODELS, model: model },
                                     stagedDiff: this.stagedDiff,
                                     keyName: model as ModelName,
+                                    branchName: this.branchName,
                                 });
                                 return requestType === 'commit' ? service.generateCommitMessage$() : service.generateCodeReview$();
                             }
@@ -158,6 +171,7 @@ export class AIRequestManager {
                                     config: { ...this.config.DEEPSEEK, model: model },
                                     stagedDiff: this.stagedDiff,
                                     keyName: model as ModelName,
+                                    branchName: this.branchName,
                                 });
                                 return requestType === 'commit' ? service.generateCommitMessage$() : service.generateCodeReview$();
                             }

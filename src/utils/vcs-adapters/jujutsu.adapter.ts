@@ -318,4 +318,21 @@ export class JujutsuAdapter extends BaseVCSAdapter {
             return '#';
         }
     }
+
+    async getBranchName(): Promise<string> {
+        try {
+            // Try to get bookmark name first (jj's equivalent of branch)
+            const { stdout: bookmarks } = await execa('jj', ['bookmark', 'list', '--revisions', '@']);
+            if (bookmarks.trim()) {
+                const firstBookmark = bookmarks.split('\n')[0];
+                const bookmarkName = firstBookmark.split(':')[0].trim();
+                if (bookmarkName) {return bookmarkName;}
+            }
+            // Fall back to change-id
+            const { stdout: changeId } = await execa('jj', ['log', '-r', '@', '--no-graph', '-T', 'change_id.short()']);
+            return changeId.trim() || 'HEAD';
+        } catch {
+            return 'HEAD';
+        }
+    }
 }

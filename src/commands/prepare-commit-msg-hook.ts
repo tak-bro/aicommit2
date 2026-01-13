@@ -7,7 +7,7 @@ import { AIRequestManager } from '../managers/ai-request.manager.js';
 import { ConsoleManager } from '../managers/console.manager.js';
 import { BUILTIN_SERVICES, ModelName, RawConfig, getConfig } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
-import { getCommentChar, getStagedDiff } from '../utils/vcs.js';
+import { getBranchName, getCommentChar, getStagedDiff } from '../utils/vcs.js';
 
 const allArgs = process.argv.slice(2);
 const positionalArgs: string[] = [];
@@ -111,7 +111,8 @@ export default (
             throw new KnownError('Please set at least one API key via the `aicommit2 config set` command');
         }
 
-        const aiRequestManager = new AIRequestManager(config, staged);
+        const branchName = await getBranchName();
+        const aiRequestManager = new AIRequestManager(config, staged, branchName);
         const spinner = consoleManager.displaySpinner('The AI is analyzing your changes');
         let messages: string[];
         try {

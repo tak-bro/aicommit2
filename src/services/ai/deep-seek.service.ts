@@ -116,6 +116,7 @@ export class DeepSeekService extends AIService {
             systemPrompt,
             systemPromptPath,
             codeReviewPromptPath,
+            vcs_branch: this.params.branchName || '',
         };
         const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
 

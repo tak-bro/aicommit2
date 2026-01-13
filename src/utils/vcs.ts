@@ -243,3 +243,8 @@ export const commitChanges = async (message: string, args?: string[]): Promise<v
     const adapter = await getVCSAdapter();
     await adapter.commit(message, args || []);
 };
+
+export const getBranchName = async (): Promise<string> => {
+    const adapter = await getVCSAdapter();
+    return adapter.getBranchName();
+};

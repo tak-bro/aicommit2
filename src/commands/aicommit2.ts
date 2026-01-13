@@ -20,7 +20,7 @@ import {
 import { ModelName, RawConfig, getConfig } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
 import { validateSystemPrompt } from '../utils/prompt.js';
-import { assertGitRepo, getStagedDiff, getVCSName, commitChanges as vcsCommitChanges } from '../utils/vcs.js';
+import { assertGitRepo, getBranchName, getStagedDiff, getVCSName, commitChanges as vcsCommitChanges } from '../utils/vcs.js';
 
 import type { Subscription } from 'rxjs';
 
@@ -126,7 +126,8 @@ export default async (
             throw new KnownError('Please set at least one API key via the `aicommit2 config set` command');
         }
 
-        const aiRequestManager = new AIRequestManager(config, staged);
+        const branchName = await getBranchName();
+        const aiRequestManager = new AIRequestManager(config, staged, branchName);
         const codeReviewAIs = getAvailableAIs(config, 'review');
         if (codeReviewAIs.length > 0) {
             await handleCodeReview(aiRequestManager, codeReviewAIs);
