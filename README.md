@@ -796,6 +796,8 @@ Default: `0.9`
 
 Nucleus sampling, where the model considers the results of the tokens with top_p probability mass.
 
+> **Note**: Claude 4.x models do not support using `temperature` and `top_p` simultaneously. For these models, `top_p` is automatically excluded.
+
 ```sh
 aicommit2 config set topP=0.2
 ```

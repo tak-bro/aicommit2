@@ -6,6 +6,7 @@ import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
 import { RequestType, logAIComplete, logAIError, logAIPayload, logAIPrompt, logAIRequest, logAIResponse } from '../../utils/ai-log.js';
+import { isClaudeFourModel } from '../../utils/anthropic.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt, generateUserPrompt } from '../../utils/prompt.js';
 
 export interface AnthropicServiceError extends AIServiceError {
@@ -45,7 +46,7 @@ export class AnthropicService extends AIService {
         if (errorMsg.includes('quota') || errorMsg.includes('usage')) {
             return 'API quota exceeded. Check your Anthropic usage limits';
         }
-        if (errorMsg.includes('model') || errorMsg.includes('Model')) {
+        if (errorMsg.includes('model_not_found') || errorMsg.includes('Model not found') || /model.*does not exist/i.test(errorMsg)) {
             return 'Model not found or not accessible. Check if the Claude model name is correct';
         }
         if (errorMsg.includes('403') || errorMsg.includes('Forbidden')) {
@@ -133,6 +134,9 @@ export class AnthropicService extends AIService {
         logAIRequest(diff, requestType, 'Anthropic', model, url, headers, logging);
         logAIPrompt(diff, requestType, 'Anthropic', generatedSystemPrompt, userPrompt, logging);
 
+        // Claude 4.x models don't support temperature + top_p combination
+        const claudeFourModel = isClaudeFourModel(model);
+
         const params: Anthropic.MessageCreateParams = {
             max_tokens: maxTokens,
             temperature: temperature,
@@ -143,8 +147,8 @@ export class AnthropicService extends AIService {
                     content: userPrompt,
                 },
             ],
-            top_p: topP,
             model: model,
+            ...(claudeFourModel ? {} : { top_p: topP }),
         };
 
         logAIPayload(diff, requestType, 'Anthropic', params, logging);
