@@ -859,13 +859,21 @@ export const getConfigPath = async (): Promise<string> => {
     return AICOMMIT_CONFIG_FILE_PATH;
 };
 
+const expandEnvVariables = (content: string) => {
+    return content.replace(/\$\{([a-zA-Z_][a-zA-Z0-9_]*)\}|\$([a-zA-Z_][a-zA-Z0-9_]*)/g, (match, p1, p2) => {
+        const varName = p1 || p2;
+        return process.env[varName] ?? '';
+    });
+};
+
 export const readConfigFile = async (): Promise<RawConfig> => {
     const configPath = await getConfigPath(); // Use the shared function to get the path
 
     loadedConfigPath = configPath;
     try {
         const configContent = await fs.readFile(configPath, 'utf8');
-        return ini.parse(configContent);
+        const expandedConfigContent = expandEnvVariables(configContent);
+        return ini.parse(expandedConfigContent);
     } catch (error) {
         // If the file doesn't exist or can't be read, return an empty config
         if ((error as NodeJS.ErrnoException).code === 'ENOENT') {

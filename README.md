@@ -473,6 +473,18 @@ You can find the path of the currently loaded configuration file using the `conf
 aicommit2 config path
 ```
 
+#### Environment Variable Expansion in Config File
+
+You can use environment variables in your configuration file values. Both `$VAR` and `${VAR}` syntax are supported.
+
+Example `config.ini`:
+
+```ini
+[OPENAI]
+key=$OPENAI_API_KEY
+url=${CUSTOM_API_URL}/v1
+```
+
 #### Reading and Setting Configuration
 
 - READ: `aicommit2 config get [<key> [<key> ...]]`
