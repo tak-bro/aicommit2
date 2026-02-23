@@ -1,3 +1,11 @@
+## [2.4.27](https://github.com/tak-bro/aicommit2/compare/v2.4.26...v2.4.27) (2026-02-23)
+
+
+### Features
+
+* add JSON output format for non-interactive mode ([e66805a](https://github.com/tak-bro/aicommit2/commit/e66805ab0f02a52b49eb14f4753f0f1b1b97d915))
+* **cli:** add JSON output mode for LazyGit integration ([8309de4](https://github.com/tak-bro/aicommit2/commit/8309de411b9f9e4d377e37433a34c7ebca117f4b))
+
 ## [2.4.26](https://github.com/tak-bro/aicommit2/compare/v2.4.25...v2.4.26) (2026-02-23)
 
 
