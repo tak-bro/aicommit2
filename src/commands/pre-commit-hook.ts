@@ -3,9 +3,10 @@ import path from 'path';
 
 import { filter, lastValueFrom, map, toArray } from 'rxjs';
 
+import { getAvailableAIs } from './get-available-ais.js';
 import { AIRequestManager } from '../managers/ai-request.manager.js';
 import { ConsoleManager } from '../managers/console.manager.js';
-import { BUILTIN_SERVICES, ModelName, RawConfig, getConfig } from '../utils/config.js';
+import { RawConfig, getConfig } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
 import { getBranchName, getStagedDiff } from '../utils/vcs.js';
 
@@ -47,22 +48,7 @@ export default (verbose = false) =>
             }
         }
 
-        const availableAIs: ModelName[] = Object.entries(config)
-            .filter(([key]) => BUILTIN_SERVICES.includes(key as ModelName))
-            .map(([key, value]) => [key, value] as [ModelName, RawConfig])
-            .filter(([key, value]) => !value.disabled)
-            .filter(([key, value]) => {
-                if (key === 'OLLAMA') {
-                    return !!value && !!value.model && (value.model as string[]).length > 0;
-                }
-                if (key === 'HUGGINGFACE') {
-                    return !!value && !!value.cookie;
-                }
-                // @ts-ignore ignore
-                return !!value.key && value.key.length > 0;
-            })
-            .map(([key]) => key);
-
+        const availableAIs = getAvailableAIs(config, 'commit');
         const hasNoAvailableAIs = availableAIs.length === 0;
         if (hasNoAvailableAIs) {
             throw new KnownError('Please set at least one API key via the `aicommit2 config set` command');

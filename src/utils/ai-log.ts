@@ -6,7 +6,7 @@ import winston from 'winston';
 
 import { AICOMMIT_LOGS_DIR } from './config.js';
 
-export type RequestType = 'review' | 'commit';
+export type RequestType = 'review' | 'commit' | 'watch';
 
 const serviceLoggers = new Map<string, winston.Logger>();
 

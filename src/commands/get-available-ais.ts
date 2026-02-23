@@ -57,6 +57,21 @@ export const getAvailableAIs = (config: ValidConfig, requestType: RequestType): 
                         return hasConfiguredModels(value) && hasBedrockAccess(value) && codeReview;
                     }
                     return !!value.key && value.key.length > 0 && codeReview;
+                case 'watch':
+                    const watchMode = config.watchMode || value.watchMode;
+                    if (key === 'OLLAMA') {
+                        return !!value && hasConfiguredModels(value) && watchMode;
+                    }
+                    if (key === 'HUGGINGFACE') {
+                        return !!value && !!value.cookie && watchMode;
+                    }
+                    if (key === 'BEDROCK') {
+                        return hasConfiguredModels(value) && hasBedrockAccess(value) && watchMode;
+                    }
+                    if (value.compatible) {
+                        return !!value.url && !!value.key && watchMode;
+                    }
+                    return !!value.key && value.key.length > 0 && watchMode;
             }
         })
         .map(([key]) => key);

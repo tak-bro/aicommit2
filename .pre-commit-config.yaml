@@ -38,12 +38,10 @@ repos:
         exclude: ^(test/.*)$
       - id: fix-byte-order-marker
       - id: check-case-conflict
-  - repo: https://github.com/lovesegfault/beautysh.git
-    rev: v6.2.1
+  - repo: https://github.com/scop/pre-commit-shfmt
+    rev: v3.8.0-1
     hooks:
-      - id: beautysh
-        additional_dependencies:
-          - setuptools
+      - id: shfmt
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.1
     hooks:

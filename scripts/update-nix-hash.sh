@@ -12,7 +12,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # Check if nix is installed
-if ! command -v nix &> /dev/null; then
+if ! command -v nix &>/dev/null; then
     echo -e "${RED}✗ Error: nix is not installed${NC}"
     echo "Please install nix from https://nixos.org/download.html"
     exit 1
@@ -27,7 +27,7 @@ else
 fi
 
 # Validate version format
-if [[ ! "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+if [[ ! $VERSION =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     echo -e "${RED}✗ Invalid version format: ${VERSION}${NC}"
     echo "Expected format: v2.4.9"
     exit 1
@@ -75,7 +75,7 @@ echo -e "${GREEN}✓ Updated hash in flake.nix${NC}"
 
 # Verify the build works
 echo "Verifying build with new hash..."
-if nix build --print-out-paths > /dev/null 2>&1; then
+if nix build --print-out-paths >/dev/null 2>&1; then
     echo -e "${GREEN}✓ Build successful!${NC}"
 
     # Remove backup
