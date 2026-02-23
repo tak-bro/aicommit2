@@ -137,6 +137,11 @@ cli(
                 alias: 'd',
                 default: false,
             },
+            output: {
+                type: String,
+                description: 'Output format for non-interactive mode (json). For LazyGit integration',
+                alias: 'o',
+            },
         },
 
         commands: [configCommand, githubLoginCommand, hookCommand, logCommand],
@@ -195,6 +200,7 @@ cli(
             argv.flags.verbose,
             argv.flags['dry-run'],
             argv.flags['jj-auto-new'],
+            argv.flags.output,
             rawArgv
         );
     },

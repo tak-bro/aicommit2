@@ -6,6 +6,7 @@ import path from 'path';
 import { execa } from 'execa';
 import inquirer from 'inquirer';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
+import { lastValueFrom, toArray } from 'rxjs';
 
 import { getAvailableAIs } from './get-available-ais.js';
 import { AIRequestManager } from '../managers/ai-request.manager.js';
@@ -26,6 +27,11 @@ import type { Subscription } from 'rxjs';
 
 const consoleManager = new ConsoleManager();
 
+export interface JsonCommitMessage {
+    subject: string;
+    body: string;
+}
+
 export default async (
     locale: string | undefined,
     generate: number | undefined,
@@ -42,10 +48,15 @@ export default async (
     verbose: boolean,
     dryRun: boolean,
     jjAutoNew: boolean,
+    outputFormat: string | undefined,
     rawArgv: string[]
 ) =>
     (async () => {
-        consoleManager.printTitle();
+        const isJsonMode = outputFormat === 'json';
+
+        if (!isJsonMode) {
+            consoleManager.printTitle();
+        }
 
         await assertGitRepo();
         if (stageAll) {
@@ -101,9 +112,9 @@ export default async (
             autoNew: jjAutoNew || config.jjAutoNew,
         };
 
-        const detectingFilesSpinner = consoleManager.displaySpinner('Detecting staged files');
+        const detectingFilesSpinner = isJsonMode ? null : consoleManager.displaySpinner('Detecting staged files');
         const staged = await getStagedDiff(excludeFiles, config.exclude);
-        detectingFilesSpinner.stop();
+        detectingFilesSpinner?.stop();
 
         if (!staged) {
             const vcsName = await getVCSName();
@@ -125,7 +136,9 @@ export default async (
             throw new KnownError(errorMessage);
         }
 
-        consoleManager.printStagedFiles(staged);
+        if (!isJsonMode) {
+            consoleManager.printStagedFiles(staged);
+        }
 
         const availableAIs = getAvailableAIs(config, 'commit');
         if (availableAIs.length === 0) {
@@ -134,6 +147,17 @@ export default async (
 
         const branchName = await getBranchName();
         const aiRequestManager = new AIRequestManager(config, staged, branchName);
+
+        // JSON output mode: skip TUI, collect all messages, output as JSON Lines
+        // Each object on its own line for LazyGit menuFromCommand compatibility
+        if (isJsonMode) {
+            const jsonMessages = await handleJsonOutput(aiRequestManager, availableAIs);
+            jsonMessages.forEach(msg => {
+                process.stdout.write(JSON.stringify(msg) + '\n');
+            });
+            process.exit(0);
+        }
+
         const codeReviewAIs = getAvailableAIs(config, 'review');
         if (codeReviewAIs.length > 0) {
             await handleCodeReview(aiRequestManager, codeReviewAIs);
@@ -189,6 +213,12 @@ export default async (
         }
         process.exit();
     })().catch(error => {
+        if (outputFormat === 'json') {
+            // Output error as JSON for LazyGit integration
+            const errorJson = { error: error.message || 'Unknown error occurred' };
+            process.stderr.write(JSON.stringify(errorJson) + '\n');
+            process.exit(1);
+        }
         consoleManager.printError(error.message);
         handleCliError(error);
         process.exit(1);
@@ -375,4 +405,26 @@ async function openEditor(message: string): Promise<string> {
 const commitChanges = async (message: string, rawArgv: string[], options: CommitOptions) => {
     await vcsCommitChanges(message, rawArgv, options);
     consoleManager.printCommitted();
+};
+
+/**
+ * Handles non-interactive JSON output mode for LazyGit integration.
+ * Collects all AI-generated commit messages and returns them as JSON.
+ */
+const handleJsonOutput = async (aiRequestManager: AIRequestManager, availableAIs: ModelName[]): Promise<JsonCommitMessage[]> => {
+    const choices = await lastValueFrom(aiRequestManager.createCommitMsgRequests$(availableAIs).pipe(toArray()), { defaultValue: [] });
+
+    const validChoices = choices.filter(choice => choice.value && !choice.isError && !choice.disabled);
+
+    if (validChoices.length === 0) {
+        throw new KnownError('No valid commit messages were generated');
+    }
+
+    return validChoices.map(({ value = '' }) => {
+        const [subject = '', ...rest] = value.split('\n');
+        return {
+            subject,
+            body: rest.join('\n').trim(),
+        };
+    });
 };
