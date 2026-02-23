@@ -148,10 +148,13 @@ export default async (
         const branchName = await getBranchName();
         const aiRequestManager = new AIRequestManager(config, staged, branchName);
 
-        // JSON output mode: skip TUI, collect all messages, output as JSON
+        // JSON output mode: skip TUI, collect all messages, output as JSON Lines
+        // Each object on its own line for LazyGit menuFromCommand compatibility
         if (isJsonMode) {
             const jsonMessages = await handleJsonOutput(aiRequestManager, availableAIs);
-            process.stdout.write(JSON.stringify(jsonMessages, null, 2) + '\n');
+            jsonMessages.forEach(msg => {
+                process.stdout.write(JSON.stringify(msg) + '\n');
+            });
             process.exit(0);
         }
 
