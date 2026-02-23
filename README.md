@@ -376,6 +376,11 @@ aicommit2 --all # or -a
   - When enabled, shows detailed log messages including readline errors and other diagnostic information
   - Useful for troubleshooting issues or understanding the tool's internal operations
   - Can also be set via config: `aicommit2 config set logLevel=verbose`
+- `--output` or `-o`: Output format for non-interactive mode (default: **none**)
+  - Use `--output json` for JSON Lines format (one JSON object per line)
+  - Outputs `{"subject":"...","body":"..."}` for each generated message
+  - Designed for integration with tools like [LazyGit](#lazygit-integration)
+  - Skips TUI and exits after outputting messages
 
 Examples:
 
@@ -395,6 +400,73 @@ aicommit2 -d -c
 # Enable verbose logging for debugging
 aicommit2 --verbose # or -v
 ```
+
+### LazyGit Integration
+
+AICommit2 supports non-interactive JSON output mode for seamless integration with [LazyGit](https://github.com/jesseduffield/lazygit).
+
+#### Setup
+
+Use the `--output json` flag to get AI-generated commit messages in JSON Lines format:
+
+```sh
+aicommit2 --output json
+# Output: {"subject":"feat: add user authentication","body":""}
+# Output: {"subject":"fix: resolve login bug","body":"Fixes issue with session handling"}
+```
+
+Each line is a separate JSON object with `subject` and `body` fields, compatible with LazyGit's `menuFromCommand` prompt type.
+
+#### LazyGit Configuration
+
+Add the following to your LazyGit config file (`~/.config/lazygit/config.yml` or `~/Library/Application Support/lazygit/config.yml` on macOS):
+
+```yaml
+customCommands:
+  # AI commit with body (Shift+C in files panel)
+  - key: "C"
+    context: "files"
+    description: "AI commit with aicommit2"
+    prompts:
+      - type: "menuFromCommand"
+        title: "Select commit message"
+        key: "Commit"
+        command: "aicommit2 --output json --include-body"
+        filter: '"subject":"(?P<subject>[^"]+)","body":"(?P<body>[^"]*)"'
+        valueFormat: '{{ .subject }}<SEP>{{ .body }}'
+        labelFormat: '{{ .subject }}'
+    command: bash -c 'MSG="{{ .Form.Commit }}" && SUBJ="${MSG%%<SEP>*}" && BODY="${MSG#*<SEP>}" && git commit -m "$SUBJ" ${BODY:+-m "$BODY"}'
+
+  # AI commit with editable subject and body (Shift+A in files panel)
+  - key: "A"
+    context: "files"
+    description: "AI commit (editable)"
+    prompts:
+      - type: "menuFromCommand"
+        title: "Select commit message"
+        key: "Subject"
+        command: "aicommit2 --output json"
+        filter: '"subject":"(?P<subject>[^"]+)"'
+        valueFormat: '{{ .subject }}'
+        labelFormat: '{{ .subject }}'
+      - type: "input"
+        title: "Edit subject"
+        key: "FinalSubject"
+        initialValue: '{{ .Form.Subject }}'
+      - type: "input"
+        title: "Add body (optional)"
+        key: "Body"
+        initialValue: ''
+    command: bash -c 'git commit -m "{{ .Form.FinalSubject }}" {{ if .Form.Body }}-m "{{ .Form.Body }}"{{ end }}'
+```
+
+#### Usage in LazyGit
+
+1. Stage your changes in LazyGit
+2. Press `Shift+C` to generate AI commit messages and select one
+3. Or press `Shift+A` to generate messages with the ability to edit before committing
+
+> **Note:** The editable mode (`Shift+A`) currently supports editing the subject only. The AI-generated body is not carried over to the edit prompt.
 
 ### Git hook
 
