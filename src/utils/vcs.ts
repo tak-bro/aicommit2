@@ -2,7 +2,9 @@ import { getConfig } from './config.js';
 import { KnownError } from './error.js';
 import { GitAdapter, JujutsuAdapter, YadmAdapter } from './vcs-adapters/index.js';
 
-import type { BaseVCSAdapter, VCSDiff } from './vcs-adapters/index.js';
+import type { BaseVCSAdapter, CommitOptions, VCSDiff } from './vcs-adapters/index.js';
+
+export type { CommitOptions };
 
 // Re-export types for backward compatibility
 export interface GitDiff extends VCSDiff {}
@@ -239,9 +241,9 @@ export const getVCSName = async (): Promise<string> => {
     return adapter.name;
 };
 
-export const commitChanges = async (message: string, args?: string[]): Promise<void> => {
+export const commitChanges = async (message: string, args?: string[], options?: CommitOptions): Promise<void> => {
     const adapter = await getVCSAdapter();
-    await adapter.commit(message, args || []);
+    await adapter.commit(message, args || [], options);
 };
 
 export const getBranchName = async (): Promise<string> => {

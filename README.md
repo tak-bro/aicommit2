@@ -255,9 +255,23 @@ aicommit2 config set forceGit=true
 **Features:**
 
 - Automatic detection of `.jj` repositories (prioritized over Git since jj v0.34.0+ uses colocated repos)
-- Uses `jj describe` and `jj new` for commits
+- Uses `jj describe` to set commit message (does NOT run `jj new` by default)
 - Supports Jujutsu's fileset syntax for file exclusions
 - Works seamlessly with colocated Git repositories
+
+**jj new Behavior:**
+
+By default, AICommit2 only runs `jj describe` to set the commit message, without creating a new changeset. This matches the workflow of many Jujutsu users who prefer to manually control when to run `jj new`.
+
+To automatically run `jj new` after describing (mimics `jj commit` behavior):
+
+```bash
+# Via CLI flag
+aicommit2 --jj-auto-new
+
+# Or via config (persistent)
+aicommit2 config set jjAutoNew=true
+```
 
 **Installation:**
 

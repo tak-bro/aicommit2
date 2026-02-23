@@ -1,7 +1,7 @@
 import { execa } from 'execa';
 
 import { KnownError } from '../error.js';
-import { BaseVCSAdapter, VCSDiff } from './base.adapter.js';
+import { BaseVCSAdapter, CommitOptions, VCSDiff } from './base.adapter.js';
 
 export class YadmAdapter extends BaseVCSAdapter {
     name = 'yadm' as const;
@@ -211,7 +211,8 @@ export class YadmAdapter extends BaseVCSAdapter {
         };
     }
 
-    async commit(message: string, args: string[] = []): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    async commit(message: string, args: string[] = [], _options: CommitOptions = {}): Promise<void> {
         try {
             await execa('yadm', ['commit', '-m', message, ...args], {
                 stdio: 'inherit',

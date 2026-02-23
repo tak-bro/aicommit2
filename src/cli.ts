@@ -126,6 +126,11 @@ cli(
                 description: 'Force use Jujutsu (overrides auto-detection)',
                 default: false,
             },
+            'jj-auto-new': {
+                type: Boolean,
+                description: 'Run jj new after jj describe (default: false, only describe)',
+                default: false,
+            },
             'dry-run': {
                 type: Boolean,
                 description: 'Generate commit message without committing (output only)',
@@ -189,6 +194,7 @@ cli(
             argv.flags['disable-lowercase'],
             argv.flags.verbose,
             argv.flags['dry-run'],
+            argv.flags['jj-auto-new'],
             rawArgv
         );
     },

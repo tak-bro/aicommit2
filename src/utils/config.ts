@@ -300,6 +300,7 @@ const generalConfigParsers = {
     watchMode: createBoolParser('watchMode'),
     forceGit: createBoolParser('forceGit'),
     disableLowerCase: createBoolParser('disableLowerCase'),
+    jjAutoNew: createBoolParser('jjAutoNew'),
 } as const;
 
 const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>> = {
