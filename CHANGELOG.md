@@ -1,3 +1,10 @@
+## [2.4.26](https://github.com/tak-bro/aicommit2/compare/v2.4.25...v2.4.26) (2026-02-23)
+
+
+### Features
+
+* **jujutsu:** add support for jjAutoNew option ([1838066](https://github.com/tak-bro/aicommit2/commit/183806631b731fd866ee03d958691d4393981ad5))
+
 ## [2.4.25](https://github.com/tak-bro/aicommit2/compare/v2.4.24...v2.4.25) (2026-02-23)
 
 ## [2.4.24](https://github.com/tak-bro/aicommit2/compare/v2.4.23...v2.4.24) (2026-02-01)
