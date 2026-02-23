@@ -10,7 +10,6 @@ import { RawConfig, getConfig } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
 import { getBranchName, getCommentChar, getStagedDiff } from '../utils/vcs.js';
 
-
 const allArgs = process.argv.slice(2);
 const positionalArgs: string[] = [];
 let skipNext = false;

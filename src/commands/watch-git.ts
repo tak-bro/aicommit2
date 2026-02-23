@@ -7,10 +7,11 @@ import chokidar from 'chokidar';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Subject, Subscription } from 'rxjs';
 
+import { getAvailableAIs } from './get-available-ais.js';
 import { AIRequestManager } from '../managers/ai-request.manager.js';
 import { ConsoleManager } from '../managers/console.manager.js';
 import { DEFAULT_INQUIRER_OPTIONS, ReactivePromptManager, codeReviewLoader, emptyCodeReview } from '../managers/reactive-prompt.manager.js';
-import { BUILTIN_SERVICES, ModelName, RawConfig, ValidConfig, getConfig } from '../utils/config.js';
+import { ModelName, RawConfig, ValidConfig, getConfig } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
 import { validateSystemPrompt } from '../utils/prompt.js';
 import { SubscriptionManager } from '../utils/subscription-manager.js';
@@ -95,7 +96,7 @@ class WatchGitManager {
 
         const config = await getConfig(configOverrides, rawArgv);
         await validateSystemPrompt(config);
-        const availableAIs = this.getAvailableAIs(config);
+        const availableAIs = getAvailableAIs(config, 'watch');
         if (availableAIs.length === 0) {
             this.consoleManager.printError(`Please set at least one API key and watchMode via the config command:
   aicommit2 config set [MODEL].key="YOUR_API_KEY"
@@ -130,31 +131,6 @@ class WatchGitManager {
         return stdout;
     }
 
-    private getAvailableAIs(config: ValidConfig): ModelName[] {
-        return Object.entries(config)
-            .filter(([key, value]) => {
-                return BUILTIN_SERVICES.includes(key as ModelName) || value.compatible === true;
-            })
-            .map(([key, value]) => [key, value] as [ModelName, RawConfig])
-            .filter(([_, value]) => !value.disabled)
-            .filter(([key, value]) => this.isAIAvailable(key as ModelName, value, config))
-            .map(([key]) => key as ModelName);
-    }
-
-    private isAIAvailable(key: ModelName, value: RawConfig, config: ValidConfig): boolean {
-        const watchMode = config.watchMode || value.watchMode;
-        if (key === 'OLLAMA') {
-            return !!value && !!value.model && (value.model as string[]).length > 0 && watchMode;
-        }
-        if (key === 'HUGGINGFACE') {
-            return !!value && !!value.cookie && watchMode;
-        }
-        if (value.compatible) {
-            return !!value.url && !!value.key && watchMode;
-        }
-        return !!value.key && value.key.length > 0 && watchMode;
-    }
-
     private clearTerminal(): void {
         process.stdout.write('\x1Bc');
     }
@@ -170,7 +146,7 @@ class WatchGitManager {
             this.consoleManager.stopLoader();
             this.consoleManager.printStagedFiles(diffInfo);
 
-            const availableAIs = this.getAvailableAIs(config);
+            const availableAIs = getAvailableAIs(config, 'watch');
             if (availableAIs.length === 0) {
                 this.consoleManager.printError(`Please set at least one API key and watchMode via the config command:
   aicommit2 config set [MODEL].key="YOUR_API_KEY"

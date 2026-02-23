@@ -10,7 +10,6 @@ import { RawConfig, getConfig } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
 import { getBranchName, getStagedDiff } from '../utils/vcs.js';
 
-
 const args = process.argv.slice(2).filter(arg => !arg.startsWith('--pre-commit'));
 const [messageFilePath, commitSource] = args;
 
