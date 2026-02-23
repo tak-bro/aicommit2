@@ -4,7 +4,7 @@ import path from 'path';
 import { execa } from 'execa';
 
 import { KnownError } from '../error.js';
-import { BaseVCSAdapter, VCSDiff } from './base.adapter.js';
+import { BaseVCSAdapter, CommitOptions, VCSDiff } from './base.adapter.js';
 
 export class JujutsuAdapter extends BaseVCSAdapter {
     name = 'jujutsu' as const;
@@ -261,7 +261,7 @@ export class JujutsuAdapter extends BaseVCSAdapter {
         }
     }
 
-    async commit(message: string, args: string[] = []): Promise<void> {
+    async commit(message: string, args: string[] = [], options: CommitOptions = {}): Promise<void> {
         // Jujutsu uses 'describe' to set commit message, not 'commit'
         // The working copy is already a commit, we just need to describe it
         try {
@@ -269,11 +269,13 @@ export class JujutsuAdapter extends BaseVCSAdapter {
                 stdio: 'inherit',
             });
 
-            // After describing the current commit, create a new working copy
-            // This is equivalent to git's behavior where working directory becomes clean after commit
-            await execa('jj', ['new'], {
-                stdio: 'inherit',
-            });
+            // Only run `jj new` if autoNew option is explicitly set to true
+            // Many jj users prefer to manually control when to create a new changeset
+            if (options.autoNew) {
+                await execa('jj', ['new'], {
+                    stdio: 'inherit',
+                });
+            }
         } catch (error) {
             const execError = error as any;
 
@@ -326,7 +328,9 @@ export class JujutsuAdapter extends BaseVCSAdapter {
             if (bookmarks.trim()) {
                 const firstBookmark = bookmarks.split('\n')[0];
                 const bookmarkName = firstBookmark.split(':')[0].trim();
-                if (bookmarkName) {return bookmarkName;}
+                if (bookmarkName) {
+                    return bookmarkName;
+                }
             }
             // Fall back to change-id
             const { stdout: changeId } = await execa('jj', ['log', '-r', '@', '--no-graph', '-T', 'change_id.short()']);

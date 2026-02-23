@@ -20,7 +20,7 @@ import {
 import { ModelName, RawConfig, getConfig } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
 import { validateSystemPrompt } from '../utils/prompt.js';
-import { assertGitRepo, getBranchName, getStagedDiff, getVCSName, commitChanges as vcsCommitChanges } from '../utils/vcs.js';
+import { CommitOptions, assertGitRepo, getBranchName, getStagedDiff, getVCSName, commitChanges as vcsCommitChanges } from '../utils/vcs.js';
 
 import type { Subscription } from 'rxjs';
 
@@ -41,6 +41,7 @@ export default async (
     disableLowerCase: boolean,
     verbose: boolean,
     dryRun: boolean,
+    jjAutoNew: boolean,
     rawArgv: string[]
 ) =>
     (async () => {
@@ -94,6 +95,11 @@ export default async (
         }
 
         await validateSystemPrompt(config);
+
+        // Build commit options - CLI flag takes precedence over config
+        const commitOptions: CommitOptions = {
+            autoNew: jjAutoNew || config.jjAutoNew,
+        };
 
         const detectingFilesSpinner = consoleManager.displaySpinner('Detecting staged files');
         const staged = await getStagedDiff(excludeFiles, config.exclude);
@@ -163,7 +169,7 @@ export default async (
         }
 
         if (confirm || (autoSelect && availableAIs.length === 1)) {
-            await commitChanges(selectedCommitMessage, rawArgv);
+            await commitChanges(selectedCommitMessage, rawArgv, commitOptions);
             process.exit();
         }
 
@@ -177,7 +183,7 @@ export default async (
         ]);
 
         if (confirmationPrompt) {
-            await commitChanges(selectedCommitMessage, rawArgv);
+            await commitChanges(selectedCommitMessage, rawArgv, commitOptions);
         } else {
             consoleManager.printCancelledCommit();
         }
@@ -366,7 +372,7 @@ async function openEditor(message: string): Promise<string> {
     }
 }
 
-async function commitChanges(message: string, rawArgv: string[]) {
-    await vcsCommitChanges(message, rawArgv);
+const commitChanges = async (message: string, rawArgv: string[], options: CommitOptions) => {
+    await vcsCommitChanges(message, rawArgv, options);
     consoleManager.printCommitted();
-}
+};

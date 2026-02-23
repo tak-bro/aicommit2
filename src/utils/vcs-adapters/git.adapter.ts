@@ -1,7 +1,7 @@
 import { execa } from 'execa';
 
 import { KnownError } from '../error.js';
-import { BaseVCSAdapter, VCSDiff } from './base.adapter.js';
+import { BaseVCSAdapter, CommitOptions, VCSDiff } from './base.adapter.js';
 
 export class GitAdapter extends BaseVCSAdapter {
     name = 'git' as const;
@@ -176,7 +176,8 @@ export class GitAdapter extends BaseVCSAdapter {
         };
     }
 
-    async commit(message: string, args: string[] = []): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    async commit(message: string, args: string[] = [], _options: CommitOptions = {}): Promise<void> {
         try {
             await execa('git', ['commit', '-m', message, ...args], {
                 stdio: 'inherit',

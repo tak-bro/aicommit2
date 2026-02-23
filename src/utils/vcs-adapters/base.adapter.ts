@@ -3,6 +3,10 @@ export interface VCSDiff {
     diff: string;
 }
 
+export interface CommitOptions {
+    autoNew?: boolean; // Jujutsu-specific: run `jj new` after `jj describe` (default: false)
+}
+
 export abstract class BaseVCSAdapter {
     abstract name: 'git' | 'jujutsu' | 'yadm';
 
@@ -24,7 +28,7 @@ export abstract class BaseVCSAdapter {
     /**
      * Commit changes with message
      */
-    abstract commit(message: string, args?: string[]): Promise<void>;
+    abstract commit(message: string, args?: string[], options?: CommitOptions): Promise<void>;
 
     /**
      * Get the comment character used for commit messages

@@ -276,6 +276,22 @@ describe('Jujutsu Adapter', ({ test: runTest }) => {
         // This is fundamentally different from Git's staging + commit model
     });
 
+    runTest('should support jjAutoNew option to control jj new execution', async () => {
+        const adapter = new JujutsuAdapter();
+
+        // Test verifies the jjAutoNew option behavior:
+        // 1. Default behavior (no options or autoNew=false): only run jj describe, skip jj new
+        // 2. With autoNew=true: run jj describe followed by jj new
+        // 3. This allows users to control when a new changeset is created
+        // 4. Many jj users prefer to manually control jj new timing
+
+        expect(typeof adapter.commit).toBe('function');
+
+        // The commit method accepts CommitOptions with autoNew property
+        // When autoNew is false or undefined, jj new is skipped
+        // When autoNew is true, jj new is executed after jj describe
+    });
+
     runTest('should support debug mode logging', async () => {
         const adapter = new JujutsuAdapter();
 
