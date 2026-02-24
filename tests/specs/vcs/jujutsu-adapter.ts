@@ -185,7 +185,7 @@ describe('Jujutsu Adapter', ({ test: runTest }) => {
         // - macOS: brew install jj
         // - Linux: cargo install jj-cli
         // - Windows: cargo install jj-cli
-        // - Reference: https://github.com/martinvonz/jj#installation
+        // - Reference: https://github.com/jj-vcs/jj#installation
 
         try {
             await adapter.assertRepo();
