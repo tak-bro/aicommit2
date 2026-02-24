@@ -21,7 +21,7 @@ export class JujutsuAdapter extends BaseVCSAdapter {
             const execError = error as any;
             if (execError.code === 'ENOENT') {
                 throw new KnownError(
-                    'Jujutsu (jj) command not found!\n\nPlease install Jujutsu:\n  - macOS: brew install jj\n  - Linux: cargo install jj-cli\n  - Windows: cargo install jj-cli\n  - See: https://github.com/martinvonz/jj#installation'
+                    'Jujutsu (jj) command not found!\n\nPlease install Jujutsu:\n  - macOS: brew install jj\n  - Linux: cargo install jj-cli\n  - Windows: cargo install jj-cli\n  - See: https://github.com/jj-vcs/jj#installation'
                 );
             }
             throw new KnownError(`Failed to execute jj command: ${execError.message}`);

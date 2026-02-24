@@ -21,6 +21,29 @@
 
 ______________________________________________________________________
 
+## Table of Contents
+
+- [Quick start](#quick-start)
+- [Introduction](#introduction)
+- [Key features](#key-features)
+- [Supported providers](#supported-providers)
+- [Setup](#setup)
+- [How it works](#how-it-works)
+- [Version Control Systems](#version-control-systems)
+- [Usage](#usage)
+- [Integrations](#integrations)
+  - [LazyGit](#lazygit)
+  - [Git Hooks](#git-hooks)
+- [Configuration](#configuration)
+- [General Settings](#general-settings)
+- [Logging](#logging)
+- [Custom Prompt Template](#custom-prompt-template)
+- [Watch Commit Mode](#watch-commit-mode)
+- [Upgrading](#upgrading)
+- [Contributing](#contributing)
+
+______________________________________________________________________
+
 ## Quick start
 
 ```bash
@@ -44,7 +67,7 @@ aicommit2
 
 ## Introduction
 
-AICommit2 automatically generates commit messages using AI. It supports [Git](https://git-scm.com/), [YADM](https://yadm.io/) (Yet Another Dotfiles Manager), and [Jujutsu](https://github.com/jj-vcs/jj)(jj) repositories with automatic detection. [AICommits](https://github.com/Nutlope/aicommits) inspired the core functionalities and architecture of this project.
+_aicommit2_ automatically generates commit messages using AI. It supports [Git](https://git-scm.com/), [YADM](https://yadm.io/) (Yet Another Dotfiles Manager), and [Jujutsu](https://github.com/jj-vcs/jj) (jj) repositories with automatic detection. [AICommits](https://github.com/Nutlope/aicommits) inspired the core functionalities and architecture of this project.
 
 ## Key features
 
@@ -52,7 +75,7 @@ AICommit2 automatically generates commit messages using AI. It supports [Git](ht
 - **[Multi-AI Support](#cloud-ai-services)**: Integrates with OpenAI, Anthropic Claude, Google Gemini, Mistral AI, Cohere, Groq, Ollama and more
 - **[OpenAI API Compatibility](docs/providers/compatible.md)**: Support for any service that implements the OpenAI API specification
 - **[Reactive CLI](#usage)**: Enables simultaneous requests to multiple AIs and selection of the best commit message
-- **[Git Hook Integration](#git-hook)**: Can be used as a prepare-commit-msg hook
+- **[Git Hook Integration](#git-hooks)**: Can be used as a prepare-commit-msg hook
 - **[Custom Prompt](#custom-prompt-template)**: Supports user-defined system prompt templates
 
 ## Supported providers
@@ -80,12 +103,12 @@ AICommit2 automatically generates commit messages using AI. It supports [Git](ht
 1. Install _aicommit2_:
 
 **Via Homebrew (recommended for macOS/Linux):**
-```sh
+```bash
 brew install aicommit2
 ```
 
 **Via npm:**
-```sh
+```bash
 npm install -g aicommit2
 ```
 
@@ -93,7 +116,7 @@ npm install -g aicommit2
 
 2. Set up API keys (**at least ONE key must be set**):
 
-```sh
+```bash
 aicommit2 config set OPENAI.key=<your key>
 aicommit2 config set ANTHROPIC.key=<your key>
 # ... (similar commands for other providers)
@@ -101,7 +124,7 @@ aicommit2 config set ANTHROPIC.key=<your key>
 
 3. Run _aicommit2_ in your Git or Jujutsu repository:
 
-```shell
+```bash
 # For Git repositories
 git add <files...>
 aicommit2
@@ -118,7 +141,7 @@ aicommit2
 
 If you use the Nix package manager, aicommit2 can be installed directly using the provided flake:
 
-```sh
+```bash
 # Install temporarily in your current shell
 nix run github:tak-bro/aicommit2
 
@@ -157,7 +180,7 @@ Add aicommit2 to your flake inputs:
 
 To enter a development shell with all dependencies:
 
-```sh
+```bash
 nix develop github:tak-bro/aicommit2
 ```
 
@@ -165,7 +188,7 @@ After setting up with Nix, you'll still need to configure API keys as described 
 
 #### From Source
 
-```sh
+```bash
 git clone https://github.com/tak-bro/aicommit2.git
 cd aicommit2
 npm run build
@@ -205,7 +228,7 @@ aicommit2
 
 ### YADM Support
 
-AICommit2 supports [YADM (Yet Another Dotfiles Manager)](https://yadm.io/) for managing dotfiles:
+_aicommit2_ supports [YADM (Yet Another Dotfiles Manager)](https://yadm.io/) for managing dotfiles:
 
 ```bash
 # Standard YADM workflow
@@ -240,7 +263,7 @@ yadm clone <url>
 
 ### Jujutsu Support
 
-AICommit2 also supports [Jujutsu (jj)](https://github.com/martinvonz/jj) repositories:
+_aicommit2_ also supports [Jujutsu (jj)](https://github.com/jj-vcs/jj) repositories:
 
 ```bash
 # Automatic jj detection (no staging needed)
@@ -261,7 +284,7 @@ aicommit2 config set forceGit=true
 
 **jj new Behavior:**
 
-By default, AICommit2 only runs `jj describe` to set the commit message, without creating a new changeset. This matches the workflow of many Jujutsu users who prefer to manually control when to run `jj new`.
+By default, _aicommit2_ only runs `jj describe` to set the commit message, without creating a new changeset. This matches the workflow of many Jujutsu users who prefer to manually control when to run `jj new`.
 
 To automatically run `jj new` after describing (mimics `jj commit` behavior):
 
@@ -324,16 +347,16 @@ aicommit2 --jj
 
 You can call `aicommit2` directly to generate a commit message for your staged changes:
 
-```sh
+```bash
 git add <files...>
 aicommit2
 ```
 
 `aicommit2` passes down unknown flags to `git commit`, so you can pass in [`commit` flags](https://git-scm.com/docs/git-commit).
 
-For example, you can stage all changes in tracked files with as you commit:
+For example, you can stage all changes in tracked files as you commit:
 
-```sh
+```bash
 aicommit2 --all # or -a
 ```
 
@@ -368,7 +391,7 @@ aicommit2 --all # or -a
   - Useful when working with custom commit conventions that require specific casing
 - `--hook-mode`: Run as a Git hook, typically used with [`prepare-commit-msg` hook](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks#_committing_workflow_hooks) hook (default: **false**)
   - This mode is automatically enabled when running through the Git hook system
-  - See [Git hook](#git-hook) section for more details
+  - See [Git Hooks](#git-hooks) section for more details
 - `--pre-commit`: Run in [pre-commit](https://pre-commit.com/) framework mode (default: **false**)
   - This option is specifically for use with the pre-commit framework
   - See [Integration with pre-commit framework](#integration-with-pre-commit-framework) section for setup instructions
@@ -379,12 +402,12 @@ aicommit2 --all # or -a
 - `--output` or `-o`: Output format for non-interactive mode (default: **none**)
   - Use `--output json` for JSON Lines format (one JSON object per line)
   - Outputs `{"subject":"...","body":"..."}` for each generated message
-  - Designed for integration with tools like [LazyGit](#lazygit-integration)
+  - Designed for integration with tools like [LazyGit](#lazygit)
   - Skips TUI and exits after outputting messages
 
 Examples:
 
-```sh
+```bash
 # Generate multiple commit messages with clipboard and file exclusions
 aicommit2 --locale "jp" --all --type "conventional" --generate 3 --clipboard --exclude "*.json" --exclude "*.ts"
 
@@ -401,15 +424,17 @@ aicommit2 -d -c
 aicommit2 --verbose # or -v
 ```
 
-### LazyGit Integration
+## Integrations
 
-AICommit2 supports non-interactive JSON output mode for seamless integration with [LazyGit](https://github.com/jesseduffield/lazygit).
+### LazyGit
+
+_aicommit2_ supports non-interactive JSON output mode for seamless integration with [LazyGit](https://github.com/jesseduffield/lazygit).
 
 #### Setup
 
 Use the `--output json` flag to get AI-generated commit messages in JSON Lines format:
 
-```sh
+```bash
 aicommit2 --output json
 # Output: {"subject":"feat: add user authentication","body":""}
 # Output: {"subject":"fix: resolve login bug","body":"Fixes issue with session handling"}
@@ -468,23 +493,23 @@ customCommands:
 
 > **Note:** The editable mode (`Shift+A`) currently supports editing the subject only. The AI-generated body is not carried over to the edit prompt.
 
-### Git hook
+### Git Hooks
 
-You can also integrate _aicommit2_ with Git via the [`prepare-commit-msg`](https://git-scm.com/docs/githooks#_prepare_commit_msg) hook. This lets you use Git like you normally would, and edit the commit message before committing.
+You can integrate _aicommit2_ with Git via the [`prepare-commit-msg`](https://git-scm.com/docs/githooks#_prepare_commit_msg) hook. This lets you use Git like you normally would, and edit the commit message before committing.
 
 #### Automatic Installation
 
 In the Git repository you want to install the hook in:
 
-```sh
+```bash
 aicommit2 hook install
 ```
 
 #### Manual Installation
 
-if you prefer to set up the hook manually, create or edit the `.git/hooks/prepare-commit-msg` file:
+If you prefer to set up the hook manually, create or edit the `.git/hooks/prepare-commit-msg` file:
 
-```sh
+```bash
 #!/bin/sh
 # your-other-hook "$@"
 aicommit2 --hook-mode "$@"
@@ -492,13 +517,13 @@ aicommit2 --hook-mode "$@"
 
 Make the hook executable:
 
-```sh
+```bash
 chmod +x .git/hooks/prepare-commit-msg
 ```
 
 ##### Use with a custom `core.hooksPath`
 
-If you are using [`husky`](https://typicode.github.io/husky/)** or have configured a custom [`core.hooksPath`](https://git-scm.com/docs/git-config#Documentation/git-config.txt-corehooksPath), update the corresponding hooks file instead. For Husky users, this file is `.husky/prepare-commit-message`.
+If you are using [`husky`](https://typicode.github.io/husky/) or have configured a custom [`core.hooksPath`](https://git-scm.com/docs/git-config#Documentation/git-config.txt-corehooksPath), update the corresponding hooks file instead. For Husky users, this file is `.husky/prepare-commit-message`.
 
 #### Integration with pre-commit Framework
 
@@ -522,19 +547,19 @@ Make sure you have:
 2. Installed aicommit2 globally: `npm install -g aicommit2`
 3. Run `pre-commit install --hook-type prepare-commit-msg` to set up the hook
 
-> **Note** : The `--pre-commit` flag is specifically designed for use with the pre-commit framework and ensures proper integration with other pre-commit hooks.
+> **Note:** The `--pre-commit` flag is specifically designed for use with the pre-commit framework and ensures proper integration with other pre-commit hooks.
 
 #### Uninstall
 
 In the Git repository you want to uninstall the hook from:
 
-```sh
+```bash
 aicommit2 hook uninstall
 ```
 
 Or manually delete the `.git/hooks/prepare-commit-msg` file.
 
-### Configuration
+## Configuration
 
 aicommit2 supports configuration via command-line arguments, environment variables, and a configuration file. Settings are resolved in the following order of precedence:
 
@@ -543,7 +568,7 @@ aicommit2 supports configuration via command-line arguments, environment variabl
 3. Configuration file
 4. Default values
 
-#### Configuration File Location
+### Configuration File Location
 
 aicommit2 follows the [XDG Base Directory Specification](https://specifications.freedesktop.org/basedir-spec/latest/index.html) for its configuration file. The configuration file is named `config.ini` and is in INI format. It is resolved in the following order of precedence:
 
@@ -555,11 +580,11 @@ The first existing file found in this order will be used. If no configuration fi
 
 You can find the path of the currently loaded configuration file using the `config path` command:
 
-```sh
+```bash
 aicommit2 config path
 ```
 
-#### Environment Variable Expansion in Config File
+### Environment Variable Expansion in Config File
 
 You can use environment variables in your configuration file values. Both `$VAR` and `${VAR}` syntax are supported.
 
@@ -571,7 +596,7 @@ key=$OPENAI_API_KEY
 url=${CUSTOM_API_URL}/v1
 ```
 
-#### Reading and Setting Configuration
+### Reading and Setting Configuration
 
 - READ: `aicommit2 config get [<key> [<key> ...]]`
 - SET: `aicommit2 config set <key>=<value>`
@@ -579,7 +604,7 @@ url=${CUSTOM_API_URL}/v1
 
 Example:
 
-```sh
+```bash
 # Get all configurations
 aicommit2 config get
 
@@ -596,7 +621,7 @@ aicommit2 config del GEMINI
 aicommit2 config del timeout
 ```
 
-#### Environment Variables
+### Environment Variables
 
 You can configure API keys using environment variables. This is particularly useful for CI/CD environments or when you don't want to store keys in the configuration file.
 
@@ -621,20 +646,20 @@ DEEPSEEK_API_KEY="your-deepseek-key"
 
 Usage Example:
 
-```sh
+```bash
 OPENAI_API_KEY="your-openai-key" ANTHROPIC_API_KEY="your-anthropic-key" aicommit2
 ```
 
 > **Note**: Environment variables take precedence over configuration file settings.
 
-#### How to Configure in detail
+### How to Configure in detail
 
 _aicommit2_ offers flexible configuration options for all AI services, including support for specifying multiple models. You can configure settings via command-line arguments, environment variables, or a configuration file.
 
 1. **Command-line arguments**: Use the format `--[Model].[Key]=value`.
    To specify multiple models, use the `--[Model].model=model1,model2` format.
 
-   ```sh
+   ```bash
    aicommit2 --OPENAI.locale="jp" --GEMINI.temperature="0.5" --OPENAI.model="gpt-4o-mini,gpt-3.5-turbo"
    ```
 
@@ -669,305 +694,9 @@ _aicommit2_ offers flexible configuration options for all AI services, including
 
 > The priority of settings is: **Command-line Arguments > Environment Variables > Model-Specific Settings > General Settings > Default Values**.
 
-## General Settings
+### Configuration Examples
 
-The following settings can be applied to most models, but support may vary.
-Please check the documentation for each specific model to confirm which settings are supported.
-
-| Setting                | Description                                                         | Default      |
-| ---------------------- | ------------------------------------------------------------------- | ------------ |
-| `envKey`               | Custom environment variable name for the API key                    | -            |
-| `systemPrompt`         | System Prompt text                                                  | -            |
-| `systemPromptPath`     | Path to system prompt file                                          | -            |
-| `exclude`              | Files to exclude from AI analysis                                   | -            |
-| `type`                 | Type of commit message to generate                                  | conventional |
-| `locale`               | Locale for the generated commit messages                            | en           |
-| `generate`             | Number of commit messages to generate                               | 1            |
-| `logging`              | Enable logging                                                      | true         |
-| `includeBody`          | Whether the commit message includes body                            | false        |
-| `maxLength`            | Maximum character length of the Subject of generated commit message | 50           |
-| `disableLowerCase`     | Disable automatic lowercase conversion of commit messages           | false        |
-| `timeout`              | Request timeout (milliseconds)                                      | 10000        |
-| `temperature`          | Model's creativity (0.0 - 2.0)                                      | 0.7          |
-| `maxTokens`            | Maximum number of tokens to generate                                | 1024         |
-| `topP`                 | Nucleus sampling                                                    | 0.9          |
-| `codeReview`           | Whether to include an automated code review in the process          | false        |
-| `codeReviewPromptPath` | Path to code review prompt file                                     | -            |
-| `disabled`             | Whether a specific model is enabled or disabled                     | false        |
-
-> 👉 **Tip:** To set the General Settings for each model, use the following command.
->
-> ```shell
-> aicommit2 config set OPENAI.locale="jp"
-> aicommit2 config set CODESTRAL.type="gitmoji"
-> aicommit2 config set GEMINI.includeBody=true
-> ```
-
-##### envKey
-
-- Allows users to specify a custom environment variable name for their API key.
-- If `envKey` is not explicitly set, the system defaults to using an environment variable named after the service, followed by `_API_KEY` (e.g., `OPENAI_API_KEY` for OpenAI, `GEMINI_API_KEY` for Gemini).
-- This setting provides flexibility for managing API keys, especially when multiple services are used or when specific naming conventions are required.
-
-```sh
-aicommit2 config set OPENAI.envKey="MY_CUSTOM_OPENAI_KEY"
-```
-
-> `envKey` is used to retrieve the API key from your system's environment variables. Ensure the specified environment variable is set with your API key.
-
-##### systemPrompt
-
-- Allow users to specify a custom system prompt
-
-```sh
-aicommit2 config set systemPrompt="Generate git commit message."
-```
-
-> `systemPrompt` takes precedence over `systemPromptPath` and does not apply at the same time.
-
-##### systemPromptPath
-
-- Allow users to specify a custom file path for their own system prompt template
-- Please see [Custom Prompt Template](#custom-prompt-template)
-- **Note**: Paths can be absolute or relative to the configuration file location.
-
-```sh
-aicommit2 config set systemPromptPath="/path/to/user/prompt.txt"
-```
-
-##### exclude
-
-- Files to exclude from AI analysis
-- It is applied with the `--exclude` option of the CLI option. All files excluded through `--exclude` in CLI and `exclude` general setting.
-
-```sh
-aicommit2 config set exclude="*.ts"
-aicommit2 config set exclude="*.ts,*.json"
-```
-
-> NOTE: `exclude` option does not support per model. It is **only** supported by General Settings.
-
-##### forceGit
-
-Default: `false`
-
-Force Git detection even in Jujutsu repositories (useful when you have both `.jj` and `.git` directories):
-
-```sh
-aicommit2 config set forceGit=true
-```
-
-This is equivalent to using the `FORCE_GIT=true` environment variable, but persistent across sessions.
-
-##### type
-
-Default: `conventional`
-
-Supported: `conventional`, `gitmoji`
-
-The type of commit message to generate:
-
-**Conventional Commits**: Follow the [Conventional Commits](https://conventionalcommits.org/) specification:
-
-```sh
-aicommit2 config set type="conventional"
-```
-
-**Gitmoji**: Use [Gitmoji](https://gitmoji.dev/) emojis in commit messages:
-
-```sh
-aicommit2 config set type="gitmoji"
-```
-
-##### locale
-
-Default: `en`
-
-The locale to use for the generated commit messages. Consult the list of codes in: https://wikipedia.org/wiki/List_of_ISO_639_language_codes.
-
-```sh
-aicommit2 config set locale="jp"
-```
-
-##### generate
-
-Default: `1`
-
-The number of commit messages to generate to pick from.
-
-Note, this will use more tokens as it generates more results.
-
-```sh
-aicommit2 config set generate=2
-```
-
-##### logging
-
-Default: `true`
-
-This boolean option controls whether the application generates log files. When enabled, both the general application logs and the AI request/response logs are written to their respective paths. For a detailed explanation of all logging settings, including how to enable/disable logging and manage log files, please refer to the main [Logging](#main-logging-section) section.
-
-- **Log File Example**:
-  ![log-path](https://github.com/tak-bro/aicommit2/blob/main/img/log_path.png?raw=true)
-
-##### includeBody
-
-Default: `false`
-
-This option determines whether the commit message includes body. If you want to include body in message, you can set it to `true`.
-
-```sh
-aicommit2 config set includeBody="true"
-```
-
-![ignore_body_false](https://github.com/tak-bro/aicommit2/blob/main/img/demo_body_min.gif?raw=true)
-
-```sh
-aicommit2 config set includeBody="false"
-```
-
-![ignore_body_true](https://github.com/tak-bro/aicommit2/blob/main/img/ignore_body_true.png?raw=true)
-
-##### maxLength
-
-The maximum character length of the Subject of generated commit message
-
-Default: `50`
-
-```sh
-aicommit2 config set maxLength=100
-```
-
-##### disableLowerCase
-
-Disable automatic lowercase conversion of commit messages
-
-Default: `false`
-
-By default, AICommit2 converts the first character of commit types and descriptions to lowercase to follow conventional commit standards. Set this to `true` to preserve the original casing.
-
-```sh
-aicommit2 config set disableLowerCase=true
-```
-
-You can also use the CLI flag:
-
-```sh
-aicommit2 --disable-lowercase
-```
-
-##### timeout
-
-The timeout for network requests in milliseconds.
-
-Default: `10_000` (10 seconds)
-
-```sh
-aicommit2 config set timeout=20000 # 20s
-```
-
-> **Note**: Each AI provider has its own default timeout value, and if the configured timeout is less than the provider's default, the setting will be ignored.
-
-##### temperature
-
-The temperature (0.0-2.0) is used to control the randomness of the output
-
-Default: `0.7`
-
-```sh
-aicommit2 config set temperature=0.3
-```
-
-##### maxTokens
-
-The maximum number of tokens that the AI models can generate.
-
-Default: `1024`
-
-```sh
-aicommit2 config set maxTokens=3000
-```
-
-##### topP
-
-Default: `0.9`
-
-Nucleus sampling, where the model considers the results of the tokens with top_p probability mass.
-
-> **Note**: Claude 4.x models do not support using `temperature` and `top_p` simultaneously. For these models, `top_p` is automatically excluded.
-
-```sh
-aicommit2 config set topP=0.2
-```
-
-##### disabled
-
-Default: `false`
-
-This option determines whether a specific model is enabled or disabled. If you want to disable a particular model, you can set this option to `true`.
-
-To disable a model, use the following commands:
-
-```sh
-aicommit2 config set GEMINI.disabled="true"
-aicommit2 config set GROQ.disabled="true"
-```
-
-##### codeReview
-
-Default: `false`
-
-The `codeReview` parameter determines whether to include an automated code review in the process.
-
-```sh
-aicommit2 config set codeReview=true
-```
-
-> NOTE: When enabled, aicommit2 will perform a code review before generating commit messages.
-
-<img src="https://github.com/tak-bro/aicommit2/blob/main/img/code_review.gif?raw=true" alt="CODE_REVIEW" />
-
-⚠️ **CAUTION**
-
-- The `codeReview` feature is currently experimental.
-- This feature performs a code review before generating commit messages.
-- Using this feature will significantly increase the overall processing time.
-- It may significantly impact performance and cost.
-- **The code review process consumes a large number of tokens.**
-
-##### codeReviewPromptPath
-
-- Allow users to specify a custom file path for code review
-- **Note**: Paths can be absolute or relative to the configuration file location.
-
-```sh
-aicommit2 config set codeReviewPromptPath="/path/to/user/prompt.txt"
-```
-
-## Available General Settings by Model
-
-|                           | timeout | temperature | maxTokens | topP |
-| :-----------------------: | :-----: | :---------: | :-------: | :--: |
-|        **OpenAI**         |    ✓    |      ✓      |     ✓     |  ✓   |
-|   **Anthropic Claude**    |    ✓    |      ✓      |     ✓     |  ✓   |
-|        **Gemini**         |         |      ✓      |     ✓     |  ✓   |
-|      **Mistral AI**       |    ✓    |      ✓      |     ✓     |  ✓   |
-|       **Codestral**       |    ✓    |      ✓      |     ✓     |  ✓   |
-|        **Cohere**         |    ✓    |      ✓      |     ✓     |  ✓   |
-|         **Groq**          |    ✓    |      ✓      |     ✓     |  ✓   |
-|      **Perplexity**       |    ✓    |      ✓      |     ✓     |  ✓   |
-|       **DeepSeek**        |    ✓    |      ✓      |     ✓     |  ✓   |
-|     **Github Models**     |    ✓    |      ✓      |     ✓     |  ✓   |
-|        **Ollama**         |    ✓    |      ✓      |           |  ✓   |
-| **OpenAI API-Compatible** |    ✓    |      ✓      |     ✓     |  ✓   |
-
-> All AI support the following options in General Settings.
->
-> - systemPrompt, systemPromptPath, codeReview, codeReviewPromptPath, exclude, type, locale, generate, logging, includeBody, maxLength, disableLowerCase
-
-## Configuration Examples
-
-```
+```bash
 aicommit2 config set \
   generate=2 \
   topP=0.8 \
@@ -993,7 +722,50 @@ aicommit2 config set \
 > - [OpenAI API Compatibility](docs/providers/compatible.md)
 > - [Ollama](docs/providers/ollama.md)
 
-## <a id="main-logging-section"></a>Logging
+## General Settings
+
+For detailed information about all available settings, see the [General Settings documentation](docs/settings.md).
+
+| Setting                | Description                                                         | Default      |
+| ---------------------- | ------------------------------------------------------------------- | ------------ |
+| `locale`               | Locale for the generated commit messages                            | en           |
+| `generate`             | Number of commit messages to generate                               | 1            |
+| `type`                 | Type of commit message (`conventional` / `gitmoji`)                 | conventional |
+| `maxLength`            | Maximum character length of the commit subject                      | 50           |
+| `timeout`              | Request timeout (milliseconds)                                      | 10000        |
+| `temperature`          | Model's creativity (0.0 - 2.0)                                      | 0.7          |
+| `maxTokens`            | Maximum number of tokens to generate                                | 1024         |
+| `includeBody`          | Whether the commit message includes body                            | false        |
+| `codeReview`           | Enable automated code review                                        | false        |
+| `systemPromptPath`     | Path to custom system prompt file                                   | -            |
+
+```bash
+# Example: Set settings for a specific model
+aicommit2 config set OPENAI.locale="jp"
+aicommit2 config set GEMINI.temperature=0.5
+aicommit2 config set ANTHROPIC.includeBody=true
+```
+
+> 👉 For all settings and detailed explanations, see [docs/settings.md](docs/settings.md)
+
+### Available Settings by Model
+
+|                           | timeout | temperature | maxTokens | topP |
+| :-----------------------: | :-----: | :---------: | :-------: | :--: |
+|        **OpenAI**         |    ✓    |      ✓      |     ✓     |  ✓   |
+|   **Anthropic Claude**    |    ✓    |      ✓      |     ✓     |  ✓   |
+|        **Gemini**         |         |      ✓      |     ✓     |  ✓   |
+|      **Mistral AI**       |    ✓    |      ✓      |     ✓     |  ✓   |
+|       **Codestral**       |    ✓    |      ✓      |     ✓     |  ✓   |
+|        **Cohere**         |    ✓    |      ✓      |     ✓     |  ✓   |
+|         **Groq**          |    ✓    |      ✓      |     ✓     |  ✓   |
+|      **Perplexity**       |    ✓    |      ✓      |     ✓     |  ✓   |
+|       **DeepSeek**        |    ✓    |      ✓      |     ✓     |  ✓   |
+|     **Github Models**     |    ✓    |      ✓      |     ✓     |  ✓   |
+|        **Ollama**         |    ✓    |      ✓      |           |  ✓   |
+| **OpenAI API-Compatible** |    ✓    |      ✓      |     ✓     |  ✓   |
+
+## Logging
 
 The application utilizes two distinct logging systems to provide comprehensive insights into its operations:
 
@@ -1037,7 +809,7 @@ _aicommit2_ generates detailed logs for debugging and tracking AI requests. You 
 
 #### View Log Files
 
-```sh
+```bash
 # List all log files with details
 aicommit2 log list
 
@@ -1047,14 +819,14 @@ aicommit2 log path
 
 #### Open Log Directory
 
-```sh
+```bash
 # Open logs directory in your file manager
 aicommit2 log open
 ```
 
 #### Clean Up Logs
 
-```sh
+```bash
 # Remove all log files
 aicommit2 log removeAll
 ```
@@ -1074,7 +846,7 @@ _aicommit2_ supports custom prompt templates through the `systemPromptPath` opti
 
 To use a custom prompt template, specify the path to your template file when running the tool:
 
-```
+```bash
 aicommit2 config set systemPromptPath="/path/to/user/prompt.txt"
 aicommit2 config set OPENAI.systemPromptPath="/path/to/another-prompt.txt"
 ```
@@ -1088,10 +860,10 @@ For the above command, OpenAI uses the prompt in the `another-prompt.txt` file, 
 Your custom template can include placeholders for various commit options.
 Use curly braces `{}` to denote these placeholders for options. The following placeholders are supported:
 
-- [{locale}](#locale): The language for the commit message (**string**)
-- [{maxLength}](#max-length): The maximum length for the commit message (**number**)
-- [{type}](#type): The type of the commit message (**conventional** or **gitmoji**)
-- [{generate}](#generate): The number of commit messages to generate (**number**)
+- `{locale}`: The language for the commit message (default: **en**)
+- `{maxLength}`: The maximum length for the commit message (default: **50**)
+- `{type}`: The type of the commit message (**conventional** or **gitmoji**)
+- `{generate}`: The number of commit messages to generate (default: **1**)
 
 #### Example Template
 
@@ -1138,7 +910,7 @@ This ensures that the output is consistently formatted as a JSON array, regardle
 
 Watch Commit mode allows you to monitor Git commits in real-time and automatically perform AI code reviews using the `--watch-commit` flag.
 
-```sh
+```bash
 aicommit2 --watch-commit
 ```
 
@@ -1148,7 +920,7 @@ This feature only works within Git repository directories and automatically trig
 2. Performs AI code review
 3. Displays results in real-time
 
-> For detailed configuration of the code review feature, please refer to the [codeReview](#codereview) section. The settings in that section are shared with this feature.
+> For detailed configuration of the code review feature, please refer to the [codeReview](docs/settings.md#codereview) section. The settings in that section are shared with this feature.
 
 ⚠️ **CAUTION**
 
@@ -1158,7 +930,7 @@ This feature only works within Git repository directories and automatically trig
 - It is recommended to **carefully monitor your token usage** when using this feature
 - To use this feature, you must enable watch mode for at least one AI model:
 
-```sh
+```bash
 aicommit2 config set [MODEL].watchMode="true"
 ```
 
@@ -1166,13 +938,17 @@ aicommit2 config set [MODEL].watchMode="true"
 
 Check the installed version with:
 
-```
+```bash
 aicommit2 --version
 ```
 
 If it's not the [latest version](https://github.com/tak-bro/aicommit2/releases/latest), run:
 
-```sh
+```bash
+# Via Homebrew
+brew upgrade aicommit2
+
+# Via npm
 npm update -g aicommit2
 ```
 
@@ -1215,6 +991,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   </tr>
   <tr>
     <td align="center"><a href="https://github.com/jaytaylor"><img src="https://avatars.githubusercontent.com/jaytaylor" width="100px;" alt=""/><br /><sub><b>@jaytaylor</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=jaytaylor" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/denniswebb"><img src="https://avatars.githubusercontent.com/denniswebb" width="100px;" alt=""/><br /><sub><b>@denniswebb</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=denniswebb" title="Code">💻</a></td>
   </tr>
 </table>
 <!-- markdownlint-restore -->
