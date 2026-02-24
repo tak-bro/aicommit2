@@ -1,3 +1,5 @@
+## [2.4.28](https://github.com/tak-bro/aicommit2/compare/v2.4.27...v2.4.28) (2026-02-24)
+
 ## [2.4.27](https://github.com/tak-bro/aicommit2/compare/v2.4.26...v2.4.27) (2026-02-23)
 
 
