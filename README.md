@@ -684,7 +684,7 @@ _aicommit2_ offers flexible configuration options for all AI services, including
    key="<your-api-key>"
    generate=5
    includeBody=true
-   model="gemini-2.5-flash,gemini-2.5-pro"
+   model="gemini-3-flash-preview,gemini-3.1-pro-preview"
 
    [OLLAMA]
    temperature=0.7
