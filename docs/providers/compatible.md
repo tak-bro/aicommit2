@@ -45,7 +45,7 @@ compatible=true
 key=<your-api-key>
 url=https://generativelanguage.googleapis.com
 path=/v1beta/openai/
-model=gemini-1.5-flash
+model=gemini-3-flash-preview
 
 [OLLAMA_COMPATIBILITY]
 compatible=true
