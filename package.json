@@ -172,6 +172,22 @@
                     "preset": "conventionalcommits",
                     "releaseRules": [
                         {
+                            "type": "docs",
+                            "release": false
+                        },
+                        {
+                            "type": "style",
+                            "release": false
+                        },
+                        {
+                            "type": "test",
+                            "release": false
+                        },
+                        {
+                            "type": "ci",
+                            "release": false
+                        },
+                        {
                             "type": "refactor",
                             "release": "patch"
                         },
