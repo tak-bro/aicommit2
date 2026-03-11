@@ -813,6 +813,53 @@ export type ModelConfig<Model extends keyof typeof modelConfigParsers> = {
     [Key in keyof (typeof modelConfigParsers)[Model]]: ReturnType<(typeof modelConfigParsers)[Model][Key]>;
 };
 
+/**
+ * Type for provider config with common properties
+ */
+export interface ProviderConfigBase {
+    includeBody?: boolean;
+    disableLowerCase?: boolean;
+    [key: string]: unknown;
+}
+
+/**
+ * Type guard to check if a config value is a provider config object
+ */
+export const isProviderConfig = (value: unknown): value is ProviderConfigBase => {
+    return typeof value === 'object' && value !== null;
+};
+
+/**
+ * Provider config flag types that can be applied
+ */
+export type ProviderConfigFlag = 'includeBody' | 'disableLowerCase';
+
+/**
+ * Apply a boolean flag to all provider configs that support it
+ */
+export const applyFlagToProviderConfigs = (config: ValidConfig, flag: ProviderConfigFlag): void => {
+    Object.keys(config).forEach(key => {
+        const value = config[key as keyof ValidConfig];
+        if (isProviderConfig(value) && flag in value) {
+            (value as ProviderConfigBase)[flag] = true;
+        }
+    });
+};
+
+/**
+ * Apply includeBody flag to all provider configs
+ */
+export const applyIncludeBodyToConfig = (config: ValidConfig): void => {
+    applyFlagToProviderConfigs(config, 'includeBody');
+};
+
+/**
+ * Apply disableLowerCase flag to all provider configs
+ */
+export const applyDisableLowerCaseToConfig = (config: ValidConfig): void => {
+    applyFlagToProviderConfigs(config, 'disableLowerCase');
+};
+
 let loadedConfigPath: string | undefined;
 
 const parseCliArgs = (rawArgv: string[] = []): RawConfig => {

@@ -18,7 +18,7 @@ import {
     commitMsgLoader,
     emptyCodeReview,
 } from '../managers/reactive-prompt.manager.js';
-import { ModelName, RawConfig, getConfig } from '../utils/config.js';
+import { ModelName, RawConfig, applyDisableLowerCaseToConfig, applyIncludeBodyToConfig, getConfig } from '../utils/config.js';
 import { ErrorCode, ErrorMessages } from '../utils/error-messages.js';
 import { KnownError, handleCliError } from '../utils/error.js';
 import { validateSystemPrompt } from '../utils/prompt.js';
@@ -91,19 +91,11 @@ export default async (
 
         const shouldIncludeBody = includeBody === true || config.includeBody === true;
         if (shouldIncludeBody) {
-            Object.keys(config).forEach(key => {
-                if (typeof config[key] === 'object' && config[key] !== null && 'includeBody' in config[key]) {
-                    (config[key] as any).includeBody = true;
-                }
-            });
+            applyIncludeBodyToConfig(config);
         }
 
         if (disableLowerCase) {
-            Object.keys(config).forEach(key => {
-                if (typeof config[key] === 'object' && config[key] !== null && 'disableLowerCase' in config[key]) {
-                    (config[key] as any).disableLowerCase = true;
-                }
-            });
+            applyDisableLowerCaseToConfig(config);
         }
 
         await validateSystemPrompt(config);
