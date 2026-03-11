@@ -362,48 +362,47 @@ aicommit2 --all # or -a
 
 #### CLI Options
 
+Run `aicommit2 --help` to see all available options grouped by category.
+
+##### Message Options
+
 - `--locale` or `-l`: Locale to use for the generated commit messages (default: **en**)
-- `--all` or `-a`: Automatically stage changes in tracked files for the commit (default: **false**)
-- `--type` or `-t`: Git commit message format (default: **conventional**). It supports [`conventional`](https://conventionalcommits.org/) and [`gitmoji`](https://gitmoji.dev/)
-- `--confirm` or `-y`: Skip confirmation when committing after message generation (default: **false**)
-- `--clipboard` or `-c`: Copy the selected message to the clipboard (default: **false**).
-  - If you give this option, **_aicommit2_ will not commit**.
-- `--dry-run` or `-d`: Generate commit message without committing (default: **false**).
-  - Outputs the generated message without executing a commit.
-  - Useful for reviewing messages before manual commit (e.g., with GitHub Desktop).
-  - Can be combined with `--clipboard` to copy the message for use in other tools.
-- `--edit` or `-e`: Open the AI-generated commit message in your default editor for modification (default: **false**)
-  - Opens the message in the editor specified by `$VISUAL`, `$EDITOR`, or platform default
-  - Works with both Git and Jujutsu repositories
-  - Allows fine-tuning of AI-generated messages before committing
 - `--generate` or `-g`: Number of messages to generate (default: **1**)
   - **Warning**: This uses more tokens, meaning it costs more.
-- `--exclude` or `-x`: Files to exclude from AI analysis
+- `--type` or `-t`: Git commit message format (default: **conventional**). It supports [`conventional`](https://conventionalcommits.org/) and [`gitmoji`](https://gitmoji.dev/)
+- `--prompt` or `-p`: Custom prompt to fine-tune the AI generation
 - `--include-body` or `-i`: Force include commit body in all generated messages (default: **false**)
-  - When enabled, all commit messages will include a detailed body section
-  - Useful for providing more context in commit messages
-- `--auto-select` or `-s`: Automatically select the commit message when only one AI model is configured (default: **false**)
-  - When enabled and only one AI provider is configured, the generated message is automatically selected
-  - Also skips the confirmation prompt for a seamless experience
-  - Has no effect when multiple AI providers are configured
-- `--disable-lowercase`: Disable automatic lowercase conversion of commit messages (default: **false**)
-  - Preserves the original casing of commit types and descriptions
-  - Useful when working with custom commit conventions that require specific casing
-- `--hook-mode`: Run as a Git hook, typically used with [`prepare-commit-msg` hook](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks#_committing_workflow_hooks) hook (default: **false**)
-  - This mode is automatically enabled when running through the Git hook system
-  - See [Git Hooks](#git-hooks) section for more details
-- `--pre-commit`: Run in [pre-commit](https://pre-commit.com/) framework mode (default: **false**)
-  - This option is specifically for use with the pre-commit framework
-  - See [Integration with pre-commit framework](#integration-with-pre-commit-framework) section for setup instructions
-- `--verbose` or `-v`: Enable verbose logging for enhanced debugging output (default: **false**)
-  - When enabled, shows detailed log messages including readline errors and other diagnostic information
-  - Useful for troubleshooting issues or understanding the tool's internal operations
-  - Can also be set via config: `aicommit2 config set logLevel=verbose`
+
+##### Behavior
+
+- `--all` or `-a`: Automatically stage changes in tracked files for the commit (default: **false**)
+- `--confirm` or `-y`: Skip confirmation when committing after message generation (default: **false**)
+- `--auto-select` or `-s`: Automatically select when only one message is generated (default: **false**)
+- `--edit` or `-e`: Open the AI-generated commit message in your default editor (default: **false**)
+- `--clipboard` or `-c`: Copy the selected message to the clipboard (default: **false**)
+  - If you give this option, **_aicommit2_ will not commit**.
+- `--dry-run` or `-d`: Generate commit message without committing (default: **false**)
+  - Useful for reviewing messages before manual commit (e.g., with GitHub Desktop)
 - `--output` or `-o`: Output format for non-interactive mode (default: **none**)
-  - Use `--output json` for JSON Lines format (one JSON object per line)
-  - Outputs `{"subject":"...","body":"..."}` for each generated message
-  - Designed for integration with tools like [LazyGit](#lazygit)
-  - Skips TUI and exits after outputting messages
+  - Use `--output json` for [LazyGit](#lazygit) integration
+
+##### VCS Selection
+
+- `--git`: Force use Git (overrides auto-detection)
+- `--yadm`: Force use YADM (overrides auto-detection)
+- `--jj`: Force use Jujutsu (overrides auto-detection)
+- `--jj-auto-new`: Run `jj new` after `jj describe` (default: **false**)
+
+##### Hook Integration
+
+- `--hook-mode`: Run as a Git hook with [`prepare-commit-msg`](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks#_committing_workflow_hooks) (default: **false**)
+- `--pre-commit`: Run in [pre-commit](https://pre-commit.com/) framework mode (default: **false**)
+
+##### Formatting & Debug
+
+- `--exclude` or `-x`: Files to exclude from AI analysis
+- `--disable-lowercase`: Preserve original casing of commit messages (default: **false**)
+- `--verbose` or `-v`: Enable verbose logging for debugging (default: **false**)
 
 Examples:
 

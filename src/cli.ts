@@ -11,6 +11,7 @@ import preCommitHook from './commands/pre-commit-hook.js';
 import prepareCommitMessageHook from './commands/prepare-commit-msg-hook.js';
 import watchGit from './commands/watch-git.js';
 import { RawConfig, getConfig } from './utils/config.js';
+import { renderGroupedHelp } from './utils/help-renderer.js';
 import { initializeLogger, logger } from './utils/logger.js';
 
 const rawArgv = process.argv.slice(2);
@@ -149,6 +150,7 @@ cli(
 
         help: {
             description,
+            render: renderGroupedHelp,
         },
 
         ignoreArgv: type => type === 'unknown-flag' || type === 'argument',
