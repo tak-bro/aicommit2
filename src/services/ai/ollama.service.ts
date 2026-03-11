@@ -8,6 +8,7 @@ import { Agent, fetch } from 'undici';
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
 import { RequestType, logAIComplete, logAIError, logAIPayload, logAIPrompt, logAIRequest, logAIResponse } from '../../utils/ai-log.js';
 import { DEFAULT_OLLAMA_HOST } from '../../utils/config.js';
+import { PlainErrorMessages } from '../../utils/error-messages.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 import { capitalizeFirstLetter, getRandomNumber } from '../../utils/utils.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
@@ -47,29 +48,17 @@ export class OllamaService extends AIService {
     protected getServiceSpecificErrorMessage(error: AIServiceError): string | null {
         const errorMsg = error.message || '';
 
-        // Ollama-specific error messages
-        if (errorMsg.includes('ECONNREFUSED') || errorMsg.includes('connection')) {
-            return `Cannot connect to Ollama server at ${this.host}. Make sure Ollama is running`;
-        }
-        if (errorMsg.includes('model') || errorMsg.includes('Model')) {
-            return `Model '${this.model}' not found. Pull the model with: ollama pull ${this.model}`;
-        }
-        if (errorMsg.includes('401') || errorMsg.includes('Unauthorized')) {
-            return 'Authentication failed. Check your Ollama API key if authentication is enabled';
-        }
-        if (errorMsg.includes('403') || errorMsg.includes('Forbidden')) {
-            return 'Access denied. Check your Ollama server permissions';
-        }
-        if (errorMsg.includes('404') || errorMsg.includes('Not Found')) {
-            return `Model '${this.model}' not found on Ollama server. Pull it first with: ollama pull ${this.model}`;
-        }
-        if (errorMsg.includes('500') || errorMsg.includes('Internal Server Error')) {
-            return 'Ollama server error. Check server logs and try again';
-        }
-        if (errorMsg.includes('overloaded') || errorMsg.includes('capacity')) {
-            return 'Ollama server is overloaded. Try again in a few minutes';
+        // Ollama connection error
+        if (errorMsg.includes('ECONNREFUSED') || errorMsg.includes('connection refused')) {
+            return PlainErrorMessages.ollamaNotRunning();
         }
 
+        // Model not found - use plain text message for select list
+        if (errorMsg.includes('model') && (errorMsg.includes('not found') || errorMsg.includes('404'))) {
+            return PlainErrorMessages.ollamaModelNotPulled(this.model);
+        }
+
+        // Let base class handle other errors
         return null;
     }
 
@@ -213,7 +202,8 @@ export class OllamaService extends AIService {
         }
     }
 
-    // TODO: add proper type
+    // Ollama SDK's fetch override requires matching its internal signature which uses any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private setupFetch = (input: any, init: any = {}): any => {
         return fetch(input as string | URL, {
             ...init,

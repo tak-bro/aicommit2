@@ -3,6 +3,7 @@ import { Observable, of } from 'rxjs';
 
 import { addLogEntry } from '../../utils/ai-log.js';
 import { CommitType, ModelConfig, ModelName } from '../../utils/config.js';
+import { ErrorCode, ErrorCodeType, detectErrorCode, getPlainErrorMessage, httpStatusToErrorCode } from '../../utils/error-messages.js';
 import { logger } from '../../utils/logger.js';
 import { getFirstWordsFrom, safeJsonParse } from '../../utils/utils.js';
 import { GitDiff } from '../../utils/vcs.js';
@@ -28,9 +29,9 @@ export interface AIServiceParams {
 
 export interface AIServiceError extends Error {
     status?: number;
-    code?: string;
-    content?: any;
-    originalError?: any;
+    code?: ErrorCodeType;
+    content?: unknown;
+    originalError?: unknown;
 }
 
 export interface Theme {
@@ -58,76 +59,48 @@ export abstract class AIService {
     abstract generateCommitMessage$(): Observable<ReactiveListChoice>;
     abstract generateCodeReview$(): Observable<ReactiveListChoice>;
 
-    protected getDetailedErrorMessage(error: AIServiceError): string {
-        const errorMsg = error.message || '';
-
-        // API key related errors
-        if (errorMsg.includes('API key') || errorMsg.includes('api_key')) {
-            return 'Invalid API key. Check your API key configuration';
-        }
-
-        // Rate limiting errors
-        if (
-            errorMsg.includes('rate_limit') ||
-            errorMsg.includes('Rate limit') ||
-            errorMsg.includes('429') ||
-            errorMsg.includes('Too Many Requests')
-        ) {
-            return 'Rate limit exceeded. Wait a moment and try again, or upgrade your plan';
-        }
-
-        // Model related errors
-        if (errorMsg.includes('model') || errorMsg.includes('Model')) {
-            return 'Model not found or not accessible. Check if the model name is correct';
-        }
-
-        // Timeout errors
-        if (errorMsg.includes('timeout') || errorMsg.includes('Timeout')) {
-            return 'Request timed out. Try again or increase the timeout setting';
-        }
-
-        // Network errors
-        if (errorMsg.includes('network') || errorMsg.includes('connection') || errorMsg.includes('ECONNREFUSED')) {
-            return 'Network error. Check your internet connection and try again';
-        }
-
-        // Quota/usage errors
-        if (errorMsg.includes('quota') || errorMsg.includes('usage') || errorMsg.includes('QUOTA_EXCEEDED')) {
-            return 'API quota exceeded. Check your usage limits';
-        }
-
-        // HTTP status code specific errors
-        if (errorMsg.includes('401') || errorMsg.includes('Unauthorized')) {
-            return 'Authentication failed. Your API key may be invalid or expired';
-        }
-
-        if (errorMsg.includes('403') || errorMsg.includes('Forbidden')) {
-            return 'Access denied. Your API key may not have permission for this model';
-        }
-
-        if (errorMsg.includes('404') || errorMsg.includes('Not Found')) {
-            return 'Model or endpoint not found. Check your model configuration';
-        }
-
-        if (errorMsg.includes('500') || errorMsg.includes('Internal Server Error')) {
-            return 'Server error. Try again later';
-        }
-
-        // Service overload
-        if (
-            errorMsg.includes('overloaded') ||
-            errorMsg.includes('capacity') ||
-            errorMsg.includes('SERVICE_UNAVAILABLE') ||
-            errorMsg.includes('unavailable')
-        ) {
-            return 'Service is temporarily unavailable. Try again in a few minutes';
-        }
-
-        // Allow services to override with their own logic
-        return this.getServiceSpecificErrorMessage(error) || errorMsg || 'Unknown error occurred';
+    /**
+     * Get provider name for error messages (plain text, no ANSI colors)
+     */
+    protected getProviderName(): string {
+        // Remove ANSI escape codes (ESC[...m) and brackets from serviceName
+        // ESC character is \x1b (decimal 27)
+        const esc = String.fromCharCode(27);
+        const ansiPattern = new RegExp(`${esc}\\[[0-9;]*m`, 'g');
+        return this.serviceName.replace(ansiPattern, '').replace(/\[|\]/g, '').trim();
     }
 
-    // Override this method in child classes for service-specific error messages
+    /**
+     * Get detailed error message using centralized error message system
+     */
+    protected getDetailedErrorMessage(error: AIServiceError): string {
+        const errorMsg = error.message || '';
+        const provider = this.getProviderName();
+        const model = this.params.config.model?.[0];
+        const timeout = this.params.config.timeout;
+
+        // Check for service-specific error message first
+        const serviceSpecificMessage = this.getServiceSpecificErrorMessage(error);
+        if (serviceSpecificMessage) {
+            return serviceSpecificMessage;
+        }
+
+        // Detect error code from status or message
+        const errorCode = error.code || (error.status ? httpStatusToErrorCode(error.status) : detectErrorCode(errorMsg));
+
+        // Get plain text message for select list (no colors)
+        if (errorCode !== ErrorCode.UNKNOWN) {
+            return getPlainErrorMessage(errorCode, { provider, model, timeout });
+        }
+
+        // Fallback to original error message
+        return errorMsg || 'Unknown error occurred';
+    }
+
+    /**
+     * Override this method in child classes for service-specific error messages
+     * Return null to use the default error handling
+     */
     protected getServiceSpecificErrorMessage(error: AIServiceError): string | null {
         return null;
     }
