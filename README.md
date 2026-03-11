@@ -11,7 +11,7 @@
 <div align="center" markdown="1">
 
 [![tak-bro](https://img.shields.io/badge/by-tak--bro-293462?logo=github)](https://github.com/tak-bro)
-[![license](https://img.shields.io/badge/license-MIT-211A4C.svg?logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGZpbGw9Im5vbmUiIHN0cm9rZT0iI0ZGRiIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS13aWR0aD0iMiIgZD0ibTMgNiAzIDFtMCAwLTMgOWE1IDUgMCAwIDAgNi4wMDEgME02IDdsMyA5TTYgN2w2LTJtNiAyIDMtMW0tMyAxLTMgOWE1IDUgMCAwIDAgNi4wMDEgME0xOCA3bDMgOW0tMy05LTYtMm0wLTJ2Mm0wIDE2VjVtMCAxNkg5bTMgMGgzIi8+PC9zdmc+)](https://github.com/tak-bro/aicommit2/blob/main/LICENSE)
+![license: MIT](https://img.badges.sh/license-MIT-2D2654?labelColor=5C5C5C&logo=lucide%3AScale&logoColor=ffffff&logoStrokeWidth=1.5&letterSpacing=0.5)
 [![version](https://img.shields.io/npm/v/aicommit2?logo=semanticrelease&label=release&color=A51C2D)](https://www.npmjs.com/package/aicommit2)
 [![downloads](https://img.shields.io/npm/dt/aicommit2?color=F33535&logo=npm)](https://www.npmjs.com/package/aicommit2)
 [![Nix](https://img.shields.io/badge/Nix-5277C3?logo=nixos&logoColor=fff)](#nix-installation)
@@ -448,50 +448,91 @@ Add the following to your LazyGit config file (`~/.config/lazygit/config.yml` or
 
 ```yaml
 customCommands:
-  # AI commit with body (Shift+C in files panel)
-  - key: "C"
+  # Quick commit with AI-generated subject (c in files panel)
+  - key: "c"
     context: "files"
-    description: "AI commit with aicommit2"
+    description: "Generate commit message with aicommit2"
     prompts:
       - type: "menuFromCommand"
         title: "Select commit message"
         key: "Commit"
-        command: "aicommit2 --output json --include-body"
+        command: "aicommit2 --output json"
         filter: '"subject":"(?P<subject>[^"]+)","body":"(?P<body>[^"]*)"'
         valueFormat: '{{ .subject }}<SEP>{{ .body }}'
         labelFormat: '{{ .subject }}'
-    command: bash -c 'MSG="{{ .Form.Commit }}" && SUBJ="${MSG%%<SEP>*}" && BODY="${MSG#*<SEP>}" && git commit -m "$SUBJ" ${BODY:+-m "$BODY"}'
-
-  # AI commit with editable subject and body (Shift+A in files panel)
-  - key: "A"
-    context: "files"
-    description: "AI commit (editable)"
-    prompts:
-      - type: "menuFromCommand"
-        title: "Select commit message"
-        key: "Subject"
-        command: "aicommit2 --output json"
-        filter: '"subject":"(?P<subject>[^"]+)"'
-        valueFormat: '{{ .subject }}'
-        labelFormat: '{{ .subject }}'
-      - type: "input"
-        title: "Edit subject"
-        key: "FinalSubject"
-        initialValue: '{{ .Form.Subject }}'
-      - type: "input"
-        title: "Add body (optional)"
-        key: "Body"
-        initialValue: ''
-    command: bash -c 'git commit -m "{{ .Form.FinalSubject }}" {{ if .Form.Body }}-m "{{ .Form.Body }}"{{ end }}'
+    output: "terminal"
+    command: bash -c 'MSG="{{ .Form.Commit }}" && SUBJ="${MSG%%<SEP>*}" && BODY="${MSG#*<SEP>}" && git commit -e -m "$SUBJ" ${BODY:+-m "$BODY"}'
 ```
+
+> **Note:** This overrides LazyGit's default `c` (commit) key. You can change the key to another value (e.g., `<c-a>`) if you prefer to keep the default behavior.
 
 #### Usage in LazyGit
 
 1. Stage your changes in LazyGit
-2. Press `Shift+C` to generate AI commit messages and select one
-3. Or press `Shift+A` to generate messages with the ability to edit before committing
+2. Press `c` to generate AI commit messages and select one
+3. The editor opens with the selected message for final review
 
-> **Note:** The editable mode (`Shift+A`) currently supports editing the subject only. The AI-generated body is not carried over to the edit prompt.
+#### Advanced: fzf Preview with Body
+
+For detailed commit messages with **subject + body**, use the fzf-based approach. This uses `--include-body` (`-i`) flag to generate detailed body content and shows a preview window before committing.
+
+**Requirements:** `jq` and `fzf` must be installed (`brew install jq fzf`).
+
+First, create the script file at `~/.config/lazygit/scripts/aicommit_fzf.sh` (or `~/Library/Application Support/lazygit/scripts/` on macOS):
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+for cmd in aicommit2 jq fzf; do
+  if ! command -v "$cmd" >/dev/null 2>&1; then
+    echo "$cmd is required"
+    exit 1
+  fi
+done
+
+results_file="$(mktemp -t lazygit-aicommit-results.XXXXXX)"
+trap 'rm -f "$results_file"' EXIT INT TERM
+
+selected="$(
+  echo | fzf \
+    --prompt="AI commit> " \
+    --header="Select a message" \
+    --height=100% \
+    --layout=reverse \
+    --info=inline \
+    --with-nth=2.. \
+    --delimiter=$'\t' \
+    --with-shell="bash --noprofile --norc -c" \
+    --preview-window="right:60%:wrap" \
+    --preview "jq -r '.[ {1} ] | \"\(.subject)\n\n\(.body)\"' $results_file" \
+    --bind "load:unbind(load)+reload-sync#aicommit2 -i --output json 2>/dev/null | jq -s '.' > $results_file && jq -r 'to_entries[] | \"\\(.key)\\t\\(.value.subject)\"' $results_file#"
+)" || exit 0
+
+[ -n "$selected" ] || exit 0
+
+index="${selected%%$'\t'*}"
+subject="$(jq -r ".[$index].subject" "$results_file")"
+body="$(jq -r ".[$index].body" "$results_file")"
+
+git commit -e -m "$subject" -m "$body"
+```
+
+Make it executable: `chmod +x ~/.config/lazygit/scripts/aicommit_fzf.sh`
+
+Then add this to your LazyGit config:
+
+```yaml
+customCommands:
+  # Long commit with fzf preview (Shift+C in files panel)
+  - key: "C"
+    context: "files"
+    description: "Generate commit message (long) with aicommit2"
+    output: "terminal"
+    command: "/path/to/aicommit_fzf.sh"  # Update with your script path
+```
+
+> Thanks to [@peinan](https://github.com/peinan) for this configuration! See the [original discussion](https://github.com/tak-bro/aicommit2/issues/215#issuecomment-3982049025) and dotfiles ([config.yml](https://github.com/peinan/dotfiles/blob/main/src/.config/lazygit/config.yml), [aicommit_fzf.sh](https://github.com/peinan/dotfiles/blob/main/src/.config/lazygit/scripts/aicommit_fzf.sh)) for reference.
 
 ### Git Hooks
 
@@ -992,6 +1033,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   <tr>
     <td align="center"><a href="https://github.com/jaytaylor"><img src="https://avatars.githubusercontent.com/jaytaylor" width="100px;" alt=""/><br /><sub><b>@jaytaylor</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=jaytaylor" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/denniswebb"><img src="https://avatars.githubusercontent.com/denniswebb" width="100px;" alt=""/><br /><sub><b>@denniswebb</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=denniswebb" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/peinan"><img src="https://avatars.githubusercontent.com/peinan" width="100px;" alt=""/><br /><sub><b>@peinan</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/issues/215" title="Documentation">📖</a></td>
   </tr>
 </table>
 <!-- markdownlint-restore -->
