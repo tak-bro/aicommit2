@@ -1,9 +1,10 @@
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
-import { Observable, catchError, from, mergeMap } from 'rxjs';
+import { Observable, catchError, from, mergeMap, tap } from 'rxjs';
 
 import { AIServiceFactory } from '../services/ai/ai-service.factory.js';
 import { OpenAICompatibleService } from '../services/ai/openai-compatible.service.js';
 import { ProviderRegistry, createErrorChoice } from '../services/ai/provider-registry.js';
+import { recordMetric } from '../services/stats/index.js';
 import { ModelName, ValidConfig } from '../utils/config.js';
 import { GitDiff } from '../utils/vcs.js';
 
@@ -13,6 +14,20 @@ export class AIRequestManager {
         private readonly stagedDiff: GitDiff,
         private readonly branchName: string = ''
     ) {}
+
+    /**
+     * Safely extract hostname from URL, returning fallback on invalid URLs
+     */
+    private extractProviderName = (url: string | undefined): string => {
+        if (!url) {
+            return 'compatible';
+        }
+        try {
+            return new URL(url).hostname;
+        } catch {
+            return 'compatible';
+        }
+    };
 
     createCommitMsgRequests$ = (modelNames: ModelName[]): Observable<ReactiveListChoice> => {
         return this.createServiceRequests$(modelNames, 'commit');
@@ -75,6 +90,33 @@ export class AIRequestManager {
             branchName: this.branchName,
         });
 
-        return requestType === 'commit' ? service.generateCommitMessage$() : service.generateCodeReview$();
+        const startTime = Date.now();
+        const providerName = this.extractProviderName(config.url);
+        let metricRecorded = false;
+
+        const request$ = requestType === 'commit' ? service.generateCommitMessage$() : service.generateCodeReview$();
+
+        return request$.pipe(
+            tap({
+                next: choice => {
+                    // Record metric only once per request (first emission)
+                    if (metricRecorded) {
+                        return;
+                    }
+                    metricRecorded = true;
+
+                    const isError = choice.isError === true;
+                    recordMetric({
+                        provider: providerName,
+                        model,
+                        responseTimeMs: Date.now() - startTime,
+                        success: !isError,
+                        errorCode: isError ? 'REQUEST_ERROR' : undefined,
+                    }).catch(() => {
+                        // Silently ignore metric recording errors
+                    });
+                },
+            })
+        );
     };
 }

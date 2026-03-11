@@ -422,6 +422,38 @@ aicommit2 -d -c
 aicommit2 --verbose # or -v
 ```
 
+#### Commands
+
+In addition to the main commit message generation, aicommit2 provides several utility commands:
+
+| Command | Description |
+|---------|-------------|
+| `aicommit2 config` | Manage configuration (get, set, list, del) |
+| `aicommit2 doctor` | Check health status of AI providers |
+| `aicommit2 stats` | View usage statistics and performance metrics |
+| `aicommit2 hook` | Install/uninstall Git prepare-commit-msg hook |
+| `aicommit2 log` | Manage log files |
+| `aicommit2 github-login` | Login to GitHub for GitHub Models access |
+
+```bash
+# Configuration management
+aicommit2 config set OPENAI.key=<your-key>
+aicommit2 config get OPENAI
+aicommit2 config list
+
+# Health check
+aicommit2 doctor
+
+# Statistics
+aicommit2 stats
+aicommit2 stats -d 7    # Last 7 days
+aicommit2 stats clear   # Clear all stats
+
+# Git hook
+aicommit2 hook install
+aicommit2 hook uninstall
+```
+
 ## Integrations
 
 ### LazyGit
@@ -625,6 +657,37 @@ Status icons:
 - ⚠️ **Warning**: Provider has issues (e.g., Ollama not running)
 - ❌ **Error**: Provider configuration has errors
 - ⏭️ **Skipped**: Provider is not configured
+
+### Statistics
+
+Use the `stats` command to view AI request statistics and performance metrics:
+
+```bash
+aicommit2 stats
+```
+
+Example output:
+
+```
+📊 AICommit2 Statistics
+   Period: 2/10/2026 - 3/10/2026
+
+Overview:
+  Total requests:     126
+  Success rate:       97.6%
+  Avg response time:  2.1s
+
+Provider Usage:
+  OPENAI         ████████████████████   78 (62%)    2.2s  100%
+  ANTHROPIC      ██████████░░░░░░░░░░   30 (24%)    2.5s   93%
+  GEMINI         ████░░░░░░░░░░░░░░░░   18 (14%)    1.6s  100%
+```
+
+Options:
+- `aicommit2 stats -d 7` - Show statistics for the last 7 days
+- `aicommit2 stats clear` - Clear all statistics
+
+Statistics are stored locally at `~/.config/aicommit2/stats.json` and automatically pruned after 30 days.
 
 ## Configuration
 

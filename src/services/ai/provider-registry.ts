@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
-import { Observable, of } from 'rxjs';
+import { Observable, of, tap } from 'rxjs';
 
 import { AIService, AIServiceParams } from './ai.service.js';
 import { AnthropicService } from './anthropic.service.js';
@@ -17,6 +17,7 @@ import { OllamaService } from './ollama.service.js';
 import { OpenAIService } from './openai.service.js';
 import { PerplexityService } from './perplexity.service.js';
 import { ModelName } from '../../utils/config.js';
+import { recordMetric } from '../stats/index.js';
 
 /**
  * Create an error choice Observable for display in the reactive list
@@ -74,6 +75,7 @@ class ProviderRegistryClass {
 
     /**
      * Create Observable for service request (commit or review)
+     * Wraps the request with metric recording
      */
     createRequest$ = (name: ModelName, params: AIServiceParams, requestType: 'commit' | 'review'): Observable<ReactiveListChoice> => {
         const service = this.createService(name, params);
@@ -82,7 +84,34 @@ class ProviderRegistryClass {
             return createErrorChoice(name, 'Invalid AI type');
         }
 
-        return requestType === 'commit' ? service.generateCommitMessage$() : service.generateCodeReview$();
+        const startTime = Date.now();
+        const model = Array.isArray(params.config.model) ? params.config.model[0] : params.config.model;
+        let metricRecorded = false;
+
+        const request$ = requestType === 'commit' ? service.generateCommitMessage$() : service.generateCodeReview$();
+
+        return request$.pipe(
+            tap({
+                next: choice => {
+                    // Record metric only once per request (first emission)
+                    if (metricRecorded) {
+                        return;
+                    }
+                    metricRecorded = true;
+
+                    const isError = choice.isError === true;
+                    recordMetric({
+                        provider: name,
+                        model: model || 'unknown',
+                        responseTimeMs: Date.now() - startTime,
+                        success: !isError,
+                        errorCode: isError ? 'REQUEST_ERROR' : undefined,
+                    }).catch(() => {
+                        // Silently ignore metric recording errors
+                    });
+                },
+            })
+        );
     };
 
     /**

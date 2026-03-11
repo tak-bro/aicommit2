@@ -9,6 +9,7 @@ import hookCommand, { isCalledFromGitHook } from './commands/hook.js';
 import logCommand from './commands/log.js';
 import preCommitHook from './commands/pre-commit-hook.js';
 import prepareCommitMessageHook from './commands/prepare-commit-msg-hook.js';
+import { statsCommand } from './commands/stats.js';
 import watchGit from './commands/watch-git.js';
 import { RawConfig, getConfig } from './utils/config.js';
 import { renderGroupedHelp } from './utils/help-renderer.js';
@@ -146,7 +147,7 @@ cli(
             },
         },
 
-        commands: [configCommand, doctorCommand, githubLoginCommand, hookCommand, logCommand],
+        commands: [configCommand, doctorCommand, githubLoginCommand, hookCommand, logCommand, statsCommand],
 
         help: {
             description,
