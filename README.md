@@ -78,25 +78,24 @@ _aicommit2_ automatically generates commit messages using AI. It supports [Git](
 - **[Git Hook Integration](#git-hooks)**: Can be used as a prepare-commit-msg hook
 - **[Custom Prompt](#custom-prompt-template)**: Supports user-defined system prompt templates
 
-## Supported providers
+## Supported Providers
 
-### Cloud AI Services
+| Provider | Default Model | Documentation |
+|----------|---------------|---------------|
+| OpenAI | `gpt-4o-mini` | [Guide](docs/providers/openai.md) |
+| Anthropic | `claude-sonnet-4-20250514` | [Guide](docs/providers/anthropic.md) |
+| Gemini | `gemini-3-flash-preview` | [Guide](docs/providers/gemini.md) |
+| Mistral | `mistral-small-latest` | [Guide](docs/providers/mistral.md) |
+| Codestral | `codestral-latest` | [Guide](docs/providers/mistral.md) |
+| Cohere | `command-a-03-2025` | [Guide](docs/providers/cohere.md) |
+| Groq | `llama-3.3-70b-versatile` | [Guide](docs/providers/groq.md) |
+| Perplexity | `sonar` | [Guide](docs/providers/perplexity.md) |
+| DeepSeek | `deepseek-chat` | [Guide](docs/providers/deepseek.md) |
+| GitHub Models | `gpt-4o-mini` | [Guide](docs/providers/github-models.md) |
+| Bedrock | `anthropic.claude-haiku-4-5-20251001-v1:0` | [Guide](docs/providers/bedrock.md) |
+| Ollama | *(user configured)* | [Guide](docs/providers/ollama.md) |
 
-- [OpenAI](docs/providers/openai.md)
-- [Anthropic Claude](docs/providers/anthropic.md)
-- [Gemini](docs/providers/gemini.md)
-- [Mistral & Codestral](docs/providers/mistral.md)
-- [Cohere](docs/providers/cohere.md)
-- [Groq](docs/providers/groq.md)
-- [Perplexity](docs/providers/perplexity.md)
-- [DeepSeek](docs/providers/deepseek.md)
-- [GitHub Models](docs/providers/github-models.md)
-- [Amazon Bedrock](docs/providers/bedrock.md)
-- [OpenAI API Compatibility](docs/providers/compatible.md)
-
-### Local AI Services
-
-- [Ollama](docs/providers/ollama.md)
+> 📘 For OpenAI-compatible APIs, see [Compatibility Guide](docs/providers/compatible.md)
 
 ## Setup
 
@@ -771,7 +770,7 @@ aicommit2 config set \
   maxTokens=1024 \
   temperature=0.7 \
   OPENAI.key="sk-..." OPENAI.model="gpt-4o-mini" OPENAI.temperature=0.5 \
-  ANTHROPIC.key="sk-..." ANTHROPIC.model="claude-3-5-haiku-20241022" ANTHROPIC.maxTokens=2000 \
+  ANTHROPIC.key="sk-..." ANTHROPIC.model="claude-sonnet-4-20250514" ANTHROPIC.maxTokens=2000 \
   MISTRAL.key="your-key" MISTRAL.model="mistral-small-latest"  \
   OLLAMA.model="llama3.2" OLLAMA.numCtx=4096 OLLAMA.watchMode=true
 ```

@@ -401,7 +401,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         envKey: (envKey?: string) => envKey || '',
         model: (model?: string | string[]): string[] => {
             if (!model) {
-                return ['claude-3-5-haiku-20241022'];
+                return ['claude-sonnet-4-20250514'];
             }
             const modelList = typeof model === 'string' ? model?.split(',') : model;
             return modelList.map(m => m.trim()).filter(m => !!m && m.length > 0);
@@ -633,7 +633,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         envKey: (envKey?: string) => envKey || '',
         model: (model?: string | string[]): string[] => {
             if (!model) {
-                return [`deepseek-coder`];
+                return ['deepseek-chat'];
             }
             const modelList = typeof model === 'string' ? model?.split(',') : model;
 
