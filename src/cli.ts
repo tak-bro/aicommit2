@@ -3,6 +3,7 @@ import { cli } from 'cleye';
 import pkg from '../package.json';
 import aicommit2 from './commands/aicommit2.js';
 import configCommand from './commands/config.js';
+import { doctorCommand } from './commands/doctor.js';
 import githubLoginCommand from './commands/github-login.js';
 import hookCommand, { isCalledFromGitHook } from './commands/hook.js';
 import logCommand from './commands/log.js';
@@ -144,7 +145,7 @@ cli(
             },
         },
 
-        commands: [configCommand, githubLoginCommand, hookCommand, logCommand],
+        commands: [configCommand, doctorCommand, githubLoginCommand, hookCommand, logCommand],
 
         help: {
             description,

@@ -600,6 +600,34 @@ aicommit2 hook uninstall
 
 Or manually delete the `.git/hooks/prepare-commit-msg` file.
 
+### Health Check
+
+Use the `doctor` command to check the status of your configured AI providers:
+
+```bash
+aicommit2 doctor
+```
+
+Example output:
+
+```
+🩺 AICommit2 Health Check
+
+Providers:
+  ✅ OPENAI         API key configured
+  ✅ OLLAMA         Running (Host: http://localhost:11434)
+  ⏭️ ANTHROPIC      Not configured
+  ⚠️ GEMINI         API key configured
+
+Summary: 2 healthy, 0 error, 1 warning, 1 skipped
+```
+
+Status icons:
+- ✅ **Healthy**: Provider is properly configured
+- ⚠️ **Warning**: Provider has issues (e.g., Ollama not running)
+- ❌ **Error**: Provider configuration has errors
+- ⏭️ **Skipped**: Provider is not configured
+
 ## Configuration
 
 aicommit2 supports configuration via command-line arguments, environment variables, and a configuration file. Settings are resolved in the following order of precedence:
