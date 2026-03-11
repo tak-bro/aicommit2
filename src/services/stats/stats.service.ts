@@ -7,7 +7,7 @@ import { fileExists } from '../../utils/fs.js';
 
 const STATS_FILE = 'stats.json';
 const STATS_VERSION = 1;
-const DEFAULT_RETENTION_DAYS = 30;
+const DEFAULT_DISPLAY_DAYS = 30;
 
 /**
  * Get the path to the stats file
@@ -53,14 +53,6 @@ const writeStatsData = async (data: StatsData): Promise<void> => {
 };
 
 /**
- * Clean up old metrics beyond retention period
- */
-const pruneOldMetrics = (metrics: RequestMetric[], retentionDays: number): RequestMetric[] => {
-    const cutoffTime = Date.now() - retentionDays * 24 * 60 * 60 * 1000;
-    return metrics.filter(m => m.timestamp >= cutoffTime);
-};
-
-/**
  * Record a new metric
  */
 export const recordMetric = async (options: RecordMetricOptions): Promise<void> => {
@@ -76,9 +68,6 @@ export const recordMetric = async (options: RecordMetricOptions): Promise<void> 
 
     const data = await readStatsData();
     data.metrics.push(metric);
-
-    // Prune old metrics to prevent unbounded growth
-    data.metrics = pruneOldMetrics(data.metrics, DEFAULT_RETENTION_DAYS);
 
     await writeStatsData(data);
 };
@@ -118,7 +107,7 @@ const calculateProviderStats = (provider: string, metrics: RequestMetric[]): Pro
 /**
  * Get statistics summary
  */
-export const getStatsSummary = async (days: number = DEFAULT_RETENTION_DAYS): Promise<StatsSummary> => {
+export const getStatsSummary = async (days: number = DEFAULT_DISPLAY_DAYS): Promise<StatsSummary> => {
     const data = await readStatsData();
     const cutoffTime = Date.now() - days * 24 * 60 * 60 * 1000;
     const filteredMetrics = data.metrics.filter(m => m.timestamp >= cutoffTime);

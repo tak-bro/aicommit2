@@ -687,7 +687,7 @@ Options:
 - `aicommit2 stats -d 7` - Show statistics for the last 7 days
 - `aicommit2 stats clear` - Clear all statistics
 
-Statistics are stored locally at `~/.config/aicommit2/stats.json` and automatically pruned after 30 days.
+Statistics are stored locally at `~/.config/aicommit2/stats.json`. Use `aicommit2 stats clear` to reset.
 
 ## Configuration
 
