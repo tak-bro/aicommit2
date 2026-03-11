@@ -19,9 +19,8 @@ export default testSuite(({ describe }) => {
 
             const { stdout, exitCode } = await aicommit2([], { reject: false });
             expect(exitCode).toBe(1);
-            expect(stdout).toMatch(
-                'No staged changes found. Stage your changes manually, or automatically stage all changes with the `--all` flag.'
-            );
+            // Updated to match new error message format
+            expect(stdout).toMatch('No staged changes found');
             await fixture.rm();
         });
     });

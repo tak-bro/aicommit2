@@ -23,8 +23,21 @@ const hasBedrockAccess = (value: RawConfig): boolean => {
         (isNonEmptyString(value.accessKeyId as string) && isNonEmptyString(value.secretAccessKey as string)) ||
         (isNonEmptyString(process.env.AWS_ACCESS_KEY_ID) && isNonEmptyString(process.env.AWS_SECRET_ACCESS_KEY));
 
-    // Bedrock available if: region + at least one auth method
-    return hasRegion && (hasApiKey || hasProfile || hasAccessKeys);
+    // Application endpoint auth (no region required)
+    const hasApplicationBaseUrl =
+        isNonEmptyString(value.applicationBaseUrl as string) || isNonEmptyString(process.env.BEDROCK_APPLICATION_BASE_URL);
+    const hasApplicationEndpoint =
+        isNonEmptyString(value.applicationEndpointId as string) || isNonEmptyString(process.env.BEDROCK_APPLICATION_ENDPOINT_ID);
+    const hasApplicationApiKey = isNonEmptyString(process.env.BEDROCK_APPLICATION_API_KEY);
+
+    // Bedrock available if:
+    // 1. Standard auth: region + (apiKey OR profile OR accessKeys)
+    // 2. Application endpoint with base URL: applicationBaseUrl + key
+    // 3. Application endpoint via env: applicationEndpointId + applicationApiKey
+    const hasStandardAuth = hasRegion && (hasApiKey || hasProfile || hasAccessKeys);
+    const hasApplicationAuth = (hasApplicationBaseUrl && hasApiKey) || (hasApplicationEndpoint && hasApplicationApiKey);
+
+    return hasStandardAuth || hasApplicationAuth;
 };
 
 export const getAvailableAIs = (config: ValidConfig, requestType: RequestType): ModelName[] => {
