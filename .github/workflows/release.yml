@@ -120,12 +120,6 @@ jobs:
                       [[ -n "$HASH" ]] && echo "✅ Extracted hash using pattern 2 (got ...): $HASH"
                     fi
 
-                    # Pattern 3: Any sha256 hash (fallback)
-                    if [[ -z "$HASH" ]]; then
-                      HASH=$(echo "$nix_output" | grep -oP 'sha256-[A-Za-z0-9+/=]{44}' | grep -v "INVALIDHASHPLACEHOLDER" | head -n1)
-                      [[ -n "$HASH" ]] && echo "✅ Extracted hash using pattern 3 (any sha256): $HASH"
-                    fi
-
                     if [[ -n "$HASH" && "$HASH" != *"INVALID"* ]]; then
                       echo "✅ Successfully extracted hash: $HASH"
                       break
