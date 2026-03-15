@@ -1,3 +1,12 @@
+# [2.5.0](https://github.com/tak-bro/aicommit2/compare/v2.4.31...v2.5.0) (2026-03-15)
+
+
+### Features
+
+* add custom help renderer for grouped flag display ([150d2b3](https://github.com/tak-bro/aicommit2/commit/150d2b37e46786f6387e0a76ba8fdf128456551c))
+* add doctor command for AI provider health checks ([c9f1065](https://github.com/tak-bro/aicommit2/commit/c9f10655eaef6e025b140eeeff27cec35f15b7a1))
+* **minor:** add stats command ([d4f75af](https://github.com/tak-bro/aicommit2/commit/d4f75af5b5a713cd09b2c1c6e29dc17e5a1cb668))
+
 ## [2.4.31](https://github.com/tak-bro/aicommit2/compare/v2.4.30...v2.4.31) (2026-03-15)
 
 
