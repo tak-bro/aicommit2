@@ -18,7 +18,8 @@ import {
     commitMsgLoader,
     emptyCodeReview,
 } from '../managers/reactive-prompt.manager.js';
-import { ModelName, RawConfig, getConfig } from '../utils/config.js';
+import { ModelName, RawConfig, applyDisableLowerCaseToConfig, applyIncludeBodyToConfig, getConfig } from '../utils/config.js';
+import { ErrorCode, ErrorMessages } from '../utils/error-messages.js';
 import { KnownError, handleCliError } from '../utils/error.js';
 import { validateSystemPrompt } from '../utils/prompt.js';
 import { CommitOptions, assertGitRepo, getBranchName, getStagedDiff, getVCSName, commitChanges as vcsCommitChanges } from '../utils/vcs.js';
@@ -90,19 +91,11 @@ export default async (
 
         const shouldIncludeBody = includeBody === true || config.includeBody === true;
         if (shouldIncludeBody) {
-            Object.keys(config).forEach(key => {
-                if (typeof config[key] === 'object' && config[key] !== null && 'includeBody' in config[key]) {
-                    (config[key] as any).includeBody = true;
-                }
-            });
+            applyIncludeBodyToConfig(config);
         }
 
         if (disableLowerCase) {
-            Object.keys(config).forEach(key => {
-                if (typeof config[key] === 'object' && config[key] !== null && 'disableLowerCase' in config[key]) {
-                    (config[key] as any).disableLowerCase = true;
-                }
-            });
+            applyDisableLowerCaseToConfig(config);
         }
 
         await validateSystemPrompt(config);
@@ -118,22 +111,9 @@ export default async (
 
         if (!staged) {
             const vcsName = await getVCSName();
-            let errorMessage = 'No staged changes found.';
-
-            if (vcsName === 'yadm') {
-                errorMessage += '\n\nStage your changes with: yadm add <file>';
-                errorMessage += '\nOr stage tracked file modifications: aicommit2 --all';
-                errorMessage += '\n\nNote: The --all flag only stages already-tracked files (YADM best practice).';
-                errorMessage += '\nTo track new dotfiles, explicitly add them first: yadm add <file>';
-            } else if (vcsName === 'git') {
-                errorMessage += '\n\nStage your changes with: git add <file>';
-                errorMessage += '\nOr automatically stage all changes: aicommit2 --all';
-            } else if (vcsName === 'jujutsu') {
-                errorMessage += '\n\nJujutsu automatically tracks all changes in the working copy.';
-                errorMessage += '\nMake some changes to your files and try again.';
-            }
-
-            throw new KnownError(errorMessage);
+            throw new KnownError(ErrorMessages.noStagedChanges(vcsName), {
+                code: ErrorCode.NO_STAGED_CHANGES,
+            });
         }
 
         if (!isJsonMode) {
@@ -142,7 +122,9 @@ export default async (
 
         const availableAIs = getAvailableAIs(config, 'commit');
         if (availableAIs.length === 0) {
-            throw new KnownError('Please set at least one API key via the `aicommit2 config set` command');
+            throw new KnownError(ErrorMessages.noApiKeysConfigured(), {
+                code: ErrorCode.MISSING_API_KEY,
+            });
         }
 
         const branchName = await getBranchName();
@@ -170,7 +152,9 @@ export default async (
             selectedCommitMessage = await openEditor(selectedCommitMessage);
 
             if (!selectedCommitMessage.trim()) {
-                throw new KnownError('Commit message cannot be empty');
+                throw new KnownError(ErrorMessages.emptyCommitMessage(), {
+                    code: ErrorCode.EMPTY_COMMIT_MESSAGE,
+                });
             }
 
             consoleManager.printSuccess('Commit message edited successfully!');

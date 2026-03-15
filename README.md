@@ -78,25 +78,24 @@ _aicommit2_ automatically generates commit messages using AI. It supports [Git](
 - **[Git Hook Integration](#git-hooks)**: Can be used as a prepare-commit-msg hook
 - **[Custom Prompt](#custom-prompt-template)**: Supports user-defined system prompt templates
 
-## Supported providers
+## Supported Providers
 
-### Cloud AI Services
+| Provider | Default Model | Documentation |
+|----------|---------------|---------------|
+| OpenAI | `gpt-4o-mini` | [Guide](docs/providers/openai.md) |
+| Anthropic | `claude-sonnet-4-20250514` | [Guide](docs/providers/anthropic.md) |
+| Gemini | `gemini-3-flash-preview` | [Guide](docs/providers/gemini.md) |
+| Mistral | `mistral-small-latest` | [Guide](docs/providers/mistral.md) |
+| Codestral | `codestral-latest` | [Guide](docs/providers/mistral.md) |
+| Cohere | `command-a-03-2025` | [Guide](docs/providers/cohere.md) |
+| Groq | `llama-3.3-70b-versatile` | [Guide](docs/providers/groq.md) |
+| Perplexity | `sonar` | [Guide](docs/providers/perplexity.md) |
+| DeepSeek | `deepseek-chat` | [Guide](docs/providers/deepseek.md) |
+| GitHub Models | `gpt-4o-mini` | [Guide](docs/providers/github-models.md) |
+| Bedrock | `anthropic.claude-haiku-4-5-20251001-v1:0` | [Guide](docs/providers/bedrock.md) |
+| Ollama | *(user configured)* | [Guide](docs/providers/ollama.md) |
 
-- [OpenAI](docs/providers/openai.md)
-- [Anthropic Claude](docs/providers/anthropic.md)
-- [Gemini](docs/providers/gemini.md)
-- [Mistral & Codestral](docs/providers/mistral.md)
-- [Cohere](docs/providers/cohere.md)
-- [Groq](docs/providers/groq.md)
-- [Perplexity](docs/providers/perplexity.md)
-- [DeepSeek](docs/providers/deepseek.md)
-- [GitHub Models](docs/providers/github-models.md)
-- [Amazon Bedrock](docs/providers/bedrock.md)
-- [OpenAI API Compatibility](docs/providers/compatible.md)
-
-### Local AI Services
-
-- [Ollama](docs/providers/ollama.md)
+> 📘 For OpenAI-compatible APIs, see [Compatibility Guide](docs/providers/compatible.md)
 
 ## Setup
 
@@ -362,48 +361,47 @@ aicommit2 --all # or -a
 
 #### CLI Options
 
+Run `aicommit2 --help` to see all available options grouped by category.
+
+##### Message Options
+
 - `--locale` or `-l`: Locale to use for the generated commit messages (default: **en**)
-- `--all` or `-a`: Automatically stage changes in tracked files for the commit (default: **false**)
-- `--type` or `-t`: Git commit message format (default: **conventional**). It supports [`conventional`](https://conventionalcommits.org/) and [`gitmoji`](https://gitmoji.dev/)
-- `--confirm` or `-y`: Skip confirmation when committing after message generation (default: **false**)
-- `--clipboard` or `-c`: Copy the selected message to the clipboard (default: **false**).
-  - If you give this option, **_aicommit2_ will not commit**.
-- `--dry-run` or `-d`: Generate commit message without committing (default: **false**).
-  - Outputs the generated message without executing a commit.
-  - Useful for reviewing messages before manual commit (e.g., with GitHub Desktop).
-  - Can be combined with `--clipboard` to copy the message for use in other tools.
-- `--edit` or `-e`: Open the AI-generated commit message in your default editor for modification (default: **false**)
-  - Opens the message in the editor specified by `$VISUAL`, `$EDITOR`, or platform default
-  - Works with both Git and Jujutsu repositories
-  - Allows fine-tuning of AI-generated messages before committing
 - `--generate` or `-g`: Number of messages to generate (default: **1**)
   - **Warning**: This uses more tokens, meaning it costs more.
-- `--exclude` or `-x`: Files to exclude from AI analysis
+- `--type` or `-t`: Git commit message format (default: **conventional**). It supports [`conventional`](https://conventionalcommits.org/) and [`gitmoji`](https://gitmoji.dev/)
+- `--prompt` or `-p`: Custom prompt to fine-tune the AI generation
 - `--include-body` or `-i`: Force include commit body in all generated messages (default: **false**)
-  - When enabled, all commit messages will include a detailed body section
-  - Useful for providing more context in commit messages
-- `--auto-select` or `-s`: Automatically select the commit message when only one AI model is configured (default: **false**)
-  - When enabled and only one AI provider is configured, the generated message is automatically selected
-  - Also skips the confirmation prompt for a seamless experience
-  - Has no effect when multiple AI providers are configured
-- `--disable-lowercase`: Disable automatic lowercase conversion of commit messages (default: **false**)
-  - Preserves the original casing of commit types and descriptions
-  - Useful when working with custom commit conventions that require specific casing
-- `--hook-mode`: Run as a Git hook, typically used with [`prepare-commit-msg` hook](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks#_committing_workflow_hooks) hook (default: **false**)
-  - This mode is automatically enabled when running through the Git hook system
-  - See [Git Hooks](#git-hooks) section for more details
-- `--pre-commit`: Run in [pre-commit](https://pre-commit.com/) framework mode (default: **false**)
-  - This option is specifically for use with the pre-commit framework
-  - See [Integration with pre-commit framework](#integration-with-pre-commit-framework) section for setup instructions
-- `--verbose` or `-v`: Enable verbose logging for enhanced debugging output (default: **false**)
-  - When enabled, shows detailed log messages including readline errors and other diagnostic information
-  - Useful for troubleshooting issues or understanding the tool's internal operations
-  - Can also be set via config: `aicommit2 config set logLevel=verbose`
+
+##### Behavior
+
+- `--all` or `-a`: Automatically stage changes in tracked files for the commit (default: **false**)
+- `--confirm` or `-y`: Skip confirmation when committing after message generation (default: **false**)
+- `--auto-select` or `-s`: Automatically select when only one message is generated (default: **false**)
+- `--edit` or `-e`: Open the AI-generated commit message in your default editor (default: **false**)
+- `--clipboard` or `-c`: Copy the selected message to the clipboard (default: **false**)
+  - If you give this option, **_aicommit2_ will not commit**.
+- `--dry-run` or `-d`: Generate commit message without committing (default: **false**)
+  - Useful for reviewing messages before manual commit (e.g., with GitHub Desktop)
 - `--output` or `-o`: Output format for non-interactive mode (default: **none**)
-  - Use `--output json` for JSON Lines format (one JSON object per line)
-  - Outputs `{"subject":"...","body":"..."}` for each generated message
-  - Designed for integration with tools like [LazyGit](#lazygit)
-  - Skips TUI and exits after outputting messages
+  - Use `--output json` for [LazyGit](#lazygit) integration
+
+##### VCS Selection
+
+- `--git`: Force use Git (overrides auto-detection)
+- `--yadm`: Force use YADM (overrides auto-detection)
+- `--jj`: Force use Jujutsu (overrides auto-detection)
+- `--jj-auto-new`: Run `jj new` after `jj describe` (default: **false**)
+
+##### Hook Integration
+
+- `--hook-mode`: Run as a Git hook with [`prepare-commit-msg`](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks#_committing_workflow_hooks) (default: **false**)
+- `--pre-commit`: Run in [pre-commit](https://pre-commit.com/) framework mode (default: **false**)
+
+##### Formatting & Debug
+
+- `--exclude` or `-x`: Files to exclude from AI analysis
+- `--disable-lowercase`: Preserve original casing of commit messages (default: **false**)
+- `--verbose` or `-v`: Enable verbose logging for debugging (default: **false**)
 
 Examples:
 
@@ -422,6 +420,38 @@ aicommit2 -d -c
 
 # Enable verbose logging for debugging
 aicommit2 --verbose # or -v
+```
+
+#### Commands
+
+In addition to the main commit message generation, aicommit2 provides several utility commands:
+
+| Command | Description |
+|---------|-------------|
+| `aicommit2 config` | Manage configuration (get, set, list, del) |
+| `aicommit2 doctor` | Check health status of AI providers |
+| `aicommit2 stats` | View usage statistics and performance metrics |
+| `aicommit2 hook` | Install/uninstall Git prepare-commit-msg hook |
+| `aicommit2 log` | Manage log files |
+| `aicommit2 github-login` | Login to GitHub for GitHub Models access |
+
+```bash
+# Configuration management
+aicommit2 config set OPENAI.key=<your-key>
+aicommit2 config get OPENAI
+aicommit2 config list
+
+# Health check
+aicommit2 doctor
+
+# Statistics
+aicommit2 stats
+aicommit2 stats -d 7    # Last 7 days
+aicommit2 stats clear   # Clear all stats
+
+# Git hook
+aicommit2 hook install
+aicommit2 hook uninstall
 ```
 
 ## Integrations
@@ -600,6 +630,65 @@ aicommit2 hook uninstall
 
 Or manually delete the `.git/hooks/prepare-commit-msg` file.
 
+### Health Check
+
+Use the `doctor` command to check the status of your configured AI providers:
+
+```bash
+aicommit2 doctor
+```
+
+Example output:
+
+```
+🩺 AICommit2 Health Check
+
+Providers:
+  ✅ OPENAI         API key configured
+  ✅ OLLAMA         Running (Host: http://localhost:11434)
+  ⏭️ ANTHROPIC      Not configured
+  ⚠️ GEMINI         API key configured
+
+Summary: 2 healthy, 0 error, 1 warning, 1 skipped
+```
+
+Status icons:
+- ✅ **Healthy**: Provider is properly configured
+- ⚠️ **Warning**: Provider has issues (e.g., Ollama not running)
+- ❌ **Error**: Provider configuration has errors
+- ⏭️ **Skipped**: Provider is not configured
+
+### Statistics
+
+Use the `stats` command to view AI request statistics and performance metrics:
+
+```bash
+aicommit2 stats
+```
+
+Example output:
+
+```
+📊 AICommit2 Statistics
+   Period: 2/10/2026 - 3/10/2026
+
+Overview:
+  Total requests:     126
+  Success rate:       97.6%
+  Avg response time:  2.1s
+
+Provider Usage:
+  OPENAI         ████████████████████   78 (62%)    2.2s  100%
+  ANTHROPIC      ██████████░░░░░░░░░░   30 (24%)    2.5s   93%
+  GEMINI         ████░░░░░░░░░░░░░░░░   18 (14%)    1.6s  100%
+```
+
+Options:
+- `aicommit2 stats -d 7` - Show statistics for the last 7 days
+- `aicommit2 stats clear` - Clear all statistics
+
+Statistics are stored locally at `~/.config/aicommit2/stats.json`. Use `aicommit2 stats clear` to reset.
+
 ## Configuration
 
 aicommit2 supports configuration via command-line arguments, environment variables, and a configuration file. Settings are resolved in the following order of precedence:
@@ -744,7 +833,7 @@ aicommit2 config set \
   maxTokens=1024 \
   temperature=0.7 \
   OPENAI.key="sk-..." OPENAI.model="gpt-4o-mini" OPENAI.temperature=0.5 \
-  ANTHROPIC.key="sk-..." ANTHROPIC.model="claude-3-5-haiku-20241022" ANTHROPIC.maxTokens=2000 \
+  ANTHROPIC.key="sk-..." ANTHROPIC.model="claude-sonnet-4-20250514" ANTHROPIC.maxTokens=2000 \
   MISTRAL.key="your-key" MISTRAL.model="mistral-small-latest"  \
   OLLAMA.model="llama3.2" OLLAMA.numCtx=4096 OLLAMA.watchMode=true
 ```

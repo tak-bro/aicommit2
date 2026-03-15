@@ -3,13 +3,16 @@ import { cli } from 'cleye';
 import pkg from '../package.json';
 import aicommit2 from './commands/aicommit2.js';
 import configCommand from './commands/config.js';
+import { doctorCommand } from './commands/doctor.js';
 import githubLoginCommand from './commands/github-login.js';
 import hookCommand, { isCalledFromGitHook } from './commands/hook.js';
 import logCommand from './commands/log.js';
 import preCommitHook from './commands/pre-commit-hook.js';
 import prepareCommitMessageHook from './commands/prepare-commit-msg-hook.js';
+import { statsCommand } from './commands/stats.js';
 import watchGit from './commands/watch-git.js';
 import { RawConfig, getConfig } from './utils/config.js';
+import { renderGroupedHelp } from './utils/help-renderer.js';
 import { initializeLogger, logger } from './utils/logger.js';
 
 const rawArgv = process.argv.slice(2);
@@ -144,10 +147,11 @@ cli(
             },
         },
 
-        commands: [configCommand, githubLoginCommand, hookCommand, logCommand],
+        commands: [configCommand, doctorCommand, githubLoginCommand, hookCommand, logCommand, statsCommand],
 
         help: {
             description,
+            render: renderGroupedHelp,
         },
 
         ignoreArgv: type => type === 'unknown-flag' || type === 'argument',
