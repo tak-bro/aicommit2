@@ -1,3 +1,10 @@
+## [2.4.31](https://github.com/tak-bro/aicommit2/compare/v2.4.30...v2.4.31) (2026-03-15)
+
+
+### Bug Fixes
+
+* **nix:** flake hash update order in release pipeline ([7f0e79c](https://github.com/tak-bro/aicommit2/commit/7f0e79c47d5e3e5b86dc1e08b9366117f4ee74c1))
+
 ## [2.4.30](https://github.com/tak-bro/aicommit2/compare/v2.4.29...v2.4.30) (2026-03-11)
 
 ## [2.4.29](https://github.com/tak-bro/aicommit2/compare/v2.4.28...v2.4.29) (2026-03-05)
