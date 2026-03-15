@@ -1,4 +1,3 @@
-
 import { expect, testSuite } from 'manten';
 
 // Direct import for unit testing
@@ -6,11 +5,10 @@ import { clearStats, getStatsSummary, hasStats, recordMetric } from '../../src/s
 
 export default testSuite(({ describe }) => {
     describe('stats service', async ({ test }) => {
-        // Note: These tests modify global stats file, so they should be run in isolation
-        // In a real scenario, we'd mock the file system
+        // Note: These tests modify global stats file, run sequentially
+        // Clear at start to ensure clean state
 
         test('hasStats returns false when no stats', async () => {
-            // Clear first to ensure clean state
             await clearStats();
             const result = await hasStats();
             expect(result).toBe(false);
@@ -28,6 +26,41 @@ export default testSuite(({ describe }) => {
 
             const result = await hasStats();
             expect(result).toBe(true);
+            await clearStats();
+        });
+
+        test('clearStats removes all data', async () => {
+            await clearStats();
+
+            await recordMetric({
+                provider: 'TEST',
+                model: 'test-model',
+                responseTimeMs: 100,
+                success: true,
+            });
+
+            expect(await hasStats()).toBe(true);
+
+            await clearStats();
+
+            expect(await hasStats()).toBe(false);
+        });
+
+        test('getStatsSummary filters by days', async () => {
+            await clearStats();
+
+            await recordMetric({
+                provider: 'OPENAI',
+                model: 'gpt-4o-mini',
+                responseTimeMs: 1000,
+                success: true,
+            });
+
+            // With 30 days, should include the metric
+            const summary30Days = await getStatsSummary(30);
+            expect(summary30Days.totalRequests).toBeGreaterThanOrEqual(1);
+
+            await clearStats();
         });
 
         test('getStatsSummary returns correct data', async () => {
@@ -72,45 +105,7 @@ export default testSuite(({ describe }) => {
             expect(anthropicStats?.totalRequests).toBe(1);
             expect(anthropicStats?.failureCount).toBe(1);
 
-            // Clean up
             await clearStats();
-        });
-
-        test('getStatsSummary filters by days', async () => {
-            await clearStats();
-
-            await recordMetric({
-                provider: 'OPENAI',
-                model: 'gpt-4o-mini',
-                responseTimeMs: 1000,
-                success: true,
-            });
-
-            // With 0 days filter, should show nothing from past
-            const summaryZeroDays = await getStatsSummary(0);
-            // Current metrics should be included since they're from "today"
-            expect(summaryZeroDays.totalRequests).toBeGreaterThanOrEqual(0);
-
-            // With 30 days, should include the metric
-            const summary30Days = await getStatsSummary(30);
-            expect(summary30Days.totalRequests).toBeGreaterThanOrEqual(1);
-
-            await clearStats();
-        });
-
-        test('clearStats removes all data', async () => {
-            await recordMetric({
-                provider: 'TEST',
-                model: 'test-model',
-                responseTimeMs: 100,
-                success: true,
-            });
-
-            expect(await hasStats()).toBe(true);
-
-            await clearStats();
-
-            expect(await hasStats()).toBe(false);
         });
     });
 });
