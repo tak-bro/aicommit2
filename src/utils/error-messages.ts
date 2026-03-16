@@ -81,7 +81,7 @@ export const ErrorMessages = {
         return [
             'No AI provider API keys configured.',
             '',
-            `${theme.label('→')} Set at least one API key:`,
+            `${theme.label('→')} Please set at least one API key:`,
             `    ${theme.command('aicommit2 config set OPENAI.key=sk-...')}`,
             `    ${theme.command('aicommit2 config set ANTHROPIC.key=sk-ant-...')}`,
             `    ${theme.command('aicommit2 config set OLLAMA.model=llama3.2')} ${theme.dim('(no key needed)')}`,
