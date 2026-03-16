@@ -1,3 +1,10 @@
+## [2.5.1](https://github.com/tak-bro/aicommit2/compare/v2.5.0...v2.5.1) (2026-03-16)
+
+
+### Bug Fixes
+
+* **utils:** update error message wording ([5c285d7](https://github.com/tak-bro/aicommit2/commit/5c285d78b2f923b66180c6cd601899b69cefde87))
+
 # [2.5.0](https://github.com/tak-bro/aicommit2/compare/v2.4.31...v2.5.0) (2026-03-15)
 
 
