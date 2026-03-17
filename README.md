@@ -1123,6 +1123,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/jaytaylor"><img src="https://avatars.githubusercontent.com/jaytaylor" width="100px;" alt=""/><br /><sub><b>@jaytaylor</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=jaytaylor" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/denniswebb"><img src="https://avatars.githubusercontent.com/denniswebb" width="100px;" alt=""/><br /><sub><b>@denniswebb</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=denniswebb" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/peinan"><img src="https://avatars.githubusercontent.com/peinan" width="100px;" alt=""/><br /><sub><b>@peinan</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/issues/215" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://github.com/totoroot"><img src="https://avatars.githubusercontent.com/totoroot" width="100px;" alt=""/><br /><sub><b>@totoroot</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=totoroot" title="Code">💻</a></td>
   </tr>
 </table>
 <!-- markdownlint-restore -->
