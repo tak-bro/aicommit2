@@ -18,6 +18,7 @@ import {
     commitMsgLoader,
     emptyCodeReview,
 } from '../managers/reactive-prompt.manager.js';
+import { recordSelection } from '../services/stats/index.js';
 import { ModelName, RawConfig, applyDisableLowerCaseToConfig, applyIncludeBodyToConfig, getConfig } from '../utils/config.js';
 import { ErrorCode, ErrorMessages } from '../utils/error-messages.js';
 import { KnownError, handleCliError } from '../utils/error.js';
@@ -31,6 +32,23 @@ const consoleManager = new ConsoleManager();
 export interface JsonCommitMessage {
     subject: string;
     body: string;
+}
+
+/**
+ * Extended ReactiveListChoice with provider metadata for selection tracking
+ */
+interface CommitChoice extends ReactiveListChoice {
+    provider?: string;
+    model?: string;
+}
+
+/**
+ * Result of commit message selection
+ */
+interface CommitMessageResult {
+    value: string;
+    provider: string;
+    model: string;
 }
 
 export default async (
@@ -145,7 +163,17 @@ export default async (
             await handleCodeReview(aiRequestManager, codeReviewAIs);
         }
 
-        let selectedCommitMessage = await handleCommitMessage(aiRequestManager, availableAIs, autoSelect);
+        const commitResult = await handleCommitMessage(aiRequestManager, availableAIs, autoSelect);
+
+        // Record selection for stats (fire-and-forget)
+        recordSelection({
+            provider: commitResult.provider,
+            model: commitResult.model,
+        }).catch(() => {
+            // Silently ignore selection recording errors
+        });
+
+        let selectedCommitMessage = commitResult.value;
 
         if (edit) {
             consoleManager.printInfo('Opening editor to modify commit message...');
@@ -272,18 +300,22 @@ async function handleCodeReview(aiRequestManager: AIRequestManager, availableAIs
     }
 }
 
-async function handleCommitMessage(aiRequestManager: AIRequestManager, availableAIs: ModelName[], autoSelect: boolean) {
+const handleCommitMessage = async (
+    aiRequestManager: AIRequestManager,
+    availableAIs: ModelName[],
+    autoSelect: boolean
+): Promise<CommitMessageResult> => {
     const commitMsgPromptManager = new ReactivePromptManager(commitMsgLoader);
     let commitMsgSubscription: Subscription | null = null;
 
     try {
         if (autoSelect && availableAIs.length === 1) {
-            const messages: ReactiveListChoice[] = [];
+            const messages: CommitChoice[] = [];
             commitMsgPromptManager.startLoader();
 
             commitMsgSubscription = aiRequestManager.createCommitMsgRequests$(availableAIs).subscribe({
                 next: (choice: ReactiveListChoice) => {
-                    messages.push(choice);
+                    messages.push(choice as CommitChoice);
                     commitMsgPromptManager.refreshChoices(choice);
                 },
                 error: error => {
@@ -306,14 +338,28 @@ async function handleCommitMessage(aiRequestManager: AIRequestManager, available
             }
 
             consoleManager.print(`\n${validMessage.name}\n`);
-            return validMessage.value;
+            return {
+                value: validMessage.value,
+                provider: validMessage.provider || 'unknown',
+                model: validMessage.model || 'unknown',
+            };
         }
+
+        // Store choices with metadata for later lookup
+        const choiceMap = new Map<string, CommitChoice>();
 
         const commitMsgInquirer = commitMsgPromptManager.initPrompt();
 
         commitMsgPromptManager.startLoader();
         commitMsgSubscription = aiRequestManager.createCommitMsgRequests$(availableAIs).subscribe({
-            next: (choice: ReactiveListChoice) => commitMsgPromptManager.refreshChoices(choice),
+            next: (choice: ReactiveListChoice) => {
+                const commitChoice = choice as CommitChoice;
+                // Store choice by value for lookup after selection
+                if (commitChoice.value) {
+                    choiceMap.set(commitChoice.value, commitChoice);
+                }
+                commitMsgPromptManager.refreshChoices(choice);
+            },
             error: error => {
                 console.error('Commit message generation error:', error);
                 commitMsgPromptManager.checkErrorOnChoices();
@@ -324,19 +370,26 @@ async function handleCommitMessage(aiRequestManager: AIRequestManager, available
         const commitMsgInquirerResult = await commitMsgInquirer;
 
         consoleManager.moveCursorUp(); // NOTE: reactiveListPrompt has 2 blank lines
-        const selectedCommitMessage = commitMsgInquirerResult.aicommit2Prompt?.value;
-        if (!selectedCommitMessage) {
+        const selectedValue = commitMsgInquirerResult.aicommit2Prompt?.value;
+        if (!selectedValue) {
             throw new KnownError('An error occurred! No selected message');
         }
 
-        return selectedCommitMessage;
+        // Look up the selected choice to get provider metadata
+        const selectedChoice = choiceMap.get(selectedValue);
+
+        return {
+            value: selectedValue,
+            provider: selectedChoice?.provider || 'unknown',
+            model: selectedChoice?.model || 'unknown',
+        };
     } finally {
         if (commitMsgSubscription) {
             commitMsgSubscription.unsubscribe();
         }
         commitMsgPromptManager.destroy();
     }
-}
+};
 
 async function openEditor(message: string): Promise<string> {
     const editor = process.env.VISUAL || process.env.EDITOR || (process.platform === 'win32' ? 'notepad' : 'vi');

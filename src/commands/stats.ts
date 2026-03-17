@@ -43,10 +43,14 @@ const printProviderRow = (stats: ProviderStats, maxRequests: number): void => {
     const providerName = stats.provider.padEnd(14);
     const requestCount = `${stats.totalRequests}`.padStart(4);
     const percentStr = `(${percentage}%)`.padStart(6);
+    const selectedCount = `${stats.selectedCount}`.padStart(4);
+    const selectionRateStr = stats.selectionRate > 0 ? `(${stats.selectionRate}%)`.padStart(7) : ''.padStart(7);
     const avgTime = formatTime(stats.avgResponseTimeMs).padStart(6);
     const successStr = `${successRate}%`.padStart(4);
 
-    console.log(`  ${chalk.bold(providerName)} ${bar} ${requestCount} ${chalk.gray(percentStr)}  ${avgTime}  ${chalk.green(successStr)}`);
+    console.log(
+        `  ${chalk.bold(providerName)} ${bar} ${requestCount} ${chalk.gray(percentStr)} ${chalk.cyan(selectedCount)} ${chalk.gray(selectionRateStr)}  ${avgTime}  ${chalk.green(successStr)}`
+    );
 };
 
 /**
@@ -85,8 +89,8 @@ const showStats = async (days: number): Promise<void> => {
         const maxRequests = Math.max(...summary.providerStats.map(p => p.totalRequests));
 
         console.log(chalk.bold('Provider Usage:'));
-        console.log(chalk.gray('                                                      Avg    Success'));
-        console.log(chalk.gray('  Provider       Progress             Count           Time   Rate'));
+        console.log(chalk.gray('                                                                   Avg    Success'));
+        console.log(chalk.gray('  Provider       Progress             Count    Selected            Time   Rate'));
 
         for (const providerStats of summary.providerStats) {
             printProviderRow(providerStats, maxRequests);
