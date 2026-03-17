@@ -1,3 +1,12 @@
+## [2.5.2](https://github.com/tak-bro/aicommit2/compare/v2.5.1...v2.5.2) (2026-03-17)
+
+
+### Features
+
+* add clipboard config option ([e77dc23](https://github.com/tak-bro/aicommit2/commit/e77dc2391b1015bb217c4e21d2723dc3079541c6))
+* add clipboard config option for auto-copying ([5e18562](https://github.com/tak-bro/aicommit2/commit/5e18562cf8443174a6f2da3f0bec78e8008d640c))
+* update clipboard behavior documentation ([50fc00c](https://github.com/tak-bro/aicommit2/commit/50fc00c3625d43894e1f6b9c564a3d82f70bbf73))
+
 ## [2.5.1](https://github.com/tak-bro/aicommit2/compare/v2.5.0...v2.5.1) (2026-03-16)
 
 
