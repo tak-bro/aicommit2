@@ -24,6 +24,7 @@ Please check the documentation for each specific model to confirm which settings
 | `topP`                 | Nucleus sampling                                                    | 0.9          |
 | `codeReview`           | Whether to include an automated code review in the process          | false        |
 | `codeReviewPromptPath` | Path to code review prompt file                                     | -            |
+| `clipboard`            | Auto-copy selected commit message to clipboard                      | false        |
 | `disabled`             | Whether a specific model is enabled or disabled                     | false        |
 
 > **Tip:** To set the General Settings for each model, use the following command.
@@ -246,6 +247,26 @@ aicommit2 config set GEMINI.disabled="true"
 aicommit2 config set GROQ.disabled="true"
 ```
 
+### clipboard
+
+Default: `false`
+
+When enabled, the selected commit message will be automatically copied to the clipboard. This is useful when you want to use the generated message elsewhere (e.g., GitHub Desktop, other Git clients).
+
+```bash
+aicommit2 config set clipboard=true
+```
+
+You can also use the CLI flag:
+
+```bash
+aicommit2 --clipboard
+# or
+aicommit2 -c
+```
+
+> **Note**: When clipboard is enabled (via config or CLI flag), aicommit2 will copy the message and exit without committing.
+
 ### codeReview
 
 Default: `false`
@@ -296,4 +317,4 @@ aicommit2 config set codeReviewPromptPath="/path/to/user/prompt.txt"
 
 > All AI support the following options in General Settings.
 >
-> - systemPrompt, systemPromptPath, codeReview, codeReviewPromptPath, exclude, type, locale, generate, logging, includeBody, maxLength, disableLowerCase
+> - systemPrompt, systemPromptPath, codeReview, codeReviewPromptPath, exclude, type, locale, generate, logging, includeBody, maxLength, disableLowerCase, clipboard

@@ -248,6 +248,47 @@ export default testSuite(({ describe }) => {
             });
         });
 
+        await describe('clipboard', ({ test }) => {
+            test('setting clipboard to true', async () => {
+                const { fixture, aicommit2 } = await createFixture();
+                const { stdout } = await aicommit2(['config', 'path']);
+                const clipboard = 'clipboard=true';
+                await aicommit2(['config', 'set', clipboard]);
+
+                const configFile = await fs.readFile(stdout, 'utf8');
+                expect(configFile).toMatch(clipboard);
+
+                // Check if config get command exits successfully
+                const { exitCode } = await aicommit2(['config', 'get', 'clipboard']);
+                expect(exitCode).toBe(0);
+                await fixture.rm();
+            });
+
+            test('setting clipboard to false', async () => {
+                const { fixture, aicommit2 } = await createFixture();
+                const { stdout } = await aicommit2(['config', 'path']);
+                const clipboard = 'clipboard=false';
+                await aicommit2(['config', 'set', clipboard]);
+
+                const configFile = await fs.readFile(stdout, 'utf8');
+                expect(configFile).toMatch(clipboard);
+
+                // Check if config get command exits successfully
+                const { exitCode } = await aicommit2(['config', 'get', 'clipboard']);
+                expect(exitCode).toBe(0);
+                await fixture.rm();
+            });
+
+            test('setting invalid clipboard config', async () => {
+                const { fixture, aicommit2 } = await createFixture();
+                const { stdout } = await aicommit2(['config', 'set', 'clipboard=invalid'], {
+                    reject: false,
+                });
+                expect(stdout).toMatch('\n✖ Invalid config property clipboard: Must be a boolean(true or false)');
+                await fixture.rm();
+            });
+        });
+
         await describe('Bedrock configuration', async ({ test }) => {
             const envKeys = [
                 'AICOMMIT_CONFIG_PATH',
