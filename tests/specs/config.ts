@@ -248,6 +248,47 @@ export default testSuite(({ describe }) => {
             });
         });
 
+        await describe('autoCopy', ({ test }) => {
+            test('setting autoCopy to true', async () => {
+                const { fixture, aicommit2 } = await createFixture();
+                const { stdout } = await aicommit2(['config', 'path']);
+                const autoCopy = 'autoCopy=true';
+                await aicommit2(['config', 'set', autoCopy]);
+
+                const configFile = await fs.readFile(stdout, 'utf8');
+                expect(configFile).toMatch(autoCopy);
+
+                // Check if config get command exits successfully
+                const { exitCode } = await aicommit2(['config', 'get', 'autoCopy']);
+                expect(exitCode).toBe(0);
+                await fixture.rm();
+            });
+
+            test('setting autoCopy to false', async () => {
+                const { fixture, aicommit2 } = await createFixture();
+                const { stdout } = await aicommit2(['config', 'path']);
+                const autoCopy = 'autoCopy=false';
+                await aicommit2(['config', 'set', autoCopy]);
+
+                const configFile = await fs.readFile(stdout, 'utf8');
+                expect(configFile).toMatch(autoCopy);
+
+                // Check if config get command exits successfully
+                const { exitCode } = await aicommit2(['config', 'get', 'autoCopy']);
+                expect(exitCode).toBe(0);
+                await fixture.rm();
+            });
+
+            test('setting invalid autoCopy config', async () => {
+                const { fixture, aicommit2 } = await createFixture();
+                const { stdout } = await aicommit2(['config', 'set', 'autoCopy=invalid'], {
+                    reject: false,
+                });
+                expect(stdout).toMatch('\n✖ Invalid config property autoCopy: Must be a boolean(true or false)');
+                await fixture.rm();
+            });
+        });
+
         await describe('Bedrock configuration', async ({ test }) => {
             const envKeys = [
                 'AICOMMIT_CONFIG_PATH',
