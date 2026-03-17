@@ -161,7 +161,8 @@ export default async (
             consoleManager.print(`\n${selectedCommitMessage}\n`);
         }
 
-        if (useClipboard) {
+        const shouldCopyToClipboard = useClipboard || config.clipboard;
+        if (shouldCopyToClipboard) {
             // eslint-disable-next-line @typescript-eslint/no-var-requires
             const ncp = require('copy-paste');
             ncp.copy(selectedCommitMessage);

@@ -301,6 +301,7 @@ const generalConfigParsers = {
     forceGit: createBoolParser('forceGit'),
     disableLowerCase: createBoolParser('disableLowerCase'),
     jjAutoNew: createBoolParser('jjAutoNew'),
+    clipboard: createBoolParser('clipboard'),
 } as const;
 
 const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>> = {
@@ -1179,4 +1180,5 @@ const createConfigParser = (serviceName: string) => ({
     disabled: generalConfigParsers.disabled,
     watchMode: generalConfigParsers.watchMode,
     disableLowerCase: generalConfigParsers.disableLowerCase,
+    clipboard: generalConfigParsers.clipboard,
 });
