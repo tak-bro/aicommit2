@@ -24,7 +24,7 @@ Please check the documentation for each specific model to confirm which settings
 | `topP`                 | Nucleus sampling                                                    | 0.9          |
 | `codeReview`           | Whether to include an automated code review in the process          | false        |
 | `codeReviewPromptPath` | Path to code review prompt file                                     | -            |
-| `clipboard`            | Auto-copy selected commit message to clipboard (still commits)      | false        |
+| `autoCopy`             | Auto-copy commit message to clipboard (commits normally)            | false        |
 | `disabled`             | Whether a specific model is enabled or disabled                     | false        |
 
 > **Tip:** To set the General Settings for each model, use the following command.
@@ -247,18 +247,18 @@ aicommit2 config set GEMINI.disabled="true"
 aicommit2 config set GROQ.disabled="true"
 ```
 
-### clipboard
+### autoCopy
 
 Default: `false`
 
 When enabled, the selected commit message will be automatically copied to the clipboard **while still proceeding with the commit**. This is useful when you want to keep a copy of your commit messages.
 
 ```bash
-aicommit2 config set clipboard=true
+aicommit2 config set autoCopy=true
 ```
 
 > **Note**: This differs from the `--clipboard` (`-c`) CLI flag:
-> - **Config `clipboard=true`**: Copies message AND commits normally
+> - **Config `autoCopy=true`**: Copies message AND commits normally
 > - **CLI `--clipboard`**: Copies message and exits WITHOUT committing
 
 ### codeReview
@@ -311,4 +311,4 @@ aicommit2 config set codeReviewPromptPath="/path/to/user/prompt.txt"
 
 > All AI support the following options in General Settings.
 >
-> - systemPrompt, systemPromptPath, codeReview, codeReviewPromptPath, exclude, type, locale, generate, logging, includeBody, maxLength, disableLowerCase, clipboard
+> - systemPrompt, systemPromptPath, codeReview, codeReviewPromptPath, exclude, type, locale, generate, logging, includeBody, maxLength, disableLowerCase, autoCopy

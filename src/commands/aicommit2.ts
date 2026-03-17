@@ -162,7 +162,7 @@ export default async (
         }
 
         // Copy to clipboard if enabled (CLI flag or config)
-        const shouldCopyToClipboard = useClipboard || config.clipboard;
+        const shouldCopyToClipboard = useClipboard || config.autoCopy;
         if (shouldCopyToClipboard) {
             // eslint-disable-next-line @typescript-eslint/no-var-requires
             const ncp = require('copy-paste');
