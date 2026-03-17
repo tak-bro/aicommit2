@@ -161,15 +161,22 @@ export default async (
             consoleManager.print(`\n${selectedCommitMessage}\n`);
         }
 
+        // Copy to clipboard if enabled (CLI flag or config)
         const shouldCopyToClipboard = useClipboard || config.clipboard;
         if (shouldCopyToClipboard) {
             // eslint-disable-next-line @typescript-eslint/no-var-requires
             const ncp = require('copy-paste');
             ncp.copy(selectedCommitMessage);
-            consoleManager.printCopied();
-            if (!dryRun) {
-                process.exit();
+            // Only show message for CLI --clipboard (config clipboard copies silently)
+            if (useClipboard) {
+                consoleManager.printCopied();
             }
+        }
+
+        // CLI --clipboard: copy only, don't commit (existing behavior)
+        // config clipboard: copy and continue to commit
+        if (useClipboard && !dryRun) {
+            process.exit();
         }
 
         if (dryRun) {

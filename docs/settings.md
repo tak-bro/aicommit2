@@ -24,7 +24,7 @@ Please check the documentation for each specific model to confirm which settings
 | `topP`                 | Nucleus sampling                                                    | 0.9          |
 | `codeReview`           | Whether to include an automated code review in the process          | false        |
 | `codeReviewPromptPath` | Path to code review prompt file                                     | -            |
-| `clipboard`            | Auto-copy selected commit message to clipboard                      | false        |
+| `clipboard`            | Auto-copy selected commit message to clipboard (still commits)      | false        |
 | `disabled`             | Whether a specific model is enabled or disabled                     | false        |
 
 > **Tip:** To set the General Settings for each model, use the following command.
@@ -251,21 +251,15 @@ aicommit2 config set GROQ.disabled="true"
 
 Default: `false`
 
-When enabled, the selected commit message will be automatically copied to the clipboard. This is useful when you want to use the generated message elsewhere (e.g., GitHub Desktop, other Git clients).
+When enabled, the selected commit message will be automatically copied to the clipboard **while still proceeding with the commit**. This is useful when you want to keep a copy of your commit messages.
 
 ```bash
 aicommit2 config set clipboard=true
 ```
 
-You can also use the CLI flag:
-
-```bash
-aicommit2 --clipboard
-# or
-aicommit2 -c
-```
-
-> **Note**: When clipboard is enabled (via config or CLI flag), aicommit2 will copy the message and exit without committing.
+> **Note**: This differs from the `--clipboard` (`-c`) CLI flag:
+> - **Config `clipboard=true`**: Copies message AND commits normally
+> - **CLI `--clipboard`**: Copies message and exits WITHOUT committing
 
 ### codeReview
 

@@ -378,9 +378,8 @@ Run `aicommit2 --help` to see all available options grouped by category.
 - `--confirm` or `-y`: Skip confirmation when committing after message generation (default: **false**)
 - `--auto-select` or `-s`: Automatically select when only one message is generated (default: **false**)
 - `--edit` or `-e`: Open the AI-generated commit message in your default editor (default: **false**)
-- `--clipboard` or `-c`: Copy the selected message to the clipboard (default: **false**)
-  - Can also be set via config: `aicommit2 config set clipboard=true`
-  - If enabled, **_aicommit2_ will not commit**.
+- `--clipboard` or `-c`: Copy the selected message to the clipboard and exit without committing (default: **false**)
+  - For auto-copy while still committing, use config: `aicommit2 config set clipboard=true`
 - `--dry-run` or `-d`: Generate commit message without committing (default: **false**)
   - Useful for reviewing messages before manual commit (e.g., with GitHub Desktop)
 - `--output` or `-o`: Output format for non-interactive mode (default: **none**)
@@ -868,7 +867,7 @@ For detailed information about all available settings, see the [General Settings
 | `maxTokens`            | Maximum number of tokens to generate                                | 1024         |
 | `includeBody`          | Whether the commit message includes body                            | false        |
 | `codeReview`           | Enable automated code review                                        | false        |
-| `clipboard`            | Auto-copy selected commit message to clipboard                      | false        |
+| `clipboard`            | Auto-copy selected commit message to clipboard (still commits)      | false        |
 | `systemPromptPath`     | Path to custom system prompt file                                   | -            |
 
 ```bash
