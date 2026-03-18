@@ -669,18 +669,25 @@ Example output:
 
 ```
 📊 AICommit2 Statistics
-   Period: 2/10/2026 - 3/10/2026
+   Period: 3/16/2026 - 3/17/2026
 
 Overview:
-  Total requests:     126
-  Success rate:       97.6%
-  Avg response time:  2.1s
+  Total requests:     144
+  Success rate:       60.4%
+  Avg response time:  1.3s
 
 Provider Usage:
-  OPENAI         ████████████████████   78 (62%)    2.2s  100%
-  ANTHROPIC      ██████████░░░░░░░░░░   30 (24%)    2.5s   93%
-  GEMINI         ████░░░░░░░░░░░░░░░░   18 (14%)    1.6s  100%
+  Provider       Rate  Bar                    Cnt  Selected        Time
+  GROQ           100%  ████████████████████    48     1  (2.1%)   732ms
+  OPENAI           0%  ░░░░░░░░░░░░░░░░░░░░    46     0           514ms
+  GITHUB_MODELS   96%  ███████████████████░    25     0            2.0s
+  GEMINI          29%  ██████░░░░░░░░░░░░░░    14     0            2.8s
 ```
+
+**Columns:**
+- **Rate**: Success rate (bar color: 🟢 ≥80%, 🟡 50-79%, 🔴 <50%)
+- **Cnt**: Total request count
+- **Selected**: How many times you chose this provider's message
 
 Options:
 - `aicommit2 stats -d 7` - Show statistics for the last 7 days

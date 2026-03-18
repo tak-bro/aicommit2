@@ -94,8 +94,7 @@ class ProviderRegistryClass {
             tap({
                 next: choice => {
                     // Attach provider metadata to the choice for selection tracking
-                    (choice as ReactiveListChoice & { provider?: string; model?: string }).provider = name;
-                    (choice as ReactiveListChoice & { provider?: string; model?: string }).model = model || 'unknown';
+                    Object.assign(choice, { provider: name, model: model || 'unknown' });
 
                     // Record metric only once per request (first emission)
                     if (metricRecorded) {

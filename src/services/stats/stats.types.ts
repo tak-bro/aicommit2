@@ -67,11 +67,3 @@ export interface RecordMetricOptions {
     errorCode?: string;
     tokensUsed?: number;
 }
-
-/**
- * Options for recording a selection
- */
-export interface RecordSelectionOptions {
-    provider: string;
-    model: string;
-}

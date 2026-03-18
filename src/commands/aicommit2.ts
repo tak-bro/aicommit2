@@ -166,10 +166,7 @@ export default async (
         const commitResult = await handleCommitMessage(aiRequestManager, availableAIs, autoSelect);
 
         // Record selection for stats (fire-and-forget)
-        recordSelection({
-            provider: commitResult.provider,
-            model: commitResult.model,
-        }).catch(() => {
+        recordSelection(commitResult.provider, commitResult.model).catch(() => {
             // Silently ignore selection recording errors
         });
 

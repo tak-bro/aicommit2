@@ -1,15 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 
-import {
-    ProviderStats,
-    RecordMetricOptions,
-    RecordSelectionOptions,
-    RequestMetric,
-    SelectionMetric,
-    StatsData,
-    StatsSummary,
-} from './stats.types.js';
+import { ProviderStats, RecordMetricOptions, RequestMetric, SelectionMetric, StatsData, StatsSummary } from './stats.types.js';
 import { AICOMMIT_CONFIG_DIR } from '../../utils/config.js';
 import { fileExists } from '../../utils/fs.js';
 
@@ -87,11 +79,11 @@ export const recordMetric = async (options: RecordMetricOptions): Promise<void> 
 /**
  * Record a user selection
  */
-export const recordSelection = async (options: RecordSelectionOptions): Promise<void> => {
+export const recordSelection = async (provider: string, model: string): Promise<void> => {
     const selection: SelectionMetric = {
         timestamp: Date.now(),
-        provider: options.provider,
-        model: options.model,
+        provider,
+        model,
     };
 
     const data = await readStatsData();
@@ -124,7 +116,7 @@ const calculateProviderStats = (provider: string, metrics: RequestMetric[], sele
     const successMetrics = providerMetrics.filter(m => m.success);
     const responseTimes = providerMetrics.map(m => m.responseTimeMs);
     const selectedCount = providerSelections.length;
-    const selectionRate = successMetrics.length > 0 ? Math.round((selectedCount / successMetrics.length) * 1000) / 10 : 0;
+    const selectionRate = successMetrics.length > 0 ? Math.min(100, Math.round((selectedCount / successMetrics.length) * 1000) / 10) : 0;
 
     return {
         provider,
@@ -159,10 +151,8 @@ export const getStatsSummary = async (days: number = DEFAULT_DISPLAY_DAYS): Prom
         };
     }
 
-    // Get unique providers from both metrics and selections
-    const metricProviders = filteredMetrics.map(m => m.provider);
-    const selectionProviders = filteredSelections.map(s => s.provider);
-    const providers = [...new Set([...metricProviders, ...selectionProviders])];
+    // Get unique providers (selections can only exist for providers with metrics)
+    const providers = [...new Set(filteredMetrics.map(m => m.provider))];
     const providerStats = providers
         .map(provider => calculateProviderStats(provider, filteredMetrics, filteredSelections))
         .sort((a, b) => b.totalRequests - a.totalRequests);

@@ -100,8 +100,7 @@ export class AIRequestManager {
             tap({
                 next: choice => {
                     // Attach provider metadata to the choice for selection tracking
-                    (choice as ReactiveListChoice & { provider?: string; model?: string }).provider = providerName;
-                    (choice as ReactiveListChoice & { provider?: string; model?: string }).model = model;
+                    Object.assign(choice, { provider: providerName, model });
 
                     // Record metric only once per request (first emission)
                     if (metricRecorded) {
