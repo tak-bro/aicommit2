@@ -12,6 +12,15 @@ export interface RequestMetric {
 }
 
 /**
+ * Single metric entry for a user selection
+ */
+export interface SelectionMetric {
+    timestamp: number;
+    provider: string;
+    model: string;
+}
+
+/**
  * Aggregated stats for a provider
  */
 export interface ProviderStats {
@@ -19,6 +28,8 @@ export interface ProviderStats {
     totalRequests: number;
     successCount: number;
     failureCount: number;
+    selectedCount: number;
+    selectionRate: number; // selectedCount / successCount * 100
     avgResponseTimeMs: number;
     minResponseTimeMs: number;
     maxResponseTimeMs: number;
@@ -42,6 +53,7 @@ export interface StatsSummary {
 export interface StatsData {
     version: number;
     metrics: RequestMetric[];
+    selections: SelectionMetric[];
 }
 
 /**
@@ -54,4 +66,16 @@ export interface RecordMetricOptions {
     success: boolean;
     errorCode?: string;
     tokensUsed?: number;
+    /** Days to retain stats data. Older data will be auto-cleaned. Default: 30 */
+    statsDays?: number;
+}
+
+/**
+ * Options for recording a selection
+ */
+export interface RecordSelectionOptions {
+    provider: string;
+    model: string;
+    /** Days to retain stats data. Older data will be auto-cleaned. Default: 30 */
+    statsDays?: number;
 }

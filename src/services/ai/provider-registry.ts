@@ -75,7 +75,7 @@ class ProviderRegistryClass {
 
     /**
      * Create Observable for service request (commit or review)
-     * Wraps the request with metric recording
+     * Wraps the request with metric recording and provider metadata
      */
     createRequest$ = (name: ModelName, params: AIServiceParams, requestType: 'commit' | 'review'): Observable<ReactiveListChoice> => {
         const service = this.createService(name, params);
@@ -93,6 +93,14 @@ class ProviderRegistryClass {
         return request$.pipe(
             tap({
                 next: choice => {
+                    // Attach provider metadata to the choice for selection tracking
+                    Object.assign(choice, { provider: name, model: model || 'unknown' });
+
+                    // Skip metric recording if stats is disabled (enabled by default)
+                    if (params.statsEnabled === false) {
+                        return;
+                    }
+
                     // Record metric only once per request (first emission)
                     if (metricRecorded) {
                         return;
@@ -106,6 +114,7 @@ class ProviderRegistryClass {
                         responseTimeMs: Date.now() - startTime,
                         success: !isError,
                         errorCode: isError ? 'REQUEST_ERROR' : undefined,
+                        statsDays: params.statsDays,
                     }).catch(() => {
                         // Silently ignore metric recording errors
                     });

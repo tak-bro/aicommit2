@@ -201,7 +201,7 @@ const formatProviderName = (name: string): string => name.padEnd(MAX_PROVIDER_LE
  */
 const printResults = (results: ProviderHealthResult[]): void => {
     console.log('');
-    console.log(chalk.bold('🩺 AICommit2 Health Check'));
+    console.log(chalk.bold('🩺 aicommit2 Health Check'));
     console.log('');
     console.log(chalk.bold('Providers:'));
 

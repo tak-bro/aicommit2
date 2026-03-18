@@ -24,29 +24,34 @@ const formatDate = (timestamp: number): string => {
 };
 
 /**
- * Generate a progress bar string
+ * Generate a progress bar string with color based on percentage
  */
 const createProgressBar = (percentage: number): string => {
     const filled = Math.round((percentage / 100) * PROGRESS_BAR_WIDTH);
     const empty = PROGRESS_BAR_WIDTH - filled;
-    return chalk.cyan('█'.repeat(filled)) + chalk.gray('░'.repeat(empty));
+
+    // Color based on success rate: green (≥80%), yellow (50-79%), red (<50%)
+    const barColor = percentage >= 80 ? chalk.green : percentage >= 50 ? chalk.yellow : chalk.red;
+    return barColor('█'.repeat(filled)) + chalk.gray('░'.repeat(empty));
 };
 
 /**
  * Print provider statistics row
  */
-const printProviderRow = (stats: ProviderStats, maxRequests: number): void => {
-    const percentage = Math.round((stats.totalRequests / maxRequests) * 100);
-    const bar = createProgressBar(percentage);
+const printProviderRow = (stats: ProviderStats): void => {
     const successRate = stats.totalRequests > 0 ? Math.round((stats.successCount / stats.totalRequests) * 100) : 0;
+    const bar = createProgressBar(successRate);
 
     const providerName = stats.provider.padEnd(14);
+    const successRateStr = `${successRate}%`.padStart(4);
     const requestCount = `${stats.totalRequests}`.padStart(4);
-    const percentStr = `(${percentage}%)`.padStart(6);
+    const selectedCount = `${stats.selectedCount}`.padStart(4);
+    const selectionRateStr = stats.selectionRate > 0 ? `(${stats.selectionRate}%)`.padStart(7) : ''.padStart(7);
     const avgTime = formatTime(stats.avgResponseTimeMs).padStart(6);
-    const successStr = `${successRate}%`.padStart(4);
 
-    console.log(`  ${chalk.bold(providerName)} ${bar} ${requestCount} ${chalk.gray(percentStr)}  ${avgTime}  ${chalk.green(successStr)}`);
+    console.log(
+        `  ${chalk.bold(providerName)} ${successRateStr}  ${bar}  ${requestCount}  ${chalk.cyan(selectedCount)} ${chalk.gray(selectionRateStr)}  ${avgTime}`
+    );
 };
 
 /**
@@ -69,7 +74,7 @@ const showStats = async (days: number): Promise<void> => {
     }
 
     console.log('');
-    console.log(chalk.bold(`📊 AICommit2 Statistics`));
+    console.log(chalk.bold(`📊 aicommit2 Statistics`));
     console.log(chalk.gray(`   Period: ${formatDate(summary.periodStart)} - ${formatDate(summary.periodEnd)}`));
     console.log('');
 
@@ -82,14 +87,12 @@ const showStats = async (days: number): Promise<void> => {
 
     // Provider breakdown
     if (summary.providerStats.length > 0) {
-        const maxRequests = Math.max(...summary.providerStats.map(p => p.totalRequests));
-
         console.log(chalk.bold('Provider Usage:'));
-        console.log(chalk.gray('                                                      Avg    Success'));
-        console.log(chalk.gray('  Provider       Progress             Count           Time   Rate'));
+        // Match exact spacing of data row: 2 + 14 + 1 + 4 + 2 + 20 + 2 + 4 + 2 + 4 + 1 + 7 + 2 + 6
+        console.log(chalk.gray('  Provider       Rate  Bar                    Cnt  Selected        Time'));
 
         for (const providerStats of summary.providerStats) {
-            printProviderRow(providerStats, maxRequests);
+            printProviderRow(providerStats);
         }
         console.log('');
     }

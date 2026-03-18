@@ -1,7 +1,7 @@
 <div align="center">
   <div>
-    <img src="https://github.com/tak-bro/aicommit2/blob/main/img/demo-min.gif?raw=true" alt="AICommit2"/>
-    <h1 align="center">AICommit2</h1>
+    <img src="https://github.com/tak-bro/aicommit2/blob/main/img/demo-min.gif?raw=true" alt="aicommit2"/>
+    <h1 align="center">aicommit2</h1>
   </div>
   <p>
     A Reactive CLI that generates commit messages for Git, YADM, and Jujutsu with Ollama, ChatGPT, Gemini, Claude, Mistral, and other AI
@@ -668,19 +668,26 @@ aicommit2 stats
 Example output:
 
 ```
-📊 AICommit2 Statistics
-   Period: 2/10/2026 - 3/10/2026
+📊 aicommit2 Statistics
+   Period: 3/16/2026 - 3/17/2026
 
 Overview:
-  Total requests:     126
-  Success rate:       97.6%
-  Avg response time:  2.1s
+  Total requests:     144
+  Success rate:       60.4%
+  Avg response time:  1.3s
 
 Provider Usage:
-  OPENAI         ████████████████████   78 (62%)    2.2s  100%
-  ANTHROPIC      ██████████░░░░░░░░░░   30 (24%)    2.5s   93%
-  GEMINI         ████░░░░░░░░░░░░░░░░   18 (14%)    1.6s  100%
+  Provider       Rate  Bar                    Cnt  Selected        Time
+  GROQ           100%  ████████████████████    48     1  (2.1%)   732ms
+  OPENAI           0%  ░░░░░░░░░░░░░░░░░░░░    46     0           514ms
+  GITHUB_MODELS   96%  ███████████████████░    25     0            2.0s
+  GEMINI          29%  ██████░░░░░░░░░░░░░░    14     0            2.8s
 ```
+
+**Columns:**
+- **Rate**: Success rate (bar color: 🟢 ≥80%, 🟡 50-79%, 🔴 <50%)
+- **Cnt**: Total request count
+- **Selected**: How many times you chose this provider's message
 
 Options:
 - `aicommit2 stats -d 7` - Show statistics for the last 7 days
@@ -867,6 +874,8 @@ For detailed information about all available settings, see the [General Settings
 | `includeBody`          | Whether the commit message includes body                            | false        |
 | `codeReview`           | Enable automated code review                                        | false        |
 | `autoCopy`             | Auto-copy commit message to clipboard (commits normally)            | false        |
+| `useStats`             | Enable usage statistics tracking                                    | true         |
+| `statsDays`            | Days to retain statistics data (auto-cleanup)                       | 30           |
 | `systemPromptPath`     | Path to custom system prompt file                                   | -            |
 
 ```bash
@@ -1123,6 +1132,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/jaytaylor"><img src="https://avatars.githubusercontent.com/jaytaylor" width="100px;" alt=""/><br /><sub><b>@jaytaylor</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=jaytaylor" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/denniswebb"><img src="https://avatars.githubusercontent.com/denniswebb" width="100px;" alt=""/><br /><sub><b>@denniswebb</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=denniswebb" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/peinan"><img src="https://avatars.githubusercontent.com/peinan" width="100px;" alt=""/><br /><sub><b>@peinan</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/issues/215" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://github.com/totoroot"><img src="https://avatars.githubusercontent.com/totoroot" width="100px;" alt=""/><br /><sub><b>@totoroot</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=totoroot" title="Code">💻</a></td>
   </tr>
 </table>
 <!-- markdownlint-restore -->

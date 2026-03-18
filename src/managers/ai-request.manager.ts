@@ -67,6 +67,8 @@ export class AIRequestManager {
                 stagedDiff: this.stagedDiff,
                 keyName: model as ModelName,
                 branchName: this.branchName,
+                statsEnabled: this.config.useStats,
+                statsDays: this.config.statsDays,
             },
             requestType
         );
@@ -99,6 +101,14 @@ export class AIRequestManager {
         return request$.pipe(
             tap({
                 next: choice => {
+                    // Attach provider metadata to the choice for selection tracking
+                    Object.assign(choice, { provider: providerName, model });
+
+                    // Skip metric recording if stats is disabled (enabled by default)
+                    if (this.config.useStats === false) {
+                        return;
+                    }
+
                     // Record metric only once per request (first emission)
                     if (metricRecorded) {
                         return;
@@ -112,6 +122,7 @@ export class AIRequestManager {
                         responseTimeMs: Date.now() - startTime,
                         success: !isError,
                         errorCode: isError ? 'REQUEST_ERROR' : undefined,
+                        statsDays: this.config.statsDays,
                     }).catch(() => {
                         // Silently ignore metric recording errors
                     });

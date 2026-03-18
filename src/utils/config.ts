@@ -302,6 +302,16 @@ const generalConfigParsers = {
     disableLowerCase: createBoolParser('disableLowerCase'),
     jjAutoNew: createBoolParser('jjAutoNew'),
     autoCopy: createBoolParser('autoCopy'),
+    useStats: createBoolParser('useStats', true),
+    statsDays: (statsDays?: string) => {
+        if (!statsDays) {
+            return 30; // Default: 30 days retention, matches DEFAULT_DISPLAY_DAYS in stats.service.ts
+        }
+        parseAssert('statsDays', /^\d+$/.test(statsDays), 'Must be an integer');
+        const parsed = Number(statsDays);
+        parseAssert('statsDays', parsed > 0, 'Must be greater than 0');
+        return parsed;
+    },
 } as const;
 
 const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>> = {
