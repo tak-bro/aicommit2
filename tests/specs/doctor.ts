@@ -8,7 +8,7 @@ export default testSuite(({ describe }) => {
             const { fixture, aicommit2 } = await createFixture();
             const { stdout } = await aicommit2(['doctor']);
 
-            expect(stdout).toMatch('AICommit2 Health Check');
+            expect(stdout).toMatch('aicommit2 Health Check');
             expect(stdout).toMatch('Providers:');
             expect(stdout).toMatch('Summary:');
             await fixture.rm();

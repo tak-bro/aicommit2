@@ -1,7 +1,7 @@
 <div align="center">
   <div>
-    <img src="https://github.com/tak-bro/aicommit2/blob/main/img/demo-min.gif?raw=true" alt="AICommit2"/>
-    <h1 align="center">AICommit2</h1>
+    <img src="https://github.com/tak-bro/aicommit2/blob/main/img/demo-min.gif?raw=true" alt="aicommit2"/>
+    <h1 align="center">aicommit2</h1>
   </div>
   <p>
     A Reactive CLI that generates commit messages for Git, YADM, and Jujutsu with Ollama, ChatGPT, Gemini, Claude, Mistral, and other AI
@@ -668,7 +668,7 @@ aicommit2 stats
 Example output:
 
 ```
-📊 AICommit2 Statistics
+📊 aicommit2 Statistics
    Period: 3/16/2026 - 3/17/2026
 
 Overview:

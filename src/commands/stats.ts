@@ -74,7 +74,7 @@ const showStats = async (days: number): Promise<void> => {
     }
 
     console.log('');
-    console.log(chalk.bold(`📊 AICommit2 Statistics`));
+    console.log(chalk.bold(`📊 aicommit2 Statistics`));
     console.log(chalk.gray(`   Period: ${formatDate(summary.periodStart)} - ${formatDate(summary.periodEnd)}`));
     console.log('');
 
