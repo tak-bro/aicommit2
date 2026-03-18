@@ -25,6 +25,10 @@ export interface AIServiceParams {
     keyName: ModelName;
     logSessionId?: string;
     branchName?: string;
+    /** Whether stats recording is enabled */
+    statsEnabled?: boolean;
+    /** Days to retain stats data */
+    statsDays?: number;
 }
 
 export interface AIServiceError extends Error {

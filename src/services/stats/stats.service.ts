@@ -1,7 +1,15 @@
 import fs from 'fs/promises';
 import path from 'path';
 
-import { ProviderStats, RecordMetricOptions, RequestMetric, SelectionMetric, StatsData, StatsSummary } from './stats.types.js';
+import {
+    ProviderStats,
+    RecordMetricOptions,
+    RecordSelectionOptions,
+    RequestMetric,
+    SelectionMetric,
+    StatsData,
+    StatsSummary,
+} from './stats.types.js';
 import { AICOMMIT_CONFIG_DIR } from '../../utils/config.js';
 import { fileExists } from '../../utils/fs.js';
 
@@ -46,14 +54,29 @@ const readStatsData = async (): Promise<StatsData> => {
 };
 
 /**
- * Write stats data to file
+ * Filter out data older than the specified days
  */
-const writeStatsData = async (data: StatsData): Promise<void> => {
+const cleanupOldData = (data: StatsData, days: number): StatsData => {
+    const cutoffTime = Date.now() - days * 24 * 60 * 60 * 1000;
+    return {
+        version: data.version,
+        metrics: data.metrics.filter(m => m.timestamp >= cutoffTime),
+        selections: data.selections.filter(s => s.timestamp >= cutoffTime),
+    };
+};
+
+/**
+ * Write stats data to file with optional auto-cleanup
+ */
+const writeStatsData = async (data: StatsData, statsDays?: number): Promise<void> => {
     const filePath = getStatsFilePath();
     const dir = path.dirname(filePath);
 
+    // Auto-cleanup old data if statsDays is specified
+    const dataToWrite = statsDays ? cleanupOldData(data, statsDays) : data;
+
     await fs.mkdir(dir, { recursive: true });
-    await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
+    await fs.writeFile(filePath, JSON.stringify(dataToWrite, null, 2), 'utf-8');
 };
 
 /**
@@ -73,23 +96,23 @@ export const recordMetric = async (options: RecordMetricOptions): Promise<void> 
     const data = await readStatsData();
     data.metrics.push(metric);
 
-    await writeStatsData(data);
+    await writeStatsData(data, options.statsDays);
 };
 
 /**
  * Record a user selection
  */
-export const recordSelection = async (provider: string, model: string): Promise<void> => {
+export const recordSelection = async (options: RecordSelectionOptions): Promise<void> => {
     const selection: SelectionMetric = {
         timestamp: Date.now(),
-        provider,
-        model,
+        provider: options.provider,
+        model: options.model,
     };
 
     const data = await readStatsData();
     data.selections.push(selection);
 
-    await writeStatsData(data);
+    await writeStatsData(data, options.statsDays);
 };
 
 /**

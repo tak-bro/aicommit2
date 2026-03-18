@@ -165,10 +165,16 @@ export default async (
 
         const commitResult = await handleCommitMessage(aiRequestManager, availableAIs, autoSelect);
 
-        // Record selection for stats (fire-and-forget)
-        recordSelection(commitResult.provider, commitResult.model).catch(() => {
-            // Silently ignore selection recording errors
-        });
+        // Record selection for stats (fire-and-forget, enabled by default)
+        if (config.useStats !== false) {
+            recordSelection({
+                provider: commitResult.provider,
+                model: commitResult.model,
+                statsDays: config.statsDays,
+            }).catch(() => {
+                // Silently ignore selection recording errors
+            });
+        }
 
         let selectedCommitMessage = commitResult.value;
 

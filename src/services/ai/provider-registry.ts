@@ -96,6 +96,11 @@ class ProviderRegistryClass {
                     // Attach provider metadata to the choice for selection tracking
                     Object.assign(choice, { provider: name, model: model || 'unknown' });
 
+                    // Skip metric recording if stats is disabled (enabled by default)
+                    if (params.statsEnabled === false) {
+                        return;
+                    }
+
                     // Record metric only once per request (first emission)
                     if (metricRecorded) {
                         return;
@@ -109,6 +114,7 @@ class ProviderRegistryClass {
                         responseTimeMs: Date.now() - startTime,
                         success: !isError,
                         errorCode: isError ? 'REQUEST_ERROR' : undefined,
+                        statsDays: params.statsDays,
                     }).catch(() => {
                         // Silently ignore metric recording errors
                     });

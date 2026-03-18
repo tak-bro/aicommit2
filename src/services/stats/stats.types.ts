@@ -66,4 +66,16 @@ export interface RecordMetricOptions {
     success: boolean;
     errorCode?: string;
     tokensUsed?: number;
+    /** Days to retain stats data. Older data will be auto-cleaned. Default: 30 */
+    statsDays?: number;
+}
+
+/**
+ * Options for recording a selection
+ */
+export interface RecordSelectionOptions {
+    provider: string;
+    model: string;
+    /** Days to retain stats data. Older data will be auto-cleaned. Default: 30 */
+    statsDays?: number;
 }

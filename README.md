@@ -874,6 +874,8 @@ For detailed information about all available settings, see the [General Settings
 | `includeBody`          | Whether the commit message includes body                            | false        |
 | `codeReview`           | Enable automated code review                                        | false        |
 | `autoCopy`             | Auto-copy commit message to clipboard (commits normally)            | false        |
+| `useStats`             | Enable usage statistics tracking                                    | true         |
+| `statsDays`            | Days to retain statistics data (auto-cleanup)                       | 30           |
 | `systemPromptPath`     | Path to custom system prompt file                                   | -            |
 
 ```bash

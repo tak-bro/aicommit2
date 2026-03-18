@@ -25,6 +25,8 @@ Please check the documentation for each specific model to confirm which settings
 | `codeReview`           | Whether to include an automated code review in the process          | false        |
 | `codeReviewPromptPath` | Path to code review prompt file                                     | -            |
 | `autoCopy`             | Auto-copy commit message to clipboard (commits normally)            | false        |
+| `useStats`             | Enable usage statistics tracking                                    | true         |
+| `statsDays`            | Days to retain statistics data (auto-cleanup)                       | 30           |
 | `disabled`             | Whether a specific model is enabled or disabled                     | false        |
 
 > **Tip:** To set the General Settings for each model, use the following command.
@@ -261,6 +263,34 @@ aicommit2 config set autoCopy=true
 > - **Config `autoCopy=true`**: Copies message AND commits normally
 > - **CLI `--clipboard`**: Copies message and exits WITHOUT committing
 
+### useStats
+
+Default: `true`
+
+Controls whether usage statistics are collected. When enabled, aicommit2 tracks AI provider usage, success rates, response times, and selection counts. View statistics with `aicommit2 stats`.
+
+```bash
+# Disable statistics collection
+aicommit2 config set useStats=false
+
+# Re-enable statistics
+aicommit2 config set useStats=true
+```
+
+### statsDays
+
+Default: `30`
+
+The number of days to retain statistics data. Data older than this threshold is automatically cleaned up during stats recording. This helps manage storage while keeping recent usage data.
+
+```bash
+# Keep 7 days of stats
+aicommit2 config set statsDays=7
+
+# Keep 90 days of stats
+aicommit2 config set statsDays=90
+```
+
 ### codeReview
 
 Default: `false`
@@ -311,4 +341,4 @@ aicommit2 config set codeReviewPromptPath="/path/to/user/prompt.txt"
 
 > All AI support the following options in General Settings.
 >
-> - systemPrompt, systemPromptPath, codeReview, codeReviewPromptPath, exclude, type, locale, generate, logging, includeBody, maxLength, disableLowerCase, autoCopy
+> - systemPrompt, systemPromptPath, codeReview, codeReviewPromptPath, exclude, type, locale, generate, logging, includeBody, maxLength, disableLowerCase, autoCopy, useStats, statsDays
