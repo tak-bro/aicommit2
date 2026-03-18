@@ -1,3 +1,17 @@
+## [2.5.3](https://github.com/tak-bro/aicommit2/compare/v2.5.2...v2.5.3) (2026-03-18)
+
+
+### Bug Fixes
+
+* simplify hash extraction in release workflow ([22ec857](https://github.com/tak-bro/aicommit2/commit/22ec85763ca7938efaabcdad4d39818cfcc4e00e))
+
+
+### Features
+
+* add usage stats and retention config ([8541a7c](https://github.com/tak-bro/aicommit2/commit/8541a7c5d495908b23e1f9e6e13d88f3fb4fa65f))
+* **stats:** add selection tracking and display ([7f29a4e](https://github.com/tak-bro/aicommit2/commit/7f29a4eb247e92db705ab8bafbe8169512c993dc))
+* **stats:** improve statistics display and logic ([e959eba](https://github.com/tak-bro/aicommit2/commit/e959ebae2ed72d82eb3e53ffae5eda8d0d2bb2a8))
+
 ## [2.5.2](https://github.com/tak-bro/aicommit2/compare/v2.5.1...v2.5.2) (2026-03-17)
 
 
