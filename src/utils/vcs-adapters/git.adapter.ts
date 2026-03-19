@@ -46,36 +46,27 @@ export class GitAdapter extends BaseVCSAdapter {
 
     async getStagedDiff(excludeFiles?: string[], exclude?: string[]): Promise<VCSDiff | null> {
         const diffCached = ['diff', '--cached', '--diff-algorithm=minimal'];
-        const { stdout: files } = await execa('git', [
-            ...diffCached,
-            '--name-only',
-            ...this.filesToExclude,
+        const userExcludeArgs = [
             ...(excludeFiles ? excludeFiles.map(this.excludeFromDiff) : []),
             ...(exclude ? exclude.map(this.excludeFromDiff) : []),
+        ];
+        const defaultExcludeArgs = [...this.filesToExclude, ...userExcludeArgs];
+
+        // Run file list, diff content, and binary detection in parallel
+        const [filesResult, diffResult, numstatResult] = await Promise.all([
+            execa('git', [...diffCached, '--name-only', ...defaultExcludeArgs]),
+            execa('git', [...diffCached, ...defaultExcludeArgs]),
+            execa('git', [...diffCached, '--numstat', ...userExcludeArgs]),
         ]);
 
+        const files = filesResult.stdout;
         if (!files) {
             return null;
         }
 
-        // Get the regular diff
-        const { stdout: diff } = await execa('git', [
-            ...diffCached,
-            ...this.filesToExclude,
-            ...(excludeFiles ? excludeFiles.map(this.excludeFromDiff) : []),
-            ...(exclude ? exclude.map(this.excludeFromDiff) : []),
-        ]);
-
-        // Get file list including binary files
+        const diff = diffResult.stdout;
         const allFiles = files.split('\n').filter(Boolean);
-
-        // Check for binary files that git can't diff
-        const { stdout: binaryCheck } = await execa('git', [
-            ...diffCached,
-            '--numstat',
-            ...(excludeFiles ? excludeFiles.map(this.excludeFromDiff) : []),
-            ...(exclude ? exclude.map(this.excludeFromDiff) : []),
-        ]);
+        const binaryCheck = numstatResult.stdout;
 
         const binaryFiles: string[] = [];
         const numstatLines = binaryCheck.split('\n').filter(Boolean);
@@ -116,36 +107,26 @@ export class GitAdapter extends BaseVCSAdapter {
     }
 
     async getCommitDiff(commitHash: string, excludeFiles?: string[], exclude?: string[]): Promise<VCSDiff | null> {
-        const diffCommand = ['diff-tree', '-r', '--no-commit-id', '--name-only', commitHash];
-        const { stdout: files } = await execa('git', [
-            ...diffCommand,
-            ...this.filesToExclude,
+        const userExcludeArgs = [
             ...(excludeFiles ? excludeFiles.map(this.excludeFromDiff) : []),
             ...(exclude ? exclude.map(this.excludeFromDiff) : []),
+        ];
+        const defaultExcludeArgs = [...this.filesToExclude, ...userExcludeArgs];
+
+        // Run file list, diff content, and binary detection in parallel
+        const [filesResult, diffResult, numstatResult] = await Promise.all([
+            execa('git', ['diff-tree', '-r', '--no-commit-id', '--name-only', commitHash, ...defaultExcludeArgs]),
+            execa('git', ['show', commitHash, '--', ...defaultExcludeArgs]),
+            execa('git', ['diff-tree', '-r', '--numstat', commitHash, ...userExcludeArgs]),
         ]);
 
+        const files = filesResult.stdout;
         if (!files) {
             return null;
         }
 
-        const { stdout: diff } = await execa('git', [
-            'show',
-            commitHash,
-            '--',
-            ...this.filesToExclude,
-            ...(excludeFiles ? excludeFiles.map(this.excludeFromDiff) : []),
-            ...(exclude ? exclude.map(this.excludeFromDiff) : []),
-        ]);
-
-        // Check for binary files
-        const { stdout: binaryCheck } = await execa('git', [
-            'diff-tree',
-            '-r',
-            '--numstat',
-            commitHash,
-            ...(excludeFiles ? excludeFiles.map(this.excludeFromDiff) : []),
-            ...(exclude ? exclude.map(this.excludeFromDiff) : []),
-        ]);
+        const diff = diffResult.stdout;
+        const binaryCheck = numstatResult.stdout;
 
         const binaryFiles: string[] = [];
         const numstatLines = binaryCheck.split('\n').filter(Boolean);

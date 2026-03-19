@@ -7,6 +7,8 @@ import ora, { Ora } from 'ora';
 
 import { getDetectedMessage } from '../utils/vcs.js';
 
+const LARGE_DIFF_THRESHOLD_BYTES = 100_000;
+
 export class ConsoleManager {
     private title = 'aicommit2';
     private loader: Ora | undefined;
@@ -44,9 +46,27 @@ export class ConsoleManager {
     }
 
     printStagedFiles(staged: { files: string[]; diff: string }) {
-        console.log(chalk.bold.green('✔ ') + chalk.bold(`${getDetectedMessage(staged)}:`));
+        const diffSizeBytes = Buffer.byteLength(staged.diff, 'utf8');
+        const diffSize = this.formatBytes(diffSizeBytes);
+        console.log(chalk.bold.green('✔ ') + chalk.bold(`${getDetectedMessage(staged)}`) + chalk.dim(` (${diffSize})`) + chalk.bold(':'));
         console.log(`${staged.files.map(file => `     ${file}`).join('\n')}\n`);
+
+        const isLargeDiff = diffSizeBytes > LARGE_DIFF_THRESHOLD_BYTES;
+        if (isLargeDiff) {
+            console.log(chalk.yellow(`⚠ Large diff detected (${diffSize}). This may increase processing time and costs.`));
+            console.log(chalk.dim(`  Consider using --exclude to filter large files.\n`));
+        }
     }
+
+    private formatBytes = (bytes: number): string => {
+        if (bytes < 1024) {
+            return `${bytes} B`;
+        }
+        if (bytes < 1024 * 1024) {
+            return `${(bytes / 1024).toFixed(1)} KB`;
+        }
+        return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    };
 
     printAnalyzed() {
         console.log(`\n${chalk.bold.green('✔')} ${chalk.bold(`Changes analyzed`)}`);

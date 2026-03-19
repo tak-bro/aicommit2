@@ -77,8 +77,14 @@ export default async (
             consoleManager.printTitle();
         }
 
+        // QW-5: Show immediate feedback during initialization
+        const initSpinner = isJsonMode ? null : consoleManager.displaySpinner('Detecting repository...');
+
         await assertGitRepo();
         if (stageAll) {
+            if (initSpinner) {
+                initSpinner.text = 'Staging changes...';
+            }
             const vcsName = await getVCSName();
             if (vcsName === 'git') {
                 // Use 'git add .' to stage all changes including untracked files in the project directory
@@ -90,6 +96,10 @@ export default async (
                 await execa('yadm', ['add', '--update']);
             }
             // For Jujutsu, no staging needed - working copy is already staged
+        }
+
+        if (initSpinner) {
+            initSpinner.text = 'Loading configuration...';
         }
 
         const configOverrides: RawConfig = {
@@ -123,9 +133,11 @@ export default async (
             autoNew: jjAutoNew || config.jjAutoNew,
         };
 
-        const detectingFilesSpinner = isJsonMode ? null : consoleManager.displaySpinner('Detecting staged files');
+        if (initSpinner) {
+            initSpinner.text = 'Detecting staged files...';
+        }
         const staged = await getStagedDiff(excludeFiles, config.exclude);
-        detectingFilesSpinner?.stop();
+        initSpinner?.stop();
 
         if (!staged) {
             const vcsName = await getVCSName();
@@ -354,6 +366,10 @@ const handleCommitMessage = async (
         const commitMsgInquirer = commitMsgPromptManager.initPrompt();
 
         commitMsgPromptManager.startLoader();
+
+        // QW-3: Track received messages to show progress in loader
+        let receivedCount = 0;
+
         commitMsgSubscription = aiRequestManager.createCommitMsgRequests$(availableAIs).subscribe({
             next: (choice: ReactiveListChoice) => {
                 const commitChoice = choice as CommitChoice;
@@ -361,6 +377,16 @@ const handleCommitMessage = async (
                 if (commitChoice.value) {
                     choiceMap.set(commitChoice.value, commitChoice);
                 }
+
+                // Update loader with response progress
+                const isValidResponse = choice.value && !choice.isError && !choice.disabled;
+                if (isValidResponse) {
+                    receivedCount++;
+                    commitMsgPromptManager.updateLoaderText(
+                        `AI is analyzing your changes (${receivedCount} message${receivedCount > 1 ? 's' : ''} generated)`
+                    );
+                }
+
                 commitMsgPromptManager.refreshChoices(choice);
             },
             error: error => {

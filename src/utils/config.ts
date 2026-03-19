@@ -873,6 +873,10 @@ export const applyDisableLowerCaseToConfig = (config: ValidConfig): void => {
 
 let loadedConfigPath: string | undefined;
 
+// Memoize readConfigFile to avoid repeated file I/O + INI parsing within a session
+let cachedRawConfig: RawConfig | null = null;
+let cachedConfigPath: string | null = null;
+
 const parseCliArgs = (rawArgv: string[] = []): RawConfig => {
     const cliConfig: RawConfig = {};
     for (const arg of rawArgv) {
@@ -926,13 +930,20 @@ const expandEnvVariables = (content: string) => {
 };
 
 export const readConfigFile = async (): Promise<RawConfig> => {
-    const configPath = await getConfigPath(); // Use the shared function to get the path
+    const configPath = await getConfigPath();
+
+    // Return cached result if config path hasn't changed
+    if (cachedRawConfig && cachedConfigPath === configPath) {
+        return cachedRawConfig;
+    }
 
     loadedConfigPath = configPath;
     try {
         const configContent = await fs.readFile(configPath, 'utf8');
         const expandedConfigContent = expandEnvVariables(configContent);
-        return ini.parse(expandedConfigContent);
+        cachedRawConfig = ini.parse(expandedConfigContent);
+        cachedConfigPath = configPath;
+        return cachedRawConfig;
     } catch (error) {
         // If the file doesn't exist or can't be read, return an empty config
         if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
@@ -943,6 +954,14 @@ export const readConfigFile = async (): Promise<RawConfig> => {
         loadedConfigPath = undefined;
         return {};
     }
+};
+
+/**
+ * Invalidate the config file cache. Called after setConfigs/addConfigs modify the file.
+ */
+export const invalidateConfigCache = (): void => {
+    cachedRawConfig = null;
+    cachedConfigPath = null;
 };
 
 export const getConfig = async (cliConfig: RawConfig, rawArgv: string[] = []): Promise<ValidConfig> => {
@@ -1064,6 +1083,7 @@ export const setConfigs = async (keyValues: [key: string, value: any][]) => {
     const writeDir = path.dirname(writePath); // Get the directory path
     await fs.mkdir(writeDir, { recursive: true }); // Create the directory if it doesn't exist
     await fs.writeFile(writePath, ini.stringify(config), 'utf8');
+    invalidateConfigCache();
 };
 
 export const addConfigs = async (keyValues: [key: string, value: any][]) => {
@@ -1142,6 +1162,7 @@ export const addConfigs = async (keyValues: [key: string, value: any][]) => {
     const writeDir = path.dirname(writePath); // Get the directory path
     await fs.mkdir(writeDir, { recursive: true }); // Create the directory if it doesn't exist
     await fs.writeFile(writePath, ini.stringify(config), 'utf8');
+    invalidateConfigCache();
 };
 
 export const listConfigs = async () => {
