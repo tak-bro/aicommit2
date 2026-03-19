@@ -1,3 +1,11 @@
+## [2.5.4](https://github.com/tak-bro/aicommit2/compare/v2.5.3...v2.5.4) (2026-03-19)
+
+
+### Features
+
+* add setup command and lazy-load AI services ([86f2ee6](https://github.com/tak-bro/aicommit2/commit/86f2ee655dd9df50dd7a1d12c72c9f896509896e))
+* improve VCS detection and diff processing ([15c7697](https://github.com/tak-bro/aicommit2/commit/15c7697b0801105063b740dab61fb7f95b759f35))
+
 ## [2.5.3](https://github.com/tak-bro/aicommit2/compare/v2.5.2...v2.5.3) (2026-03-18)
 
 
