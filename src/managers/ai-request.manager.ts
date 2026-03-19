@@ -1,10 +1,8 @@
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
-import { Observable, catchError, from, mergeMap, tap } from 'rxjs';
+import { Observable, catchError, from, mergeMap, switchMap } from 'rxjs';
 
 import { AIServiceFactory } from '../services/ai/ai-service.factory.js';
-import { OpenAICompatibleService } from '../services/ai/openai-compatible.service.js';
-import { ProviderRegistry, createErrorChoice } from '../services/ai/provider-registry.js';
-import { recordMetric } from '../services/stats/index.js';
+import { ProviderRegistry, createErrorChoice, withProviderMetadata } from '../services/ai/provider-registry.js';
 import { ModelName, ValidConfig } from '../utils/config.js';
 import { GitDiff } from '../utils/vcs.js';
 
@@ -75,58 +73,39 @@ export class AIRequestManager {
     };
 
     private createCompatibleServiceRequest$ = (
-        // Config type is inferred from ValidConfig[ModelName]
         config: ValidConfig[ModelName],
         model: string,
         requestType: 'commit' | 'review'
     ): Observable<ReactiveListChoice> => {
-        const service = AIServiceFactory.create(OpenAICompatibleService, {
-            config: {
-                ...config,
-                url: config.url || '',
-                path: config.path || '',
-                model,
-            },
-            stagedDiff: this.stagedDiff,
-            keyName: model as ModelName,
-            branchName: this.branchName,
-        });
-
         const startTime = Date.now();
         const providerName = this.extractProviderName(config.url);
-        let metricRecorded = false;
 
-        const request$ = requestType === 'commit' ? service.generateCommitMessage$() : service.generateCodeReview$();
+        // Lazy-load OpenAICompatibleService to avoid importing openai SDK at startup
+        return from(import('../services/ai/openai-compatible.service.js')).pipe(
+            switchMap(({ OpenAICompatibleService }) => {
+                const service = AIServiceFactory.create(OpenAICompatibleService, {
+                    config: {
+                        ...config,
+                        url: config.url || '',
+                        path: config.path || '',
+                        model,
+                    },
+                    stagedDiff: this.stagedDiff,
+                    keyName: model as ModelName,
+                    branchName: this.branchName,
+                });
 
-        return request$.pipe(
-            tap({
-                next: choice => {
-                    // Attach provider metadata to the choice for selection tracking
-                    Object.assign(choice, { provider: providerName, model });
+                const request$ = requestType === 'commit' ? service.generateCommitMessage$() : service.generateCodeReview$();
 
-                    // Skip metric recording if stats is disabled (enabled by default)
-                    if (this.config.useStats === false) {
-                        return;
-                    }
-
-                    // Record metric only once per request (first emission)
-                    if (metricRecorded) {
-                        return;
-                    }
-                    metricRecorded = true;
-
-                    const isError = choice.isError === true;
-                    recordMetric({
+                return request$.pipe(
+                    withProviderMetadata({
                         provider: providerName,
                         model,
-                        responseTimeMs: Date.now() - startTime,
-                        success: !isError,
-                        errorCode: isError ? 'REQUEST_ERROR' : undefined,
+                        startTime,
+                        statsEnabled: this.config.useStats,
                         statsDays: this.config.statsDays,
-                    }).catch(() => {
-                        // Silently ignore metric recording errors
-                    });
-                },
+                    })
+                );
             })
         );
     };

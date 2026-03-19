@@ -4,7 +4,7 @@ import path from 'path';
 import { expect, testSuite } from 'manten';
 
 import { getAvailableAIs } from '../../src/commands/get-available-ais.js';
-import { ValidConfig, getConfig } from '../../src/utils/config.js';
+import { ValidConfig, getConfig, invalidateConfigCache } from '../../src/utils/config.js';
 import { ensureDirectoryExists } from '../../src/utils/utils.js';
 import { createFixture } from '../utils.js';
 
@@ -556,6 +556,7 @@ export default testSuite(({ describe }) => {
                 expect(reviewAIs).toContain('BEDROCK');
 
                 // Test b: Only access keys configured
+                invalidateConfigCache();
                 await fs.writeFile(configPath, ['[BEDROCK]', 'model=anthropic.claude', 'codeReview=true', ''].join('\n'));
                 delete process.env.AWS_PROFILE;
                 process.env.AWS_ACCESS_KEY_ID = 'AKIA_TEST';
@@ -568,6 +569,7 @@ export default testSuite(({ describe }) => {
                 expect(reviewAIs).toContain('BEDROCK');
 
                 // Test c: Only API key configured
+                invalidateConfigCache();
                 await fs.writeFile(
                     configPath,
                     ['[BEDROCK]', 'model=anthropic.claude', 'key=test-api-key', 'codeReview=true', ''].join('\n')
@@ -583,6 +585,7 @@ export default testSuite(({ describe }) => {
                 expect(reviewAIs).toContain('BEDROCK');
 
                 // Test d: Both profile and API key configured
+                invalidateConfigCache();
                 await fs.writeFile(
                     configPath,
                     ['[BEDROCK]', 'model=anthropic.claude', 'key=test-api-key', 'codeReview=true', ''].join('\n')
