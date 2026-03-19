@@ -85,6 +85,13 @@ export class ReactivePromptManager {
         this.loader$.next({ isLoading: true });
     }
 
+    updateLoaderText(text: string) {
+        if (this.isDestroyed) {
+            return;
+        }
+        this.loader$.next({ isLoading: true, startOption: { text } });
+    }
+
     clearLoader() {
         if (!this.inquirerInstance) {
             return;

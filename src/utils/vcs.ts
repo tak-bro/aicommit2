@@ -125,44 +125,50 @@ async function detectVCS(): Promise<BaseVCSAdapter> {
         }
     }
 
-    let jjError: Error | null = null;
-    let gitError: Error | null = null;
-    let yadmError: Error | null = null;
+    // Auto-detect all VCS in parallel, then pick by priority (Jujutsu → Git → YADM)
+    const [jjResult, gitResult, yadmResult] = await Promise.allSettled([
+        (async () => {
+            const a = new JujutsuAdapter();
+            await a.assertRepo();
+            return a;
+        })(),
+        (async () => {
+            const a = new GitAdapter();
+            await a.assertRepo();
+            return a;
+        })(),
+        (async () => {
+            const a = new YadmAdapter();
+            await a.assertRepo();
+            return a;
+        })(),
+    ]);
 
-    // Try Jujutsu first (since jj repos are colocated with .git by default since v0.34.0)
-    try {
-        const jjAdapter = new JujutsuAdapter();
-        await jjAdapter.assertRepo();
-        return jjAdapter;
-    } catch (error) {
-        jjError = error instanceof Error ? error : new Error(String(error));
+    if (jjResult.status === 'fulfilled') {
+        return jjResult.value;
+    }
+    if (gitResult.status === 'fulfilled') {
+        return gitResult.value;
+    }
+    if (yadmResult.status === 'fulfilled') {
+        return yadmResult.value;
     }
 
-    // Try Git before YADM (since .git directories indicate regular Git repos)
-    // YADM is a Git wrapper that manages dotfiles in $HOME, so it should be checked last
-    try {
-        const gitAdapter = new GitAdapter();
-        await gitAdapter.assertRepo();
-        return gitAdapter;
-    } catch (error) {
-        gitError = error instanceof Error ? error : new Error(String(error));
-    }
+    // All failed — collect error messages
+    const extractMsg = (result: PromiseSettledResult<BaseVCSAdapter>): string => {
+        if (result.status === 'fulfilled') {
+            return 'unexpected success';
+        }
+        return String(result.reason?.message ?? result.reason)
+            .replace('KnownError: ', '')
+            .trim();
+    };
 
-    // Try YADM last (only for dotfiles in $HOME without a .git directory)
-    try {
-        const yadmAdapter = new YadmAdapter();
-        await yadmAdapter.assertRepo();
-        return yadmAdapter;
-    } catch (error) {
-        yadmError = error instanceof Error ? error : new Error(String(error));
-    }
+    const jjMsg = extractMsg(jjResult);
+    const gitMsg = extractMsg(gitResult);
+    const yadmMsg = extractMsg(yadmResult);
 
-    if (jjError && gitError && yadmError) {
-        const jjMsg = jjError.message.replace('KnownError: ', '').trim();
-        const gitMsg = gitError.message.replace('KnownError: ', '').trim();
-        const yadmMsg = yadmError.message.replace('KnownError: ', '').trim();
-
-        throw new KnownError(`No supported VCS repository found.
+    throw new KnownError(`No supported VCS repository found.
 
 Jujutsu Error:
 ${jjMsg}
@@ -180,9 +186,6 @@ Solutions:
 • Navigate to an existing Jujutsu, Git, or YADM repository
 • Set FORCE_GIT="true" environment variable to force Git detection
 • Set forceGit=true in config file to prefer Git detection`);
-    }
-
-    throw new KnownError('Unexpected error during VCS detection');
 }
 
 /**
