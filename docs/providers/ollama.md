@@ -144,9 +144,7 @@ aicommit2 config set OLLAMA.maxTokens=4000
 
 Default: `0` (no limit)
 
-Limit the number of characters in the diff sent to the AI model. Local models with small context windows may produce malformed responses when the diff is too large. Set this to truncate the diff before sending.
-
-> **Note:** When set, the truncated diff is sent to all configured providers, not just Ollama.
+Limit the number of characters in the diff sent to Ollama. Local models with small context windows may produce malformed responses when the diff is too large. Set this to truncate the diff before sending. Other providers are not affected.
 
 ```sh
 aicommit2 config set OLLAMA.maxDiffSize=20000
