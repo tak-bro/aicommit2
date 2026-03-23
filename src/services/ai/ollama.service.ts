@@ -11,6 +11,7 @@ import { DEFAULT_OLLAMA_HOST } from '../../utils/config.js';
 import { PlainErrorMessages } from '../../utils/error-messages.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 import { capitalizeFirstLetter, getRandomNumber } from '../../utils/utils.js';
+import { truncateDiff } from '../../utils/vcs.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
 
 export interface OllamaServiceError extends AIServiceError {}
@@ -62,6 +63,19 @@ export class OllamaService extends AIService {
         return null;
     }
 
+    /**
+     * Get diff, truncated if maxDiffSize is configured.
+     */
+    private getTruncatedDiff = (): string => {
+        const diff = this.params.stagedDiff.diff;
+        const maxDiffSize = (this.params.config as { maxDiffSize?: number }).maxDiffSize || 0;
+        if (maxDiffSize <= 0) {
+            return diff;
+        }
+        const { diff: truncated } = truncateDiff(diff, maxDiffSize);
+        return truncated;
+    };
+
     generateCommitMessage$(): Observable<ReactiveListChoice> {
         const isStream = this.params.config.stream || false;
 
@@ -103,20 +117,9 @@ export class OllamaService extends AIService {
     };
 
     private streamChunks = async (subject: Subject<string>): Promise<void> => {
-        const diff = this.params.stagedDiff.diff;
-        const { systemPrompt, systemPromptPath, codeReviewPromptPath, logging, locale, generate, type, maxLength } = this.params.config;
-        const promptOptions: PromptOptions = {
-            ...DEFAULT_PROMPT_OPTIONS,
-            locale,
-            maxLength,
-            type,
-            generate,
-            systemPrompt,
-            systemPromptPath,
-            codeReviewPromptPath,
-            vcs_branch: this.params.branchName || '',
-        };
-        const generatedSystemPrompt = generatePrompt(promptOptions);
+        const diff = this.getTruncatedDiff();
+        const { logging } = this.params.config;
+        const generatedSystemPrompt = this.buildCommitPrompt();
 
         await this.checkIsAvailableOllama();
 
@@ -176,7 +179,7 @@ export class OllamaService extends AIService {
     };
 
     private async generateMessage(requestType: RequestType): Promise<AIResponse[]> {
-        const diff = this.params.stagedDiff.diff;
+        const diff = this.getTruncatedDiff();
         const { systemPrompt, systemPromptPath, codeReviewPromptPath, logging, locale, generate, type, maxLength } = this.params.config;
         const promptOptions: PromptOptions = {
             ...DEFAULT_PROMPT_OPTIONS,
