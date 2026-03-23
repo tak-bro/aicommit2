@@ -53,7 +53,10 @@ brew install aicommit2
 # Or install via npm
 npm install -g aicommit2
 
-# Set up at least one AI provider
+# Set up AI providers (interactive wizard)
+aicommit2 setup
+
+# Or configure manually
 aicommit2 config set OPENAI.key=<your-key>
 
 # Use in your Git repository
@@ -113,8 +116,16 @@ npm install -g aicommit2
 
 > ⚠️ For npm installation, the minimum supported version of Node.js is v18. Check your Node.js version with `node --version`.
 
-2. Set up API keys (**at least ONE key must be set**):
+2. Configure your AI provider(s) (**at least ONE provider must be configured**):
 
+**Option A: Interactive setup wizard (recommended)**
+```bash
+aicommit2 setup
+```
+
+> 👉 The setup wizard guides you through provider selection, API key entry, and model configuration in one step.
+
+**Option B: Manual configuration**
 ```bash
 aicommit2 config set OPENAI.key=<your key>
 aicommit2 config set ANTHROPIC.key=<your key>
@@ -427,6 +438,7 @@ In addition to the main commit message generation, aicommit2 provides several ut
 
 | Command | Description |
 |---------|-------------|
+| `aicommit2 setup` | Interactive setup wizard for configuring AI providers |
 | `aicommit2 config` | Manage configuration (get, set, list, del) |
 | `aicommit2 doctor` | Check health status of AI providers |
 | `aicommit2 stats` | View usage statistics and performance metrics |
@@ -435,6 +447,9 @@ In addition to the main commit message generation, aicommit2 provides several ut
 | `aicommit2 github-login` | Login to GitHub for GitHub Models access |
 
 ```bash
+# Interactive setup wizard
+aicommit2 setup
+
 # Configuration management
 aicommit2 config set OPENAI.key=<your-key>
 aicommit2 config get OPENAI
@@ -640,7 +655,7 @@ aicommit2 doctor
 Example output:
 
 ```
-🩺 AICommit2 Health Check
+🩺 aicommit2 Health Check
 
 Providers:
   ✅ OPENAI         API key configured
@@ -877,6 +892,7 @@ For detailed information about all available settings, see the [General Settings
 | `useStats`             | Enable usage statistics tracking                                    | true         |
 | `statsDays`            | Days to retain statistics data (auto-cleanup)                       | 30           |
 | `systemPromptPath`     | Path to custom system prompt file                                   | -            |
+| `stream`               | **Experimental.** Enable streaming for real-time commit message generation | false        |
 
 ```bash
 # Example: Set settings for a specific model
@@ -889,20 +905,20 @@ aicommit2 config set ANTHROPIC.includeBody=true
 
 ### Available Settings by Model
 
-|                           | timeout | temperature | maxTokens | topP |
-| :-----------------------: | :-----: | :---------: | :-------: | :--: |
-|        **OpenAI**         |    ✓    |      ✓      |     ✓     |  ✓   |
-|   **Anthropic Claude**    |    ✓    |      ✓      |     ✓     |  ✓   |
-|        **Gemini**         |         |      ✓      |     ✓     |  ✓   |
-|      **Mistral AI**       |    ✓    |      ✓      |     ✓     |  ✓   |
-|       **Codestral**       |    ✓    |      ✓      |     ✓     |  ✓   |
-|        **Cohere**         |    ✓    |      ✓      |     ✓     |  ✓   |
-|         **Groq**          |    ✓    |      ✓      |     ✓     |  ✓   |
-|      **Perplexity**       |    ✓    |      ✓      |     ✓     |  ✓   |
-|       **DeepSeek**        |    ✓    |      ✓      |     ✓     |  ✓   |
-|     **Github Models**     |    ✓    |      ✓      |     ✓     |  ✓   |
-|        **Ollama**         |    ✓    |      ✓      |           |  ✓   |
-| **OpenAI API-Compatible** |    ✓    |      ✓      |     ✓     |  ✓   |
+|                           | timeout | temperature | maxTokens | topP | stream |
+| :-----------------------: | :-----: | :---------: | :-------: | :--: | :----: |
+|        **OpenAI**         |    ✓    |      ✓      |     ✓     |  ✓   |   ✓    |
+|   **Anthropic Claude**    |    ✓    |      ✓      |     ✓     |  ✓   |   ✓    |
+|        **Gemini**         |         |      ✓      |     ✓     |  ✓   |   ✓    |
+|      **Mistral AI**       |    ✓    |      ✓      |     ✓     |  ✓   |        |
+|       **Codestral**       |    ✓    |      ✓      |     ✓     |  ✓   |        |
+|        **Cohere**         |    ✓    |      ✓      |     ✓     |  ✓   |        |
+|         **Groq**          |    ✓    |      ✓      |     ✓     |  ✓   |   ✓    |
+|      **Perplexity**       |    ✓    |      ✓      |     ✓     |  ✓   |        |
+|       **DeepSeek**        |    ✓    |      ✓      |     ✓     |  ✓   |   ✓    |
+|     **Github Models**     |    ✓    |      ✓      |     ✓     |  ✓   |        |
+|        **Ollama**         |    ✓    |      ✓      |           |  ✓   |   ✓    |
+| **OpenAI API-Compatible** |    ✓    |      ✓      |     ✓     |  ✓   |   ✓    |
 
 ## Logging
 

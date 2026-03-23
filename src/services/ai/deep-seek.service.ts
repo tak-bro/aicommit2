@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import OpenAI from 'openai';
-import { Observable, catchError, concatMap, from, map } from 'rxjs';
+import { Observable, Subject, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
@@ -18,6 +18,7 @@ interface DeepSeekChoice {
     message: DeepSeekMessage;
     finish_reason: string | null;
     index: number;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     logprobs?: any;
 }
 
@@ -47,7 +48,6 @@ export class DeepSeekService extends AIService {
     protected getServiceSpecificErrorMessage(error: AIServiceError): string | null {
         const errorMsg = error.message || '';
 
-        // DeepSeek-specific error messages
         if (errorMsg.includes('API key') || errorMsg.includes('api_key')) {
             return 'Invalid API key. Check your DeepSeek API key in configuration';
         }
@@ -77,15 +77,15 @@ export class DeepSeekService extends AIService {
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
+        const isStream = this.params.config.stream || false;
+
+        if (isStream) {
+            return this.generateStreamingCommitMessage$();
+        }
+
         return fromPromise(this.generateMessage('commit')).pipe(
             concatMap(messages => from(messages)),
-            map(data => ({
-                name: `${this.serviceName} ${data.title}`,
-                short: data.title,
-                value: this.params.config.includeBody ? data.value : data.title,
-                description: this.params.config.includeBody ? data.value : '',
-                isError: false,
-            })),
+            map(this.formatAsChoice),
             catchError(this.handleError$)
         );
     }
@@ -103,6 +103,97 @@ export class DeepSeekService extends AIService {
             catchError(this.handleError$)
         );
     }
+
+    private generateStreamingCommitMessage$ = (): Observable<ReactiveListChoice> => {
+        const { generate, type } = this.params.config;
+
+        return this.createStreamingCommitMessages$(
+            subject => {
+                this.streamChunks(subject).catch(err => subject.error(err));
+            },
+            type,
+            generate
+        );
+    };
+
+    private streamChunks = async (subject: Subject<string>): Promise<void> => {
+        const diff = this.params.stagedDiff.diff;
+        const { systemPrompt, systemPromptPath, codeReviewPromptPath, logging, locale, generate, type, maxLength } = this.params.config;
+        const promptOptions: PromptOptions = {
+            ...DEFAULT_PROMPT_OPTIONS,
+            locale,
+            maxLength,
+            type,
+            generate,
+            systemPrompt,
+            systemPromptPath,
+            codeReviewPromptPath,
+            vcs_branch: this.params.branchName || '',
+        };
+        const generatedSystemPrompt = generatePrompt(promptOptions);
+
+        this.checkAvailableModels();
+
+        const userPrompt = generateUserPrompt(diff, 'commit');
+        const baseUrl = this.params.config.url || 'https://api.deepseek.com';
+        const url = `${baseUrl}/chat/completions`;
+        const headers = {
+            Authorization: `Bearer ${this.params.config.key}`,
+            'Content-Type': 'application/json',
+        };
+
+        logAIRequest(diff, 'commit', 'DeepSeek', this.params.config.model, url, headers, logging);
+        logAIPrompt(diff, 'commit', 'DeepSeek', generatedSystemPrompt, userPrompt, logging);
+
+        // OpenAI SDK typing requires `any` for stream-conditional payload
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const payload: any = {
+            messages: [
+                { role: 'system', content: generatedSystemPrompt },
+                { role: 'user', content: userPrompt },
+            ],
+            model: this.params.config.model,
+            max_tokens: this.params.config.maxTokens,
+            top_p: this.params.config.topP,
+            temperature: this.params.config.temperature,
+            stream: true,
+        };
+
+        logAIPayload(diff, 'commit', 'DeepSeek', payload, logging);
+
+        const startTime = Date.now();
+        let accumulatedText = '';
+
+        try {
+            const stream = await this.deepSeek.chat.completions.create(payload, {
+                timeout: this.params.config.timeout,
+            });
+            const chatCompletionStream = stream as unknown as AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>;
+
+            for await (const chunk of chatCompletionStream) {
+                const content = chunk.choices?.[0]?.delta?.content || '';
+                // DeepSeek reasoning models emit reasoning_content
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const reasoning = (chunk.choices?.[0]?.delta as any)?.reasoning_content || '';
+                const chunkText = `${content}${reasoning}`;
+
+                if (chunkText) {
+                    accumulatedText += chunkText;
+                    subject.next(chunkText);
+                }
+            }
+
+            const duration = Date.now() - startTime;
+            logAIResponse(diff, 'commit', 'DeepSeek', { streamed: true, totalLength: accumulatedText.length }, logging);
+            logAIComplete(diff, 'commit', 'DeepSeek', duration, accumulatedText, logging);
+
+            subject.complete();
+        } catch (error) {
+            const duration = Date.now() - startTime;
+            logAIError(diff, 'commit', 'DeepSeek', error, logging);
+            subject.error(error);
+        }
+    };
 
     private async generateMessage(requestType: RequestType): Promise<AIResponse[]> {
         const diff = this.params.stagedDiff.diff;
@@ -130,7 +221,6 @@ export class DeepSeekService extends AIService {
             'Content-Type': 'application/json',
         };
 
-        // 상세 로깅
         logAIRequest(diff, requestType, 'DeepSeek', this.params.config.model, url, headers, logging);
         logAIPrompt(diff, requestType, 'DeepSeek', generatedSystemPrompt, userPrompt, logging);
 
@@ -155,14 +245,8 @@ export class DeepSeekService extends AIService {
 
         const payload = {
             messages: [
-                {
-                    role: 'system',
-                    content: systemPrompt,
-                },
-                {
-                    role: 'user',
-                    content: userPrompt,
-                },
+                { role: 'system' as const, content: systemPrompt },
+                { role: 'user' as const, content: userPrompt },
             ],
             model: this.params.config.model,
             max_tokens: this.params.config.maxTokens,

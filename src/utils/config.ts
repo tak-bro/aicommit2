@@ -299,6 +299,7 @@ const generalConfigParsers = {
     disabled: createBoolParser('disabled'),
     watchMode: createBoolParser('watchMode'),
     forceGit: createBoolParser('forceGit'),
+    stream: createBoolParser('stream'),
     disableLowerCase: createBoolParser('disableLowerCase'),
     jjAutoNew: createBoolParser('jjAutoNew'),
     autoCopy: createBoolParser('autoCopy'),
@@ -349,6 +350,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         includeBody: generalConfigParsers.includeBody,
         codeReview: generalConfigParsers.codeReview,
         disabled: generalConfigParsers.disabled,
+        stream: generalConfigParsers.stream,
         watchMode: generalConfigParsers.watchMode,
         disableLowerCase: generalConfigParsers.disableLowerCase,
     },
@@ -376,6 +378,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         includeBody: generalConfigParsers.includeBody,
         codeReview: generalConfigParsers.codeReview,
         disabled: generalConfigParsers.disabled,
+        stream: generalConfigParsers.stream,
         watchMode: generalConfigParsers.watchMode,
         disableLowerCase: generalConfigParsers.disableLowerCase,
     },
@@ -404,6 +407,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         topP: generalConfigParsers.topP,
         codeReview: generalConfigParsers.codeReview,
         disabled: generalConfigParsers.disabled,
+        stream: generalConfigParsers.stream,
         watchMode: generalConfigParsers.watchMode,
         disableLowerCase: generalConfigParsers.disableLowerCase,
     },
@@ -432,6 +436,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         topP: generalConfigParsers.topP,
         codeReview: generalConfigParsers.codeReview,
         disabled: generalConfigParsers.disabled,
+        stream: generalConfigParsers.stream,
         watchMode: generalConfigParsers.watchMode,
         disableLowerCase: generalConfigParsers.disableLowerCase,
     },
@@ -460,6 +465,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         topP: generalConfigParsers.topP,
         codeReview: generalConfigParsers.codeReview,
         disabled: generalConfigParsers.disabled,
+        stream: generalConfigParsers.stream,
         watchMode: generalConfigParsers.watchMode,
         disableLowerCase: generalConfigParsers.disableLowerCase,
     },
@@ -488,6 +494,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         includeBody: generalConfigParsers.includeBody,
         codeReview: generalConfigParsers.codeReview,
         disabled: generalConfigParsers.disabled,
+        stream: generalConfigParsers.stream,
         watchMode: generalConfigParsers.watchMode,
         disableLowerCase: generalConfigParsers.disableLowerCase,
     },
@@ -545,8 +552,18 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         topP: generalConfigParsers.topP,
         codeReview: generalConfigParsers.codeReview,
         disabled: generalConfigParsers.disabled,
+        stream: generalConfigParsers.stream,
         watchMode: generalConfigParsers.watchMode,
         disableLowerCase: generalConfigParsers.disableLowerCase,
+        maxDiffSize: (maxDiffSize?: string) => {
+            if (!maxDiffSize) {
+                return 0; // 0 = no limit
+            }
+            parseAssert('OLLAMA.maxDiffSize', /^\d+$/.test(maxDiffSize), 'Must be an integer');
+            const parsed = Number(maxDiffSize);
+            parseAssert('OLLAMA.maxDiffSize', parsed >= 1000, 'Must be at least 1000 characters');
+            return parsed;
+        },
     },
     COHERE: {
         key: (key?: string) => key || '',
@@ -580,6 +597,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         topP: generalConfigParsers.topP,
         codeReview: generalConfigParsers.codeReview,
         disabled: generalConfigParsers.disabled,
+        stream: generalConfigParsers.stream,
         watchMode: generalConfigParsers.watchMode,
         disableLowerCase: generalConfigParsers.disableLowerCase,
     },
@@ -608,6 +626,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         topP: generalConfigParsers.topP,
         codeReview: generalConfigParsers.codeReview,
         disabled: generalConfigParsers.disabled,
+        stream: generalConfigParsers.stream,
         watchMode: generalConfigParsers.watchMode,
         disableLowerCase: generalConfigParsers.disableLowerCase,
     },
@@ -636,6 +655,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         includeBody: generalConfigParsers.includeBody,
         codeReview: generalConfigParsers.codeReview,
         disabled: generalConfigParsers.disabled,
+        stream: generalConfigParsers.stream,
         watchMode: generalConfigParsers.watchMode,
         disableLowerCase: generalConfigParsers.disableLowerCase,
     },
@@ -665,6 +685,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         includeBody: generalConfigParsers.includeBody,
         codeReview: generalConfigParsers.codeReview,
         disabled: generalConfigParsers.disabled,
+        stream: generalConfigParsers.stream,
         watchMode: generalConfigParsers.watchMode,
         disableLowerCase: generalConfigParsers.disableLowerCase,
     },
@@ -693,6 +714,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         topP: generalConfigParsers.topP,
         codeReview: generalConfigParsers.codeReview,
         disabled: generalConfigParsers.disabled,
+        stream: generalConfigParsers.stream,
         watchMode: generalConfigParsers.watchMode,
         disableLowerCase: generalConfigParsers.disableLowerCase,
     },
@@ -782,6 +804,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         },
         codeReview: generalConfigParsers.codeReview,
         disabled: generalConfigParsers.disabled,
+        stream: generalConfigParsers.stream,
         watchMode: generalConfigParsers.watchMode,
         disableLowerCase: generalConfigParsers.disableLowerCase,
         inferenceParameters: (value?: string | Record<string, any>): Record<string, any> => {

@@ -266,6 +266,7 @@ export const generateCommitMessage = async (
         // 에러 로깅
         logAIError(diff, requestType, serviceName, error, logging);
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const errorAsAny = error as any;
         if (errorAsAny.code === 'ENOTFOUND') {
             throw new KnownError(`Error connecting to ${errorAsAny.hostname} (${errorAsAny.syscall})`);

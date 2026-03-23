@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import OpenAI from 'openai';
-import { Observable, catchError, concatMap, from, map } from 'rxjs';
+import { Observable, Subject, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
@@ -65,15 +65,15 @@ export class OpenAICompatibleService extends AIService {
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
+        const isStream = this.params.config.stream || false;
+
+        if (isStream) {
+            return this.generateStreamingCommitMessage$();
+        }
+
         return fromPromise(this.generateMessage('commit')).pipe(
             concatMap(messages => from(messages)),
-            map(data => ({
-                name: `${this.serviceName} ${data.title}`,
-                short: data.title,
-                value: this.params.config.includeBody ? data.value : data.title,
-                description: this.params.config.includeBody ? data.value : '',
-                isError: false,
-            })),
+            map(this.formatAsChoice),
             catchError(this.handleError$)
         );
     }
@@ -92,21 +92,108 @@ export class OpenAICompatibleService extends AIService {
         );
     }
 
-    private async generateMessage(requestType: RequestType): Promise<AIResponse[]> {
+    private generateStreamingCommitMessage$ = (): Observable<ReactiveListChoice> => {
+        const { generate, type } = this.params.config;
+
+        return this.createStreamingCommitMessages$(
+            subject => {
+                this.streamChunks(subject).catch(err => subject.error(err));
+            },
+            type,
+            generate
+        );
+    };
+
+    private streamChunks = async (subject: Subject<string>): Promise<void> => {
         const diff = this.params.stagedDiff.diff;
-        const {
+        const { systemPrompt, systemPromptPath, codeReviewPromptPath, logging, locale, temperature, generate, type, maxLength, timeout } =
+            this.params.config;
+        const maxTokens = this.params.config.maxTokens;
+        const promptOptions: PromptOptions = {
+            ...DEFAULT_PROMPT_OPTIONS,
+            locale,
+            maxLength,
+            type,
+            generate,
             systemPrompt,
             systemPromptPath,
             codeReviewPromptPath,
-            logging,
-            locale,
-            temperature,
-            generate,
-            type,
-            maxLength,
-            timeout,
-            stream = false,
-        } = this.params.config;
+            vcs_branch: this.params.branchName || '',
+        };
+        const commitSystemPrompt = generatePrompt(promptOptions);
+
+        const userPrompt = `Here is the diff: ${diff}`;
+        const serviceName = this.params.keyName || 'OpenAI-Compatible';
+        const url = `${this.params.config.url}${this.params.config.path}`;
+        const headers = {
+            Authorization: `Bearer ${this.params.config.key}`,
+            'Content-Type': 'application/json',
+        };
+
+        logAIRequest(diff, 'commit', serviceName, this.params.config.model, url, headers, logging);
+        logAIPrompt(diff, 'commit', serviceName, commitSystemPrompt, userPrompt, logging);
+
+        const reasoningModel = isReasoningModel(this.params.config.model);
+
+        // OpenAI SDK requires different type based on stream option
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const payload: any = {
+            messages: [
+                { role: 'system', content: commitSystemPrompt },
+                { role: 'user', content: userPrompt },
+            ],
+            model: this.params.config.model,
+            stream: true,
+            ...(reasoningModel
+                ? {
+                      max_completion_tokens: maxTokens,
+                      temperature: 1,
+                  }
+                : {
+                      max_tokens: maxTokens,
+                      top_p: this.params.config.topP,
+                      temperature: temperature,
+                  }),
+        };
+
+        logAIPayload(diff, 'commit', serviceName, payload, logging);
+
+        const startTime = Date.now();
+        let accumulatedText = '';
+
+        try {
+            const stream = await this.openAI.chat.completions.create(payload, { timeout });
+            const chatCompletionStream = stream as unknown as AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>;
+
+            for await (const chunk of chatCompletionStream) {
+                // Adapt to DeepSeek's response format (reasoning_content)
+                const content = chunk.choices?.[0]?.delta?.content || '';
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const reasoning = (chunk.choices?.[0]?.delta as any)?.reasoning_content || '';
+                const chunkText = `${content}${reasoning}`;
+
+                if (chunkText) {
+                    accumulatedText += chunkText;
+                    subject.next(chunkText);
+                }
+            }
+
+            const duration = Date.now() - startTime;
+            logAIResponse(diff, 'commit', serviceName, { streamed: true, totalLength: accumulatedText.length }, logging);
+            logAIComplete(diff, 'commit', serviceName, duration, accumulatedText, logging);
+
+            subject.complete();
+        } catch (error) {
+            const duration = Date.now() - startTime;
+            logAIError(diff, 'commit', serviceName, error, logging);
+            subject.error(error);
+        }
+    };
+
+    private async generateMessage(requestType: RequestType): Promise<AIResponse[]> {
+        const diff = this.params.stagedDiff.diff;
+        const { systemPrompt, systemPromptPath, codeReviewPromptPath, logging, locale, temperature, generate, type, maxLength, timeout } =
+            this.params.config;
         const maxTokens = this.params.config.maxTokens;
         const promptOptions: PromptOptions = {
             ...DEFAULT_PROMPT_OPTIONS,
@@ -136,6 +223,7 @@ export class OpenAICompatibleService extends AIService {
         // Reasoning models (o1, o3, gpt-5) have different parameter requirements
         const reasoningModel = isReasoningModel(this.params.config.model);
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const payload: any = {
             messages: [
                 {
@@ -148,7 +236,7 @@ export class OpenAICompatibleService extends AIService {
                 },
             ],
             model: this.params.config.model,
-            stream,
+            stream: false,
             ...(reasoningModel
                 ? {
                       max_completion_tokens: maxTokens,
@@ -170,19 +258,7 @@ export class OpenAICompatibleService extends AIService {
                 timeout,
             });
 
-            let result = '';
-            if (stream && chatCompletion) {
-                const chatCompletionStream = chatCompletion as unknown as AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>;
-                for await (const chunk of chatCompletionStream) {
-                    // Adapt to DeepSeek's response format
-                    const content = chunk.choices?.[0]?.delta?.content || '';
-                    const reasoning = chunk.choices?.[0]?.delta?.reasoning_content || '';
-                    const chunkText = `${content}${reasoning}`;
-                    result += chunkText;
-                }
-            } else {
-                result = chatCompletion.choices?.[0]?.message.content || '';
-            }
+            const result = chatCompletion.choices?.[0]?.message.content || '';
 
             const duration = Date.now() - startTime;
             logAIResponse(diff, requestType, serviceName, chatCompletion, logging);

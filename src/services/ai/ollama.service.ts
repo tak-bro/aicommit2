@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Ollama } from 'ollama';
-import { Observable, catchError, concatMap, from, map } from 'rxjs';
+import { Observable, Subject, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 import { Agent, fetch } from 'undici';
 
@@ -11,6 +11,7 @@ import { DEFAULT_OLLAMA_HOST } from '../../utils/config.js';
 import { PlainErrorMessages } from '../../utils/error-messages.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 import { capitalizeFirstLetter, getRandomNumber } from '../../utils/utils.js';
+import { truncateDiff } from '../../utils/vcs.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
 
 export interface OllamaServiceError extends AIServiceError {}
@@ -62,16 +63,29 @@ export class OllamaService extends AIService {
         return null;
     }
 
+    /**
+     * Get diff, truncated if maxDiffSize is configured.
+     */
+    private getTruncatedDiff = (): string => {
+        const diff = this.params.stagedDiff.diff;
+        const maxDiffSize = (this.params.config as { maxDiffSize?: number }).maxDiffSize || 0;
+        if (maxDiffSize <= 0) {
+            return diff;
+        }
+        const { diff: truncated } = truncateDiff(diff, maxDiffSize);
+        return truncated;
+    };
+
     generateCommitMessage$(): Observable<ReactiveListChoice> {
+        const isStream = this.params.config.stream || false;
+
+        if (isStream) {
+            return this.generateStreamingCommitMessage$();
+        }
+
         return fromPromise(this.generateMessage('commit')).pipe(
             concatMap(messages => from(messages)),
-            map(data => ({
-                name: `${this.serviceName} ${data.title}`,
-                short: data.title,
-                value: this.params.config.includeBody ? data.value : data.title,
-                description: this.params.config.includeBody ? data.value : '',
-                isError: false,
-            })),
+            map(this.formatAsChoice),
             catchError(this.handleError$)
         );
     }
@@ -90,8 +104,82 @@ export class OllamaService extends AIService {
         );
     }
 
+    private generateStreamingCommitMessage$ = (): Observable<ReactiveListChoice> => {
+        const { generate, type } = this.params.config;
+
+        return this.createStreamingCommitMessages$(
+            subject => {
+                this.streamChunks(subject).catch(err => subject.error(err));
+            },
+            type,
+            generate
+        );
+    };
+
+    private streamChunks = async (subject: Subject<string>): Promise<void> => {
+        const diff = this.getTruncatedDiff();
+        const { logging } = this.params.config;
+        const generatedSystemPrompt = this.buildCommitPrompt();
+
+        await this.checkIsAvailableOllama();
+
+        const userPrompt = `Here is the diff: ${diff}`;
+        const serviceName = `Ollama_${this.model}`;
+        const url = `${this.host}/api/chat`;
+        const headers = this.key ? { Authorization: `${this.auth} ${this.key}` } : {};
+
+        logAIRequest(diff, 'commit', serviceName, this.model, url, headers, logging);
+        logAIPrompt(diff, 'commit', serviceName, generatedSystemPrompt, userPrompt, logging);
+
+        const { numCtx, temperature, topP, timeout, maxTokens } = this.params.config;
+
+        const payload = {
+            model: this.model,
+            messages: [
+                { role: 'system', content: generatedSystemPrompt },
+                { role: 'user', content: userPrompt },
+            ],
+            stream: true as const,
+            keep_alive: timeout,
+            options: {
+                num_ctx: numCtx,
+                temperature: temperature,
+                top_p: topP,
+                seed: getRandomNumber(10, 1000),
+                num_predict: maxTokens ?? -1,
+            },
+        };
+
+        logAIPayload(diff, 'commit', serviceName, payload, logging);
+
+        const startTime = Date.now();
+        let accumulatedText = '';
+
+        try {
+            const response = await this.ollama.chat(payload);
+
+            for await (const part of response) {
+                const content = part.message.content;
+                if (content) {
+                    accumulatedText += content;
+                    subject.next(content);
+                }
+            }
+
+            const duration = Date.now() - startTime;
+            logAIResponse(diff, 'commit', serviceName, { streamed: true, totalLength: accumulatedText.length }, logging);
+            logAIComplete(diff, 'commit', serviceName, duration, accumulatedText, logging);
+
+            subject.complete();
+        } catch (error) {
+            const duration = Date.now() - startTime;
+            logAIError(diff, 'commit', serviceName, error, logging);
+            subject.error(error);
+        }
+    };
+
     private async generateMessage(requestType: RequestType): Promise<AIResponse[]> {
-        const diff = this.params.stagedDiff.diff;
+        const diff = this.getTruncatedDiff();
         const { systemPrompt, systemPromptPath, codeReviewPromptPath, logging, locale, generate, type, maxLength } = this.params.config;
         const promptOptions: PromptOptions = {
             ...DEFAULT_PROMPT_OPTIONS,
@@ -119,7 +207,6 @@ export class OllamaService extends AIService {
 
         const chatResponse = await this.createChatCompletions(generatedSystemPrompt, userPrompt, requestType);
 
-        // 완룈 로깅은 createChatCompletions 내부에서 처리
         if (requestType === 'review') {
             return this.sanitizeResponse(chatResponse);
         }
@@ -144,8 +231,7 @@ export class OllamaService extends AIService {
     }
 
     private async createChatCompletions(systemPrompt: string, userMessage: string, requestType: RequestType) {
-        const { stream, numCtx, temperature, topP, timeout, maxTokens, logging } = this.params.config;
-        const isStream = stream || false;
+        const { numCtx, temperature, topP, timeout, maxTokens, logging } = this.params.config;
         const diff = this.params.stagedDiff.diff;
         const serviceName = `Ollama_${this.model}`;
 
@@ -161,7 +247,7 @@ export class OllamaService extends AIService {
                     content: userMessage,
                 },
             ],
-            stream: isStream,
+            stream: false as const,
             keep_alive: timeout,
             options: {
                 num_ctx: numCtx,
@@ -180,16 +266,7 @@ export class OllamaService extends AIService {
             const response = await this.ollama.chat(payload);
             const duration = Date.now() - startTime;
 
-            let result = '';
-            if (isStream) {
-                if (response) {
-                    for await (const part of response) {
-                        result += part.message.content;
-                    }
-                }
-            } else {
-                result = response.message.content;
-            }
+            const result = response.message.content;
 
             logAIResponse(diff, requestType, serviceName, { response: result, fullResponse: response }, logging);
             logAIComplete(diff, requestType, serviceName, duration, result, logging);

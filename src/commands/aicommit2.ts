@@ -330,7 +330,11 @@ const handleCommitMessage = async (
 
             commitMsgSubscription = aiRequestManager.createCommitMsgRequests$(availableAIs).subscribe({
                 next: (choice: ReactiveListChoice) => {
-                    messages.push(choice as CommitChoice);
+                    // Skip streaming preview/sentinel choices — only collect final results
+                    const isStreamingChoice = 'streamKey' in choice;
+                    if (!isStreamingChoice) {
+                        messages.push(choice as CommitChoice);
+                    }
                     commitMsgPromptManager.refreshChoices(choice);
                 },
                 error: error => {

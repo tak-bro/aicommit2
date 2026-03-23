@@ -75,13 +75,7 @@ export class PerplexityService extends AIService {
     generateCommitMessage$(): Observable<ReactiveListChoice> {
         return fromPromise(this.generateMessage('commit')).pipe(
             concatMap(messages => from(messages)),
-            map(data => ({
-                name: `${this.serviceName} ${data.title}`,
-                short: data.title,
-                value: this.params.config.includeBody ? data.value : data.title,
-                description: this.params.config.includeBody ? data.value : '',
-                isError: false,
-            })),
+            map(this.formatAsChoice),
             catchError(this.handleError$)
         );
     }

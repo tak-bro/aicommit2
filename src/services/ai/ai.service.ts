@@ -1,10 +1,12 @@
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
-import { Observable, of } from 'rxjs';
+import { Observable, Subject, catchError, of } from 'rxjs';
 
 import { addLogEntry } from '../../utils/ai-log.js';
 import { CommitType, ModelConfig, ModelName } from '../../utils/config.js';
 import { ErrorCode, ErrorCodeType, detectErrorCode, getPlainErrorMessage, httpStatusToErrorCode } from '../../utils/error-messages.js';
 import { logger } from '../../utils/logger.js';
+import { DEFAULT_PROMPT_OPTIONS, PromptOptions, generatePrompt } from '../../utils/prompt.js';
+import { IncrementalJsonParser } from '../../utils/stream-json-parser.js';
 import { getFirstWordsFrom, safeJsonParse } from '../../utils/utils.js';
 import { GitDiff } from '../../utils/vcs.js';
 
@@ -268,7 +270,7 @@ export abstract class AIService {
         return results;
     }
 
-    private extractMessageAsType(data: RawCommitMessage, type: CommitType): RawCommitMessage {
+    protected extractMessageAsType(data: RawCommitMessage, type: CommitType): RawCommitMessage {
         switch (type) {
             case 'conventional':
                 const conventionalPattern = /(\w+)(?:\(.*?\))?:\s*(.*)/;
@@ -328,6 +330,174 @@ export abstract class AIService {
             }
         });
     }
+
+    /**
+     * Build the system prompt for commit message generation.
+     * Shared across all streaming service implementations.
+     */
+    protected buildCommitPrompt = (): string => {
+        const { systemPrompt, systemPromptPath, codeReviewPromptPath, locale, generate, type, maxLength } = this.params.config;
+        const promptOptions: PromptOptions = {
+            ...DEFAULT_PROMPT_OPTIONS,
+            locale,
+            maxLength,
+            type,
+            generate,
+            systemPrompt,
+            systemPromptPath,
+            codeReviewPromptPath,
+            vcs_branch: this.params.branchName || '',
+        };
+        return generatePrompt(promptOptions);
+    };
+
+    /**
+     * Format a raw commit message into an AIResponse-like shape (title + full value).
+     */
+    protected formatRawCommitMessage = (raw: RawCommitMessage, type: CommitType): AIResponse => {
+        const formatted = this.extractMessageAsType(raw, type);
+        const title = formatted.subject;
+        const value = `${formatted.subject}${formatted.body ? `\n\n${formatted.body}` : ''}${formatted.footer ? `\n\n${formatted.footer}` : ''}`;
+        return { title, value };
+    };
+
+    /**
+     * Build a ReactiveListChoice from an AIResponse (title + value).
+     */
+    protected formatAsChoice = (data: AIResponse): ReactiveListChoice => ({
+        name: `${this.serviceName} ${data.title}`,
+        short: data.title,
+        value: this.params.config.includeBody ? data.value : data.title,
+        description: this.params.config.includeBody ? data.value : '',
+        isError: false,
+    });
+
+    /**
+     * Extract a human-readable preview from partial JSON streaming buffer.
+     * Tries to pull out subject and body fields even before the JSON object is complete.
+     */
+    private extractStreamPreview = (buffer: string): { subject: string; body: string } => {
+        const subjectMatch = buffer.match(/"subject"\s*:\s*"((?:[^"\\]|\\.)*)(?:"|$)/);
+        const bodyMatch = buffer.match(/"body"\s*:\s*"((?:[^"\\]|\\.)*)(?:"|$)/);
+
+        const subject = subjectMatch ? subjectMatch[1].replace(/\\"/g, '"').replace(/\\n/g, '\n') : '';
+        const body = bodyMatch ? bodyMatch[1].replace(/\\"/g, '"').replace(/\\n/g, '\n') : '';
+        return { subject, body };
+    };
+
+    protected createStreamingCommitMessages$ = (
+        chunkProducer: (subject: Subject<string>) => void,
+        type: CommitType,
+        maxCount: number
+    ): Observable<ReactiveListChoice> => {
+        const streamKey = `stream-${this.serviceName}-${Date.now()}`;
+
+        return new Observable<ReactiveListChoice>(subscriber => {
+            const parser = new IncrementalJsonParser();
+            const subject = new Subject<string>();
+            let emittedCount = 0;
+            let previewEmitted = false;
+            let lastPreviewTime = 0;
+            const PREVIEW_THROTTLE_MS = 100;
+            const STREAMING_LABEL = 'streaming';
+            // ReactiveListChoice.disabled is boolean, but we need streamKey for in-place removal
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const removeSentinel: any = { name: '', value: '', streamKey, disabled: true, isError: false };
+
+            const emitStreamPreview = (force = false): void => {
+                const now = Date.now();
+                if (!force && now - lastPreviewTime < PREVIEW_THROTTLE_MS) {
+                    return;
+                }
+                lastPreviewTime = now;
+                const unparsed = parser.getUnparsedBuffer();
+                if (!unparsed.trim()) {
+                    return;
+                }
+
+                const { subject: partialSubject, body: partialBody } = this.extractStreamPreview(unparsed);
+                const displayName = partialSubject ? `${this.serviceName} ${partialSubject}` : `${this.serviceName} Generating...`;
+                const displayDescription = partialBody || partialSubject || '';
+
+                // ReactiveListChoice lacks streamKey/disabled-as-string; using any to extend shape
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const preview: any = {
+                    name: displayName,
+                    short: partialSubject || 'Generating...',
+                    value: `__streaming__${streamKey}`,
+                    description: displayDescription,
+                    disabled: STREAMING_LABEL,
+                    isError: false,
+                    streamKey,
+                };
+                subscriber.next(preview);
+                previewEmitted = true;
+            };
+
+            const emitParsedMessages = (messages: RawCommitMessage[]): void => {
+                for (const raw of messages) {
+                    if (emittedCount >= maxCount) {
+                        break;
+                    }
+                    subscriber.next(this.formatAsChoice(this.formatRawCommitMessage(raw, type)));
+                    emittedCount++;
+                }
+            };
+
+            const subscription = subject.subscribe({
+                next: (chunk: string) => {
+                    if (emittedCount >= maxCount) {
+                        return;
+                    }
+
+                    const parsed = parser.feed(chunk);
+                    emitParsedMessages(parsed);
+
+                    // Show/update streaming preview for text being generated
+                    if (emittedCount < maxCount) {
+                        emitStreamPreview();
+                    }
+                },
+                error: (err: unknown) => {
+                    // Remove preview on error
+                    if (previewEmitted) {
+                        subscriber.next(removeSentinel);
+                    }
+                    subscriber.error(err);
+                },
+                complete: () => {
+                    emitParsedMessages(parser.flush());
+
+                    // Remove streaming preview by emitting empty sentinel
+                    if (previewEmitted) {
+                        subscriber.next(removeSentinel);
+                    }
+
+                    // Fallback: if incremental parsing yielded nothing, try full parse
+                    const buffer = parser.getBuffer();
+                    if (emittedCount === 0 && buffer.trim()) {
+                        try {
+                            const fullParseResults = this.parseMessage(buffer, type, maxCount);
+                            for (const data of fullParseResults) {
+                                subscriber.next(this.formatAsChoice(data));
+                            }
+                        } catch (parseError) {
+                            subscriber.error(parseError);
+                            return;
+                        }
+                    }
+
+                    subscriber.complete();
+                },
+            });
+
+            chunkProducer(subject);
+
+            return () => {
+                subscription.unsubscribe();
+            };
+        }).pipe(catchError(this.handleError$));
+    };
 
     protected isLoggingEnabled(): boolean {
         return this.params.config.logging && !!this.logSessionId;
