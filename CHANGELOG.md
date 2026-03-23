@@ -1,3 +1,17 @@
+## [2.5.5](https://github.com/tak-bro/aicommit2/compare/v2.5.4...v2.5.5) (2026-03-23)
+
+
+### Bug Fixes
+
+* optimize streaming and message collection ([f964f90](https://github.com/tak-bro/aicommit2/commit/f964f9041d13fa6e14da6ffc02fd191da640fe98))
+
+
+### Features
+
+* add diff truncation to prevent exceeding model context windows ([bb173b8](https://github.com/tak-bro/aicommit2/commit/bb173b89208478ddf3878241872cbb8efcf9ba5c))
+* add maxDiffSize config option ([ddbafde](https://github.com/tak-bro/aicommit2/commit/ddbafdec2014fd67c49ef657108b43268bc00fb0))
+* support stream option ([2b8caf5](https://github.com/tak-bro/aicommit2/commit/2b8caf51072f86846c3a7cc37192f25ae3ad98c8))
+
 ## [2.5.4](https://github.com/tak-bro/aicommit2/compare/v2.5.3...v2.5.4) (2026-03-19)
 
 
