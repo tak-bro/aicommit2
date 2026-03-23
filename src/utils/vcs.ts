@@ -229,6 +229,25 @@ export const getCommentChar = async (): Promise<string> => {
     return adapter.getCommentChar();
 };
 
+/**
+ * Truncate diff to a maximum character length to prevent exceeding model context windows.
+ * Truncation happens at line boundaries to avoid cutting in the middle of a diff hunk.
+ * Returns { diff, truncated } where truncated indicates if truncation occurred.
+ */
+export const truncateDiff = (diff: string, maxChars: number): { diff: string; truncated: boolean } => {
+    if (!maxChars || maxChars <= 0 || diff.length <= maxChars) {
+        return { diff, truncated: false };
+    }
+
+    // Find the last newline before the limit to avoid cutting mid-line
+    const cutoff = diff.lastIndexOf('\n', maxChars);
+    const truncatedDiff = cutoff > 0 ? diff.slice(0, cutoff) : diff.slice(0, maxChars);
+    return {
+        diff: `${truncatedDiff}\n\n[diff truncated — original was ${diff.length.toLocaleString()} characters]`,
+        truncated: true,
+    };
+};
+
 export const getDetectedMessage = (staged: GitDiff): string => {
     // Use the static method from base adapter
     return `Detected ${staged.files.length.toLocaleString()} changed file${staged.files.length > 1 ? 's' : ''} (${staged.diff.length.toLocaleString()} characters)`;

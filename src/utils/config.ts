@@ -300,6 +300,15 @@ const generalConfigParsers = {
     watchMode: createBoolParser('watchMode'),
     forceGit: createBoolParser('forceGit'),
     stream: createBoolParser('stream'),
+    maxDiffSize: (maxDiffSize?: string) => {
+        if (!maxDiffSize) {
+            return 0; // 0 = no limit
+        }
+        parseAssert('maxDiffSize', /^\d+$/.test(maxDiffSize), 'Must be an integer');
+        const parsed = Number(maxDiffSize);
+        parseAssert('maxDiffSize', parsed >= 1000, 'Must be at least 1000 characters');
+        return parsed;
+    },
     disableLowerCase: createBoolParser('disableLowerCase'),
     jjAutoNew: createBoolParser('jjAutoNew'),
     autoCopy: createBoolParser('autoCopy'),

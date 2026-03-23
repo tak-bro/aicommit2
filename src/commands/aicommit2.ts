@@ -3,6 +3,7 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 
+import chalk from 'chalk';
 import { execa } from 'execa';
 import inquirer from 'inquirer';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
@@ -23,7 +24,15 @@ import { ModelName, RawConfig, applyDisableLowerCaseToConfig, applyIncludeBodyTo
 import { ErrorCode, ErrorMessages } from '../utils/error-messages.js';
 import { KnownError, handleCliError } from '../utils/error.js';
 import { validateSystemPrompt } from '../utils/prompt.js';
-import { CommitOptions, assertGitRepo, getBranchName, getStagedDiff, getVCSName, commitChanges as vcsCommitChanges } from '../utils/vcs.js';
+import {
+    CommitOptions,
+    assertGitRepo,
+    getBranchName,
+    getStagedDiff,
+    getVCSName,
+    truncateDiff,
+    commitChanges as vcsCommitChanges,
+} from '../utils/vcs.js';
 
 import type { Subscription } from 'rxjs';
 
@@ -148,6 +157,21 @@ export default async (
 
         if (!isJsonMode) {
             consoleManager.printStagedFiles(staged);
+        }
+
+        // Truncate diff if maxDiffSize is configured
+        const maxDiffSize = config.maxDiffSize as number;
+        if (maxDiffSize > 0) {
+            const { diff: truncatedDiff, truncated } = truncateDiff(staged.diff, maxDiffSize);
+            if (truncated && !isJsonMode) {
+                console.log(
+                    chalk.yellow(
+                        `⚠ Diff truncated from ${staged.diff.length.toLocaleString()} to ${maxDiffSize.toLocaleString()} characters (maxDiffSize=${maxDiffSize})`
+                    )
+                );
+                console.log(chalk.dim(`  Increase maxDiffSize or use --exclude to filter large files.\n`));
+            }
+            staged.diff = truncatedDiff;
         }
 
         const availableAIs = getAvailableAIs(config, 'commit');
