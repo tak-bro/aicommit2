@@ -376,12 +376,19 @@ export abstract class AIService {
             const subject = new Subject<string>();
             let emittedCount = 0;
             let previewEmitted = false;
+            let lastPreviewTime = 0;
+            const PREVIEW_THROTTLE_MS = 100;
             const STREAMING_LABEL = 'streaming';
             // ReactiveListChoice.disabled is boolean, but we need streamKey for in-place removal
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const removeSentinel: any = { name: '', value: '', streamKey, disabled: true, isError: false };
 
-            const emitStreamPreview = (): void => {
+            const emitStreamPreview = (force = false): void => {
+                const now = Date.now();
+                if (!force && now - lastPreviewTime < PREVIEW_THROTTLE_MS) {
+                    return;
+                }
+                lastPreviewTime = now;
                 const unparsed = parser.getUnparsedBuffer();
                 if (!unparsed.trim()) {
                     return;
