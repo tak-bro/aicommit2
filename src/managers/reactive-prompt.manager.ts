@@ -44,6 +44,15 @@ type InquirerPromptInstance = Awaited<ReturnType<typeof inquirer.prompt>> & {
     };
 };
 
+/**
+ * Extended choice type that supports in-place streaming updates.
+ * When `streamKey` is set, `refreshChoices` updates the existing choice
+ * with the same key instead of appending a new one.
+ */
+export interface StreamableChoice extends ReactiveListChoice {
+    streamKey?: string;
+}
+
 export class ReactivePromptManager {
     private choices$: BehaviorSubject<ChoiceItem[]> = new BehaviorSubject<ChoiceItem[]>([]);
     private loader$: BehaviorSubject<ReactiveListLoader>;
@@ -100,21 +109,55 @@ export class ReactivePromptManager {
     }
 
     refreshChoices(choice: ReactiveListChoice) {
-        if (this.isDestroyed) {
+        if (this.isDestroyed || !choice) {
             return;
         }
 
-        if (!choice || !choice.value) {
+        // Support in-place update / removal for streaming choices
+        const streamKey = (choice as StreamableChoice).streamKey;
+        if (streamKey) {
+            // Empty value = remove the streaming preview
+            if (!choice.value) {
+                this.removeStreamingChoice(streamKey);
+                return;
+            }
+
+            const current = [...this.currentChoices];
+            const existingIdx = current.findIndex(c => (c as StreamableChoice).streamKey === streamKey);
+            if (existingIdx >= 0) {
+                current[existingIdx] = choice;
+                this.choices$.next(current);
+                return;
+            }
+            // First time: append
+            this.choices$.next([...this.currentChoices, choice].sort(sortByDisabled));
             return;
         }
+
+        if (!choice.value) {
+            return;
+        }
+
         this.choices$.next([...this.currentChoices, choice].sort(sortByDisabled));
     }
 
+    /**
+     * Remove a streaming preview choice by its streamKey.
+     */
+    removeStreamingChoice(streamKey: string) {
+        if (this.isDestroyed) {
+            return;
+        }
+        const filtered = this.currentChoices.filter(c => (c as StreamableChoice).streamKey !== streamKey);
+        this.choices$.next(filtered);
+    }
+
     checkErrorOnChoices(shouldExit = true) {
-        const isAllError = this.choices$
+        const nonStreamingChoices = this.choices$
             .getValue()
             .map(choice => choice as ReactiveListChoice)
-            .every(value => value?.isError || value?.disabled);
+            .filter(choice => !(choice as StreamableChoice).streamKey);
+        const isAllError = nonStreamingChoices.every(value => value?.isError || value?.disabled);
 
         if (isAllError) {
             this.alertNoGeneratedMessage();

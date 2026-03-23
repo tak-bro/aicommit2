@@ -1,7 +1,7 @@
 import { GenerationConfig, GoogleGenerativeAI, HarmBlockThreshold, HarmCategory } from '@google/generative-ai';
 import chalk from 'chalk';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
-import { Observable, catchError, concatMap, from, map } from 'rxjs';
+import { Observable, Subject, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
@@ -25,7 +25,6 @@ export class GeminiService extends AIService {
     protected getServiceSpecificErrorMessage(error: AIServiceError): string | null {
         const errorMsg = error.message || '';
 
-        // Gemini-specific error messages
         if (errorMsg.includes('API key') || errorMsg.includes('api_key')) {
             return 'Invalid API key. Check your Google AI Studio API key in configuration';
         }
@@ -58,6 +57,12 @@ export class GeminiService extends AIService {
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
+        const isStream = this.params.config.stream || false;
+
+        if (isStream) {
+            return this.generateStreamingCommitMessage$();
+        }
+
         return fromPromise(this.generateMessage('commit')).pipe(
             concatMap(messages => from(messages)),
             map(data => ({
@@ -85,6 +90,100 @@ export class GeminiService extends AIService {
         );
     }
 
+    private generateStreamingCommitMessage$ = (): Observable<ReactiveListChoice> => {
+        const { generate, type } = this.params.config;
+
+        return this.createStreamingCommitMessages$(
+            subject => {
+                this.streamChunks(subject).catch(err => subject.error(err));
+            },
+            type,
+            generate
+        );
+    };
+
+    private streamChunks = async (subject: Subject<string>): Promise<void> => {
+        const diff = this.params.stagedDiff.diff;
+        const { systemPrompt, systemPromptPath, codeReviewPromptPath, logging, locale, generate, type, maxLength } = this.params.config;
+        const maxTokens = this.params.config.maxTokens;
+        const promptOptions: PromptOptions = {
+            ...DEFAULT_PROMPT_OPTIONS,
+            locale,
+            maxLength,
+            type,
+            generate,
+            systemPrompt,
+            systemPromptPath,
+            codeReviewPromptPath,
+            vcs_branch: this.params.branchName || '',
+        };
+        const generatedSystemPrompt = generatePrompt(promptOptions);
+        const generationConfig: GenerationConfig = {
+            maxOutputTokens: maxTokens,
+            temperature: this.params.config.temperature,
+            topP: this.params.config.topP,
+        };
+
+        const model = this.genAI.getGenerativeModel({
+            model: this.params.config.model,
+            systemInstruction: generatedSystemPrompt,
+            generationConfig,
+            safetySettings: [
+                { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE },
+                { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE },
+                { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE },
+                { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE },
+            ],
+        });
+
+        const userPrompt = generateUserPrompt(diff, 'commit');
+
+        const baseUrl = this.params.config.url || 'https://generativelanguage.googleapis.com';
+        const url = `${baseUrl}/v1beta/models/${this.params.config.model}:streamGenerateContent`;
+        const headers = {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': this.params.config.key,
+        };
+
+        logAIRequest(diff, 'commit', 'Gemini', this.params.config.model, url, headers, logging);
+        logAIPrompt(diff, 'commit', 'Gemini', generatedSystemPrompt, userPrompt, logging);
+
+        const requestPayload = {
+            systemInstruction: { parts: [{ text: generatedSystemPrompt }] },
+            contents: [{ parts: [{ text: userPrompt }] }],
+            generationConfig,
+        };
+
+        logAIPayload(diff, 'commit', 'Gemini', requestPayload, logging);
+
+        const startTime = Date.now();
+        let accumulatedText = '';
+
+        try {
+            const generateOptions = this.params.config.timeout > 10000 ? { request: { timeout: this.params.config.timeout } } : undefined;
+
+            const result = await model.generateContentStream(userPrompt, generateOptions);
+
+            for await (const chunk of result.stream) {
+                const text = chunk.text();
+                if (text) {
+                    accumulatedText += text;
+                    subject.next(text);
+                }
+            }
+
+            const duration = Date.now() - startTime;
+            logAIResponse(diff, 'commit', 'Gemini', { streamed: true, totalLength: accumulatedText.length }, logging);
+            logAIComplete(diff, 'commit', 'Gemini', duration, accumulatedText, logging);
+
+            subject.complete();
+        } catch (error) {
+            const duration = Date.now() - startTime;
+            logAIError(diff, 'commit', 'Gemini', error, logging);
+            subject.error(error);
+        }
+    };
+
     private async generateMessage(requestType: RequestType): Promise<AIResponse[]> {
         const diff = this.params.stagedDiff.diff;
         const { systemPrompt, systemPromptPath, logging, locale, codeReviewPromptPath, generate, type, maxLength } = this.params.config;
@@ -106,40 +205,6 @@ export class GeminiService extends AIService {
             temperature: this.params.config.temperature,
             topP: this.params.config.topP,
         };
-
-        // TODO: add below after test
-        // if (requestType === 'commit') {
-        //     generationConfig = {
-        //         ...generationConfig,
-        //         responseSchema: {
-        //             type: SchemaType.ARRAY,
-        //             items: {
-        //                 type: SchemaType.OBJECT,
-        //                 properties: {
-        //                     subject: {
-        //                         type: SchemaType.STRING,
-        //                         nullable: false,
-        //                         format: "enum",
-        //                         enum: ["no sleeves", "short", "3/4", "long"]
-        //                     },
-        //                     body: {
-        //                         type: SchemaType.STRING,
-        //                         nullable: !this.params.config.includeBody,
-        //                         format: "enum",
-        //                         enum: ["no sleeves", "short", "3/4", "long"]
-        //                     },
-        //                     footer: {
-        //                         type: SchemaType.STRING,
-        //                         nullable: true,
-        //                         format: "enum",
-        //                         enum: ["no sleeves", "short", "3/4", "long"]
-        //                     }
-        //                 },
-        //                 required: ["subject"],
-        //             },
-        //         }
-        //     }
-        // }
 
         const model = this.genAI.getGenerativeModel({
             model: this.params.config.model,

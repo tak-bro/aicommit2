@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import Groq from 'groq-sdk';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
-import { Observable, catchError, concatMap, from, map } from 'rxjs';
+import { Observable, Subject, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
@@ -25,7 +25,6 @@ export class GroqService extends AIService {
     protected getServiceSpecificErrorMessage(error: AIServiceError): string | null {
         const errorMsg = error.message || '';
 
-        // Groq-specific error messages
         if (errorMsg.includes('API key') || errorMsg.includes('api_key')) {
             return 'Invalid API key. Check your Groq API key in configuration';
         }
@@ -52,6 +51,12 @@ export class GroqService extends AIService {
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
+        const isStream = this.params.config.stream || false;
+
+        if (isStream) {
+            return this.generateStreamingCommitMessage$();
+        }
+
         return fromPromise(this.generateMessage('commit')).pipe(
             concatMap(messages => from(messages)),
             map(data => ({
@@ -79,6 +84,89 @@ export class GroqService extends AIService {
         );
     }
 
+    private generateStreamingCommitMessage$ = (): Observable<ReactiveListChoice> => {
+        const { generate, type } = this.params.config;
+
+        return this.createStreamingCommitMessages$(
+            subject => {
+                this.streamChunks(subject).catch(err => subject.error(err));
+            },
+            type,
+            generate
+        );
+    };
+
+    private streamChunks = async (subject: Subject<string>): Promise<void> => {
+        const diff = this.params.stagedDiff.diff;
+        const { systemPrompt, systemPromptPath, codeReviewPromptPath, logging, locale, temperature, generate, type, maxLength } =
+            this.params.config;
+        const maxTokens = this.params.config.maxTokens;
+        const promptOptions: PromptOptions = {
+            ...DEFAULT_PROMPT_OPTIONS,
+            locale,
+            maxLength,
+            type,
+            generate,
+            systemPrompt,
+            systemPromptPath,
+            codeReviewPromptPath,
+            vcs_branch: this.params.branchName || '',
+        };
+        const generatedSystemPrompt = generatePrompt(promptOptions);
+        const userPrompt = `Here is the diff: ${diff}`;
+
+        const baseUrl = this.params.config.url || 'https://api.groq.com';
+        const url = `${baseUrl}/openai/v1/chat/completions`;
+        const headers = {
+            Authorization: `Bearer ${this.params.config.key}`,
+            'Content-Type': 'application/json',
+        };
+
+        logAIRequest(diff, 'commit', 'Groq', this.params.config.model, url, headers, logging);
+        logAIPrompt(diff, 'commit', 'Groq', generatedSystemPrompt, userPrompt, logging);
+
+        const payload = {
+            messages: [
+                { role: 'system' as const, content: generatedSystemPrompt },
+                { role: 'user' as const, content: userPrompt },
+            ],
+            model: this.params.config.model,
+            max_tokens: maxTokens,
+            top_p: this.params.config.topP,
+            temperature,
+            stream: true as const,
+        };
+
+        logAIPayload(diff, 'commit', 'Groq', payload, logging);
+
+        const startTime = Date.now();
+        let accumulatedText = '';
+
+        try {
+            const stream = await this.groq.chat.completions.create(payload, {
+                timeout: this.params.config.timeout,
+            });
+
+            for await (const chunk of stream) {
+                const content = chunk.choices?.[0]?.delta?.content || '';
+                if (content) {
+                    accumulatedText += content;
+                    subject.next(content);
+                }
+            }
+
+            const duration = Date.now() - startTime;
+            logAIResponse(diff, 'commit', 'Groq', { streamed: true, totalLength: accumulatedText.length }, logging);
+            logAIComplete(diff, 'commit', 'Groq', duration, accumulatedText, logging);
+
+            subject.complete();
+        } catch (error) {
+            const duration = Date.now() - startTime;
+            logAIError(diff, 'commit', 'Groq', error, logging);
+            subject.error(error);
+        }
+    };
+
     private async generateMessage(requestType: RequestType): Promise<AIResponse[]> {
         const diff = this.params.stagedDiff.diff;
         const { systemPrompt, systemPromptPath, codeReviewPromptPath, logging, locale, temperature, generate, type, maxLength } =
@@ -98,7 +186,6 @@ export class GroqService extends AIService {
         const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
         const userPrompt = `Here is the diff: ${diff}`;
 
-        // 상세 로깅 (config URL 사용)
         const baseUrl = this.params.config.url || 'https://api.groq.com';
         const url = `${baseUrl}/openai/v1/chat/completions`;
         const headers = {
@@ -111,14 +198,8 @@ export class GroqService extends AIService {
 
         const payload = {
             messages: [
-                {
-                    role: 'system',
-                    content: generatedSystemPrompt,
-                },
-                {
-                    role: 'user',
-                    content: userPrompt,
-                },
+                { role: 'system' as const, content: generatedSystemPrompt },
+                { role: 'user' as const, content: userPrompt },
             ],
             model: this.params.config.model,
             max_tokens: maxTokens,

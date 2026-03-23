@@ -892,6 +892,7 @@ For detailed information about all available settings, see the [General Settings
 | `useStats`             | Enable usage statistics tracking                                    | true         |
 | `statsDays`            | Days to retain statistics data (auto-cleanup)                       | 30           |
 | `systemPromptPath`     | Path to custom system prompt file                                   | -            |
+| `stream`               | **Experimental.** Enable streaming for real-time commit message generation | false        |
 
 ```bash
 # Example: Set settings for a specific model
@@ -904,20 +905,20 @@ aicommit2 config set ANTHROPIC.includeBody=true
 
 ### Available Settings by Model
 
-|                           | timeout | temperature | maxTokens | topP |
-| :-----------------------: | :-----: | :---------: | :-------: | :--: |
-|        **OpenAI**         |    ✓    |      ✓      |     ✓     |  ✓   |
-|   **Anthropic Claude**    |    ✓    |      ✓      |     ✓     |  ✓   |
-|        **Gemini**         |         |      ✓      |     ✓     |  ✓   |
-|      **Mistral AI**       |    ✓    |      ✓      |     ✓     |  ✓   |
-|       **Codestral**       |    ✓    |      ✓      |     ✓     |  ✓   |
-|        **Cohere**         |    ✓    |      ✓      |     ✓     |  ✓   |
-|         **Groq**          |    ✓    |      ✓      |     ✓     |  ✓   |
-|      **Perplexity**       |    ✓    |      ✓      |     ✓     |  ✓   |
-|       **DeepSeek**        |    ✓    |      ✓      |     ✓     |  ✓   |
-|     **Github Models**     |    ✓    |      ✓      |     ✓     |  ✓   |
-|        **Ollama**         |    ✓    |      ✓      |           |  ✓   |
-| **OpenAI API-Compatible** |    ✓    |      ✓      |     ✓     |  ✓   |
+|                           | timeout | temperature | maxTokens | topP | stream |
+| :-----------------------: | :-----: | :---------: | :-------: | :--: | :----: |
+|        **OpenAI**         |    ✓    |      ✓      |     ✓     |  ✓   |   ✓    |
+|   **Anthropic Claude**    |    ✓    |      ✓      |     ✓     |  ✓   |   ✓    |
+|        **Gemini**         |         |      ✓      |     ✓     |  ✓   |   ✓    |
+|      **Mistral AI**       |    ✓    |      ✓      |     ✓     |  ✓   |        |
+|       **Codestral**       |    ✓    |      ✓      |     ✓     |  ✓   |        |
+|        **Cohere**         |    ✓    |      ✓      |     ✓     |  ✓   |        |
+|         **Groq**          |    ✓    |      ✓      |     ✓     |  ✓   |   ✓    |
+|      **Perplexity**       |    ✓    |      ✓      |     ✓     |  ✓   |        |
+|       **DeepSeek**        |    ✓    |      ✓      |     ✓     |  ✓   |   ✓    |
+|     **Github Models**     |    ✓    |      ✓      |     ✓     |  ✓   |        |
+|        **Ollama**         |    ✓    |      ✓      |           |  ✓   |   ✓    |
+| **OpenAI API-Compatible** |    ✓    |      ✓      |     ✓     |  ✓   |   ✓    |
 
 ## Logging
 

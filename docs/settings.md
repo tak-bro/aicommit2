@@ -28,6 +28,7 @@ Please check the documentation for each specific model to confirm which settings
 | `useStats`             | Enable usage statistics tracking                                    | true         |
 | `statsDays`            | Days to retain statistics data (auto-cleanup)                       | 30           |
 | `disabled`             | Whether a specific model is enabled or disabled                     | false        |
+| `stream`               | **Experimental.** Enable streaming for real-time commit message generation | false        |
 
 > **Tip:** To set the General Settings for each model, use the following command.
 >
@@ -322,22 +323,40 @@ aicommit2 config set codeReview=true
 aicommit2 config set codeReviewPromptPath="/path/to/user/prompt.txt"
 ```
 
+### stream
+
+- **Experimental.** Enable streaming mode for real-time commit message generation.
+- When enabled, commit messages appear progressively as tokens arrive from the AI provider, instead of waiting for the complete response.
+- Supported providers: **OpenAI**, **Anthropic Claude**, **Gemini**, **Groq**, **DeepSeek**, **Ollama**, **OpenAI API-Compatible**
+- Works best with `includeBody=true` for visible real-time streaming effect.
+
+```bash
+aicommit2 config set OPENAI.stream=true
+aicommit2 config set ANTHROPIC.stream=true
+```
+
+**CAUTION**
+
+- The `stream` feature is currently experimental and may change in future releases.
+- Streaming is only applied to commit message generation, not code review.
+- May not be compatible with git hooks (e.g., `prepare-commit-msg`), external tools (e.g., lazygit), or non-interactive environments.
+
 ## Available Settings by Model
 
-|                           | timeout | temperature | maxTokens | topP |
-| :-----------------------: | :-----: | :---------: | :-------: | :--: |
-|        **OpenAI**         |    ✓    |      ✓      |     ✓     |  ✓   |
-|   **Anthropic Claude**    |    ✓    |      ✓      |     ✓     |  ✓   |
-|        **Gemini**         |         |      ✓      |     ✓     |  ✓   |
-|      **Mistral AI**       |    ✓    |      ✓      |     ✓     |  ✓   |
-|       **Codestral**       |    ✓    |      ✓      |     ✓     |  ✓   |
-|        **Cohere**         |    ✓    |      ✓      |     ✓     |  ✓   |
-|         **Groq**          |    ✓    |      ✓      |     ✓     |  ✓   |
-|      **Perplexity**       |    ✓    |      ✓      |     ✓     |  ✓   |
-|       **DeepSeek**        |    ✓    |      ✓      |     ✓     |  ✓   |
-|     **Github Models**     |    ✓    |      ✓      |     ✓     |  ✓   |
-|        **Ollama**         |    ✓    |      ✓      |           |  ✓   |
-| **OpenAI API-Compatible** |    ✓    |      ✓      |     ✓     |  ✓   |
+|                           | timeout | temperature | maxTokens | topP | stream |
+| :-----------------------: | :-----: | :---------: | :-------: | :--: | :----: |
+|        **OpenAI**         |    ✓    |      ✓      |     ✓     |  ✓   |   ✓    |
+|   **Anthropic Claude**    |    ✓    |      ✓      |     ✓     |  ✓   |   ✓    |
+|        **Gemini**         |         |      ✓      |     ✓     |  ✓   |   ✓    |
+|      **Mistral AI**       |    ✓    |      ✓      |     ✓     |  ✓   |        |
+|       **Codestral**       |    ✓    |      ✓      |     ✓     |  ✓   |        |
+|        **Cohere**         |    ✓    |      ✓      |     ✓     |  ✓   |        |
+|         **Groq**          |    ✓    |      ✓      |     ✓     |  ✓   |   ✓    |
+|      **Perplexity**       |    ✓    |      ✓      |     ✓     |  ✓   |        |
+|       **DeepSeek**        |    ✓    |      ✓      |     ✓     |  ✓   |   ✓    |
+|     **Github Models**     |    ✓    |      ✓      |     ✓     |  ✓   |        |
+|        **Ollama**         |    ✓    |      ✓      |           |  ✓   |   ✓    |
+| **OpenAI API-Compatible** |    ✓    |      ✓      |     ✓     |  ✓   |   ✓    |
 
 > All AI support the following options in General Settings.
 >

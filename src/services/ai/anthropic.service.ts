@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import chalk from 'chalk';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
-import { Observable, catchError, concatMap, from, map } from 'rxjs';
+import { Observable, Subject, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
@@ -63,6 +63,12 @@ export class AnthropicService extends AIService {
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
+        const isStream = this.params.config.stream || false;
+
+        if (isStream) {
+            return this.generateStreamingCommitMessage$();
+        }
+
         return fromPromise(this.generateMessage('commit')).pipe(
             concatMap(messages => from(messages)),
             map(data => ({
@@ -89,6 +95,101 @@ export class AnthropicService extends AIService {
             catchError(this.handleError$)
         );
     }
+
+    private generateStreamingCommitMessage$ = (): Observable<ReactiveListChoice> => {
+        const { generate, type } = this.params.config;
+
+        return this.createStreamingCommitMessages$(
+            subject => {
+                this.streamChunks(subject).catch(err => subject.error(err));
+            },
+            type,
+            generate
+        );
+    };
+
+    private streamChunks = async (subject: Subject<string>): Promise<void> => {
+        const diff = this.params.stagedDiff.diff;
+        const {
+            systemPrompt,
+            systemPromptPath,
+            codeReviewPromptPath,
+            logging,
+            temperature,
+            locale,
+            generate,
+            type,
+            maxLength,
+            maxTokens,
+            topP,
+            model,
+        } = this.params.config;
+
+        const promptOptions: PromptOptions = {
+            ...DEFAULT_PROMPT_OPTIONS,
+            locale,
+            maxLength,
+            type,
+            generate,
+            systemPrompt,
+            systemPromptPath,
+            codeReviewPromptPath,
+            vcs_branch: this.params.branchName || '',
+        };
+        const generatedSystemPrompt = generatePrompt(promptOptions);
+        const userPrompt = generateUserPrompt(diff, 'commit');
+
+        // Logging
+        const baseUrl = this.params.config.url || 'https://api.anthropic.com';
+        const url = `${baseUrl}/v1/messages`;
+        const headers = {
+            'Content-Type': 'application/json',
+            'x-api-key': this.params.config.key,
+            'anthropic-version': '2023-06-01',
+        };
+
+        logAIRequest(diff, 'commit', 'Anthropic', model, url, headers, logging);
+        logAIPrompt(diff, 'commit', 'Anthropic', generatedSystemPrompt, userPrompt, logging);
+
+        const claudeFourModel = isClaudeFourModel(model);
+
+        const params: Anthropic.MessageCreateParams = {
+            max_tokens: maxTokens,
+            temperature: temperature,
+            system: generatedSystemPrompt,
+            messages: [{ role: 'user', content: userPrompt }],
+            model: model,
+            stream: true,
+            ...(claudeFourModel ? {} : { top_p: topP }),
+        };
+
+        logAIPayload(diff, 'commit', 'Anthropic', params, logging);
+
+        const startTime = Date.now();
+        let accumulatedText = '';
+
+        try {
+            const stream = this.anthropic.messages.stream(params);
+
+            stream.on('text', (text: string) => {
+                accumulatedText += text;
+                subject.next(text);
+            });
+
+            // Wait for stream to finish
+            const finalMessage = await stream.finalMessage();
+            const duration = Date.now() - startTime;
+
+            logAIResponse(diff, 'commit', 'Anthropic', finalMessage, logging);
+            logAIComplete(diff, 'commit', 'Anthropic', duration, accumulatedText, logging);
+
+            subject.complete();
+        } catch (error) {
+            const duration = Date.now() - startTime;
+            logAIError(diff, 'commit', 'Anthropic', error, logging);
+            subject.error(error);
+        }
+    };
 
     private async generateMessage(requestType: RequestType): Promise<AIResponse[]> {
         const diff = this.params.stagedDiff.diff;
