@@ -5,6 +5,7 @@ import { addLogEntry } from '../../utils/ai-log.js';
 import { CommitType, ModelConfig, ModelName } from '../../utils/config.js';
 import { ErrorCode, ErrorCodeType, detectErrorCode, getPlainErrorMessage, httpStatusToErrorCode } from '../../utils/error-messages.js';
 import { logger } from '../../utils/logger.js';
+import { DEFAULT_PROMPT_OPTIONS, PromptOptions, generatePrompt } from '../../utils/prompt.js';
 import { IncrementalJsonParser } from '../../utils/stream-json-parser.js';
 import { getFirstWordsFrom, safeJsonParse } from '../../utils/utils.js';
 import { GitDiff } from '../../utils/vcs.js';
@@ -329,6 +330,26 @@ export abstract class AIService {
             }
         });
     }
+
+    /**
+     * Build the system prompt for commit message generation.
+     * Shared across all streaming service implementations.
+     */
+    protected buildCommitPrompt = (): string => {
+        const { systemPrompt, systemPromptPath, codeReviewPromptPath, locale, generate, type, maxLength } = this.params.config;
+        const promptOptions: PromptOptions = {
+            ...DEFAULT_PROMPT_OPTIONS,
+            locale,
+            maxLength,
+            type,
+            generate,
+            systemPrompt,
+            systemPromptPath,
+            codeReviewPromptPath,
+            vcs_branch: this.params.branchName || '',
+        };
+        return generatePrompt(promptOptions);
+    };
 
     /**
      * Format a raw commit message into an AIResponse-like shape (title + full value).

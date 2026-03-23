@@ -73,13 +73,7 @@ export class OpenAICompatibleService extends AIService {
 
         return fromPromise(this.generateMessage('commit')).pipe(
             concatMap(messages => from(messages)),
-            map(data => ({
-                name: `${this.serviceName} ${data.title}`,
-                short: data.title,
-                value: this.params.config.includeBody ? data.value : data.title,
-                description: this.params.config.includeBody ? data.value : '',
-                isError: false,
-            })),
+            map(this.formatAsChoice),
             catchError(this.handleError$)
         );
     }
@@ -198,19 +192,8 @@ export class OpenAICompatibleService extends AIService {
 
     private async generateMessage(requestType: RequestType): Promise<AIResponse[]> {
         const diff = this.params.stagedDiff.diff;
-        const {
-            systemPrompt,
-            systemPromptPath,
-            codeReviewPromptPath,
-            logging,
-            locale,
-            temperature,
-            generate,
-            type,
-            maxLength,
-            timeout,
-            stream = false,
-        } = this.params.config;
+        const { systemPrompt, systemPromptPath, codeReviewPromptPath, logging, locale, temperature, generate, type, maxLength, timeout } =
+            this.params.config;
         const maxTokens = this.params.config.maxTokens;
         const promptOptions: PromptOptions = {
             ...DEFAULT_PROMPT_OPTIONS,
@@ -253,7 +236,7 @@ export class OpenAICompatibleService extends AIService {
                 },
             ],
             model: this.params.config.model,
-            stream,
+            stream: false,
             ...(reasoningModel
                 ? {
                       max_completion_tokens: maxTokens,
@@ -275,20 +258,7 @@ export class OpenAICompatibleService extends AIService {
                 timeout,
             });
 
-            let result = '';
-            if (stream && chatCompletion) {
-                const chatCompletionStream = chatCompletion as unknown as AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>;
-                for await (const chunk of chatCompletionStream) {
-                    // Adapt to DeepSeek's response format
-                    const content = chunk.choices?.[0]?.delta?.content || '';
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const reasoning = (chunk.choices?.[0]?.delta as any)?.reasoning_content || '';
-                    const chunkText = `${content}${reasoning}`;
-                    result += chunkText;
-                }
-            } else {
-                result = chatCompletion.choices?.[0]?.message.content || '';
-            }
+            const result = chatCompletion.choices?.[0]?.message.content || '';
 
             const duration = Date.now() - startTime;
             logAIResponse(diff, requestType, serviceName, chatCompletion, logging);
