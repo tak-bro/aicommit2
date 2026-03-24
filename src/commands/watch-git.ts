@@ -5,7 +5,7 @@ import { promisify } from 'util';
 
 import chokidar from 'chokidar';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
-import { Subject, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 
 import { getAvailableAIs } from './get-available-ais.js';
 import { AIRequestManager } from '../managers/ai-request.manager.js';
@@ -29,7 +29,6 @@ const WATCHER_ERROR_RETRY_MS = 1000;
 const CANCELLATION_WAIT_MS = 200;
 
 class WatchGitManager {
-    private destroyed$ = new Subject<void>();
     private consoleManager = new ConsoleManager();
     private subscriptionManager = new SubscriptionManager();
     private currentCodeReviewSubscription: Subscription | null = null;
@@ -188,15 +187,58 @@ class WatchGitManager {
 
         const branchName = await getBranchName();
         const aiRequestManager = new AIRequestManager(config, diffInfo, branchName);
-        this.currentCodeReviewPromptManager = new ReactivePromptManager(codeReviewLoader);
+
+        // Buffer results so they can be replayed if user dismisses prompt early (Enter during loading)
+        const bufferedChoices: ReactiveListChoice[] = [];
+        let reviewComplete = false;
+
+        // Start AI requests — subscription stays alive across prompt re-creations
+        // Callbacks use this.currentCodeReviewPromptManager via optional chaining,
+        // so they automatically target whichever prompt is active
+        this.currentCodeReviewSubscription = this.subscriptionManager.add(aiRequestManager.createCodeReviewRequests$(availableAIs), {
+            next: (choice: ReactiveListChoice) => {
+                bufferedChoices.push(choice);
+                this.currentCodeReviewPromptManager?.refreshChoices(choice);
+            },
+            error: (error: unknown) => {
+                logger.error(`Code review request error: ${error}`);
+                reviewComplete = true;
+                this.currentCodeReviewPromptManager?.checkErrorOnChoices(false);
+            },
+            complete: () => {
+                reviewComplete = true;
+                this.currentCodeReviewPromptManager?.checkErrorOnChoices(false);
+            },
+        });
 
         try {
-            const codeReviewInquirer = this.initializeCodeReviewInquirer();
+            // Re-show prompt if user presses Enter before any results arrive
+            let waitingForSelection = true;
+            while (waitingForSelection) {
+                this.currentCodeReviewPromptManager = new ReactivePromptManager(codeReviewLoader);
+                const codeReviewInquirer = this.initializeCodeReviewInquirer();
+                this.currentCodeReviewPromptManager.startLoader();
 
-            this.currentCodeReviewPromptManager.startLoader();
-            this.currentCodeReviewSubscription = this.subscribeToCodeReviewRequests(aiRequestManager, availableAIs);
+                // Replay buffered results from the ongoing subscription
+                for (const choice of bufferedChoices) {
+                    this.currentCodeReviewPromptManager.refreshChoices(choice);
+                }
+                if (reviewComplete) {
+                    this.currentCodeReviewPromptManager.checkErrorOnChoices(false);
+                }
 
-            await codeReviewInquirer;
+                const result = await codeReviewInquirer;
+                const hasValidSelection = !!result?.codeReviewPrompt?.value;
+
+                const cancelledExternally = !this.currentCodeReviewPromptManager;
+                if (hasValidSelection || reviewComplete || cancelledExternally) {
+                    waitingForSelection = false;
+                } else {
+                    // User pressed Enter before results — destroy prompt and re-show
+                    this.currentCodeReviewPromptManager.destroy();
+                    this.currentCodeReviewPromptManager = null;
+                }
+            }
         } finally {
             this.cleanupCodeReview();
         }
@@ -217,21 +259,6 @@ class WatchGitManager {
             isDescriptionDim: false,
             stopMessage: 'Code review completed',
             descPageSize: 20,
-        });
-    };
-
-    private subscribeToCodeReviewRequests = (aiRequestManager: AIRequestManager, availableAIs: ModelName[]): Subscription => {
-        return this.subscriptionManager.add(aiRequestManager.createCodeReviewRequests$(availableAIs), {
-            next: (choice: ReactiveListChoice) => {
-                this.currentCodeReviewPromptManager?.refreshChoices(choice);
-            },
-            error: (error: unknown) => {
-                logger.error(`Code review request error: ${error}`);
-                this.currentCodeReviewPromptManager?.checkErrorOnChoices(false);
-            },
-            complete: () => {
-                this.currentCodeReviewPromptManager?.checkErrorOnChoices(false);
-            },
         });
     };
 
@@ -326,7 +353,15 @@ class WatchGitManager {
         if (this.processingLock) {
             try {
                 const currentCommit = await this.executeGitCommand('git rev-parse HEAD');
-                this.pendingCommitHash = currentCommit.trim();
+                const currentHash = currentCommit.trim();
+                const isNewCommit = currentHash !== this.lastCommitHash;
+                if (isNewCommit) {
+                    this.pendingCommitHash = currentHash;
+                    // Cancel current review to unblock processing for the new commit
+                    if (this.isProcessingCommit) {
+                        this.cancelCurrentReview();
+                    }
+                }
             } catch {
                 // Ignore — will be picked up on next event
             }
@@ -372,7 +407,8 @@ class WatchGitManager {
                 return;
             }
 
-            // Cancel current review if a new commit arrives
+            // Defensive: normally cancelled by handleGitChange, but handles edge cases
+            // where processGitChange is called directly (e.g., pending commit processing)
             if (this.isProcessingCommit) {
                 this.consoleManager.printInfo(`New commit detected, cancelling current review...`);
                 try {
@@ -425,11 +461,6 @@ class WatchGitManager {
             }
 
             this.consoleManager.stopLoader();
-
-            if (!this.destroyed$.closed) {
-                this.destroyed$.next();
-                this.destroyed$.complete();
-            }
         } catch (error) {
             logger.warn(`Error during WatchGitManager destruction: ${error}`);
         }
