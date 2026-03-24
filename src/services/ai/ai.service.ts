@@ -202,7 +202,7 @@ export abstract class AIService {
      * Extracts balanced JSON by matching opening and closing brackets.
      * Handles nested structures, strings with escaped quotes, and special characters.
      */
-    private extractBalancedJson(text: string, startIndex: number, openChar: string, closeChar: string): string | null {
+    protected extractBalancedJson(text: string, startIndex: number, openChar: string, closeChar: string): string | null {
         let depth = 0;
         let inString = false;
         let escapeNext = false;
@@ -241,6 +241,20 @@ export abstract class AIService {
 
         return null;
     }
+
+    /**
+     * Extract the outermost JSON object from response text.
+     * Unlike extractJsonFromResponse (which tries [ first for commit message arrays),
+     * this tries { first — required for code review responses where the items array
+     * would otherwise be matched before the outer object.
+     */
+    private extractJsonObjectFromResponse = (response: string): string | null => {
+        const startIndex = response.indexOf('{');
+        if (startIndex !== -1) {
+            return this.extractBalancedJson(response, startIndex, '{', '}');
+        }
+        return null;
+    };
 
     protected parseMessage(aiGeneratedText: string, type: CommitType, maxCount: number): AIResponse[] {
         const cleanedText = this.cleanJsonCodeBlock(aiGeneratedText);
@@ -523,7 +537,10 @@ export abstract class AIService {
      */
     protected parseCodeReview = (aiGeneratedText: string): AIResponse[] => {
         const cleanedText = this.cleanJsonCodeBlock(aiGeneratedText);
-        const jsonString = this.extractJsonFromResponse(cleanedText);
+        // Code review response is a JSON object {summary, items}, not an array.
+        // extractJsonFromResponse tries [ first, which matches the nested "items" array
+        // and causes structure validation to fail. Extract { first instead.
+        const jsonString = this.extractJsonObjectFromResponse(cleanedText);
 
         if (!jsonString) {
             logger.warn(`${this.serviceName} Code review response did not contain JSON, falling back to plain text`);
