@@ -21,6 +21,24 @@ export interface RawCommitMessage {
     footer?: string;
 }
 
+export type CodeReviewSeverity = 'critical' | 'warning' | 'suggestion' | 'praise';
+export type CodeReviewCategory = 'bug' | 'security' | 'performance' | 'style' | 'maintainability' | 'other';
+
+export interface CodeReviewItem {
+    severity: CodeReviewSeverity;
+    category: CodeReviewCategory;
+    file?: string;
+    line?: string;
+    title: string;
+    description: string;
+    suggestion?: string;
+}
+
+export interface CodeReviewResponse {
+    summary: string;
+    items: CodeReviewItem[];
+}
+
 export interface AIServiceParams {
     config: ModelConfig<ModelName>;
     stagedDiff: GitDiff;
@@ -497,6 +515,108 @@ export abstract class AIService {
                 subscription.unsubscribe();
             };
         }).pipe(catchError(this.handleError$));
+    };
+
+    /**
+     * Parse structured code review JSON from AI response.
+     * Falls back to sanitizeResponse() if JSON parsing fails.
+     */
+    protected parseCodeReview = (aiGeneratedText: string): AIResponse[] => {
+        const cleanedText = this.cleanJsonCodeBlock(aiGeneratedText);
+        const jsonString = this.extractJsonFromResponse(cleanedText);
+
+        if (!jsonString) {
+            logger.warn(`${this.serviceName} Code review response did not contain JSON, falling back to plain text`);
+            return this.sanitizeResponse(aiGeneratedText);
+        }
+
+        const parseResult = safeJsonParse(jsonString);
+        if (!parseResult.ok) {
+            logger.warn(`${this.serviceName} Failed to parse code review JSON, falling back to plain text`);
+            return this.sanitizeResponse(aiGeneratedText);
+        }
+
+        const parsed = parseResult.data as CodeReviewResponse;
+        const hasValidStructure = parsed && typeof parsed.summary === 'string' && Array.isArray(parsed.items);
+        if (!hasValidStructure) {
+            logger.warn(`${this.serviceName} Code review JSON missing summary or items, falling back to plain text`);
+            return this.sanitizeResponse(aiGeneratedText);
+        }
+
+        const validItems = parsed.items.filter(
+            (item): item is CodeReviewItem =>
+                typeof item.title === 'string' &&
+                typeof item.severity === 'string' &&
+                typeof item.description === 'string' &&
+                typeof item.category === 'string'
+        );
+
+        const hasCritical = validItems.some(item => item.severity === 'critical');
+        const title = this.formatReviewSummaryTitle(parsed.summary, validItems);
+        const value = this.formatReviewAsMarkdown(parsed.summary, validItems, hasCritical);
+
+        if (this.isLoggingEnabled()) {
+            logger.info(`${this.serviceName} Parsed code review: ${validItems.length} items`);
+        }
+
+        return [{ title, value }];
+    };
+
+    /**
+     * Build a ReactiveListChoice from a code review AIResponse.
+     */
+    protected formatCodeReviewAsChoice = (data: AIResponse): ReactiveListChoice => ({
+        name: `${this.serviceName} ${data.title}`,
+        short: data.title,
+        value: data.value,
+        description: data.value,
+        isError: false,
+    });
+
+    private formatReviewSummaryTitle = (summary: string, items: CodeReviewItem[]): string => {
+        const counts = items.reduce(
+            (acc, item) => {
+                acc[item.severity] = (acc[item.severity] ?? 0) + 1;
+                return acc;
+            },
+            {} as Partial<Record<CodeReviewSeverity, number>>
+        );
+
+        const severityOrder: CodeReviewSeverity[] = ['critical', 'warning', 'suggestion', 'praise'];
+        const parts = severityOrder.filter(s => counts[s]).map(s => `${counts[s]} ${s}`);
+
+        const severityInfo = parts.length > 0 ? ` (${parts.join(', ')})` : '';
+        const MAX_SUMMARY_LENGTH = 60;
+        const truncatedSummary = summary.length > MAX_SUMMARY_LENGTH ? `${summary.slice(0, MAX_SUMMARY_LENGTH - 3)}...` : summary;
+        return `${truncatedSummary}${severityInfo}`;
+    };
+
+    private formatReviewAsMarkdown = (summary: string, items: CodeReviewItem[], hasCritical: boolean): string => {
+        const criticalMarker = hasCritical ? '\n<!-- HAS_CRITICAL_ISSUES -->\n' : '';
+        const lines: string[] = [`## Summary\n${summary}${criticalMarker}\n`];
+
+        const severityOrder: CodeReviewSeverity[] = ['critical', 'warning', 'suggestion', 'praise'];
+
+        for (const severity of severityOrder) {
+            const group = items.filter(item => item.severity === severity);
+            if (group.length === 0) {
+                continue;
+            }
+
+            lines.push(`### [${severity.toUpperCase()}] ${severity.charAt(0).toUpperCase()}${severity.slice(1)}\n`);
+
+            for (const item of group) {
+                const location = item.file ? ` (${item.file}${item.line ? `:${item.line}` : ''})` : '';
+                lines.push(`- **[${item.category}]** ${item.title}${location}`);
+                lines.push(`  ${item.description}`);
+                if (item.suggestion) {
+                    lines.push(`  > Suggestion: ${item.suggestion}`);
+                }
+                lines.push('');
+            }
+        }
+
+        return lines.join('\n');
     };
 
     protected isLoggingEnabled(): boolean {

@@ -367,26 +367,74 @@ export const isValidGitmojiMessage = (message: string): boolean => {
 
 export const codeReviewPrompt = (promptOptions: PromptOptions) => {
     const { codeReviewPromptPath, locale } = promptOptions;
-    const defaultPrompt = `I'll give you the output of the "git diff" command as an input. Please review the following code and provide your feedback in Markdown format. Focus on:
 
-1. Language: ${locale}
-2. Code quality and best practices
-3. Potential bugs or errors
-4. Performance improvements
-5. Readability and maintainability
-
-Please structure your response with appropriate Markdown headings, code blocks, and bullet points.`;
-
-    if (!codeReviewPromptPath) {
-        return defaultPrompt;
+    if (codeReviewPromptPath) {
+        try {
+            const codeReviewPromptTemplate = fs.readFileSync(resolvePromptPath(codeReviewPromptPath), 'utf-8');
+            return `${parseTemplate(codeReviewPromptTemplate, promptOptions)}`;
+        } catch (error) {
+            // Fall through to default prompt
+        }
     }
 
-    try {
-        const codeReviewPromptTemplate = fs.readFileSync(resolvePromptPath(codeReviewPromptPath), 'utf-8');
-        return `${parseTemplate(codeReviewPromptTemplate, promptOptions)}`;
-    } catch (error) {
-        return defaultPrompt;
-    }
+    return defaultCodeReviewPrompt(locale);
+};
+
+const defaultCodeReviewPrompt = (locale: string): string => {
+    const systemDescription = `You are an expert code reviewer with deep knowledge of software engineering best practices, security, and performance optimization.`;
+
+    const taskDescription = `Your task is to review the provided git diff and provide structured, actionable feedback as a JSON object.`;
+
+    return [
+        systemDescription,
+        taskDescription,
+        '',
+        [
+            `## Severity Levels:`,
+            `- **critical**: Must fix before merging. Bugs, security vulnerabilities, data loss risks, breaking changes`,
+            `- **warning**: Should fix. Performance issues, error handling gaps, code smells, potential bugs`,
+            `- **suggestion**: Nice to have. Style improvements, refactoring opportunities, better patterns`,
+            `- **praise**: Highlight good patterns. Well-written code, good practices worth recognizing`,
+            '',
+            `## Category Types:`,
+            `- **bug**: Logic errors, incorrect behavior, crashes, null/undefined issues, race conditions`,
+            `- **security**: Injection vulnerabilities, authentication gaps, data exposure, insecure patterns`,
+            `- **performance**: Inefficient algorithms, unnecessary computations, memory leaks, N+1 queries`,
+            `- **style**: Naming, formatting, code organization, DRY violations, dead code`,
+            `- **maintainability**: Tight coupling, missing abstractions, testability, complexity, error handling`,
+            `- **other**: Anything not fitting the above categories`,
+            '',
+            `## Guidelines:`,
+            `- Language: Write all feedback in ${locale}`,
+            `- Be specific: Reference exact code patterns and line changes from the diff`,
+            `- Be constructive: Every criticism should include a concrete suggestion for improvement`,
+            `- Prioritize: List critical issues first, then warnings, then suggestions`,
+            `- Be balanced: Include praise for good patterns when present`,
+            `- Keep it practical: Focus on actionable feedback, not minor style nitpicks`,
+            `- File references: Extract file paths from diff headers (--- a/path, +++ b/path)`,
+            '',
+            `## Response Format:`,
+            `Provide your response as a JSON object with this exact structure:`,
+            `{`,
+            `  "summary": "Brief 1-2 sentence overall assessment of the changes",`,
+            `  "items": [`,
+            `    {`,
+            `      "severity": "critical|warning|suggestion|praise",`,
+            `      "category": "bug|security|performance|style|maintainability|other",`,
+            `      "file": "path/to/file (from diff header, optional)",`,
+            `      "line": "line number or range if identifiable (optional)",`,
+            `      "title": "Short description of the issue (max 80 chars)",`,
+            `      "description": "Detailed explanation of the issue and why it matters",`,
+            `      "suggestion": "Concrete suggestion for how to fix or improve (empty string if N/A)"`,
+            `    }`,
+            `  ]`,
+            `}`,
+            '',
+            `Important: The response must be valid JSON. If no issues are found, return an empty items array with a positive summary.`,
+        ].join('\n'),
+    ]
+        .filter(Boolean)
+        .join('\n');
 };
 
 export const validateSystemPrompt = async (config: ValidConfig) => {
@@ -409,7 +457,7 @@ export const validateSystemPrompt = async (config: ValidConfig) => {
 
 export const generateUserPrompt = (diff: string, requestType: 'commit' | 'review' = 'commit'): string => {
     if (requestType === 'review') {
-        return `Please analyze the following diff and provide a comprehensive code review:\n\n\`\`\`diff\n${diff}\n\`\`\`\n\nFocus on code quality, potential issues, and improvement suggestions.`;
+        return `Please review the following diff and respond with the structured JSON format as specified:\n\n\`\`\`diff\n${diff}\n\`\`\``;
     }
 
     return `Please analyze the following diff and generate commit message(s) based on the changes:\n\n\`\`\`diff\n${diff}\n\`\`\`\n\nFocus on understanding the purpose and impact of these changes to create meaningful commit message(s).`;
