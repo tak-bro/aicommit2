@@ -249,8 +249,7 @@ class WatchGitManager {
 
     private cleanupCodeReview = (): void => {
         this.cleanupCurrentReviewResources();
-        this.clearTerminal();
-        this.consoleManager.showLoader('Watching for new Git commits...');
+        // Don't clearTerminal() — preserve review results so user can scroll back
     };
 
     private isGitReset = async (currentHash: string): Promise<boolean> => {
@@ -363,7 +362,6 @@ class WatchGitManager {
 
             const isReset = await this.isGitReset(currentHash);
             if (isReset) {
-                this.clearTerminal();
                 this.consoleManager.printInfo(`Git reset detected: ${currentHash.substring(0, 8)}`);
                 this.lastCommitHash = currentHash;
 
@@ -407,6 +405,9 @@ class WatchGitManager {
             if (!isNotGitRepo) {
                 this.consoleManager.printError(`Error checking for new commits: ${errorMessage}`);
             }
+        } finally {
+            // Always restore the watching loader after processing completes
+            this.consoleManager.showLoader('Watching for new Git commits...');
         }
     };
 
