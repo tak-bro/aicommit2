@@ -93,7 +93,7 @@ export class ConsoleManager {
     }
 
     printWarning(message: string) {
-        console.log(`\n${chalk.bold.yellow('⚠')} ${chalk.red(`${message}`)}`);
+        console.log(`\n${chalk.bold.yellow('⚠')} ${chalk.yellow(`${message}`)}`);
     }
 
     printSuccess(message: string) {

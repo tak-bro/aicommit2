@@ -11,7 +11,7 @@ import preCommitHook from './commands/pre-commit-hook.js';
 import prepareCommitMessageHook from './commands/prepare-commit-msg-hook.js';
 import setupCommand from './commands/setup.js';
 import { statsCommand } from './commands/stats.js';
-import watchGit from './commands/watch-git.js';
+import { watchGit } from './commands/watch-git.js';
 import { RawConfig, getConfig } from './utils/config.js';
 import { renderGroupedHelp } from './utils/help-renderer.js';
 import { initializeLogger, logger } from './utils/logger.js';
