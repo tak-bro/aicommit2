@@ -38,6 +38,7 @@ ______________________________________________________________________
 - [General Settings](#general-settings)
 - [Logging](#logging)
 - [Custom Prompt Template](#custom-prompt-template)
+- [Code Review](#code-review)
 - [Watch Commit Mode](#watch-commit-mode)
 - [Upgrading](#upgrading)
 - [Contributing](#contributing)
@@ -78,6 +79,7 @@ _aicommit2_ automatically generates commit messages using AI. It supports [Git](
 - **[Multi-AI Support](#cloud-ai-services)**: Integrates with OpenAI, Anthropic Claude, Google Gemini, Mistral AI, Cohere, Groq, Ollama and more
 - **[OpenAI API Compatibility](docs/providers/compatible.md)**: Support for any service that implements the OpenAI API specification
 - **[Reactive CLI](#usage)**: Enables simultaneous requests to multiple AIs and selection of the best commit message
+- **[Code Review](#code-review)**: AI-powered structured code review with severity levels before committing
 - **[Git Hook Integration](#git-hooks)**: Can be used as a prepare-commit-msg hook
 - **[Custom Prompt](#custom-prompt-template)**: Supports user-defined system prompt templates
 
@@ -887,7 +889,8 @@ For detailed information about all available settings, see the [General Settings
 | `temperature`          | Model's creativity (0.0 - 2.0)                                      | 0.7          |
 | `maxTokens`            | Maximum number of tokens to generate                                | 1024         |
 | `includeBody`          | Whether the commit message includes body                            | false        |
-| `codeReview`           | Enable automated code review                                        | false        |
+| `codeReview`           | Enable automated code review before commit                          | false        |
+| `codeReviewPromptPath` | Path to custom code review prompt file                              | -            |
 | `autoCopy`             | Auto-copy commit message to clipboard (commits normally)            | false        |
 | `useStats`             | Enable usage statistics tracking                                    | true         |
 | `statsDays`            | Days to retain statistics data (auto-cleanup)                       | 30           |
@@ -1058,6 +1061,55 @@ The response should be valid JSON that can be parsed without errors.
 ```
 
 This ensures that the output is consistently formatted as a JSON array, regardless of the custom template used.
+
+## Code Review
+
+aicommit2 includes an AI-powered code review feature that analyzes your staged changes before generating commit messages. When enabled, it provides structured feedback with severity levels and actionable suggestions.
+
+### Enable Code Review
+
+```bash
+# Enable globally
+aicommit2 config set codeReview=true
+
+# Or enable for specific providers only
+aicommit2 config set OPENAI.codeReview=true
+aicommit2 config set ANTHROPIC.codeReview=true
+```
+
+### How It Works
+
+When `codeReview` is enabled, the commit flow becomes:
+
+1. **Stage changes** (`git add`)
+2. **Run aicommit2** — code review runs automatically before commit message generation
+3. **Review results** — AI analyzes the diff and returns structured feedback
+4. **Confirm or abort** — choose to continue with the commit or fix issues first
+5. **Generate commit messages** — proceeds as normal after confirmation
+
+### Structured Review Output
+
+Reviews are organized by severity and category:
+
+- **Severity levels**: `critical`, `warning`, `suggestion`, `praise`
+- **Categories**: `bug`, `security`, `performance`, `style`, `maintainability`, `other`
+
+Each review item includes a title, description, file reference, and concrete suggestion for improvement. When critical issues are found, the confirmation prompt defaults to "No" to encourage fixing before committing.
+
+### Custom Review Prompt
+
+You can customize the code review prompt using a template file:
+
+```bash
+aicommit2 config set codeReviewPromptPath="/path/to/review-prompt.txt"
+aicommit2 config set OPENAI.codeReviewPromptPath="/path/to/another-prompt.txt"
+```
+
+The template supports the same `{locale}`, `{type}`, `{generate}`, `{maxLength}` placeholders as the commit prompt.
+
+> **NOTE**: When using a custom review prompt, the response format is plain text (not structured JSON). The structured severity/category output is only available with the default prompt.
+
+> **WARNING**: Code review runs **in addition to** commit message generation, which means **API token usage roughly doubles** per commit. If multiple providers have `codeReview` enabled, each provider performs its own review. Monitor your token usage carefully, especially with large diffs.
 
 ## Watch Commit Mode
 
