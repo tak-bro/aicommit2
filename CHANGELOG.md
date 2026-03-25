@@ -1,3 +1,18 @@
+## [2.5.6](https://github.com/tak-bro/aicommit2/compare/v2.5.5...v2.5.6) (2026-03-25)
+
+
+### Bug Fixes
+
+* handle prompt dismissal and external cancellation in watch mode ([18fac4e](https://github.com/tak-bro/aicommit2/commit/18fac4ecb79244841d635bc66863f3a90d300713))
+* restore watching loader after commit processing ([a97b49e](https://github.com/tak-bro/aicommit2/commit/a97b49e11ff357aa78f9af0990082c916bdd3664))
+
+
+### Features
+
+* add watch mode with retry and cancellation ([0bd0a9b](https://github.com/tak-bro/aicommit2/commit/0bd0a9b6f5e7b1e9ef41372a324be38760aa9837))
+* improve code review prompt with critical issue handling ([ce84d87](https://github.com/tak-bro/aicommit2/commit/ce84d87f25aa47ccf145f255743969c7690edceb))
+* simplify prompt generation logic ([6489c60](https://github.com/tak-bro/aicommit2/commit/6489c6001c6e167161a2333b163442b4c47ec3d7))
+
 ## [2.5.5](https://github.com/tak-bro/aicommit2/compare/v2.5.4...v2.5.5) (2026-03-23)
 
 
