@@ -247,88 +247,42 @@ const getLocalizedExample = (type: CommitType, locale: string): { subject: strin
 const defaultPrompt = (promptOptions: PromptOptions) => {
     const { type, maxLength, generate, locale } = promptOptions;
 
-    const systemDescription = `You are an expert Git commit message writer specializing in analyzing code changes and creating precise, meaningful commit messages.`;
-
-    const taskDescription = `Your task is to generate exactly ${generate} ${type} style commit message${generate !== 1 ? 's' : ''} based on the provided git diff.`;
-
     return [
-        systemDescription,
-        taskDescription,
+        `Generate exactly ${generate} ${type} commit message${generate !== 1 ? 's' : ''} from the provided git diff.`,
         '',
-        [
-            `## Requirements:`,
-            `1. Language: Write all messages in ${locale}`,
-            `2. Format: Strictly follow the ${type} commit format:`,
-            `${commitTypeFormats[type]}`,
-            `3. Allowed Types:${commitTypes[type]}`,
-            '',
-            `## Guidelines:`,
-            `- Subject line: Max ${maxLength} characters, imperative mood, no period`,
-            `- Analyze the diff to understand:`,
-            `  * What files were changed`,
-            `  * What functionality was added, modified, or removed`,
-            `  * The scope and impact of changes`,
-            `- For the commit type, choose based on:`,
-            `  * feat: New functionality or feature`,
-            `  * fix: Bug fixes or error corrections`,
-            `  * refactor: Code restructuring without changing functionality`,
-            `  * docs: Documentation changes only`,
-            `  * style: Formatting, missing semi-colons, etc`,
-            `  * test: Adding or modifying tests`,
-            `  * chore: Maintenance tasks, dependency updates`,
-            `  * perf: Performance improvements`,
-            `  * build: Build system or external dependency changes`,
-            `  * ci: CI configuration changes`,
-            `- Scope: Extract from file paths or logical grouping (e.g., auth, api, ui)`,
-            `- Body (when needed):`,
-            `  * Explain the motivation for the change`,
-            `  * Compare previous behavior with new behavior`,
-            `  * Note any breaking changes or important details`,
-            `- Footer: Include references to issues, breaking changes if applicable`,
-            '',
-            `## Analysis Approach:`,
-            `1. Identify the primary purpose of the changes`,
-            `2. Group related changes together`,
-            `3. Determine the most appropriate type and scope`,
-            `4. Write a clear, concise subject line`,
-            `5. Add body details for complex changes`,
-            '',
-            `Remember: The commit message should help future developers understand WHY this change was made, not just WHAT was changed.`,
-        ].join('\n'),
+        `Language: ${locale}`,
+        `Subject: max ${maxLength} chars, imperative mood, no period`,
+        `Format:`,
+        `${commitTypeFormats[type]}`,
+        `Allowed types:${commitTypes[type]}`,
+        '',
+        `Rules:`,
+        `- Extract scope from file paths or logical grouping (e.g., auth, api, ui)`,
+        `- Focus on WHY the change was made, not just WHAT changed`,
+        `- Body: only for complex changes (motivation, behavior comparison, breaking changes)`,
+        `- Footer: issue references or BREAKING CHANGE if applicable`,
     ]
         .filter(Boolean)
         .join('\n');
 };
 
 const finalPrompt = (type: CommitType, generate: number, locale: string) => {
-    const example = (type: CommitType) => {
-        const localizedExample = getLocalizedExample(type, locale);
+    const localizedExample = getLocalizedExample(type, locale);
+    const hasTypedFormat = type === 'conventional' || type === 'gitmoji';
 
-        if (type === 'conventional' || type === 'gitmoji') {
-            return `${Array(generate)
-                .fill(null)
-                .map(
-                    (_, index) => `
-  {
-    "subject": "${localizedExample.subject}",
-    "body": "${localizedExample.body}",
-    "footer": ""
-  }`
-                )
-                .join(',')}`;
-        }
-        return '';
-    };
+    const exampleJson = hasTypedFormat
+        ? `\n[
+  {"subject": "${localizedExample.subject}", "body": "${localizedExample.body}", "footer": ""}
+]`
+        : '';
 
     return [
-        `\nLastly, Provide your response as a JSON array containing exactly ${generate} object${generate !== 1 ? 's' : ''}, each with the following keys:`,
-        `- "subject": The main commit message using the ${type} style. It should be a concise summary of the changes.`,
-        `- "body": An optional detailed explanation of the changes. If not needed, use an empty string.`,
-        `- "footer": An optional footer for metadata like BREAKING CHANGES. If not needed, use an empty string.`,
-        `The array must always contain ${generate} element${generate !== 1 ? 's' : ''}, no more and no less.`,
-        `Example response format: \n[${example(type)}\n]`,
-        `Ensure you generate exactly ${generate} commit message${generate !== 1 ? 's' : ''}, even if it requires creating slightly varied versions for similar changes.`,
-        `The response should be valid JSON that can be parsed without errors.`,
+        `\nRespond with a JSON array of exactly ${generate} object${generate !== 1 ? 's' : ''}:`,
+        `- "subject": ${type} style commit message`,
+        `- "body": detailed explanation (empty string if not needed)`,
+        `- "footer": BREAKING CHANGE or issue refs (empty string if not needed)`,
+        exampleJson ? `\nExample:${exampleJson}` : '',
+        `\nReturn valid JSON only.`,
     ]
         .filter(Boolean)
         .join('\n');
@@ -381,60 +335,23 @@ export const codeReviewPrompt = (promptOptions: PromptOptions) => {
 };
 
 const defaultCodeReviewPrompt = (locale: string): string => {
-    const systemDescription = `You are an expert code reviewer with deep knowledge of software engineering best practices, security, and performance optimization.`;
-
-    const taskDescription = `Your task is to review the provided git diff and provide structured, actionable feedback as a JSON object.`;
-
     return [
-        systemDescription,
-        taskDescription,
+        `Review the git diff and provide structured feedback as JSON.`,
         '',
-        [
-            `## Severity Levels:`,
-            `- **critical**: Must fix before merging. Bugs, security vulnerabilities, data loss risks, breaking changes`,
-            `- **warning**: Should fix. Performance issues, error handling gaps, code smells, potential bugs`,
-            `- **suggestion**: Nice to have. Style improvements, refactoring opportunities, better patterns`,
-            `- **praise**: Highlight good patterns. Well-written code, good practices worth recognizing`,
-            '',
-            `## Category Types:`,
-            `- **bug**: Logic errors, incorrect behavior, crashes, null/undefined issues, race conditions`,
-            `- **security**: Injection vulnerabilities, authentication gaps, data exposure, insecure patterns`,
-            `- **performance**: Inefficient algorithms, unnecessary computations, memory leaks, N+1 queries`,
-            `- **style**: Naming, formatting, code organization, DRY violations, dead code`,
-            `- **maintainability**: Tight coupling, missing abstractions, testability, complexity, error handling`,
-            `- **other**: Anything not fitting the above categories`,
-            '',
-            `## Guidelines:`,
-            `- Language: Write all feedback in ${locale}`,
-            `- Be specific: Reference exact code patterns and line changes from the diff`,
-            `- Be constructive: Every criticism should include a concrete suggestion for improvement`,
-            `- Prioritize: List critical issues first, then warnings, then suggestions`,
-            `- Be balanced: Include praise for good patterns when present`,
-            `- Keep it practical: Focus on actionable feedback, not minor style nitpicks`,
-            `- File references: Extract file paths from diff headers (--- a/path, +++ b/path)`,
-            '',
-            `## Response Format:`,
-            `Provide your response as a JSON object with this exact structure:`,
-            `{`,
-            `  "summary": "Brief 1-2 sentence overall assessment of the changes",`,
-            `  "items": [`,
-            `    {`,
-            `      "severity": "critical|warning|suggestion|praise",`,
-            `      "category": "bug|security|performance|style|maintainability|other",`,
-            `      "file": "path/to/file (from diff header, optional)",`,
-            `      "line": "line number or range if identifiable (optional)",`,
-            `      "title": "Short description of the issue (max 80 chars)",`,
-            `      "description": "Detailed explanation of the issue and why it matters",`,
-            `      "suggestion": "Concrete suggestion for how to fix or improve (empty string if N/A)"`,
-            `    }`,
-            `  ]`,
-            `}`,
-            '',
-            `Important: The response must be valid JSON. If no issues are found, return an empty items array with a positive summary.`,
-        ].join('\n'),
-    ]
-        .filter(Boolean)
-        .join('\n');
+        `Language: ${locale}`,
+        `Severity: critical (must fix) | warning (should fix) | suggestion (nice to have) | praise (good practice)`,
+        `Category: bug | security | performance | style | maintainability | other`,
+        '',
+        `Rules:`,
+        `- Reference specific code and file paths from the diff`,
+        `- Include a concrete suggestion for every issue`,
+        `- Prioritize: critical > warning > suggestion`,
+        '',
+        `Respond with this JSON structure:`,
+        `{"summary": "1-2 sentence assessment", "items": [{"severity": "...", "category": "...", "file": "path (optional)", "line": "number (optional)", "title": "max 80 chars", "description": "why it matters", "suggestion": "how to fix (empty string if N/A)"}]}`,
+        '',
+        `Return valid JSON only. Empty items array if no issues found.`,
+    ].join('\n');
 };
 
 export const validateSystemPrompt = async (config: ValidConfig) => {
@@ -455,10 +372,6 @@ export const validateSystemPrompt = async (config: ValidConfig) => {
     }
 };
 
-export const generateUserPrompt = (diff: string, requestType: 'commit' | 'review' = 'commit'): string => {
-    if (requestType === 'review') {
-        return `Please review the following diff and respond with the structured JSON format as specified:\n\n\`\`\`diff\n${diff}\n\`\`\``;
-    }
-
-    return `Please analyze the following diff and generate commit message(s) based on the changes:\n\n\`\`\`diff\n${diff}\n\`\`\`\n\nFocus on understanding the purpose and impact of these changes to create meaningful commit message(s).`;
+export const generateUserPrompt = (diff: string, _requestType: 'commit' | 'review' = 'commit'): string => {
+    return `\`\`\`diff\n${diff}\n\`\`\``;
 };
