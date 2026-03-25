@@ -81,13 +81,7 @@ export class OpenAICompatibleService extends AIService {
     generateCodeReview$(): Observable<ReactiveListChoice> {
         return fromPromise(this.generateMessage('review')).pipe(
             concatMap(messages => from(messages)),
-            map(data => ({
-                name: `${this.serviceName} ${data.title}`,
-                short: data.title,
-                value: data.value,
-                description: data.value,
-                isError: false,
-            })),
+            map(this.formatCodeReviewAsChoice),
             catchError(this.handleError$)
         );
     }
@@ -265,7 +259,7 @@ export class OpenAICompatibleService extends AIService {
             logAIComplete(diff, requestType, serviceName, duration, result, logging);
 
             if (requestType === 'review') {
-                return this.sanitizeResponse(result);
+                return this.parseCodeReview(result);
             }
             return this.parseMessage(result, type, generate);
         } catch (error) {

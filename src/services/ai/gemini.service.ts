@@ -73,13 +73,7 @@ export class GeminiService extends AIService {
     generateCodeReview$(): Observable<ReactiveListChoice> {
         return fromPromise(this.generateMessage('review')).pipe(
             concatMap(messages => from(messages)),
-            map(data => ({
-                name: `${this.serviceName} ${data.title}`,
-                short: data.title,
-                value: data.value,
-                description: data.value,
-                isError: false,
-            })),
+            map(this.formatCodeReviewAsChoice),
             catchError(this.handleError$)
         );
     }
@@ -285,7 +279,7 @@ export class GeminiService extends AIService {
             logAIComplete(diff, requestType, 'Gemini', duration, completion, logging);
 
             if (requestType === 'review') {
-                return this.sanitizeResponse(completion);
+                return this.parseCodeReview(completion);
             }
             return this.parseMessage(completion, type, generate);
         } catch (error) {

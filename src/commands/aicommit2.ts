@@ -294,12 +294,17 @@ async function handleCodeReview(aiRequestManager: AIRequestManager, availableAIs
 
         consoleManager.moveCursorUp();
 
+        const hasCritical = selectedCodeReview.includes('<!-- HAS_CRITICAL_ISSUES -->');
+        const confirmMessage = hasCritical
+            ? 'Critical issues found in code review. Continue without fixing?'
+            : 'Will you continue without changing the code?';
+
         const { continuePrompt } = await inquirer.prompt([
             {
                 type: 'confirm',
                 name: 'continuePrompt',
-                message: `Will you continue without changing the code?`,
-                default: true,
+                message: confirmMessage,
+                default: !hasCritical,
             },
         ]);
 
