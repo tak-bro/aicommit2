@@ -87,8 +87,8 @@ const PROVIDER_INFO: Record<string, ProviderInfo> = {
         displayName: 'GitHub Models',
         authType: 'api-key',
         envKeyHint: 'GITHUB_MODELS_API_KEY',
-        defaultModel: 'gpt-4o-mini',
-        setupNotes: 'Use a GitHub personal access token. Run `aic2 github-login` for browser-based auth.',
+        defaultModel: 'openai/gpt-4o-mini',
+        setupNotes: 'Use a GitHub personal access token (including github_pat_...). Run `aic2 github-login` for browser-based auth.',
     },
     HUGGINGFACE: {
         displayName: 'Hugging Face',

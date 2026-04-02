@@ -4,12 +4,19 @@ import { Observable, catchError, concatMap, from, map } from 'rxjs';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
+import {
+    GITHUB_MODELS_API_VERSION,
+    GITHUB_MODELS_BASE_URL,
+    GITHUB_MODELS_DEFAULT_MODEL,
+    GITHUB_MODELS_INFERENCE_PATH,
+    ensureGitHubModelsModelId,
+} from './github-models.utils.js';
 import { RequestType, logAIComplete, logAIError, logAIPayload, logAIPrompt, logAIRequest, logAIResponse } from '../../utils/ai-log.js';
 import { isReasoningModel } from '../../utils/openai.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 
 export class GitHubModelsService extends AIService {
-    private readonly baseURL = 'https://models.github.ai';
+    private readonly baseURL = GITHUB_MODELS_BASE_URL;
 
     constructor(protected readonly params: AIServiceParams) {
         super(params);
@@ -28,7 +35,11 @@ export class GitHubModelsService extends AIService {
             case 'AUTHENTICATION_FAILED':
                 return 'Authentication failed. Your GitHub token may be expired or invalid. Run: aicommit2 github-login';
             case 'ACCESS_DENIED':
-                return 'Access denied. Make sure your GitHub token has "Models" permission in GitHub settings';
+                return 'Access denied. Make sure your token has "models: read" permission in GitHub settings';
+            case 'INVALID_MODEL_ID':
+                return 'Invalid model ID. Use format "publisher/model" (example: openai/gpt-4o-mini)';
+            case 'MODEL_NOT_FOUND':
+                return 'Model not found in GitHub Models catalog. Check with: gh models list';
             case 'NO_CONTENT':
                 return 'No content received from GitHub Models. The model may have failed to generate a response';
             default:
@@ -85,7 +96,17 @@ export class GitHubModelsService extends AIService {
     }
 
     private async makeRequest(systemPrompt: string, diff: string, requestType: RequestType): Promise<string> {
-        const model = Array.isArray(this.params.config.model) ? this.params.config.model[0] : this.params.config.model || 'gpt-4o-mini';
+        const modelRaw = Array.isArray(this.params.config.model)
+            ? this.params.config.model[0]
+            : this.params.config.model || GITHUB_MODELS_DEFAULT_MODEL;
+        let model: string;
+        try {
+            model = ensureGitHubModelsModelId(modelRaw);
+        } catch (error) {
+            const modelError = new Error(error instanceof Error ? error.message : String(error)) as AIServiceError;
+            modelError.code = 'INVALID_MODEL_ID';
+            throw modelError;
+        }
 
         const messages = [
             {
@@ -117,10 +138,11 @@ export class GitHubModelsService extends AIService {
                   }),
         };
 
-        const url = `${this.baseURL}/inference/chat/completions`;
+        const url = `${this.baseURL}${GITHUB_MODELS_INFERENCE_PATH}`;
         const headers = {
             'Content-Type': 'application/json',
             Accept: 'application/vnd.github+json',
+            'X-GitHub-Api-Version': GITHUB_MODELS_API_VERSION,
             Authorization: `Bearer ${this.params.config.key}`,
         };
 
@@ -186,18 +208,28 @@ export class GitHubModelsService extends AIService {
                     throw authError;
                 } else if (response.status === 403) {
                     const accessError = new Error(
-                        'GitHub Models access denied. Make sure your token has "Models" permission.'
+                        'GitHub Models access denied. Make sure your token has "models: read" permission.'
                     ) as AIServiceError;
                     accessError.status = response.status;
                     accessError.code = 'ACCESS_DENIED';
                     accessError.content = errorText;
                     throw accessError;
                 } else if (response.status === 404) {
-                    const modelError = new Error(`Model "${model}" not found. Please check the model name.`) as AIServiceError;
+                    const modelError = new Error(
+                        `Model "${model}" not found in GitHub Models catalog. Check with: gh models list`
+                    ) as AIServiceError;
                     modelError.status = response.status;
                     modelError.code = 'MODEL_NOT_FOUND';
                     modelError.content = errorText;
                     throw modelError;
+                } else if (response.status === 422) {
+                    const validationError = new Error(
+                        `GitHub Models rejected model "${model}". Use format "publisher/model" (example: openai/gpt-4o-mini).`
+                    ) as AIServiceError;
+                    validationError.status = response.status;
+                    validationError.code = 'INVALID_MODEL_ID';
+                    validationError.content = errorText;
+                    throw validationError;
                 } else if (response.status === 429) {
                     const rateError = new Error('Rate limit exceeded. Please try again later.') as AIServiceError;
                     rateError.status = response.status;

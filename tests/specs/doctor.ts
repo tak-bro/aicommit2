@@ -32,6 +32,18 @@ export default testSuite(({ describe }) => {
             await fixture.rm();
         });
 
+        test('doctor warns when GitHub Models has invalid model ID format', async () => {
+            const { fixture, aicommit2 } = await createFixture();
+            await aicommit2(['config', 'set', 'GITHUB_MODELS.key=github_pat_test']);
+            await aicommit2(['config', 'set', 'GITHUB_MODELS.model=gpt-4o-mini']);
+
+            const { stdout } = await aicommit2(['doctor']);
+            expect(stdout).toMatch('GITHUB_MODELS');
+            expect(stdout).toMatch('Invalid model ID format');
+            expect(stdout).toMatch('publisher/model');
+            await fixture.rm();
+        });
+
         test('summarize OpenRouter capabilities for commit-safe models', async () => {
             const notes = summarizeOpenRouterCapabilities(
                 {

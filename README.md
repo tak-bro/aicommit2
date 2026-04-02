@@ -97,7 +97,7 @@ _aicommit2_ automatically generates commit messages using AI. It supports [Git](
 | Groq | `llama-3.3-70b-versatile` | [Guide](docs/providers/groq.md) |
 | Perplexity | `sonar` | [Guide](docs/providers/perplexity.md) |
 | DeepSeek | `deepseek-chat` | [Guide](docs/providers/deepseek.md) |
-| GitHub Models | `gpt-4o-mini` | [Guide](docs/providers/github-models.md) |
+| GitHub Models | `openai/gpt-4o-mini` | [Guide](docs/providers/github-models.md) |
 | Bedrock | `anthropic.claude-haiku-4-5-20251001-v1:0` | [Guide](docs/providers/bedrock.md) |
 | Ollama | *(user configured)* | [Guide](docs/providers/ollama.md) |
 
@@ -470,6 +470,8 @@ aicommit2 stats clear   # Clear all stats
 aicommit2 hook install
 aicommit2 hook uninstall
 ```
+
+> GitHub Models tip: use `aicommit2 github-login` and set `GITHUB_MODELS.model` in `publisher/model` format (for example, `openai/gpt-5`).
 
 ## Integrations
 
