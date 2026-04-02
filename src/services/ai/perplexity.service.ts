@@ -92,7 +92,15 @@ export class PerplexityService extends AIService {
         const regex = /[{[]{1}([,:{}[\]0-9.\-+Eaeflnr-u \n\r\t]|".*?")+[}\]]{1}/gis;
         const matches = error.match(regex);
         if (matches) {
-            return Object.assign({}, ...matches.map((m: any) => JSON.parse(m)));
+            const parsed: Record<string, unknown> = {};
+            for (const m of matches) {
+                try {
+                    Object.assign(parsed, JSON.parse(m));
+                } catch {
+                    // Skip invalid JSON fragments
+                }
+            }
+            return Object.keys(parsed).length > 0 ? parsed : { error: { message: 'Unknown error' } };
         }
         return {
             error: {
