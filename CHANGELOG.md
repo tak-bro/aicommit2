@@ -1,3 +1,10 @@
+## [2.5.7](https://github.com/tak-bro/aicommit2/compare/v2.5.6...v2.5.7) (2026-04-02)
+
+
+### Features
+
+* **doctor:** add OpenRouter catalog health check with model capability validation ([8ed843a](https://github.com/tak-bro/aicommit2/commit/8ed843aab0d31887a14c5a915e0adb49c7601d16))
+
 ## [2.5.6](https://github.com/tak-bro/aicommit2/compare/v2.5.5...v2.5.6) (2026-03-25)
 
 
