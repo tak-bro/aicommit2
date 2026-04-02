@@ -765,10 +765,15 @@ model=stepfun/step-3.5-flash:free
 url=https://openrouter.ai
 path=/api/v1/chat/completions
 systemPromptPath=prompts/aicommit_prompt.txt
+responseFormat.type=json_object
+provider.allow_fallbacks=true
+provider.require_parameters=false
 ```
 
 If `systemPromptPath` is relative, it is resolved relative to the config file
 location.
+Nested OpenRouter objects such as `responseFormat` and `provider` can be written
+directly in `config.ini` using dotted keys, or set with JSON via `aicommit2 config set`.
 
 ### Reading and Setting Configuration
 

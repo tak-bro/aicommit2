@@ -298,7 +298,16 @@ export default testSuite(({ describe }) => {
                 await ensureDirectoryExists(path.dirname(configPath));
                 await fs.writeFile(
                     configPath,
-                    ['[OPENROUTER]', 'model=openrouter/auto', 'key=test-api-key', 'codeReview=true', ''].join('\n')
+                    [
+                        '[OPENROUTER]',
+                        'model=openrouter/auto',
+                        'key=test-api-key',
+                        'codeReview=true',
+                        'responseFormat.type=json_object',
+                        'provider.allow_fallbacks=true',
+                        'provider.require_parameters=false',
+                        '',
+                    ].join('\n')
                 );
 
                 const snapshot = snapshotEnv(envKeys);
@@ -312,6 +321,11 @@ export default testSuite(({ describe }) => {
                 expect(openRouter.model).toEqual(['openrouter/auto']);
                 expect(openRouter.url).toBe('https://openrouter.ai');
                 expect(openRouter.path).toBe('/api/v1/chat/completions');
+                expect(openRouter.responseFormat).toEqual({ type: 'json_object' });
+                expect(openRouter.provider).toEqual({
+                    allow_fallbacks: true,
+                    require_parameters: false,
+                });
 
                 const commitAIs = getAvailableAIs(config, 'commit');
                 const reviewAIs = getAvailableAIs(config, 'review');

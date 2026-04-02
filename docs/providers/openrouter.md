@@ -27,6 +27,9 @@ model=stepfun/step-3.5-flash:free
 url=https://openrouter.ai
 path=/api/v1/chat/completions
 systemPromptPath=prompts/aicommit_prompt.txt
+responseFormat.type=json_object
+provider.allow_fallbacks=true
+provider.require_parameters=false
 ```
 
 If `systemPromptPath` is relative, it is resolved from the config file directory.
@@ -38,6 +41,8 @@ next to the config file.
 ```sh
 aicommit2 config set OPENROUTER.key="your-api-key"
 aicommit2 config set OPENROUTER.model="openrouter/auto"
+aicommit2 config set OPENROUTER.responseFormat='{"type":"json_object"}'
+aicommit2 config set OPENROUTER.provider='{"allow_fallbacks":true,"require_parameters":false}'
 ```
 
 ### Specific Model
@@ -60,12 +65,17 @@ aicommit2 config set OPENROUTER.key="your-api-key" \
 | `model` | Model to use     | `openrouter/auto` |
 | `url`   | API endpoint URL | `https://openrouter.ai` |
 | `path`  | API path         | `/api/v1/chat/completions` |
+| `responseFormat` | OpenRouter `response_format` payload object | - |
+| `provider` | OpenRouter routing controls payload object | - |
+| `reasoning` | OpenRouter reasoning payload object | - |
 
 ## Notes
 
 - The provider uses the OpenAI chat-completions contract behind the scenes.
 - OpenRouter-specific routing headers are sent automatically.
-- If you want provider fallback or advanced routing control, configure the model on the OpenRouter dashboard or use a model slug directly.
+- If you want more routing control, set `OPENROUTER.provider` directly in config.
+- If you want structured output, set `OPENROUTER.responseFormat` to a JSON object.
+- If you want reasoning-specific controls, set `OPENROUTER.reasoning` to a JSON object.
 
 ## Configuration
 

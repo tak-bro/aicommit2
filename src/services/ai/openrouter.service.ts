@@ -27,12 +27,65 @@ export class OpenRouterService extends AIService {
             apiKey: this.params.config.key,
             baseURL: `${baseUrl}${basePath}`,
             defaultHeaders: {
-                'HTTP-Referer': 'https://github.com/tak-bro/aicommit2',
-                'X-OpenRouter-Title': 'aicommit2',
-                'X-OpenRouter-Categories': 'cli-agent',
+                ...this.getOpenRouterHeaders(),
             },
         });
     }
+
+    private getOpenRouterHeaders = (): Record<string, string> => ({
+        'HTTP-Referer': 'https://github.com/tak-bro/aicommit2',
+        'X-OpenRouter-Title': 'aicommit2',
+        'X-OpenRouter-Categories': 'cli-agent',
+    });
+
+    private hasRequestObject = (value: unknown): value is Record<string, unknown> => {
+        return typeof value === 'object' && value !== null && !Array.isArray(value) && Object.keys(value).length > 0;
+    };
+
+    private getRequestPayloadExtras = (): Record<string, unknown> => {
+        const config = this.params.config as Record<string, unknown>;
+        const extras: Record<string, unknown> = {};
+
+        if (this.hasRequestObject(config.responseFormat)) {
+            extras.response_format = config.responseFormat;
+        }
+
+        if (this.hasRequestObject(config.provider)) {
+            extras.provider = config.provider;
+        }
+
+        if (this.hasRequestObject(config.reasoning)) {
+            extras.reasoning = config.reasoning;
+        }
+
+        return extras;
+    };
+
+    private buildChatCompletionPayload = (systemPrompt: string, userPrompt: string, stream: boolean): Record<string, unknown> => {
+        const maxTokens = this.params.config.maxTokens;
+        const temperature = this.params.config.temperature;
+        const reasoningModel = isReasoningModel(this.params.config.model);
+
+        return {
+            messages: [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: userPrompt },
+            ],
+            model: this.params.config.model,
+            stream,
+            ...this.getRequestPayloadExtras(),
+            ...(reasoningModel
+                ? {
+                      max_completion_tokens: maxTokens,
+                      temperature: 1,
+                  }
+                : {
+                      max_tokens: maxTokens,
+                      top_p: this.params.config.topP,
+                      temperature,
+                  }),
+        };
+    };
 
     protected getServiceSpecificErrorMessage(error: AIServiceError): string | null {
         const errorMsg = error.message || '';
@@ -101,9 +154,8 @@ export class OpenRouterService extends AIService {
 
     private streamChunks = async (subject: Subject<string>): Promise<void> => {
         const diff = this.params.stagedDiff.diff;
-        const { systemPrompt, systemPromptPath, codeReviewPromptPath, logging, locale, temperature, generate, type, maxLength, timeout } =
+        const { systemPrompt, systemPromptPath, codeReviewPromptPath, logging, locale, generate, type, maxLength, timeout } =
             this.params.config;
-        const maxTokens = this.params.config.maxTokens;
         const promptOptions: PromptOptions = {
             ...DEFAULT_PROMPT_OPTIONS,
             locale,
@@ -123,36 +175,15 @@ export class OpenRouterService extends AIService {
         const headers = {
             Authorization: `Bearer ${this.params.config.key}`,
             'Content-Type': 'application/json',
-            'HTTP-Referer': 'https://github.com/tak-bro/aicommit2',
-            'X-OpenRouter-Title': 'aicommit2',
-            'X-OpenRouter-Categories': 'cli-agent',
+            ...this.getOpenRouterHeaders(),
         };
 
         logAIRequest(diff, 'commit', serviceName, this.params.config.model, url, headers, logging);
         logAIPrompt(diff, 'commit', serviceName, generatedSystemPrompt, userPrompt, logging);
 
-        const reasoningModel = isReasoningModel(this.params.config.model);
-
-        // OpenAI SDK typing requires `any` for stream-conditional payload
+        // OpenRouter adds extra request fields beyond the base OpenAI SDK typing.
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const payload: any = {
-            messages: [
-                { role: 'system', content: generatedSystemPrompt },
-                { role: 'user', content: userPrompt },
-            ],
-            model: this.params.config.model,
-            stream: true,
-            ...(reasoningModel
-                ? {
-                      max_completion_tokens: maxTokens,
-                      temperature: 1,
-                  }
-                : {
-                      max_tokens: maxTokens,
-                      top_p: this.params.config.topP,
-                      temperature: temperature,
-                  }),
-        };
+        const payload: any = this.buildChatCompletionPayload(generatedSystemPrompt, userPrompt, true);
 
         logAIPayload(diff, 'commit', serviceName, payload, logging);
 
@@ -189,9 +220,8 @@ export class OpenRouterService extends AIService {
 
     private async generateMessage(requestType: RequestType): Promise<AIResponse[]> {
         const diff = this.params.stagedDiff.diff;
-        const { systemPrompt, systemPromptPath, codeReviewPromptPath, logging, locale, temperature, generate, type, maxLength, timeout } =
+        const { systemPrompt, systemPromptPath, codeReviewPromptPath, logging, locale, generate, type, maxLength, timeout } =
             this.params.config;
-        const maxTokens = this.params.config.maxTokens;
         const promptOptions: PromptOptions = {
             ...DEFAULT_PROMPT_OPTIONS,
             locale,
@@ -211,41 +241,15 @@ export class OpenRouterService extends AIService {
         const headers = {
             Authorization: `Bearer ${this.params.config.key}`,
             'Content-Type': 'application/json',
-            'HTTP-Referer': 'https://github.com/tak-bro/aicommit2',
-            'X-OpenRouter-Title': 'aicommit2',
-            'X-OpenRouter-Categories': 'cli-agent',
+            ...this.getOpenRouterHeaders(),
         };
 
         logAIRequest(diff, requestType, serviceName, this.params.config.model, url, headers, logging);
         logAIPrompt(diff, requestType, serviceName, generatedSystemPrompt, userPrompt, logging);
 
-        const reasoningModel = isReasoningModel(this.params.config.model);
-
+        // OpenRouter adds extra request fields beyond the base OpenAI SDK typing.
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const payload: any = {
-            messages: [
-                {
-                    role: 'system',
-                    content: generatedSystemPrompt,
-                },
-                {
-                    role: 'user',
-                    content: userPrompt,
-                },
-            ],
-            model: this.params.config.model,
-            stream: false,
-            ...(reasoningModel
-                ? {
-                      max_completion_tokens: maxTokens,
-                      temperature: 1,
-                  }
-                : {
-                      max_tokens: maxTokens,
-                      top_p: this.params.config.topP,
-                      temperature: temperature,
-                  }),
-        };
+        const payload: any = this.buildChatCompletionPayload(generatedSystemPrompt, userPrompt, false);
 
         logAIPayload(diff, requestType, serviceName, payload, logging);
 
