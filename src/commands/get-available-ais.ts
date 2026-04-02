@@ -51,6 +51,9 @@ export const getAvailableAIs = (config: ValidConfig, requestType: RequestType): 
                     if (key === 'OLLAMA') {
                         return !!value && hasConfiguredModels(value);
                     }
+                    if (key === 'COPILOT_SDK') {
+                        return !!value && hasConfiguredModels(value);
+                    }
                     if (key === 'HUGGINGFACE') {
                         return !!value && !!value.cookie;
                     }
@@ -63,6 +66,9 @@ export const getAvailableAIs = (config: ValidConfig, requestType: RequestType): 
                     if (key === 'OLLAMA') {
                         return !!value && hasConfiguredModels(value) && codeReview;
                     }
+                    if (key === 'COPILOT_SDK') {
+                        return !!value && hasConfiguredModels(value) && codeReview;
+                    }
                     if (key === 'HUGGINGFACE') {
                         return !!value && !!value.cookie && codeReview;
                     }
@@ -73,6 +79,9 @@ export const getAvailableAIs = (config: ValidConfig, requestType: RequestType): 
                 case 'watch':
                     const watchMode = config.watchMode || value.watchMode;
                     if (key === 'OLLAMA') {
+                        return !!value && hasConfiguredModels(value) && watchMode;
+                    }
+                    if (key === 'COPILOT_SDK') {
                         return !!value && hasConfiguredModels(value) && watchMode;
                     }
                     if (key === 'HUGGINGFACE') {

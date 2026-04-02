@@ -88,6 +88,7 @@ _aicommit2_ automatically generates commit messages using AI. It supports [Git](
 | Provider | Default Model | Documentation |
 |----------|---------------|---------------|
 | OpenAI | `gpt-4o-mini` | [Guide](docs/providers/openai.md) |
+| Copilot SDK (Preview) | `gpt-4.1` | [Guide](docs/providers/copilot-sdk.md) |
 | OpenRouter | `openrouter/auto` | [Guide](docs/providers/openrouter.md) |
 | Anthropic | `claude-sonnet-4-20250514` | [Guide](docs/providers/anthropic.md) |
 | Gemini | `gemini-3-flash-preview` | [Guide](docs/providers/gemini.md) |
@@ -102,6 +103,10 @@ _aicommit2_ automatically generates commit messages using AI. It supports [Git](
 | Ollama | *(user configured)* | [Guide](docs/providers/ollama.md) |
 
 > 📘 For OpenAI-compatible APIs, see [Compatibility Guide](docs/providers/compatible.md)
+>
+> 📘 GitHub note: `COPILOT_SDK` uses Copilot CLI authentication (`Copilot Requests` permission), while `GITHUB_MODELS` uses GitHub Models API tokens (`models: read`).
+>
+> 📘 Copilot SDK stable setup example (`config.ini` + env): [Copilot SDK Guide](docs/providers/copilot-sdk.md#recommended-configini-stable-baseline).
 
 ## Setup
 

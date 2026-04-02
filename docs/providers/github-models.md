@@ -51,6 +51,8 @@ You can find additional information at the link: [GitHub personal access tokens 
 
 Token must have `models: read` access, otherwise requests typically fail with `403`.
 
+`models: read` is for GitHub Models API usage. It is different from Copilot CLI/SDK token requirements (`Copilot Requests`).
+
 Supported token prefixes in _aicommit2_ include:
 
 - `github_pat_...`

@@ -22,6 +22,13 @@ const PROVIDER_INFO: Record<string, ProviderInfo> = {
         envKeyHint: 'OPENAI_API_KEY',
         defaultModel: 'gpt-4o-mini',
     },
+    COPILOT_SDK: {
+        displayName: 'GitHub Copilot SDK (Preview)',
+        authType: 'none',
+        defaultModel: 'gpt-4.1',
+        setupNotes:
+            'Uses local Copilot SDK auth flow (via Copilot CLI session), not GitHub Models API keys. Install/authenticate Copilot CLI first.',
+    },
     OPENROUTER: {
         displayName: 'OpenRouter',
         authType: 'api-key',
@@ -243,17 +250,18 @@ const configureProvider = async (providerKey: string, provider: ProviderInfo): P
             break;
         }
         case 'none': {
-            // Ollama — just need host and model
-            const { host } = await inquirer.prompt([
-                {
-                    type: 'input',
-                    name: 'host',
-                    message: 'Ollama host URL:',
-                    default: DEFAULT_OLLAMA_HOST,
-                },
-            ]);
-            if (host && host !== DEFAULT_OLLAMA_HOST) {
-                configs.push([`${providerKey}.host`, host.trim()]);
+            if (providerKey === 'OLLAMA') {
+                const { host } = await inquirer.prompt([
+                    {
+                        type: 'input',
+                        name: 'host',
+                        message: 'Ollama host URL:',
+                        default: DEFAULT_OLLAMA_HOST,
+                    },
+                ]);
+                if (host && host !== DEFAULT_OLLAMA_HOST) {
+                    configs.push([`${providerKey}.host`, host.trim()]);
+                }
             }
             break;
         }

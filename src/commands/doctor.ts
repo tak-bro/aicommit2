@@ -1,3 +1,5 @@
+import { execSync } from 'child_process';
+
 import chalk from 'chalk';
 import { command } from 'cleye';
 
@@ -374,6 +376,50 @@ const checkGitHubModelsConnection = async (
     }
 };
 
+const checkCopilotSdkEnvironment = (providerConfig: RawConfig): { ok: boolean; error?: string; details?: string } => {
+    const model = Array.isArray(providerConfig.model)
+        ? String(providerConfig.model[0] || '').trim()
+        : String(providerConfig.model || '').trim();
+    if (!model) {
+        return { ok: false, error: 'No model configured' };
+    }
+
+    try {
+        const copilotEnvToken = (process.env.COPILOT_GITHUB_TOKEN || '').trim();
+        if (copilotEnvToken.startsWith('ghp_')) {
+            return {
+                ok: false,
+                error: 'Unsupported classic PAT in COPILOT_GITHUB_TOKEN',
+                details: 'Copilot CLI requires Fine-Grained PAT (github_pat_...) or Copilot login flow',
+            };
+        }
+
+        const nodeVersion = process.versions.node;
+        const nodeMajor = Number(nodeVersion.split('.')[0] || '0');
+        if (Number.isFinite(nodeMajor) && nodeMajor < 22) {
+            return {
+                ok: false,
+                error: `Node.js ${nodeVersion} is too old for Copilot SDK`,
+                details: 'Copilot SDK v0.2.0 requires node:sqlite support (Node.js 22+ recommended)',
+            };
+        }
+
+        const version = execSync('copilot --version', { stdio: ['ignore', 'pipe', 'pipe'] })
+            .toString()
+            .trim();
+        return {
+            ok: true,
+            details: version ? `CLI: ${version}; Model: ${model}; Node: ${nodeVersion}` : `Model: ${model}; Node: ${nodeVersion}`,
+        };
+    } catch {
+        return {
+            ok: false,
+            error: 'Copilot CLI not found',
+            details: 'Install and authenticate Copilot CLI before using COPILOT_SDK provider',
+        };
+    }
+};
+
 /**
  * Check health of a single provider
  */
@@ -495,6 +541,33 @@ const checkProviderHealth = async (provider: BuiltinService, providerConfig: Raw
             provider,
             status: 'healthy',
             message: 'Models API reachable',
+            details: result.details,
+        };
+    }
+
+    if (provider === 'COPILOT_SDK') {
+        if (!hasConfiguredModel(providerConfig)) {
+            return {
+                provider,
+                status: 'skipped',
+                message: 'No models configured',
+            };
+        }
+
+        const result = checkCopilotSdkEnvironment(providerConfig);
+        if (!result.ok) {
+            return {
+                provider,
+                status: 'warning',
+                message: result.error || 'Environment check failed',
+                details: result.details,
+            };
+        }
+
+        return {
+            provider,
+            status: 'healthy',
+            message: 'SDK environment ready',
             details: result.details,
         };
     }

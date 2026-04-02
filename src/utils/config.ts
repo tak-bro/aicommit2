@@ -36,6 +36,7 @@ export const hasOwn = (object: unknown, key: PropertyKey) => hasOwnProperty.call
 
 export const BUILTIN_SERVICES = [
     'OPENAI',
+    'COPILOT_SDK',
     'OPENROUTER',
     'OLLAMA',
     'HUGGINGFACE',
@@ -757,6 +758,35 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         model: (model?: string | string[]): string[] => {
             if (!model) {
                 return ['openai/gpt-4o-mini'];
+            }
+            const modelList = typeof model === 'string' ? model?.split(',') : model;
+            return modelList.map(m => m.trim()).filter(m => !!m && m.length > 0);
+        },
+        systemPrompt: generalConfigParsers.systemPrompt,
+        systemPromptPath: generalConfigParsers.systemPromptPath,
+        codeReviewPromptPath: generalConfigParsers.codeReviewPromptPath,
+        timeout: generalConfigParsers.timeout,
+        temperature: generalConfigParsers.temperature,
+        maxTokens: generalConfigParsers.maxTokens,
+        logging: generalConfigParsers.logging,
+        locale: generalConfigParsers.locale,
+        generate: generalConfigParsers.generate,
+        type: generalConfigParsers.type,
+        maxLength: generalConfigParsers.maxLength,
+        includeBody: generalConfigParsers.includeBody,
+        topP: generalConfigParsers.topP,
+        codeReview: generalConfigParsers.codeReview,
+        disabled: generalConfigParsers.disabled,
+        stream: generalConfigParsers.stream,
+        watchMode: generalConfigParsers.watchMode,
+        disableLowerCase: generalConfigParsers.disableLowerCase,
+    },
+    COPILOT_SDK: {
+        key: (key?: string) => key || '',
+        envKey: (envKey?: string) => envKey || '',
+        model: (model?: string | string[]): string[] => {
+            if (!model) {
+                return ['gpt-4.1'];
             }
             const modelList = typeof model === 'string' ? model?.split(',') : model;
             return modelList.map(m => m.trim()).filter(m => !!m && m.length > 0);
