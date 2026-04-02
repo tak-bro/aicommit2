@@ -21,6 +21,23 @@ export interface ProviderHealthResult {
     details?: string;
 }
 
+interface OpenRouterModel {
+    id?: string;
+    canonical_slug?: string;
+    name?: string;
+    context_length?: number;
+    supported_parameters?: string[];
+    top_provider?: {
+        context_length?: number;
+        max_completion_tokens?: number;
+        is_moderated?: boolean;
+    };
+}
+
+interface OpenRouterModelsListResponse {
+    data?: OpenRouterModel[];
+}
+
 /**
  * Status icons for display
  */
@@ -48,6 +65,128 @@ const hasApiKey = (value: RawConfig): boolean => {
     return typeof value.key === 'string' && value.key.trim().length > 0;
 };
 
+const hasConfiguredModel = (value: RawConfig): boolean => {
+    const models = Array.isArray(value.model)
+        ? (value.model as string[])
+        : typeof value.model === 'string' && value.model.trim().length > 0
+          ? [(value.model as string).trim()]
+          : [];
+    return models.length > 0;
+};
+
+const isNonEmptyObject = (value: unknown): value is Record<string, unknown> => {
+    return typeof value === 'object' && value !== null && !Array.isArray(value) && Object.keys(value).length > 0;
+};
+
+const normalizeOpenRouterBaseUrl = (url?: unknown): string => {
+    if (typeof url === 'string' && url.trim()) {
+        return url.replace(/\/$/, '');
+    }
+    return 'https://openrouter.ai';
+};
+
+const getOpenRouterCatalogUrl = (providerConfig: RawConfig): string => {
+    return `${normalizeOpenRouterBaseUrl(providerConfig.url)}/api/v1`;
+};
+
+const getOpenRouterHeaders = (key: string): Record<string, string> => ({
+    Authorization: `Bearer ${key}`,
+    'Content-Type': 'application/json',
+    'HTTP-Referer': 'https://github.com/tak-bro/aicommit2',
+    'X-OpenRouter-Title': 'aicommit2',
+    'X-OpenRouter-Categories': 'cli-agent',
+});
+
+const matchOpenRouterModel = (model: string, catalog: OpenRouterModel[]): OpenRouterModel | undefined => {
+    const normalized = model.trim();
+
+    return catalog.find(entry => {
+        const candidates = [entry.id, entry.canonical_slug, entry.name].filter((value): value is string => !!value);
+        return candidates.some(candidate => candidate === normalized);
+    });
+};
+
+const supportsParameter = (model: OpenRouterModel, parameter: string): boolean => {
+    return model.supported_parameters?.includes(parameter) ?? false;
+};
+
+const OPENROUTER_OPTION_HINTS = [
+    {
+        configKey: 'OPENROUTER.responseFormat',
+        configProperty: 'responseFormat',
+        parameters: ['response_format'],
+    },
+    {
+        configKey: 'OPENROUTER.reasoning',
+        configProperty: 'reasoning',
+        parameters: ['reasoning', 'include_reasoning'],
+    },
+] as const;
+
+const formatSupportedParameters = (model: OpenRouterModel): string => {
+    const parameters = model.supported_parameters || [];
+    return parameters.length > 0 ? `supports: ${parameters.join(', ')}` : 'no supported parameters listed';
+};
+
+const getOpenRouterOptionRemovals = (providerConfig: RawConfig, model: OpenRouterModel): string[] => {
+    const removals: string[] = [];
+
+    for (const hint of OPENROUTER_OPTION_HINTS) {
+        if (!isNonEmptyObject(providerConfig[hint.configProperty])) {
+            continue;
+        }
+
+        const supported = hint.parameters.some(parameter => supportsParameter(model, parameter));
+        if (!supported) {
+            removals.push(hint.configKey);
+        }
+    }
+
+    return removals;
+};
+
+const formatOpenRouterCapabilityMessage = (selectedModel: string, providerConfig: RawConfig, model: OpenRouterModel): string => {
+    const contextLength = model.context_length || model.top_provider?.context_length;
+    const supportedParameters = formatSupportedParameters(model);
+    const removals = getOpenRouterOptionRemovals(providerConfig, model);
+    const contextPart = contextLength ? `${contextLength} ctx` : '';
+
+    if (removals.length > 0) {
+        const recommendation = `consider removing ${removals.join(', ')}`;
+        const suffixParts = [recommendation, contextPart, supportedParameters].filter(Boolean);
+        return `${selectedModel}: ${suffixParts.join('; ')}`;
+    }
+
+    const suffixParts = [contextPart, supportedParameters].filter(Boolean);
+    return suffixParts.length > 0 ? `${selectedModel} (${suffixParts.join('; ')})` : selectedModel;
+};
+
+export const summarizeOpenRouterCapabilities = (providerConfig: RawConfig, catalog: OpenRouterModel[]): string[] => {
+    const messages: string[] = [];
+    const selectedModels = Array.isArray(providerConfig.model)
+        ? (providerConfig.model as string[])
+        : typeof providerConfig.model === 'string'
+          ? [providerConfig.model]
+          : [];
+
+    for (const selectedModel of selectedModels) {
+        if (selectedModel === 'openrouter/auto') {
+            messages.push('Auto routing enabled');
+            continue;
+        }
+
+        const model = matchOpenRouterModel(selectedModel, catalog);
+        if (!model) {
+            messages.push(`Model not found in catalog: ${selectedModel}`);
+            continue;
+        }
+
+        messages.push(formatOpenRouterCapabilityMessage(selectedModel, providerConfig, model));
+    }
+
+    return messages;
+};
+
 /**
  * Check if Ollama is running and accessible
  */
@@ -65,6 +204,97 @@ const checkOllamaConnection = async (host: string, timeout: number): Promise<{ o
         if (errorMsg.includes('ECONNREFUSED')) {
             return { ok: false, error: 'Not running' };
         }
+        return { ok: false, error: errorMsg };
+    }
+};
+
+const checkOpenRouterConnection = async (
+    providerConfig: RawConfig,
+    timeout: number
+): Promise<{ ok: boolean; error?: string; details?: string }> => {
+    const key = typeof providerConfig.key === 'string' ? providerConfig.key.trim() : '';
+    if (!key) {
+        return { ok: false, error: 'No API key configured' };
+    }
+
+    try {
+        const baseUrl = getOpenRouterCatalogUrl(providerConfig);
+        const headers = getOpenRouterHeaders(key);
+        const catalogPaths = ['/models/user', '/models'];
+        let response: { data?: OpenRouterModelsListResponse } | undefined;
+        let lastError: unknown;
+
+        for (const catalogPath of catalogPaths) {
+            try {
+                const builder = new HttpRequestBuilder({
+                    method: 'GET',
+                    baseURL: `${baseUrl}${catalogPath}`,
+                    timeout,
+                }).setHeaders(headers);
+
+                response = await builder.execute<OpenRouterModelsListResponse>();
+                break;
+            } catch (error) {
+                lastError = error;
+                const errorMsg = error instanceof Error ? error.message : String(error);
+                if (!errorMsg.includes('404')) {
+                    throw error;
+                }
+            }
+        }
+
+        if (!response) {
+            throw lastError instanceof Error ? lastError : new Error(String(lastError));
+        }
+
+        const models = response.data?.data ?? [];
+
+        const configuredModels = hasConfiguredModel(providerConfig)
+            ? Array.isArray(providerConfig.model)
+                ? (providerConfig.model as string[])
+                : [providerConfig.model as string]
+            : [];
+
+        if (configuredModels.length === 0) {
+            return {
+                ok: true,
+                details: `Catalog reachable (${models.length} models)`,
+            };
+        }
+
+        const openRouterAuto = configuredModels.includes('openrouter/auto');
+        if (openRouterAuto) {
+            const notes = summarizeOpenRouterCapabilities(providerConfig, models);
+            return {
+                ok: true,
+                details: notes.length > 0 ? notes.join('; ') : `Auto routing enabled (${models.length} models)`,
+            };
+        }
+
+        const capabilityNotes = summarizeOpenRouterCapabilities(providerConfig, models);
+        const hasMissingModel = capabilityNotes.some(note => note.startsWith('Model not found in catalog:'));
+        if (hasMissingModel) {
+            return {
+                ok: false,
+                error: 'Selected model not found in OpenRouter catalog',
+                details: capabilityNotes.join('; '),
+            };
+        }
+
+        return {
+            ok: true,
+            details: capabilityNotes.join('; '),
+        };
+    } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : String(error);
+
+        if (errorMsg.includes('401') || errorMsg.includes('403')) {
+            return { ok: false, error: 'Unauthorized or forbidden when reading OpenRouter catalog' };
+        }
+        if (errorMsg.includes('404')) {
+            return { ok: false, error: 'OpenRouter catalog endpoint not found' };
+        }
+
         return { ok: false, error: errorMsg };
     }
 };
@@ -136,6 +366,34 @@ const checkProviderHealth = async (provider: BuiltinService, providerConfig: Raw
             provider,
             status: 'healthy',
             message: 'Credentials configured',
+        };
+    }
+
+    if (provider === 'OPENROUTER') {
+        if (!hasApiKey(providerConfig)) {
+            return {
+                provider,
+                status: 'skipped',
+                message: 'Not configured',
+            };
+        }
+
+        const result = await checkOpenRouterConnection(providerConfig, timeout);
+
+        if (!result.ok) {
+            return {
+                provider,
+                status: 'warning',
+                message: result.error || 'Catalog check failed',
+                details: result.details,
+            };
+        }
+
+        return {
+            provider,
+            status: 'healthy',
+            message: 'Catalog reachable',
+            details: result.details,
         };
     }
 

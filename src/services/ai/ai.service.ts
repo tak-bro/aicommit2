@@ -177,20 +177,23 @@ export abstract class AIService {
      * This is more reliable than regex for handling nested structures and escaped characters.
      */
     protected extractJsonFromResponse(response: string): string | null {
-        // First try to find a JSON array starting with [
-        let startIndex = response.indexOf('[');
-        if (startIndex !== -1) {
-            const result = this.extractBalancedJson(response, startIndex, '[', ']');
-            if (result) {
-                return result;
-            }
+        const candidates: Array<{ startIndex: number; openChar: '[' | '{'; closeChar: ']' | '}' }> = [];
+
+        const arrayIndex = response.indexOf('[');
+        if (arrayIndex !== -1) {
+            candidates.push({ startIndex: arrayIndex, openChar: '[', closeChar: ']' });
         }
 
-        // Then try to find a JSON object starting with {
-        startIndex = response.indexOf('{');
-        if (startIndex !== -1) {
-            const result = this.extractBalancedJson(response, startIndex, '{', '}');
-            if (result) {
+        const objectIndex = response.indexOf('{');
+        if (objectIndex !== -1) {
+            candidates.push({ startIndex: objectIndex, openChar: '{', closeChar: '}' });
+        }
+
+        candidates.sort((left, right) => left.startIndex - right.startIndex);
+
+        for (const candidate of candidates) {
+            const result = this.extractBalancedJson(response, candidate.startIndex, candidate.openChar, candidate.closeChar);
+            if (result && safeJsonParse(result).ok) {
                 return result;
             }
         }

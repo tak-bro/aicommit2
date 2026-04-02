@@ -11,6 +11,8 @@
 
 You can configure any OpenAI API-compatible service by adding a configuration section with the `compatible=true` option. This allows you to use services that implement the OpenAI API specification.
 
+If you are using OpenRouter specifically, prefer the built-in [OpenRouter](./openrouter.md) provider so you get the OpenRouter defaults automatically.
+
 ```sh
 # together
 aicommit2 config set TOGETHER.compatible=true

@@ -36,6 +36,7 @@ export const hasOwn = (object: unknown, key: PropertyKey) => hasOwnProperty.call
 
 export const BUILTIN_SERVICES = [
     'OPENAI',
+    'OPENROUTER',
     'OLLAMA',
     'HUGGINGFACE',
     'GEMINI',
@@ -152,6 +153,27 @@ const createBoolParser =
         }
         parseAssert(name, /^(?:true|false)$/.test(value), 'Must be a boolean(true or false)');
         return value === 'true';
+    };
+
+const createJsonObjectParser =
+    (name: string) =>
+    (value?: string | Record<string, unknown>): Record<string, unknown> => {
+        if (!value) {
+            return {};
+        }
+
+        if (typeof value === 'object') {
+            parseAssert(name, !Array.isArray(value), 'Must be a JSON object');
+            return value;
+        }
+
+        try {
+            const parsed = JSON.parse(value);
+            parseAssert(name, typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed), 'Must be a valid JSON object');
+            return parsed;
+        } catch (error) {
+            throw new KnownError(`Invalid ${name}: Must be valid JSON. Error: ${(error as Error).message}`);
+        }
     };
 
 const generalConfigParsers = {
@@ -335,6 +357,46 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         },
         path: (path?: string) => path || '/v1/chat/completions',
         proxy: (proxy?: string) => proxy || '',
+        topP: generalConfigParsers.topP,
+        systemPrompt: generalConfigParsers.systemPrompt,
+        systemPromptPath: generalConfigParsers.systemPromptPath,
+        codeReviewPromptPath: generalConfigParsers.codeReviewPromptPath,
+        timeout: generalConfigParsers.timeout,
+        temperature: generalConfigParsers.temperature,
+        maxTokens: generalConfigParsers.maxTokens,
+        logging: generalConfigParsers.logging,
+        locale: generalConfigParsers.locale,
+        generate: generalConfigParsers.generate,
+        type: generalConfigParsers.type,
+        maxLength: generalConfigParsers.maxLength,
+        includeBody: generalConfigParsers.includeBody,
+        codeReview: generalConfigParsers.codeReview,
+        disabled: generalConfigParsers.disabled,
+        stream: generalConfigParsers.stream,
+        watchMode: generalConfigParsers.watchMode,
+        disableLowerCase: generalConfigParsers.disableLowerCase,
+    },
+    OPENROUTER: {
+        key: (key?: string) => key || '',
+        envKey: (envKey?: string) => envKey || '',
+        model: (model?: string | string[]): string[] => {
+            if (!model) {
+                return ['openrouter/auto'];
+            }
+            const modelList = typeof model === 'string' ? model?.split(',') : model;
+            return modelList.map(m => m.trim()).filter(m => !!m && m.length > 0);
+        },
+        url: (host?: string) => {
+            if (!host) {
+                return 'https://openrouter.ai';
+            }
+            parseAssert('OPENROUTER.url', /^https?:\/\//.test(host), 'Must be a valid URL');
+            return host;
+        },
+        path: (path?: string) => path || '/api/v1/chat/completions',
+        responseFormat: createJsonObjectParser('OPENROUTER.responseFormat'),
+        provider: createJsonObjectParser('OPENROUTER.provider'),
+        reasoning: createJsonObjectParser('OPENROUTER.reasoning'),
         topP: generalConfigParsers.topP,
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
@@ -807,29 +869,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         stream: generalConfigParsers.stream,
         watchMode: generalConfigParsers.watchMode,
         disableLowerCase: generalConfigParsers.disableLowerCase,
-        inferenceParameters: (value?: string | Record<string, any>): Record<string, any> => {
-            if (!value) {
-                return {};
-            }
-
-            // If already an object (from CLI or code), return as-is
-            if (typeof value === 'object') {
-                return value;
-            }
-
-            // Parse JSON string from config file
-            try {
-                const parsed = JSON.parse(value);
-                parseAssert(
-                    'BEDROCK.inferenceParameters',
-                    typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed),
-                    'Must be a valid JSON object'
-                );
-                return parsed;
-            } catch (error) {
-                throw new KnownError(`Invalid BEDROCK.inferenceParameters: Must be valid JSON. Error: ${(error as Error).message}`);
-            }
-        },
+        inferenceParameters: createJsonObjectParser('BEDROCK.inferenceParameters'),
     },
 };
 
@@ -952,6 +992,38 @@ const expandEnvVariables = (content: string) => {
     });
 };
 
+const expandDottedKeys = (value: unknown): unknown => {
+    if (Array.isArray(value) || value === null || typeof value !== 'object') {
+        return value;
+    }
+
+    const result: Record<string, unknown> = {};
+
+    for (const [key, nestedValue] of Object.entries(value as Record<string, unknown>)) {
+        const normalizedValue = expandDottedKeys(nestedValue);
+
+        if (!key.includes('.')) {
+            result[key] = normalizedValue;
+            continue;
+        }
+
+        const parts = key.split('.');
+        let current: Record<string, unknown> = result;
+
+        for (const part of parts.slice(0, -1)) {
+            const existing = current[part];
+            if (!existing || typeof existing !== 'object' || Array.isArray(existing)) {
+                current[part] = {};
+            }
+            current = current[part] as Record<string, unknown>;
+        }
+
+        current[parts[parts.length - 1]] = normalizedValue;
+    }
+
+    return result;
+};
+
 export const readConfigFile = async (): Promise<RawConfig> => {
     const configPath = await getConfigPath();
 
@@ -964,7 +1036,7 @@ export const readConfigFile = async (): Promise<RawConfig> => {
     try {
         const configContent = await fs.readFile(configPath, 'utf8');
         const expandedConfigContent = expandEnvVariables(configContent);
-        cachedRawConfig = ini.parse(expandedConfigContent);
+        cachedRawConfig = expandDottedKeys(ini.parse(expandedConfigContent)) as RawConfig;
         cachedConfigPath = configPath;
         return cachedRawConfig;
     } catch (error) {
