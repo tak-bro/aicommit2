@@ -76,6 +76,7 @@ aicommit2 config set OPENROUTER.key="your-api-key" \
 - If you want more routing control, set `OPENROUTER.provider` directly in config.
 - If you want structured output, set `OPENROUTER.responseFormat` to a JSON object.
 - If you want reasoning-specific controls, set `OPENROUTER.reasoning` to a JSON object.
+- `aicommit2 doctor` also checks OpenRouter catalog reachability and can suggest which `OPENROUTER.responseFormat` or `OPENROUTER.reasoning` options to revisit when the chosen model does not advertise those capabilities.
 
 ## Configuration
 
