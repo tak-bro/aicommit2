@@ -128,7 +128,13 @@ const createChatCompletion = async (url: string, path: string, apiKey: string, j
         throw new KnownError(errorMessage);
     }
 
-    return JSON.parse(data);
+    try {
+        return JSON.parse(data);
+    } catch (error) {
+        throw new KnownError(
+            `Failed to parse API response as JSON: ${(error as Error).message}\nResponse: ${data.substring(0, 200)}`
+        );
+    }
 };
 
 export const sanitizeMessage = (message: string) => message.trim();
