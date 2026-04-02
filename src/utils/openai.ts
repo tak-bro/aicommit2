@@ -176,7 +176,9 @@ const REASONING_MODEL_PREFIXES = [
  * isReasoningModel('gpt-4') // false
  */
 export const isReasoningModel = (model: string): boolean => {
-    const normalizedModel = model.toLowerCase();
+    // Strip publisher prefix if present (e.g., "openai/o3-mini" → "o3-mini")
+    const modelName = model.includes('/') ? model.split('/').pop()! : model;
+    const normalizedModel = modelName.toLowerCase();
     return REASONING_MODEL_PREFIXES.some(
         prefix => normalizedModel === prefix || normalizedModel.startsWith(`${prefix}-`) || normalizedModel.startsWith(`${prefix}.`)
     );

@@ -85,7 +85,9 @@ export class GitHubModelsService extends AIService {
     }
 
     private async makeRequest(systemPrompt: string, diff: string, requestType: RequestType): Promise<string> {
-        const model = Array.isArray(this.params.config.model) ? this.params.config.model[0] : this.params.config.model || 'gpt-4o-mini';
+        const model = Array.isArray(this.params.config.model)
+            ? this.params.config.model[0]
+            : this.params.config.model || 'openai/gpt-4o-mini';
 
         const messages = [
             {
@@ -122,6 +124,7 @@ export class GitHubModelsService extends AIService {
             'Content-Type': 'application/json',
             Accept: 'application/vnd.github+json',
             Authorization: `Bearer ${this.params.config.key}`,
+            'X-GitHub-Api-Version': '2022-11-28',
         };
 
         const { logging } = this.params.config;

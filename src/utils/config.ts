@@ -694,7 +694,7 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         envKey: (envKey?: string) => envKey || '',
         model: (model?: string | string[]): string[] => {
             if (!model) {
-                return ['gpt-4o-mini'];
+                return ['openai/gpt-4o-mini'];
             }
             const modelList = typeof model === 'string' ? model?.split(',') : model;
             return modelList.map(m => m.trim()).filter(m => !!m && m.length > 0);
