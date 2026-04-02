@@ -22,6 +22,13 @@ const PROVIDER_INFO: Record<string, ProviderInfo> = {
         envKeyHint: 'OPENAI_API_KEY',
         defaultModel: 'gpt-4o-mini',
     },
+    OPENROUTER: {
+        displayName: 'OpenRouter',
+        authType: 'api-key',
+        envKeyHint: 'OPENROUTER_API_KEY',
+        defaultModel: 'openrouter/auto',
+        setupNotes: 'OpenRouter supports many upstream models. You can keep openrouter/auto or choose a specific model slug.',
+    },
     ANTHROPIC: {
         displayName: 'Anthropic (Claude)',
         authType: 'api-key',
@@ -97,7 +104,7 @@ const PROVIDER_INFO: Record<string, ProviderInfo> = {
 };
 
 // Popular providers shown first for selection
-const POPULAR_PROVIDERS = ['OPENAI', 'ANTHROPIC', 'GEMINI', 'OLLAMA', 'GROQ', 'DEEPSEEK'];
+const POPULAR_PROVIDERS = ['OPENAI', 'OPENROUTER', 'ANTHROPIC', 'GEMINI', 'OLLAMA', 'GROQ', 'DEEPSEEK'];
 
 export default command(
     {

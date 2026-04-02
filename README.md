@@ -88,6 +88,7 @@ _aicommit2_ automatically generates commit messages using AI. It supports [Git](
 | Provider | Default Model | Documentation |
 |----------|---------------|---------------|
 | OpenAI | `gpt-4o-mini` | [Guide](docs/providers/openai.md) |
+| OpenRouter | `openrouter/auto` | [Guide](docs/providers/openrouter.md) |
 | Anthropic | `claude-sonnet-4-20250514` | [Guide](docs/providers/anthropic.md) |
 | Gemini | `gemini-3-flash-preview` | [Guide](docs/providers/gemini.md) |
 | Mistral | `mistral-small-latest` | [Guide](docs/providers/mistral.md) |
@@ -748,6 +749,26 @@ Example `config.ini`:
 key=$OPENAI_API_KEY
 url=${CUSTOM_API_URL}/v1
 ```
+
+OpenRouter example:
+
+```ini
+logging=true
+generate=1
+locale=ru
+maxTokens=4096
+temperature=0.2
+
+[OPENROUTER]
+envKey=OPENROUTER_BASE_TOKEN
+model=stepfun/step-3.5-flash:free
+url=https://openrouter.ai
+path=/api/v1/chat/completions
+systemPromptPath=prompts/aicommit_prompt.txt
+```
+
+If `systemPromptPath` is relative, it is resolved relative to the config file
+location.
 
 ### Reading and Setting Configuration
 

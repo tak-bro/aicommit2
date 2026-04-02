@@ -289,6 +289,41 @@ export default testSuite(({ describe }) => {
             });
         });
 
+        await describe('OpenRouter configuration', async ({ test }) => {
+            const envKeys = ['AICOMMIT_CONFIG_PATH', 'OPENROUTER_API_KEY'];
+
+            await test('parses OpenRouter settings and exposes the provider', async () => {
+                const { fixture } = await createFixture();
+                const configPath = path.join(fixture.path, '.config', 'aicommit2', 'config.ini');
+                await ensureDirectoryExists(path.dirname(configPath));
+                await fs.writeFile(
+                    configPath,
+                    ['[OPENROUTER]', 'model=openrouter/auto', 'key=test-api-key', 'codeReview=true', ''].join('\n')
+                );
+
+                const snapshot = snapshotEnv(envKeys);
+
+                process.env.AICOMMIT_CONFIG_PATH = configPath;
+                delete process.env.OPENROUTER_API_KEY;
+
+                const config = (await getConfig({}, [])) as ValidConfig;
+                const openRouter = config.OPENROUTER as any;
+
+                expect(openRouter.model).toEqual(['openrouter/auto']);
+                expect(openRouter.url).toBe('https://openrouter.ai');
+                expect(openRouter.path).toBe('/api/v1/chat/completions');
+
+                const commitAIs = getAvailableAIs(config, 'commit');
+                const reviewAIs = getAvailableAIs(config, 'review');
+
+                expect(commitAIs).toContain('OPENROUTER');
+                expect(reviewAIs).toContain('OPENROUTER');
+
+                await fixture.rm();
+                restoreEnv(snapshot);
+            });
+        });
+
         await describe('Bedrock configuration', async ({ test }) => {
             const envKeys = [
                 'AICOMMIT_CONFIG_PATH',

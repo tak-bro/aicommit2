@@ -36,6 +36,7 @@ export const hasOwn = (object: unknown, key: PropertyKey) => hasOwnProperty.call
 
 export const BUILTIN_SERVICES = [
     'OPENAI',
+    'OPENROUTER',
     'OLLAMA',
     'HUGGINGFACE',
     'GEMINI',
@@ -335,6 +336,43 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         },
         path: (path?: string) => path || '/v1/chat/completions',
         proxy: (proxy?: string) => proxy || '',
+        topP: generalConfigParsers.topP,
+        systemPrompt: generalConfigParsers.systemPrompt,
+        systemPromptPath: generalConfigParsers.systemPromptPath,
+        codeReviewPromptPath: generalConfigParsers.codeReviewPromptPath,
+        timeout: generalConfigParsers.timeout,
+        temperature: generalConfigParsers.temperature,
+        maxTokens: generalConfigParsers.maxTokens,
+        logging: generalConfigParsers.logging,
+        locale: generalConfigParsers.locale,
+        generate: generalConfigParsers.generate,
+        type: generalConfigParsers.type,
+        maxLength: generalConfigParsers.maxLength,
+        includeBody: generalConfigParsers.includeBody,
+        codeReview: generalConfigParsers.codeReview,
+        disabled: generalConfigParsers.disabled,
+        stream: generalConfigParsers.stream,
+        watchMode: generalConfigParsers.watchMode,
+        disableLowerCase: generalConfigParsers.disableLowerCase,
+    },
+    OPENROUTER: {
+        key: (key?: string) => key || '',
+        envKey: (envKey?: string) => envKey || '',
+        model: (model?: string | string[]): string[] => {
+            if (!model) {
+                return ['openrouter/auto'];
+            }
+            const modelList = typeof model === 'string' ? model?.split(',') : model;
+            return modelList.map(m => m.trim()).filter(m => !!m && m.length > 0);
+        },
+        url: (host?: string) => {
+            if (!host) {
+                return 'https://openrouter.ai';
+            }
+            parseAssert('OPENROUTER.url', /^https?:\/\//.test(host), 'Must be a valid URL');
+            return host;
+        },
+        path: (path?: string) => path || '/api/v1/chat/completions',
         topP: generalConfigParsers.topP,
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
