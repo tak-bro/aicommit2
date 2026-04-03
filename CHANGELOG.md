@@ -1,3 +1,10 @@
+## [2.5.9](https://github.com/tak-bro/aicommit2/compare/v2.5.8...v2.5.9) (2026-04-03)
+
+
+### Bug Fixes
+
+* add error handling for unsafe JSON.parse calls ([d774522](https://github.com/tak-bro/aicommit2/commit/d7745220096fee2a07985282a0c0061ad4974590))
+
 ## [2.5.8](https://github.com/tak-bro/aicommit2/compare/v2.5.7...v2.5.8) (2026-04-02)
 
 
