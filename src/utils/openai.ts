@@ -131,9 +131,7 @@ const createChatCompletion = async (url: string, path: string, apiKey: string, j
     try {
         return JSON.parse(data);
     } catch (error) {
-        throw new KnownError(
-            `Failed to parse API response as JSON: ${(error as Error).message}\nResponse: ${data.substring(0, 200)}`
-        );
+        throw new KnownError(`Failed to parse API response as JSON: ${(error as Error).message}\nResponse: ${data.substring(0, 200)}`);
     }
 };
 
@@ -183,8 +181,9 @@ const REASONING_MODEL_PREFIXES = [
  */
 export const isReasoningModel = (model: string): boolean => {
     const normalizedModel = model.toLowerCase();
+    const bareModel = normalizedModel.includes('/') ? normalizedModel.split('/').pop() || normalizedModel : normalizedModel;
     return REASONING_MODEL_PREFIXES.some(
-        prefix => normalizedModel === prefix || normalizedModel.startsWith(`${prefix}-`) || normalizedModel.startsWith(`${prefix}.`)
+        prefix => bareModel === prefix || bareModel.startsWith(`${prefix}-`) || bareModel.startsWith(`${prefix}.`)
     );
 };
 

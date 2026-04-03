@@ -3,6 +3,13 @@ import { execSync } from 'child_process';
 import { command } from 'cleye';
 
 import { ConsoleManager } from '../managers/console.manager.js';
+import {
+    GITHUB_MODELS_API_VERSION,
+    GITHUB_MODELS_BASE_URL,
+    GITHUB_MODELS_DEFAULT_MODEL,
+    GITHUB_MODELS_INFERENCE_PATH,
+    isValidGitHubTokenFormat,
+} from '../services/ai/github-models.utils.js';
 import { setConfigs } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
 
@@ -19,7 +26,7 @@ export default command(
         },
         help: {
             description: 'Login to GitHub and setup access to GitHub Models',
-            examples: ['aic2 github-login', 'aic2 github-login --token ghp_xxxxxxxxxxxxxxxxxxxx'],
+            examples: ['aic2 github-login', 'aic2 github-login --token github_pat_xxxxxxxxxxxxxxxxxxxx'],
         },
     },
     argv => {
@@ -55,8 +62,8 @@ async function authenticateWithToken(token: string, consoleManager: ConsoleManag
     consoleManager.printWarning('Authenticating with provided token...');
 
     // Validate token format
-    if (!token.startsWith('ghp_') && !token.startsWith('gho_') && !token.startsWith('ghu_')) {
-        throw new Error('Invalid token format. GitHub tokens should start with ghp_, gho_, or ghu_');
+    if (!isValidGitHubTokenFormat(token)) {
+        throw new Error('Invalid token format. Expected GitHub token prefix like ghp_, gho_, ghu_, ghs_, ghr_, or github_pat_');
     }
 
     try {
@@ -77,17 +84,18 @@ async function authenticateWithToken(token: string, consoleManager: ConsoleManag
 
         // Test GitHub Models access
         try {
-            const modelsResponse = await fetch('https://models.github.ai/inference/chat/completions', {
+            const modelsResponse = await fetch(`${GITHUB_MODELS_BASE_URL}${GITHUB_MODELS_INFERENCE_PATH}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     Accept: 'application/vnd.github+json',
+                    'X-GitHub-Api-Version': GITHUB_MODELS_API_VERSION,
                     Authorization: `Bearer ${token}`,
                     'User-Agent': 'aicommit2-github-models',
                 },
                 body: JSON.stringify({
                     messages: [{ role: 'user', content: 'test' }],
-                    model: 'gpt-4o-mini',
+                    model: GITHUB_MODELS_DEFAULT_MODEL,
                     max_tokens: 1,
                 }),
             });
@@ -155,8 +163,8 @@ async function authenticateWithBrowser(consoleManager: ConsoleManager) {
 
         consoleManager.printSuccess('GitHub authentication completed and GitHub Models access verified!');
         consoleManager.printInfo('See usage guide: https://github.com/tak-bro/aicommit2/blob/main/docs/providers/github-models.md');
-        consoleManager.printInfo('Available models: gpt-4o-mini, gpt-4o, meta-llama-3.1-405b-instruct, etc.');
-        consoleManager.printInfo('Using GitHub Models API: https://models.github.ai');
+        consoleManager.printInfo('Use `gh models list` to view the latest available models.');
+        consoleManager.printInfo(`Using GitHub Models API: ${GITHUB_MODELS_BASE_URL}`);
     } catch (error) {
         throw error;
     }

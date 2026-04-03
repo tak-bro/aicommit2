@@ -1,7 +1,16 @@
+import { execSync } from 'child_process';
+
 import chalk from 'chalk';
 import { command } from 'cleye';
 
 import { hasBedrockAccess, hasConfiguredModels } from './get-available-ais.js';
+import {
+    GITHUB_MODELS_API_VERSION,
+    GITHUB_MODELS_BASE_URL,
+    GITHUB_MODELS_DEFAULT_MODEL,
+    GITHUB_MODELS_INFERENCE_PATH,
+    isValidGitHubModelsModelId,
+} from '../services/ai/github-models.utils.js';
 import { HttpRequestBuilder } from '../services/http/http-request.builder.js';
 import { BUILTIN_SERVICES, BuiltinService, DEFAULT_OLLAMA_HOST, RawConfig, ValidConfig, getConfig } from '../utils/config.js';
 import { handleCliError } from '../utils/error.js';
@@ -299,6 +308,118 @@ const checkOpenRouterConnection = async (
     }
 };
 
+const getGitHubModelsSelection = (providerConfig: RawConfig): string => {
+    if (Array.isArray(providerConfig.model) && providerConfig.model.length > 0) {
+        return String(providerConfig.model[0]).trim();
+    }
+    if (typeof providerConfig.model === 'string' && providerConfig.model.trim().length > 0) {
+        return providerConfig.model.trim();
+    }
+    return GITHUB_MODELS_DEFAULT_MODEL;
+};
+
+const checkGitHubModelsConnection = async (
+    providerConfig: RawConfig,
+    timeout: number
+): Promise<{ ok: boolean; error?: string; details?: string }> => {
+    const key = typeof providerConfig.key === 'string' ? providerConfig.key.trim() : '';
+    if (!key) {
+        return { ok: false, error: 'No API key configured' };
+    }
+
+    const model = getGitHubModelsSelection(providerConfig);
+    if (!isValidGitHubModelsModelId(model)) {
+        return {
+            ok: false,
+            error: 'Invalid model ID format',
+            details: `Expected "publisher/model", got "${model || '(empty)'}"`,
+        };
+    }
+
+    try {
+        const url = `${GITHUB_MODELS_BASE_URL}${GITHUB_MODELS_INFERENCE_PATH}`;
+        const builder = new HttpRequestBuilder({
+            method: 'POST',
+            baseURL: url,
+            timeout,
+        })
+            .setHeaders({
+                'Content-Type': 'application/json',
+                Accept: 'application/vnd.github+json',
+                'X-GitHub-Api-Version': GITHUB_MODELS_API_VERSION,
+                Authorization: `Bearer ${key}`,
+            })
+            .setBody({
+                model,
+                messages: [{ role: 'user', content: 'health-check' }],
+                max_tokens: 1,
+                stream: false,
+            });
+
+        await builder.execute();
+        return { ok: true, details: `Model: ${model}` };
+    } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        if (errorMsg.includes('401')) {
+            return { ok: false, error: 'Authentication failed (401)' };
+        }
+        if (errorMsg.includes('403')) {
+            return { ok: false, error: 'Access denied (403). Check token permission: models: read' };
+        }
+        if (errorMsg.includes('404')) {
+            return { ok: false, error: `Model not found (404): ${model}` };
+        }
+        if (errorMsg.includes('422')) {
+            return { ok: false, error: `Request validation failed (422) for model: ${model}` };
+        }
+        return { ok: false, error: errorMsg };
+    }
+};
+
+const checkCopilotSdkEnvironment = (providerConfig: RawConfig): { ok: boolean; error?: string; details?: string } => {
+    const model = Array.isArray(providerConfig.model)
+        ? String(providerConfig.model[0] || '').trim()
+        : String(providerConfig.model || '').trim();
+    if (!model) {
+        return { ok: false, error: 'No model configured' };
+    }
+
+    try {
+        const copilotEnvToken = (process.env.COPILOT_GITHUB_TOKEN || '').trim();
+        if (copilotEnvToken.startsWith('ghp_')) {
+            return {
+                ok: false,
+                error: 'Unsupported classic PAT in COPILOT_GITHUB_TOKEN',
+                details: 'Copilot CLI requires Fine-Grained PAT (github_pat_...) or Copilot login flow',
+            };
+        }
+
+        const nodeVersion = process.versions.node;
+        const nodeMajor = Number(nodeVersion.split('.')[0] || '0');
+        if (Number.isFinite(nodeMajor) && nodeMajor < 22) {
+            return {
+                ok: false,
+                error: `Node.js ${nodeVersion} is too old for Copilot SDK`,
+                details: 'Copilot SDK v0.2.0 requires node:sqlite support (Node.js 22+ recommended)',
+            };
+        }
+
+        const version = execSync('copilot --version', { stdio: ['ignore', 'pipe', 'pipe'] })
+            .toString()
+            .trim();
+        return {
+            ok: true,
+            details: version ? `CLI: ${version}; Model: ${model}; Node: ${nodeVersion}` : `Model: ${model}; Node: ${nodeVersion}`,
+        };
+    } catch {
+        return {
+            ok: false,
+            error: 'Copilot CLI not found',
+            details: 'Install and authenticate Copilot CLI before using COPILOT_SDK provider',
+        };
+    }
+};
+
 /**
  * Check health of a single provider
  */
@@ -393,6 +514,60 @@ const checkProviderHealth = async (provider: BuiltinService, providerConfig: Raw
             provider,
             status: 'healthy',
             message: 'Catalog reachable',
+            details: result.details,
+        };
+    }
+
+    if (provider === 'GITHUB_MODELS') {
+        if (!hasApiKey(providerConfig)) {
+            return {
+                provider,
+                status: 'skipped',
+                message: 'Not configured',
+            };
+        }
+
+        const result = await checkGitHubModelsConnection(providerConfig, timeout);
+        if (!result.ok) {
+            return {
+                provider,
+                status: 'warning',
+                message: result.error || 'Connection check failed',
+                details: result.details,
+            };
+        }
+
+        return {
+            provider,
+            status: 'healthy',
+            message: 'Models API reachable',
+            details: result.details,
+        };
+    }
+
+    if (provider === 'COPILOT_SDK') {
+        if (!hasConfiguredModel(providerConfig)) {
+            return {
+                provider,
+                status: 'skipped',
+                message: 'No models configured',
+            };
+        }
+
+        const result = checkCopilotSdkEnvironment(providerConfig);
+        if (!result.ok) {
+            return {
+                provider,
+                status: 'warning',
+                message: result.error || 'Environment check failed',
+                details: result.details,
+            };
+        }
+
+        return {
+            provider,
+            status: 'healthy',
+            message: 'SDK environment ready',
             details: result.details,
         };
     }

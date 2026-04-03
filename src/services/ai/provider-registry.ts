@@ -156,6 +156,7 @@ class ProviderRegistryClass {
      */
     private registerBuiltinProviders = (): void => {
         this.loaders.set('OPENAI', () => import('./openai.service.js').then(m => m.OpenAIService));
+        this.loaders.set('COPILOT_SDK', () => import('./copilot-sdk.service.js').then(m => m.CopilotSdkService));
         this.loaders.set('OPENROUTER', () => import('./openrouter.service.js').then(m => m.OpenRouterService));
         this.loaders.set('GEMINI', () => import('./gemini.service.js').then(m => m.GeminiService));
         this.loaders.set('ANTHROPIC', () => import('./anthropic.service.js').then(m => m.AnthropicService));

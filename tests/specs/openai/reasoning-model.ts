@@ -26,6 +26,14 @@ export default testSuite(({ describe }) => {
             expect(isReasoningModel('o1.5')).toBe(true);
         });
 
+        test('should recognize provider-prefixed model IDs', () => {
+            expect(isReasoningModel('openai/gpt-5')).toBe(true);
+            expect(isReasoningModel('openai/gpt-5-mini')).toBe(true);
+            expect(isReasoningModel('openai/o3')).toBe(true);
+            expect(isReasoningModel('openai/o4-mini')).toBe(true);
+            expect(isReasoningModel('openai/gpt-4o')).toBe(false);
+        });
+
         test('should be case-insensitive', () => {
             expect(isReasoningModel('GPT-5')).toBe(true);
             expect(isReasoningModel('GPT-5.2')).toBe(true);

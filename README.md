@@ -88,6 +88,7 @@ _aicommit2_ automatically generates commit messages using AI. It supports [Git](
 | Provider | Default Model | Documentation |
 |----------|---------------|---------------|
 | OpenAI | `gpt-4o-mini` | [Guide](docs/providers/openai.md) |
+| Copilot SDK (Preview) | `gpt-4.1` | [Guide](docs/providers/copilot-sdk.md) |
 | OpenRouter | `openrouter/auto` | [Guide](docs/providers/openrouter.md) |
 | Anthropic | `claude-sonnet-4-20250514` | [Guide](docs/providers/anthropic.md) |
 | Gemini | `gemini-3-flash-preview` | [Guide](docs/providers/gemini.md) |
@@ -97,11 +98,15 @@ _aicommit2_ automatically generates commit messages using AI. It supports [Git](
 | Groq | `llama-3.3-70b-versatile` | [Guide](docs/providers/groq.md) |
 | Perplexity | `sonar` | [Guide](docs/providers/perplexity.md) |
 | DeepSeek | `deepseek-chat` | [Guide](docs/providers/deepseek.md) |
-| GitHub Models | `gpt-4o-mini` | [Guide](docs/providers/github-models.md) |
+| GitHub Models | `openai/gpt-4o-mini` | [Guide](docs/providers/github-models.md) |
 | Bedrock | `anthropic.claude-haiku-4-5-20251001-v1:0` | [Guide](docs/providers/bedrock.md) |
 | Ollama | *(user configured)* | [Guide](docs/providers/ollama.md) |
 
 > 📘 For OpenAI-compatible APIs, see [Compatibility Guide](docs/providers/compatible.md)
+>
+> 📘 GitHub note: `COPILOT_SDK` uses Copilot CLI authentication (`Copilot Requests` permission), while `GITHUB_MODELS` uses GitHub Models API tokens (`models: read`).
+>
+> 📘 Copilot SDK stable setup example (`config.ini` + env): [Copilot SDK Guide](docs/providers/copilot-sdk.md#recommended-configini-stable-baseline).
 
 ## Setup
 
@@ -470,6 +475,8 @@ aicommit2 stats clear   # Clear all stats
 aicommit2 hook install
 aicommit2 hook uninstall
 ```
+
+> GitHub Models tip: use `aicommit2 github-login` and set `GITHUB_MODELS.model` in `publisher/model` format (for example, `openai/gpt-5`).
 
 ## Integrations
 
