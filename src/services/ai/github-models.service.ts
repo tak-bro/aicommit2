@@ -24,7 +24,7 @@ export class GitHubModelsService extends AIService {
             primary: '#24292e',
             secondary: '#FFF',
         };
-        this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold(`[GitHub Models]`);
+        this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold(`[GitHub Models/${this.params.config.model}]`);
         this.errorPrefix = chalk.red.bold(`[GitHub Models]`);
     }
 

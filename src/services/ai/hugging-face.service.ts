@@ -59,7 +59,7 @@ export class HuggingFaceService extends AIService {
             primary: '#FED21F',
             secondary: '#000',
         };
-        this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold('[HuggingFace]');
+        this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold(`[HuggingFace/${this.params.config.model}]`);
         this.errorPrefix = chalk.red.bold(`[HuggingFace]`);
         this.cookie = this.params.config.cookie;
 

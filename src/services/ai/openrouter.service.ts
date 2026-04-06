@@ -38,7 +38,7 @@ export class OpenRouterService extends AIService {
             primary: '#f97316',
             secondary: '#fff',
         };
-        this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold('[OpenRouter]');
+        this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold(`[OpenRouter/${this.params.config.model}]`);
         this.errorPrefix = chalk.red.bold('[OpenRouter]');
 
         const baseUrl = this.params.config.url || 'https://openrouter.ai';

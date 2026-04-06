@@ -35,7 +35,7 @@ export class DeepSeekService extends AIService {
             primary: '#53a3f9',
             secondary: '#fff',
         };
-        this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold(`[DeepSeek]`);
+        this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold(`[DeepSeek/${this.params.config.model}]`);
         this.errorPrefix = chalk.red.bold(`[DeepSeek]`);
 
         const baseUrl = this.params.config.url || 'https://api.deepseek.com';

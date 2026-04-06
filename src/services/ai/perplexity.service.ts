@@ -38,7 +38,7 @@ export class PerplexityService extends AIService {
             primary: '#20808D',
             secondary: '#FFF',
         };
-        this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold(`[Perplexity]`);
+        this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold(`[Perplexity/${this.params.config.model}]`);
         this.errorPrefix = chalk.red.bold(`[Perplexity]`);
         this.apiKey = this.params.config.key;
     }
