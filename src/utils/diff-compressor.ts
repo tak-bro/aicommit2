@@ -27,10 +27,13 @@ export interface DiffCompressionResult {
 
 export const DEFAULT_DIFF_CONTEXT = 3;
 
+export const DEFAULT_MAX_HUNK_LINES = 200;
+export const DEFAULT_MAX_DIFF_LINES = 1000;
+
 export const DEFAULT_DIFF_COMPRESSION_CONFIG: DiffCompressionConfig = {
-    mode: 'compact',
-    maxHunkLines: 200,
-    maxDiffLines: 1000,
+    mode: 'none',
+    maxHunkLines: 0,
+    maxDiffLines: 0,
 };
 
 /**

@@ -29,7 +29,7 @@ Please check the documentation for each specific model to confirm which settings
 | `statsDays`            | Days to retain statistics data (auto-cleanup)                       | 30           |
 | `disabled`             | Whether a specific model is enabled or disabled                     | false        |
 | `stream`               | **Experimental.** Enable streaming for real-time commit message generation | false        |
-| `diffCompression`      | Diff compression mode (`none` / `compact`)                          | compact      |
+| `diffCompression`      | Diff compression mode (`none` / `compact`)                          | none         |
 | `maxHunkLines`         | Max lines per hunk in compressed diff (0 = unlimited)               | 200          |
 | `maxDiffLines`         | Max total lines in compressed diff (0 = unlimited)                  | 1000         |
 | `diffContext`           | Number of context lines in git diff (0-10)                          | 3            |
@@ -348,8 +348,8 @@ aicommit2 config set ANTHROPIC.stream=true
 ### diffCompression
 
 - Controls how git diff output is compressed before sending to AI providers.
-- `compact` (default): Strips diff metadata headers, minimizes context lines (keeps only lines adjacent to changes), and applies hunk/total line caps. Reduces token usage by 30-60% on typical diffs.
-- `none`: Sends the raw diff as-is, no compression applied.
+- `none` (default): Sends the raw diff as-is, no compression applied.
+- `compact`: Strips diff metadata headers, minimizes context lines (keeps only lines adjacent to changes), and applies hunk/total line caps. Reduces token usage by 30-60% on typical diffs.
 
 ```bash
 aicommit2 config set diffCompression=compact

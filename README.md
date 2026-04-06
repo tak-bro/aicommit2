@@ -36,6 +36,7 @@ ______________________________________________________________________
   - [Git Hooks](#git-hooks)
 - [Configuration](#configuration)
 - [General Settings](#general-settings)
+- [Diff Compression](#diff-compression)
 - [Logging](#logging)
 - [Custom Prompt Template](#custom-prompt-template)
 - [Code Review](#code-review)
@@ -82,6 +83,7 @@ _aicommit2_ automatically generates commit messages using AI. It supports [Git](
 - **[Code Review](#code-review)**: AI-powered structured code review with severity levels before committing
 - **[Git Hook Integration](#git-hooks)**: Can be used as a prepare-commit-msg hook
 - **[Custom Prompt](#custom-prompt-template)**: Supports user-defined system prompt templates
+- **[Diff Compression](#diff-compression)**: Reduces token usage by 30-60% with smart diff compression
 
 ## Supported Providers
 
@@ -929,7 +931,7 @@ For detailed information about all available settings, see the [General Settings
 | `statsDays`            | Days to retain statistics data (auto-cleanup)                       | 30           |
 | `systemPromptPath`     | Path to custom system prompt file                                   | -            |
 | `stream`               | **Experimental.** Enable streaming for real-time commit message generation | false        |
-| `diffCompression`      | Diff compression mode (`none` / `compact`)                          | compact      |
+| `diffCompression`      | Diff compression mode (`none` / `compact`)                          | none         |
 | `maxHunkLines`         | Max lines per hunk in compressed diff (0 = unlimited)               | 200          |
 | `maxDiffLines`         | Max total lines in compressed diff (0 = unlimited)                  | 1000         |
 | `diffContext`           | Number of context lines in git diff (0-10)                          | 3            |
@@ -959,6 +961,28 @@ aicommit2 config set ANTHROPIC.includeBody=true
 |     **Github Models**     |    ✓    |      ✓      |     ✓     |  ✓   |        |
 |        **Ollama**         |    ✓    |      ✓      |           |  ✓   |   ✓    |
 | **OpenAI API-Compatible** |    ✓    |      ✓      |     ✓     |  ✓   |   ✓    |
+
+## Diff Compression
+
+aicommit2 can compress git diffs before sending to AI providers, reducing token usage by 30-60%. Inspired by [RTK](https://github.com/rtk-ai/rtk)'s token optimization techniques.
+
+When enabled (`compact` mode), the compressor:
+- Strips diff metadata headers (`diff --git`, `index`, `---/+++`)
+- Minimizes context lines (keeps only lines adjacent to changes, replaces distant context with `...`)
+- Caps large hunks and total diff size to protect model context windows
+
+```bash
+# Enable diff compression
+aicommit2 config set diffCompression=compact
+
+# Optional: tune compression settings
+aicommit2 config set maxHunkLines=200   # max lines per hunk (0=unlimited)
+aicommit2 config set maxDiffLines=1000  # max total diff lines (0=unlimited)
+aicommit2 config set diffContext=1      # reduce git context lines (default: 3)
+
+# Disable compression (default)
+aicommit2 config set diffCompression=none
+```
 
 ## Logging
 

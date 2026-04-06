@@ -104,11 +104,10 @@ export default testSuite(({ describe }) => {
             expect(diff).toContain('old-name.ts → new-name.ts');
         });
 
-        test('default config applies compact mode', () => {
+        test('default config applies none mode', () => {
             const raw = createDiffBlock('src/foo.ts', [createHunk(1, 2, 1)]);
             const { diff } = compressDiff(raw);
-            expect(diff).toContain('=== src/foo.ts ===');
-            expect(diff).not.toContain('diff --git');
+            expect(diff).toBe(raw);
         });
 
         test('multiple hunks in one file are preserved', () => {
