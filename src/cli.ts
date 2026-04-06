@@ -1,3 +1,9 @@
+// Suppress Node.js ExperimentalWarning (e.g., node:sqlite from Copilot SDK)
+// Setting this env var before module loading prevents the C++ layer from emitting warnings to stderr
+if (!process.env.NODE_NO_WARNINGS) {
+    process.env.NODE_NO_WARNINGS = '1';
+}
+
 import { cli } from 'cleye';
 
 import pkg from '../package.json';

@@ -4,6 +4,7 @@ import path from 'path';
 
 import ini from 'ini';
 
+import { DEFAULT_DIFF_COMPRESSION_CONFIG, DEFAULT_DIFF_CONTEXT } from './diff-compressor.js';
 import { KnownError } from './error.js';
 import { fileExists } from './fs.js';
 import { flattenDeep } from './utils.js';
@@ -326,6 +327,36 @@ const generalConfigParsers = {
     disableLowerCase: createBoolParser('disableLowerCase'),
     jjAutoNew: createBoolParser('jjAutoNew'),
     autoCopy: createBoolParser('autoCopy'),
+    diffCompression: (diffCompression?: string) => {
+        if (!diffCompression) {
+            return DEFAULT_DIFF_COMPRESSION_CONFIG.mode;
+        }
+        parseAssert('diffCompression', /^(?:none|compact)$/.test(diffCompression), 'Must be none or compact');
+        return diffCompression as 'none' | 'compact';
+    },
+    maxHunkLines: (maxHunkLines?: string) => {
+        if (!maxHunkLines) {
+            return DEFAULT_DIFF_COMPRESSION_CONFIG.maxHunkLines; // 0 = unlimited
+        }
+        parseAssert('maxHunkLines', /^\d+$/.test(maxHunkLines), 'Must be an integer');
+        return Number(maxHunkLines);
+    },
+    maxDiffLines: (maxDiffLines?: string) => {
+        if (!maxDiffLines) {
+            return DEFAULT_DIFF_COMPRESSION_CONFIG.maxDiffLines; // 0 = unlimited
+        }
+        parseAssert('maxDiffLines', /^\d+$/.test(maxDiffLines), 'Must be an integer');
+        return Number(maxDiffLines);
+    },
+    diffContext: (diffContext?: string) => {
+        if (!diffContext) {
+            return DEFAULT_DIFF_CONTEXT;
+        }
+        parseAssert('diffContext', /^\d+$/.test(diffContext), 'Must be an integer');
+        const parsed = Number(diffContext);
+        parseAssert('diffContext', parsed >= 0 && parsed <= 10, 'Must be between 0 and 10');
+        return parsed;
+    },
     useStats: createBoolParser('useStats', true),
     statsDays: (statsDays?: string) => {
         if (!statsDays) {

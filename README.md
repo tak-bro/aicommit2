@@ -929,6 +929,10 @@ For detailed information about all available settings, see the [General Settings
 | `statsDays`            | Days to retain statistics data (auto-cleanup)                       | 30           |
 | `systemPromptPath`     | Path to custom system prompt file                                   | -            |
 | `stream`               | **Experimental.** Enable streaming for real-time commit message generation | false        |
+| `diffCompression`      | Diff compression mode (`none` / `compact`)                          | compact      |
+| `maxHunkLines`         | Max lines per hunk in compressed diff (0 = unlimited)               | 200          |
+| `maxDiffLines`         | Max total lines in compressed diff (0 = unlimited)                  | 1000         |
+| `diffContext`           | Number of context lines in git diff (0-10)                          | 3            |
 
 ```bash
 # Example: Set settings for a specific model

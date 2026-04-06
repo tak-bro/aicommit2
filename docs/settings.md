@@ -29,6 +29,10 @@ Please check the documentation for each specific model to confirm which settings
 | `statsDays`            | Days to retain statistics data (auto-cleanup)                       | 30           |
 | `disabled`             | Whether a specific model is enabled or disabled                     | false        |
 | `stream`               | **Experimental.** Enable streaming for real-time commit message generation | false        |
+| `diffCompression`      | Diff compression mode (`none` / `compact`)                          | compact      |
+| `maxHunkLines`         | Max lines per hunk in compressed diff (0 = unlimited)               | 200          |
+| `maxDiffLines`         | Max total lines in compressed diff (0 = unlimited)                  | 1000         |
+| `diffContext`           | Number of context lines in git diff (0-10)                          | 3            |
 
 > **Tip:** To set the General Settings for each model, use the following command.
 >
@@ -340,6 +344,48 @@ aicommit2 config set ANTHROPIC.stream=true
 - The `stream` feature is currently experimental and may change in future releases.
 - Streaming is only applied to commit message generation, not code review.
 - May not be compatible with git hooks (e.g., `prepare-commit-msg`), external tools (e.g., lazygit), or non-interactive environments.
+
+### diffCompression
+
+- Controls how git diff output is compressed before sending to AI providers.
+- `compact` (default): Strips diff metadata headers, minimizes context lines (keeps only lines adjacent to changes), and applies hunk/total line caps. Reduces token usage by 30-60% on typical diffs.
+- `none`: Sends the raw diff as-is, no compression applied.
+
+```bash
+aicommit2 config set diffCompression=compact
+aicommit2 config set diffCompression=none
+```
+
+### maxHunkLines
+
+- Maximum number of lines per hunk in compact mode. Hunks exceeding this limit are truncated with a `[... N lines truncated]` notice.
+- Set to `0` for unlimited. Default: `200`.
+
+```bash
+aicommit2 config set maxHunkLines=200
+aicommit2 config set maxHunkLines=0    # unlimited
+```
+
+### maxDiffLines
+
+- Maximum total lines in the compressed diff output. When exceeded, remaining files are omitted with a notice.
+- Set to `0` for unlimited. Default: `1000`.
+
+```bash
+aicommit2 config set maxDiffLines=1000
+aicommit2 config set maxDiffLines=0    # unlimited
+```
+
+### diffContext
+
+- Number of context lines included in git diff output (equivalent to `git diff -U<n>`).
+- Reducing from the default `3` to `1` can further reduce token usage with minimal impact on commit message quality.
+- Range: 0-10. Default: `3`.
+
+```bash
+aicommit2 config set diffContext=3
+aicommit2 config set diffContext=1    # fewer context lines, saves tokens
+```
 
 ## Available Settings by Model
 

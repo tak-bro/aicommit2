@@ -1,7 +1,9 @@
 import { getConfig } from './config.js';
+import { DEFAULT_DIFF_COMPRESSION_CONFIG, DEFAULT_DIFF_CONTEXT, compressDiff } from './diff-compressor.js';
 import { KnownError } from './error.js';
 import { GitAdapter, JujutsuAdapter, YadmAdapter } from './vcs-adapters/index.js';
 
+import type { DiffCompressionConfig, DiffCompressionResult } from './diff-compressor.js';
 import type { BaseVCSAdapter, CommitOptions, VCSDiff } from './vcs-adapters/index.js';
 
 export type { CommitOptions };
@@ -205,6 +207,71 @@ export function resetVCSAdapter(): void {
     vcsAdapter = null;
 }
 
+/**
+ * Reset diff config cache (useful for testing)
+ */
+export const resetDiffConfigCache = (): void => {
+    cachedDiffConfig = null;
+};
+
+interface ResolvedDiffConfig {
+    compression: DiffCompressionConfig;
+    diffContext: number;
+}
+
+let cachedDiffConfig: ResolvedDiffConfig | null = null;
+
+/**
+ * Resolve diff compression config from the global config file (cached after first call).
+ */
+const resolveDiffConfig = async (): Promise<ResolvedDiffConfig> => {
+    if (cachedDiffConfig) {
+        return cachedDiffConfig;
+    }
+    try {
+        const config = await getConfig({});
+        cachedDiffConfig = {
+            compression: {
+                mode: config.diffCompression,
+                maxHunkLines: config.maxHunkLines,
+                maxDiffLines: config.maxDiffLines,
+            },
+            diffContext: config.diffContext,
+        };
+    } catch (error) {
+        console.warn(
+            `[aicommit2] Failed to read diff compression config, using defaults: ${error instanceof Error ? error.message : String(error)}`
+        );
+        cachedDiffConfig = {
+            compression: { ...DEFAULT_DIFF_COMPRESSION_CONFIG },
+            diffContext: DEFAULT_DIFF_CONTEXT,
+        };
+    }
+    return cachedDiffConfig;
+};
+
+/**
+ * Apply diff compression and attach stats to the result.
+ * The `compressDiff` function handles mode=none internally, so no pre-check needed.
+ */
+const applyDiffCompression = (diff: VCSDiff, compressionConfig: DiffCompressionConfig): VCSDiff => {
+    const originalChars = diff.diff.length;
+    const { diff: compressed, stats } = compressDiff(diff.diff, compressionConfig);
+
+    // No compression applied — return original without stats
+    if (compressed === diff.diff) {
+        return diff;
+    }
+
+    const compression: DiffCompressionResult = {
+        originalChars,
+        compressedChars: compressed.length,
+        truncatedHunks: stats.truncatedHunks,
+        truncatedFiles: stats.truncatedFiles,
+    };
+    return { ...diff, diff: compressed, compression };
+};
+
 // Backward compatible exports
 export const assertGitRepo = async (): Promise<string> => {
     const adapter = await getVCSAdapter();
@@ -213,7 +280,12 @@ export const assertGitRepo = async (): Promise<string> => {
 
 export const getStagedDiff = async (excludeFiles?: string[], exclude?: string[]): Promise<GitDiff | null> => {
     const adapter = await getVCSAdapter();
-    return adapter.getStagedDiff(excludeFiles, exclude);
+    const { compression, diffContext } = await resolveDiffConfig();
+    const diff = await adapter.getStagedDiff(excludeFiles, exclude, { diffContext });
+    if (!diff) {
+        return null;
+    }
+    return applyDiffCompression(diff, compression);
 };
 
 export const getCommitDiff = async (commitHash: string, excludeFiles?: string[], exclude?: string[]): Promise<GitDiff | null> => {
@@ -221,7 +293,12 @@ export const getCommitDiff = async (commitHash: string, excludeFiles?: string[],
     if (!adapter.getCommitDiff) {
         throw new KnownError(`Commit diff not supported for ${adapter.name}`);
     }
-    return adapter.getCommitDiff(commitHash, excludeFiles, exclude);
+    const { compression, diffContext } = await resolveDiffConfig();
+    const diff = await adapter.getCommitDiff(commitHash, excludeFiles, exclude, { diffContext });
+    if (!diff) {
+        return null;
+    }
+    return applyDiffCompression(diff, compression);
 };
 
 export const getCommentChar = async (): Promise<string> => {
@@ -249,8 +326,17 @@ export const truncateDiff = (diff: string, maxChars: number): { diff: string; tr
 };
 
 export const getDetectedMessage = (staged: GitDiff): string => {
-    // Use the static method from base adapter
-    return `Detected ${staged.files.length.toLocaleString()} changed file${staged.files.length > 1 ? 's' : ''} (${staged.diff.length.toLocaleString()} characters)`;
+    const fileCount = staged.files.length.toLocaleString();
+    const fileSuffix = staged.files.length > 1 ? 's' : '';
+    const charCount = staged.diff.length.toLocaleString();
+
+    if (staged.compression) {
+        const { originalChars, compressedChars } = staged.compression;
+        const ratio = originalChars > 0 ? Math.round((1 - compressedChars / originalChars) * 100) : 0;
+        return `Detected ${fileCount} changed file${fileSuffix} (${originalChars.toLocaleString()} → ${charCount} chars, ${ratio}% compressed)`;
+    }
+
+    return `Detected ${fileCount} changed file${fileSuffix} (${charCount} characters)`;
 };
 
 export const getDetectedCommit = (files: string[]): string => {
