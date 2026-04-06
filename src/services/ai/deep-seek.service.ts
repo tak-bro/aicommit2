@@ -36,7 +36,7 @@ export class DeepSeekService extends AIService {
             secondary: '#fff',
         };
         this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold(`[DeepSeek/${this.params.config.model}]`);
-        this.errorPrefix = chalk.red.bold(`[DeepSeek]`);
+        this.errorPrefix = chalk.red.bold(`[DeepSeek/${this.params.config.model}]`);
 
         const baseUrl = this.params.config.url || 'https://api.deepseek.com';
         this.deepSeek = new OpenAI({

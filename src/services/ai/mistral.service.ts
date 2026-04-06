@@ -52,7 +52,7 @@ export class MistralService extends AIService {
             secondary: '#fff',
         };
         this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold(`[MistralAI/${this.params.config.model}]`);
-        this.errorPrefix = chalk.red.bold(`[MistralAI]`);
+        this.errorPrefix = chalk.red.bold(`[MistralAI/${this.params.config.model}]`);
         this.apiKey = this.params.config.key;
     }
 

@@ -128,7 +128,7 @@ export class BedrockService extends AIService {
             secondary: '#FF9900',
         };
         this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold(`[${SERVICE_NAME}/${this.params.config.model}]`);
-        this.errorPrefix = chalk.red.bold(`[${SERVICE_NAME}]`);
+        this.errorPrefix = chalk.red.bold(`[${SERVICE_NAME}/${this.params.config.model}]`);
 
         // Validate configuration early to fail fast
         this.validateConfiguration();

@@ -30,7 +30,7 @@ export class CohereService extends AIService {
             secondary: '#fff',
         };
         this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold(`[Cohere/${this.params.config.model}]`);
-        this.errorPrefix = chalk.red.bold(`[Cohere]`);
+        this.errorPrefix = chalk.red.bold(`[Cohere/${this.params.config.model}]`);
         this.cohere = new CohereClientV2({
             token: this.params.config.key,
         });

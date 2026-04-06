@@ -18,7 +18,7 @@ export class GroqService extends AIService {
             secondary: '#fff',
         };
         this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold(`[Groq/${this.params.config.model}]`);
-        this.errorPrefix = chalk.red.bold(`[Groq]`);
+        this.errorPrefix = chalk.red.bold(`[Groq/${this.params.config.model}]`);
         this.groq = new Groq({ apiKey: this.params.config.key });
     }
 
