@@ -205,14 +205,21 @@ export default testSuite(({ describe }) => {
             expect(diff).toContain('-old line A');
             expect(diff).toContain('-old line B');
 
-            // Adjacent context (1 line from change) kept
+            // Adjacent context (3 lines from change) kept
+            expect(diff).toContain(' ctx 1'); // 3 before change A
+            expect(diff).toContain(' ctx 2'); // 2 before change A
             expect(diff).toContain(' ctx 3'); // 1 before change A
             expect(diff).toContain(' gap 1'); // 1 after change A
+            expect(diff).toContain(' gap 2'); // 2 after change A
+            expect(diff).toContain(' gap 3'); // 3 after change A
+            expect(diff).toContain(' gap 8'); // 3 before change B
+            expect(diff).toContain(' gap 9'); // 2 before change B
             expect(diff).toContain(' gap 10'); // 1 before change B
             expect(diff).toContain(' ctx end 1'); // 1 after change B
+            expect(diff).toContain(' ctx end 2'); // 2 after change B
+            expect(diff).toContain(' ctx end 3'); // 3 after change B
 
-            // Distant context stripped
-            expect(diff).not.toContain(' ctx 1');
+            // Distant context stripped (gap 4-7 are > 3 lines from any change)
             expect(diff).not.toContain(' gap 5');
             expect(diff).not.toContain(' gap 6');
 

@@ -22,8 +22,7 @@ export interface CompressedDiff {
 
 export const DEFAULT_DIFF_CONTEXT = 3;
 
-export const DEFAULT_MAX_HUNK_LINES = 200;
-export const DEFAULT_MAX_DIFF_LINES = 1000;
+export const CONTEXT_PROXIMITY = 3;
 
 export const DEFAULT_DIFF_COMPRESSION_CONFIG: DiffCompressionConfig = {
     mode: 'none',
@@ -198,7 +197,7 @@ const compactFileBlock = (block: string[], maxHunkLines: number): { lines: strin
 
 /**
  * Minimize context lines within a hunk.
- * Keeps context lines only when adjacent (within 1 line) to a change (+/-).
+ * Keeps context lines only when within CONTEXT_PROXIMITY lines of a change (+/-).
  * Replaces distant context runs with "..." separator.
  */
 const minimizeContext = (hunkLines: string[]): string[] => {
@@ -206,19 +205,20 @@ const minimizeContext = (hunkLines: string[]): string[] => {
         return [];
     }
 
-    // Mark each line: is it a change line, or adjacent to one?
+    // Mark each line: is it a change line, or within proximity of one?
     const isChange = hunkLines.map(l => l.startsWith('+') || l.startsWith('-'));
     const keep = new Array<boolean>(hunkLines.length).fill(false);
 
     for (let i = 0; i < hunkLines.length; i++) {
         if (isChange[i]) {
             keep[i] = true;
-            // Keep 1 context line before and after
-            if (i > 0) {
-                keep[i - 1] = true;
-            }
-            if (i < hunkLines.length - 1) {
-                keep[i + 1] = true;
+            for (let d = 1; d <= CONTEXT_PROXIMITY; d++) {
+                if (i - d >= 0) {
+                    keep[i - d] = true;
+                }
+                if (i + d < hunkLines.length) {
+                    keep[i + d] = true;
+                }
             }
             continue;
         }

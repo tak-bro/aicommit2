@@ -30,8 +30,8 @@ Please check the documentation for each specific model to confirm which settings
 | `disabled`             | Whether a specific model is enabled or disabled                     | false        |
 | `stream`               | **Experimental.** Enable streaming for real-time commit message generation | false        |
 | `diffCompression`      | Diff compression mode (`none` / `compact`)                          | none         |
-| `maxHunkLines`         | Max lines per hunk in compressed diff (0 = unlimited)               | 200          |
-| `maxDiffLines`         | Max total lines in compressed diff (0 = unlimited)                  | 1000         |
+| `maxHunkLines`         | Max lines per hunk in compressed diff (0 = unlimited)               | 0            |
+| `maxDiffLines`         | Max total lines in compressed diff (0 = unlimited)                  | 0            |
 | `diffContext`           | Number of context lines in git diff (0-10)                          | 3            |
 
 > **Tip:** To set the General Settings for each model, use the following command.
@@ -363,21 +363,21 @@ aicommit2 config set OPENAI.diffCompression=none
 ### maxHunkLines
 
 - Maximum number of lines per hunk in compact mode. Hunks exceeding this limit are truncated with a `[... N lines truncated]` notice.
-- Set to `0` for unlimited. Default: `200`.
+- Default: `0` (unlimited). Set to a positive number to cap hunk size.
 
 ```bash
-aicommit2 config set maxHunkLines=200
-aicommit2 config set maxHunkLines=0    # unlimited
+aicommit2 config set maxHunkLines=200  # cap at 200 lines per hunk
+aicommit2 config set maxHunkLines=0    # unlimited (default)
 ```
 
 ### maxDiffLines
 
 - Maximum total lines in the compressed diff output. When exceeded, remaining files are omitted with a notice.
-- Set to `0` for unlimited. Default: `1000`.
+- Default: `0` (unlimited). Set to a positive number to cap total diff size.
 
 ```bash
-aicommit2 config set maxDiffLines=1000
-aicommit2 config set maxDiffLines=0    # unlimited
+aicommit2 config set maxDiffLines=1000 # cap at 1000 lines total
+aicommit2 config set maxDiffLines=0    # unlimited (default)
 ```
 
 ### diffContext

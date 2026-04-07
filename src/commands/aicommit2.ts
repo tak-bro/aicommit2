@@ -20,6 +20,7 @@ import {
 } from '../managers/reactive-prompt.manager.js';
 import { recordSelection } from '../services/stats/index.js';
 import { ModelName, RawConfig, applyDisableLowerCaseToConfig, applyIncludeBodyToConfig, getConfig } from '../utils/config.js';
+import { compressDiff } from '../utils/diff-compressor.js';
 import { ErrorCode, ErrorMessages } from '../utils/error-messages.js';
 import { KnownError, handleCliError } from '../utils/error.js';
 import { validateSystemPrompt } from '../utils/prompt.js';
@@ -147,11 +148,15 @@ export default async (
         }
 
         if (!isJsonMode) {
-            consoleManager.printStagedFiles(staged, {
-                mode: config.diffCompression,
-                maxHunkLines: config.maxHunkLines,
-                maxDiffLines: config.maxDiffLines,
-            });
+            const isCompact = config.diffCompression === 'compact';
+            const previewStats = isCompact
+                ? compressDiff(staged.diff, {
+                      mode: config.diffCompression,
+                      maxHunkLines: config.maxHunkLines,
+                      maxDiffLines: config.maxDiffLines,
+                  }).stats
+                : undefined;
+            consoleManager.printStagedFiles(staged, previewStats);
         }
 
         const availableAIs = getAvailableAIs(config, 'commit');

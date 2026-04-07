@@ -4,12 +4,7 @@ import path from 'path';
 
 import ini from 'ini';
 
-import {
-    DEFAULT_DIFF_COMPRESSION_CONFIG,
-    DEFAULT_DIFF_CONTEXT,
-    DEFAULT_MAX_DIFF_LINES,
-    DEFAULT_MAX_HUNK_LINES,
-} from './diff-compressor.js';
+import { DEFAULT_DIFF_COMPRESSION_CONFIG, DEFAULT_DIFF_CONTEXT } from './diff-compressor.js';
 import { KnownError } from './error.js';
 import { fileExists } from './fs.js';
 import { flattenDeep } from './utils.js';
@@ -341,14 +336,14 @@ const generalConfigParsers = {
     },
     maxHunkLines: (maxHunkLines?: string) => {
         if (!maxHunkLines) {
-            return DEFAULT_MAX_HUNK_LINES;
+            return 0; // 0 = unlimited
         }
         parseAssert('maxHunkLines', /^\d+$/.test(maxHunkLines), 'Must be an integer');
         return Number(maxHunkLines);
     },
     maxDiffLines: (maxDiffLines?: string) => {
         if (!maxDiffLines) {
-            return DEFAULT_MAX_DIFF_LINES;
+            return 0; // 0 = unlimited
         }
         parseAssert('maxDiffLines', /^\d+$/.test(maxDiffLines), 'Must be an integer');
         return Number(maxDiffLines);
