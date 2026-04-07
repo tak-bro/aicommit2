@@ -1,5 +1,5 @@
 import { getConfig } from './config.js';
-import { DEFAULT_DIFF_COMPRESSION_CONFIG, DEFAULT_DIFF_CONTEXT, compressDiff } from './diff-compressor.js';
+import { DEFAULT_DIFF_CONTEXT, compressDiff } from './diff-compressor.js';
 import { KnownError } from './error.js';
 import { GitAdapter, JujutsuAdapter, YadmAdapter } from './vcs-adapters/index.js';
 
@@ -211,43 +211,25 @@ export const resetVCSAdapter = (): void => {
  * Reset diff config cache (useful for testing)
  */
 export const resetDiffConfigCache = (): void => {
-    cachedDiffConfig = null;
+    cachedDiffContext = null;
 };
 
-interface ResolvedDiffConfig {
-    compression: DiffCompressionConfig;
-    diffContext: number;
-}
-
-let cachedDiffConfig: ResolvedDiffConfig | null = null;
+let cachedDiffContext: number | null = null;
 
 /**
- * Resolve diff compression config from the global config file (cached after first call).
+ * Resolve diffContext from the global config file (cached after first call).
  */
-const resolveDiffConfig = async (): Promise<ResolvedDiffConfig> => {
-    if (cachedDiffConfig) {
-        return cachedDiffConfig;
+const resolveDiffContext = async (): Promise<number> => {
+    if (cachedDiffContext !== null) {
+        return cachedDiffContext;
     }
     try {
         const config = await getConfig({});
-        cachedDiffConfig = {
-            compression: {
-                mode: config.diffCompression,
-                maxHunkLines: config.maxHunkLines,
-                maxDiffLines: config.maxDiffLines,
-            },
-            diffContext: config.diffContext,
-        };
-    } catch (error) {
-        console.warn(
-            `[aicommit2] Failed to read diff compression config, using defaults: ${error instanceof Error ? error.message : String(error)}`
-        );
-        cachedDiffConfig = {
-            compression: { ...DEFAULT_DIFF_COMPRESSION_CONFIG },
-            diffContext: DEFAULT_DIFF_CONTEXT,
-        };
+        cachedDiffContext = config.diffContext;
+    } catch {
+        cachedDiffContext = DEFAULT_DIFF_CONTEXT;
     }
-    return cachedDiffConfig;
+    return cachedDiffContext;
 };
 
 /**
@@ -273,7 +255,7 @@ export const assertGitRepo = async (): Promise<string> => {
 
 export const getStagedDiff = async (excludeFiles?: string[], exclude?: string[]): Promise<GitDiff | null> => {
     const adapter = await getVCSAdapter();
-    const { diffContext } = await resolveDiffConfig();
+    const diffContext = await resolveDiffContext();
     const diff = await adapter.getStagedDiff(excludeFiles, exclude, { diffContext });
     if (!diff) {
         return null;
@@ -286,7 +268,7 @@ export const getCommitDiff = async (commitHash: string, excludeFiles?: string[],
     if (!adapter.getCommitDiff) {
         throw new KnownError(`Commit diff not supported for ${adapter.name}`);
     }
-    const { diffContext } = await resolveDiffConfig();
+    const diffContext = await resolveDiffContext();
     const diff = await adapter.getCommitDiff(commitHash, excludeFiles, exclude, { diffContext });
     if (!diff) {
         return null;
@@ -297,25 +279,6 @@ export const getCommitDiff = async (commitHash: string, excludeFiles?: string[],
 export const getCommentChar = async (): Promise<string> => {
     const adapter = await getVCSAdapter();
     return adapter.getCommentChar();
-};
-
-/**
- * Truncate diff to a maximum character length to prevent exceeding model context windows.
- * Truncation happens at line boundaries to avoid cutting in the middle of a diff hunk.
- * Returns { diff, truncated } where truncated indicates if truncation occurred.
- */
-export const truncateDiff = (diff: string, maxChars: number): { diff: string; truncated: boolean } => {
-    if (!maxChars || maxChars <= 0 || diff.length <= maxChars) {
-        return { diff, truncated: false };
-    }
-
-    // Find the last newline before the limit to avoid cutting mid-line
-    const cutoff = diff.lastIndexOf('\n', maxChars);
-    const truncatedDiff = cutoff > 0 ? diff.slice(0, cutoff) : diff.slice(0, maxChars);
-    return {
-        diff: `${truncatedDiff}\n\n[diff truncated — original was ${diff.length.toLocaleString()} characters]`,
-        truncated: true,
-    };
 };
 
 export const getDetectedMessage = (staged: GitDiff): string => {
