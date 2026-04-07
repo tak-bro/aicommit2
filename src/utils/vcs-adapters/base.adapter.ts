@@ -1,11 +1,11 @@
-import type { DiffCompressionResult } from '../diff-compressor.js';
+import type { DiffCompressionStats } from '../diff-compressor.js';
 
-export type { DiffCompressionResult };
+export type { DiffCompressionStats };
 
 export interface VCSDiff {
     files: string[];
     diff: string;
-    compression?: DiffCompressionResult;
+    compression?: DiffCompressionStats;
 }
 
 export interface CommitOptions {

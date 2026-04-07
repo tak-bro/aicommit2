@@ -147,7 +147,11 @@ export default async (
         }
 
         if (!isJsonMode) {
-            consoleManager.printStagedFiles(staged);
+            consoleManager.printStagedFiles(staged, {
+                mode: config.diffCompression,
+                maxHunkLines: config.maxHunkLines,
+                maxDiffLines: config.maxDiffLines,
+            });
         }
 
         const availableAIs = getAvailableAIs(config, 'commit');

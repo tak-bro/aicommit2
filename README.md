@@ -972,10 +972,15 @@ When enabled (`compact` mode), the compressor:
 - Caps large hunks and total diff size to protect model context windows
 
 ```bash
-# Enable diff compression
+# Enable diff compression globally
 aicommit2 config set diffCompression=compact
 
-# Optional: tune compression settings
+# Or per model — useful for models with smaller context windows
+aicommit2 config set OLLAMA.diffCompression=compact
+aicommit2 config set OLLAMA.maxHunkLines=100
+aicommit2 config set OLLAMA.maxDiffLines=500
+
+# Tune compression settings
 aicommit2 config set maxHunkLines=200   # max lines per hunk (0=unlimited)
 aicommit2 config set maxDiffLines=1000  # max total diff lines (0=unlimited)
 aicommit2 config set diffContext=1      # reduce git context lines (default: 3)

@@ -5,7 +5,10 @@ import figlet from 'figlet';
 import gradient from 'gradient-string';
 import ora, { Ora } from 'ora';
 
+import { compressDiff } from '../utils/diff-compressor.js';
 import { getDetectedMessage } from '../utils/vcs.js';
+
+import type { DiffCompressionConfig } from '../utils/diff-compressor.js';
 
 const LARGE_DIFF_THRESHOLD_BYTES = 100_000;
 
@@ -45,18 +48,43 @@ export class ConsoleManager {
         spinner.clear();
     }
 
-    printStagedFiles(staged: { files: string[]; diff: string }) {
+    printStagedFiles(staged: { files: string[]; diff: string }, compressionConfig?: DiffCompressionConfig) {
         const diffSizeBytes = Buffer.byteLength(staged.diff, 'utf8');
         const diffSize = this.formatBytes(diffSizeBytes);
-        console.log(chalk.bold.green('✔ ') + chalk.bold(`${getDetectedMessage(staged)}`) + chalk.dim(` (${diffSize})`) + chalk.bold(':'));
+        const detectedMsg = getDetectedMessage(staged);
+        const compressionInfo = this.getCompressionInfo(staged.diff, compressionConfig);
+
+        const header = compressionInfo
+            ? `${detectedMsg}${chalk.dim(` (${diffSize})`)}${chalk.cyan(` ${compressionInfo}`)}`
+            : `${detectedMsg}${chalk.dim(` (${diffSize})`)}`;
+
+        console.log(
+            chalk.bold.green('✔ ') +
+                chalk.bold(detectedMsg) +
+                chalk.dim(` (${diffSize})`) +
+                (compressionInfo ? chalk.cyan(` ${compressionInfo}`) : '') +
+                chalk.bold(':')
+        );
         console.log(`${staged.files.map(file => `     ${file}`).join('\n')}\n`);
 
         const isLargeDiff = diffSizeBytes > LARGE_DIFF_THRESHOLD_BYTES;
-        if (isLargeDiff) {
+        if (isLargeDiff && (!compressionConfig || compressionConfig.mode === 'none')) {
             console.log(chalk.yellow(`⚠ Large diff detected (${diffSize}). This may increase processing time and costs.`));
-            console.log(chalk.dim(`  Consider using --exclude to filter large files.\n`));
+            console.log(chalk.dim(`  Consider using --exclude to filter large files or diffCompression=compact.\n`));
         }
     }
+
+    private getCompressionInfo = (rawDiff: string, config?: DiffCompressionConfig): string | null => {
+        if (!config || config.mode === 'none') {
+            return null;
+        }
+        const { stats } = compressDiff(rawDiff, config);
+        if (stats.originalChars === stats.compressedChars) {
+            return null;
+        }
+        const ratio = Math.round((1 - stats.compressedChars / stats.originalChars) * 100);
+        return `[compact: ${stats.originalChars.toLocaleString()} → ${stats.compressedChars.toLocaleString()} chars, ${ratio}% saved]`;
+    };
 
     private formatBytes = (bytes: number): string => {
         if (bytes < 1024) {

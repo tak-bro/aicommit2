@@ -9,6 +9,8 @@ export interface DiffCompressionConfig {
 export interface DiffCompressionStats {
     originalLines: number;
     compressedLines: number;
+    originalChars: number;
+    compressedChars: number;
     truncatedHunks: number;
     truncatedFiles: number;
 }
@@ -16,13 +18,6 @@ export interface DiffCompressionStats {
 export interface CompressedDiff {
     diff: string;
     stats: DiffCompressionStats;
-}
-
-export interface DiffCompressionResult {
-    originalChars: number;
-    compressedChars: number;
-    truncatedHunks: number;
-    truncatedFiles: number;
 }
 
 export const DEFAULT_DIFF_CONTEXT = 3;
@@ -47,7 +42,14 @@ export const compressDiff = (raw: string, config: Partial<DiffCompressionConfig>
     if (resolved.mode === 'none' || !raw.trim()) {
         return {
             diff: raw,
-            stats: { originalLines, compressedLines: originalLines, truncatedHunks: 0, truncatedFiles: 0 },
+            stats: {
+                originalLines,
+                compressedLines: originalLines,
+                originalChars: raw.length,
+                compressedChars: raw.length,
+                truncatedHunks: 0,
+                truncatedFiles: 0,
+            },
         };
     }
 
@@ -106,6 +108,8 @@ const compactDiff = (raw: string, config: DiffCompressionConfig, originalLines: 
         stats: {
             originalLines,
             compressedLines: outputLines.length,
+            originalChars: raw.length,
+            compressedChars: compressedText.length,
             truncatedHunks,
             truncatedFiles,
         },

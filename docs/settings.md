@@ -354,6 +354,10 @@ aicommit2 config set ANTHROPIC.stream=true
 ```bash
 aicommit2 config set diffCompression=compact
 aicommit2 config set diffCompression=none
+
+# Per-model override
+aicommit2 config set OLLAMA.diffCompression=compact
+aicommit2 config set OPENAI.diffCompression=none
 ```
 
 ### maxHunkLines
