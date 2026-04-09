@@ -1267,6 +1267,8 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/denniswebb"><img src="https://avatars.githubusercontent.com/denniswebb" width="100px;" alt=""/><br /><sub><b>@denniswebb</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=denniswebb" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/peinan"><img src="https://avatars.githubusercontent.com/peinan" width="100px;" alt=""/><br /><sub><b>@peinan</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/issues/215" title="Documentation">📖</a></td>
     <td align="center"><a href="https://github.com/totoroot"><img src="https://avatars.githubusercontent.com/totoroot" width="100px;" alt=""/><br /><sub><b>@totoroot</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=totoroot" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/lawrence3699"><img src="https://avatars.githubusercontent.com/lawrence3699" width="100px;" alt=""/><br /><sub><b>@lawrence3699</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=lawrence3699" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/atlet99"><img src="https://avatars.githubusercontent.com/atlet99" width="100px;" alt=""/><br /><sub><b>@atlet99</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=atlet99" title="Code">💻</a></td>
   </tr>
 </table>
 <!-- markdownlint-restore -->
