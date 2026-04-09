@@ -173,7 +173,15 @@ cli(
         await initializeLogger(config);
         logger.info(`aicommit2 version: ${version}`);
         if (argv.flags['pre-commit']) {
-            preCommitHook(argv.flags.verbose);
+            preCommitHook(
+                argv.flags.locale,
+                argv.flags.generate,
+                argv.flags.exclude,
+                argv.flags.type,
+                argv.flags.prompt,
+                argv.flags['include-body'],
+                argv.flags.verbose
+            );
             return;
         }
 
