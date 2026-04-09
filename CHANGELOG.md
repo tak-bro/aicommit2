@@ -1,3 +1,11 @@
+## [2.5.11](https://github.com/tak-bro/aicommit2/compare/v2.5.10...v2.5.11) (2026-04-09)
+
+
+### Features
+
+* show model name in commit message prefix ([6f4a70e](https://github.com/tak-bro/aicommit2/commit/6f4a70eb52f585e2ab807f68a720e5f68afd6639))
+* show model name in error message prefix ([7472ff3](https://github.com/tak-bro/aicommit2/commit/7472ff34d129692ecb464cca1968d0ec3fc196b3))
+
 ## [2.5.10](https://github.com/tak-bro/aicommit2/compare/v2.5.9...v2.5.10) (2026-04-03)
 
 ## [2.5.9](https://github.com/tak-bro/aicommit2/compare/v2.5.8...v2.5.9) (2026-04-03)
