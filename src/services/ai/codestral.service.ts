@@ -21,8 +21,8 @@ export class CodestralService extends AIService {
             primary: '#e28c58',
             secondary: '#fff',
         };
-        this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold(`[Codestral]`);
-        this.errorPrefix = chalk.red.bold(`[Codestral]`);
+        this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold(`[Codestral/${this.params.config.model}]`);
+        this.errorPrefix = chalk.red.bold(`[Codestral/${this.params.config.model}]`);
         this.apiKey = this.params.config.key;
     }
 

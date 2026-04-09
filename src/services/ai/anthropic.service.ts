@@ -28,8 +28,8 @@ export class AnthropicService extends AIService {
             primary: '#AE5630',
             secondary: '#fff',
         };
-        this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold('[Anthropic]');
-        this.errorPrefix = chalk.red.bold(`[Anthropic]`);
+        this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold(`[Anthropic/${this.params.config.model}]`);
+        this.errorPrefix = chalk.red.bold(`[Anthropic/${this.params.config.model}]`);
         this.anthropic = new Anthropic({
             apiKey: this.params.config.key,
             ...(this.params.config.timeout > DEFAULT_TIMEOUT && { timeout: this.params.config.timeout }),

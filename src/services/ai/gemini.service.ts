@@ -17,8 +17,8 @@ export class GeminiService extends AIService {
             primary: '#0077FF',
             secondary: '#fff',
         };
-        this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold('[Gemini]');
-        this.errorPrefix = chalk.red.bold(`[Gemini]`);
+        this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold(`[Gemini/${this.params.config.model}]`);
+        this.errorPrefix = chalk.red.bold(`[Gemini/${this.params.config.model}]`);
         this.genAI = new GoogleGenerativeAI(this.params.config.key);
     }
 

@@ -19,8 +19,8 @@ export class OpenAIService extends AIService {
             primary: '#74AA9C',
             secondary: '#FFF',
         };
-        this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold(`[ChatGPT]`);
-        this.errorPrefix = chalk.red.bold(`[ChatGPT]`);
+        this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold(`[ChatGPT/${this.params.config.model}]`);
+        this.errorPrefix = chalk.red.bold(`[ChatGPT/${this.params.config.model}]`);
         // SDK appends /chat/completions internally, so strip it from the configured path
         // Default: url='https://api.openai.com', path='/v1/chat/completions'
         // baseURL must be 'https://api.openai.com/v1' (without /chat/completions)

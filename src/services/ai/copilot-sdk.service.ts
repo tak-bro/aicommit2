@@ -36,8 +36,8 @@ export class CopilotSdkService extends AIService {
             primary: '#1f6feb',
             secondary: '#FFF',
         };
-        this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold(`[Copilot SDK]`);
-        this.errorPrefix = chalk.red.bold(`[Copilot SDK]`);
+        this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold(`[Copilot SDK/${this.params.config.model}]`);
+        this.errorPrefix = chalk.red.bold(`[Copilot SDK/${this.params.config.model}]`);
     }
 
     protected getServiceSpecificErrorMessage(error: AIServiceError): string | null {
