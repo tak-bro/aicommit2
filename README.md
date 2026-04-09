@@ -928,6 +928,7 @@ For detailed information about all available settings, see the [General Settings
 | `useStats`             | Enable usage statistics tracking                                    | true         |
 | `statsDays`            | Days to retain statistics data (auto-cleanup)                       | 30           |
 | `systemPromptPath`     | Path to custom system prompt file                                   | -            |
+| `modelNameDisplay`     | Model name display in CLI labels (`none` / `short` / `full`)       | short        |
 | `stream`               | **Experimental.** Enable streaming for real-time commit message generation | false        |
 
 ```bash

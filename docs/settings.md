@@ -27,6 +27,7 @@ Please check the documentation for each specific model to confirm which settings
 | `autoCopy`             | Auto-copy commit message to clipboard (commits normally)            | false        |
 | `useStats`             | Enable usage statistics tracking                                    | true         |
 | `statsDays`            | Days to retain statistics data (auto-cleanup)                       | 30           |
+| `modelNameDisplay`     | Model name display in CLI labels (`none` / `short` / `full`)       | short        |
 | `disabled`             | Whether a specific model is enabled or disabled                     | false        |
 | `stream`               | **Experimental.** Enable streaming for real-time commit message generation | false        |
 
@@ -292,6 +293,29 @@ aicommit2 config set statsDays=7
 aicommit2 config set statsDays=90
 ```
 
+### modelNameDisplay
+
+Default: `short`
+
+Controls how model names appear in CLI labels (e.g., the colored prefix before each commit message suggestion).
+
+| Value   | Example Output                                            |
+| ------- | --------------------------------------------------------- |
+| `none`  | `[OpenRouter]`                                            |
+| `short` | `[OpenRouter/llama-3.3-70b-versa…]` (last segment, max 20 chars) |
+| `full`  | `[OpenRouter/meta-llama/llama-3.3-70b-versatile]`         |
+
+```bash
+# Hide model names (provider only)
+aicommit2 config set modelNameDisplay=none
+
+# Show truncated model name (default)
+aicommit2 config set modelNameDisplay=short
+
+# Show full model path
+aicommit2 config set modelNameDisplay=full
+```
+
 ### codeReview
 
 Default: `false`
@@ -360,4 +384,4 @@ aicommit2 config set ANTHROPIC.stream=true
 
 > All AI support the following options in General Settings.
 >
-> - systemPrompt, systemPromptPath, codeReview, codeReviewPromptPath, exclude, type, locale, generate, logging, includeBody, maxLength, disableLowerCase, autoCopy, useStats, statsDays
+> - systemPrompt, systemPromptPath, codeReview, codeReviewPromptPath, exclude, type, locale, generate, logging, includeBody, maxLength, disableLowerCase, autoCopy, modelNameDisplay, useStats, statsDays
