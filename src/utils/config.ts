@@ -27,6 +27,7 @@ export const resolvePromptPath = (promptPath: string): string => {
 
 const commitTypes = ['', 'conventional', 'gitmoji'] as const;
 export type CommitType = (typeof commitTypes)[number];
+export type ModelNameDisplay = 'none' | 'short' | 'full';
 
 export const DEFAULT_OLLAMA_HOST = 'http://localhost:11434';
 
@@ -326,6 +327,13 @@ const generalConfigParsers = {
     disableLowerCase: createBoolParser('disableLowerCase'),
     jjAutoNew: createBoolParser('jjAutoNew'),
     autoCopy: createBoolParser('autoCopy'),
+    modelNameDisplay: (modelNameDisplay?: string) => {
+        if (!modelNameDisplay) {
+            return 'short' as const;
+        }
+        parseAssert('modelNameDisplay', /^(?:none|short|full)$/.test(modelNameDisplay), 'Must be none, short, or full');
+        return modelNameDisplay as 'none' | 'short' | 'full';
+    },
     useStats: createBoolParser('useStats', true),
     statsDays: (statsDays?: string) => {
         if (!statsDays) {

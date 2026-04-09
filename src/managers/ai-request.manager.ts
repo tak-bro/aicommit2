@@ -67,6 +67,7 @@ export class AIRequestManager {
                 branchName: this.branchName,
                 statsEnabled: this.config.useStats,
                 statsDays: this.config.statsDays,
+                modelNameDisplay: this.config.modelNameDisplay,
             },
             requestType
         );
@@ -93,6 +94,7 @@ export class AIRequestManager {
                     stagedDiff: this.stagedDiff,
                     keyName: model as ModelName,
                     branchName: this.branchName,
+                    modelNameDisplay: this.config.modelNameDisplay,
                 });
 
                 const request$ = requestType === 'commit' ? service.generateCommitMessage$() : service.generateCodeReview$();
