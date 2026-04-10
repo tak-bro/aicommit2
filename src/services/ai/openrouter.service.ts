@@ -38,8 +38,8 @@ export class OpenRouterService extends AIService {
             primary: '#f97316',
             secondary: '#fff',
         };
-        this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold(`[OpenRouter/${this.params.config.model}]`);
-        this.errorPrefix = chalk.red.bold(`[OpenRouter/${this.params.config.model}]`);
+        this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold(`[OpenRouter${this.formatModelSuffix()}]`);
+        this.errorPrefix = chalk.red.bold(`[OpenRouter${this.formatModelSuffix()}]`);
 
         const baseUrl = this.params.config.url || 'https://openrouter.ai';
         const basePath = (this.params.config.path || '/api/v1/chat/completions').replace(/\/chat\/completions\/?$/, '');

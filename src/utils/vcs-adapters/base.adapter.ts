@@ -1,10 +1,19 @@
+import type { DiffCompressionStats } from '../diff-compressor.js';
+
+export type { DiffCompressionStats };
+
 export interface VCSDiff {
     files: string[];
     diff: string;
+    compression?: DiffCompressionStats;
 }
 
 export interface CommitOptions {
     autoNew?: boolean; // Jujutsu-specific: run `jj new` after `jj describe` (default: false)
+}
+
+export interface DiffOptions {
+    diffContext?: number; // git -U{n} context lines (default: 3)
 }
 
 export abstract class BaseVCSAdapter {
@@ -18,12 +27,17 @@ export abstract class BaseVCSAdapter {
     /**
      * Get diff of staged/current changes
      */
-    abstract getStagedDiff(excludeFiles?: string[], exclude?: string[]): Promise<VCSDiff | null>;
+    abstract getStagedDiff(excludeFiles?: string[], exclude?: string[], options?: DiffOptions): Promise<VCSDiff | null>;
 
     /**
      * Get diff of a specific commit
      */
-    abstract getCommitDiff?(commitHash: string, excludeFiles?: string[], exclude?: string[]): Promise<VCSDiff | null>;
+    abstract getCommitDiff?(
+        commitHash: string,
+        excludeFiles?: string[],
+        exclude?: string[],
+        options?: DiffOptions
+    ): Promise<VCSDiff | null>;
 
     /**
      * Commit changes with message

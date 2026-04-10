@@ -2,7 +2,7 @@ import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Observable, Subject, catchError, of } from 'rxjs';
 
 import { addLogEntry } from '../../utils/ai-log.js';
-import { CommitType, ModelConfig, ModelName } from '../../utils/config.js';
+import { CommitType, ModelConfig, ModelName, ModelNameDisplay } from '../../utils/config.js';
 import { ErrorCode, ErrorCodeType, detectErrorCode, getPlainErrorMessage, httpStatusToErrorCode } from '../../utils/error-messages.js';
 import { logger } from '../../utils/logger.js';
 import { DEFAULT_PROMPT_OPTIONS, PromptOptions, generatePrompt } from '../../utils/prompt.js';
@@ -49,6 +49,8 @@ export interface AIServiceParams {
     statsEnabled?: boolean;
     /** Days to retain stats data */
     statsDays?: number;
+    /** How to display model name in service label: none, short, or full */
+    modelNameDisplay?: ModelNameDisplay;
 }
 
 export interface AIServiceError extends Error {
@@ -82,6 +84,25 @@ export abstract class AIService {
 
     abstract generateCommitMessage$(): Observable<ReactiveListChoice>;
     abstract generateCodeReview$(): Observable<ReactiveListChoice>;
+
+    /**
+     * Format model name suffix based on modelNameDisplay config.
+     * Returns '' for none, '/truncated-name' for short, '/full-name' for full.
+     */
+    protected formatModelSuffix = (): string => {
+        const display = this.params.modelNameDisplay ?? 'short';
+        const model = this.params.config.model;
+        if (display === 'none' || !model) {
+            return '';
+        }
+        const modelStr = Array.isArray(model) ? model[0] : String(model);
+        if (display === 'full') {
+            return `/${modelStr}`;
+        }
+        // short: take last segment of slash-separated name, truncate to 20 chars
+        const shortName = modelStr.split('/').pop() || modelStr;
+        return shortName.length > 20 ? `/${shortName.slice(0, 19)}…` : `/${shortName}`;
+    };
 
     /**
      * Get provider name for error messages (plain text, no ANSI colors)

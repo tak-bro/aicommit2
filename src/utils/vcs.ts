@@ -1,7 +1,9 @@
 import { getConfig } from './config.js';
+import { DEFAULT_DIFF_CONTEXT, compressDiff } from './diff-compressor.js';
 import { KnownError } from './error.js';
 import { GitAdapter, JujutsuAdapter, YadmAdapter } from './vcs-adapters/index.js';
 
+import type { DiffCompressionConfig } from './diff-compressor.js';
 import type { BaseVCSAdapter, CommitOptions, VCSDiff } from './vcs-adapters/index.js';
 
 export type { CommitOptions };
@@ -20,7 +22,7 @@ let vcsAdapter: BaseVCSAdapter | null = null;
  * 3. Config (forceGit)
  * 4. Auto-detection (Jujutsu → Git → YADM)
  */
-async function detectVCS(): Promise<BaseVCSAdapter> {
+const detectVCS = async (): Promise<BaseVCSAdapter> => {
     // Check CLI flags from process.argv
     const hasGitFlag = process.argv.includes('--git');
     const hasYadmFlag = process.argv.includes('--yadm');
@@ -186,24 +188,64 @@ Solutions:
 • Navigate to an existing Jujutsu, Git, or YADM repository
 • Set FORCE_GIT="true" environment variable to force Git detection
 • Set forceGit=true in config file to prefer Git detection`);
-}
+};
 
 /**
  * Get the VCS adapter (cached after first detection)
  */
-async function getVCSAdapter(): Promise<BaseVCSAdapter> {
+const getVCSAdapter = async (): Promise<BaseVCSAdapter> => {
     if (!vcsAdapter) {
         vcsAdapter = await detectVCS();
     }
     return vcsAdapter;
-}
+};
 
 /**
  * Reset VCS adapter cache (useful for testing)
  */
-export function resetVCSAdapter(): void {
+export const resetVCSAdapter = (): void => {
     vcsAdapter = null;
-}
+};
+
+/**
+ * Reset diff config cache (useful for testing)
+ */
+export const resetDiffConfigCache = (): void => {
+    cachedDiffContext = null;
+};
+
+let cachedDiffContext: number | null = null;
+
+/**
+ * Resolve diffContext from the global config file (cached after first call).
+ */
+const resolveDiffContext = async (): Promise<number> => {
+    if (cachedDiffContext !== null) {
+        return cachedDiffContext;
+    }
+    try {
+        const config = await getConfig({});
+        cachedDiffContext = config.diffContext;
+    } catch {
+        cachedDiffContext = DEFAULT_DIFF_CONTEXT;
+    }
+    return cachedDiffContext;
+};
+
+/**
+ * Apply diff compression and attach stats to the result.
+ * The `compressDiff` function handles mode=none internally, so no pre-check needed.
+ */
+export const applyDiffCompression = (diff: VCSDiff, compressionConfig: DiffCompressionConfig): VCSDiff => {
+    const { diff: compressed, stats } = compressDiff(diff.diff, compressionConfig);
+
+    // No compression applied — return original without stats
+    if (compressed === diff.diff) {
+        return diff;
+    }
+
+    return { ...diff, diff: compressed, compression: stats };
+};
 
 // Backward compatible exports
 export const assertGitRepo = async (): Promise<string> => {
@@ -213,7 +255,12 @@ export const assertGitRepo = async (): Promise<string> => {
 
 export const getStagedDiff = async (excludeFiles?: string[], exclude?: string[]): Promise<GitDiff | null> => {
     const adapter = await getVCSAdapter();
-    return adapter.getStagedDiff(excludeFiles, exclude);
+    const diffContext = await resolveDiffContext();
+    const diff = await adapter.getStagedDiff(excludeFiles, exclude, { diffContext });
+    if (!diff) {
+        return null;
+    }
+    return diff;
 };
 
 export const getCommitDiff = async (commitHash: string, excludeFiles?: string[], exclude?: string[]): Promise<GitDiff | null> => {
@@ -221,7 +268,12 @@ export const getCommitDiff = async (commitHash: string, excludeFiles?: string[],
     if (!adapter.getCommitDiff) {
         throw new KnownError(`Commit diff not supported for ${adapter.name}`);
     }
-    return adapter.getCommitDiff(commitHash, excludeFiles, exclude);
+    const diffContext = await resolveDiffContext();
+    const diff = await adapter.getCommitDiff(commitHash, excludeFiles, exclude, { diffContext });
+    if (!diff) {
+        return null;
+    }
+    return diff;
 };
 
 export const getCommentChar = async (): Promise<string> => {
@@ -229,28 +281,11 @@ export const getCommentChar = async (): Promise<string> => {
     return adapter.getCommentChar();
 };
 
-/**
- * Truncate diff to a maximum character length to prevent exceeding model context windows.
- * Truncation happens at line boundaries to avoid cutting in the middle of a diff hunk.
- * Returns { diff, truncated } where truncated indicates if truncation occurred.
- */
-export const truncateDiff = (diff: string, maxChars: number): { diff: string; truncated: boolean } => {
-    if (!maxChars || maxChars <= 0 || diff.length <= maxChars) {
-        return { diff, truncated: false };
-    }
-
-    // Find the last newline before the limit to avoid cutting mid-line
-    const cutoff = diff.lastIndexOf('\n', maxChars);
-    const truncatedDiff = cutoff > 0 ? diff.slice(0, cutoff) : diff.slice(0, maxChars);
-    return {
-        diff: `${truncatedDiff}\n\n[diff truncated — original was ${diff.length.toLocaleString()} characters]`,
-        truncated: true,
-    };
-};
-
 export const getDetectedMessage = (staged: GitDiff): string => {
-    // Use the static method from base adapter
-    return `Detected ${staged.files.length.toLocaleString()} changed file${staged.files.length > 1 ? 's' : ''} (${staged.diff.length.toLocaleString()} characters)`;
+    const fileCount = staged.files.length.toLocaleString();
+    const fileSuffix = staged.files.length > 1 ? 's' : '';
+    const charCount = staged.diff.length.toLocaleString();
+    return `Detected ${fileCount} changed file${fileSuffix} (${charCount} characters)`;
 };
 
 export const getDetectedCommit = (files: string[]): string => {

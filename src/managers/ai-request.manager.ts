@@ -4,7 +4,8 @@ import { Observable, catchError, from, mergeMap, switchMap } from 'rxjs';
 import { AIServiceFactory } from '../services/ai/ai-service.factory.js';
 import { ProviderRegistry, createErrorChoice, withProviderMetadata } from '../services/ai/provider-registry.js';
 import { ModelName, ValidConfig } from '../utils/config.js';
-import { GitDiff } from '../utils/vcs.js';
+import { DiffCompressionConfig } from '../utils/diff-compressor.js';
+import { GitDiff, applyDiffCompression } from '../utils/vcs.js';
 
 export class AIRequestManager {
     constructor(
@@ -12,6 +13,19 @@ export class AIRequestManager {
         private readonly stagedDiff: GitDiff,
         private readonly branchName: string = ''
     ) {}
+
+    /**
+     * Apply per-model diff compression based on model config.
+     * Falls back to raw diff if model has no compression settings.
+     */
+    private getDiffForModel = (modelConfig: ValidConfig[ModelName]): GitDiff => {
+        const compressionConfig: DiffCompressionConfig = {
+            mode: modelConfig.diffCompression || 'none',
+            maxHunkLines: modelConfig.maxHunkLines || 0,
+            maxDiffLines: modelConfig.maxDiffLines || 0,
+        };
+        return applyDiffCompression(this.stagedDiff, compressionConfig);
+    };
 
     /**
      * Safely extract hostname from URL, returning fallback on invalid URLs
@@ -58,15 +72,17 @@ export class AIRequestManager {
         }
 
         // Use Provider Registry for built-in providers
+        const modelDiff = this.getDiffForModel(config);
         return ProviderRegistry.createRequest$(
             ai,
             {
                 config: { ...config, model },
-                stagedDiff: this.stagedDiff,
+                stagedDiff: modelDiff,
                 keyName: model as ModelName,
                 branchName: this.branchName,
                 statsEnabled: this.config.useStats,
                 statsDays: this.config.statsDays,
+                modelNameDisplay: this.config.modelNameDisplay,
             },
             requestType
         );
@@ -81,6 +97,7 @@ export class AIRequestManager {
         const providerName = this.extractProviderName(config.url);
 
         // Lazy-load OpenAICompatibleService to avoid importing openai SDK at startup
+        const modelDiff = this.getDiffForModel(config);
         return from(import('../services/ai/openai-compatible.service.js')).pipe(
             switchMap(({ OpenAICompatibleService }) => {
                 const service = AIServiceFactory.create(OpenAICompatibleService, {
@@ -90,9 +107,10 @@ export class AIRequestManager {
                         path: config.path || '',
                         model,
                     },
-                    stagedDiff: this.stagedDiff,
+                    stagedDiff: modelDiff,
                     keyName: model as ModelName,
                     branchName: this.branchName,
+                    modelNameDisplay: this.config.modelNameDisplay,
                 });
 
                 const request$ = requestType === 'commit' ? service.generateCommitMessage$() : service.generateCodeReview$();

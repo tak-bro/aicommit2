@@ -7,6 +7,8 @@ import ora, { Ora } from 'ora';
 
 import { getDetectedMessage } from '../utils/vcs.js';
 
+import type { DiffCompressionStats } from '../utils/diff-compressor.js';
+
 const LARGE_DIFF_THRESHOLD_BYTES = 100_000;
 
 export class ConsoleManager {
@@ -45,18 +47,35 @@ export class ConsoleManager {
         spinner.clear();
     }
 
-    printStagedFiles(staged: { files: string[]; diff: string }) {
+    printStagedFiles(staged: { files: string[]; diff: string }, compressionStats?: DiffCompressionStats) {
         const diffSizeBytes = Buffer.byteLength(staged.diff, 'utf8');
         const diffSize = this.formatBytes(diffSizeBytes);
-        console.log(chalk.bold.green('✔ ') + chalk.bold(`${getDetectedMessage(staged)}`) + chalk.dim(` (${diffSize})`) + chalk.bold(':'));
+        const detectedMsg = getDetectedMessage(staged);
+        const compressionInfo = this.formatCompressionStats(compressionStats);
+
+        console.log(
+            chalk.bold.green('✔ ') +
+                chalk.bold(detectedMsg) +
+                chalk.dim(` (${diffSize})`) +
+                (compressionInfo ? chalk.cyan(` ${compressionInfo}`) : '') +
+                chalk.bold(':')
+        );
         console.log(`${staged.files.map(file => `     ${file}`).join('\n')}\n`);
 
         const isLargeDiff = diffSizeBytes > LARGE_DIFF_THRESHOLD_BYTES;
-        if (isLargeDiff) {
+        if (isLargeDiff && !compressionStats) {
             console.log(chalk.yellow(`⚠ Large diff detected (${diffSize}). This may increase processing time and costs.`));
-            console.log(chalk.dim(`  Consider using --exclude to filter large files.\n`));
+            console.log(chalk.dim(`  Consider using --exclude to filter large files or diffCompression=compact.\n`));
         }
     }
+
+    private formatCompressionStats = (stats?: DiffCompressionStats): string | null => {
+        if (!stats || stats.originalChars === stats.compressedChars) {
+            return null;
+        }
+        const ratio = Math.round((1 - stats.compressedChars / stats.originalChars) * 100);
+        return `[compact: ${stats.originalChars.toLocaleString()} → ${stats.compressedChars.toLocaleString()} chars, ${ratio}% saved]`;
+    };
 
     private formatBytes = (bytes: number): string => {
         if (bytes < 1024) {

@@ -1,7 +1,8 @@
 import { execa } from 'execa';
 
+import { DEFAULT_DIFF_CONTEXT } from '../diff-compressor.js';
 import { KnownError } from '../error.js';
-import { BaseVCSAdapter, CommitOptions, VCSDiff } from './base.adapter.js';
+import { BaseVCSAdapter, CommitOptions, DiffOptions, VCSDiff } from './base.adapter.js';
 
 export class GitAdapter extends BaseVCSAdapter {
     name = 'git' as const;
@@ -44,8 +45,9 @@ export class GitAdapter extends BaseVCSAdapter {
         '*.lockb',
     ].map(this.excludeFromDiff);
 
-    async getStagedDiff(excludeFiles?: string[], exclude?: string[]): Promise<VCSDiff | null> {
-        const diffCached = ['diff', '--cached', '--diff-algorithm=minimal'];
+    async getStagedDiff(excludeFiles?: string[], exclude?: string[], options?: DiffOptions): Promise<VCSDiff | null> {
+        const contextArg = options?.diffContext !== undefined ? `-U${options.diffContext}` : `-U${DEFAULT_DIFF_CONTEXT}`;
+        const diffCached = ['diff', '--cached', '--diff-algorithm=minimal', contextArg];
         const userExcludeArgs = [
             ...(excludeFiles ? excludeFiles.map(this.excludeFromDiff) : []),
             ...(exclude ? exclude.map(this.excludeFromDiff) : []),
@@ -106,7 +108,8 @@ export class GitAdapter extends BaseVCSAdapter {
         };
     }
 
-    async getCommitDiff(commitHash: string, excludeFiles?: string[], exclude?: string[]): Promise<VCSDiff | null> {
+    async getCommitDiff(commitHash: string, excludeFiles?: string[], exclude?: string[], options?: DiffOptions): Promise<VCSDiff | null> {
+        const contextArg = options?.diffContext !== undefined ? `-U${options.diffContext}` : `-U${DEFAULT_DIFF_CONTEXT}`;
         const userExcludeArgs = [
             ...(excludeFiles ? excludeFiles.map(this.excludeFromDiff) : []),
             ...(exclude ? exclude.map(this.excludeFromDiff) : []),
@@ -116,7 +119,7 @@ export class GitAdapter extends BaseVCSAdapter {
         // Run file list, diff content, and binary detection in parallel
         const [filesResult, diffResult, numstatResult] = await Promise.all([
             execa('git', ['diff-tree', '-r', '--no-commit-id', '--name-only', commitHash, ...defaultExcludeArgs]),
-            execa('git', ['show', commitHash, '--', ...defaultExcludeArgs]),
+            execa('git', ['show', contextArg, commitHash, '--', ...defaultExcludeArgs]),
             execa('git', ['diff-tree', '-r', '--numstat', commitHash, ...userExcludeArgs]),
         ]);
 

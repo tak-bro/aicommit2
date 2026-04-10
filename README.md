@@ -36,6 +36,7 @@ ______________________________________________________________________
   - [Git Hooks](#git-hooks)
 - [Configuration](#configuration)
 - [General Settings](#general-settings)
+- [Diff Compression](#diff-compression)
 - [Logging](#logging)
 - [Custom Prompt Template](#custom-prompt-template)
 - [Code Review](#code-review)
@@ -82,6 +83,7 @@ _aicommit2_ automatically generates commit messages using AI. It supports [Git](
 - **[Code Review](#code-review)**: AI-powered structured code review with severity levels before committing
 - **[Git Hook Integration](#git-hooks)**: Can be used as a prepare-commit-msg hook
 - **[Custom Prompt](#custom-prompt-template)**: Supports user-defined system prompt templates
+- **[Diff Compression](#diff-compression)**: Reduces token usage by 30-60% with smart diff compression
 
 ## Supported Providers
 
@@ -928,7 +930,12 @@ For detailed information about all available settings, see the [General Settings
 | `useStats`             | Enable usage statistics tracking                                    | true         |
 | `statsDays`            | Days to retain statistics data (auto-cleanup)                       | 30           |
 | `systemPromptPath`     | Path to custom system prompt file                                   | -            |
+| `modelNameDisplay`     | Model name display in CLI labels (`none` / `short` / `full`)       | short        |
 | `stream`               | **Experimental.** Enable streaming for real-time commit message generation | false        |
+| `diffCompression`      | Diff compression mode (`none` / `compact`)                          | none         |
+| `maxHunkLines`         | Max lines per hunk in compressed diff (0 = unlimited)               | 0            |
+| `maxDiffLines`         | Max total lines in compressed diff (0 = unlimited)                  | 0            |
+| `diffContext`           | Number of context lines in git diff (0-10)                          | 3            |
 
 ```bash
 # Example: Set settings for a specific model
@@ -955,6 +962,33 @@ aicommit2 config set ANTHROPIC.includeBody=true
 |     **Github Models**     |    ✓    |      ✓      |     ✓     |  ✓   |        |
 |        **Ollama**         |    ✓    |      ✓      |           |  ✓   |   ✓    |
 | **OpenAI API-Compatible** |    ✓    |      ✓      |     ✓     |  ✓   |   ✓    |
+
+## Diff Compression
+
+aicommit2 can compress git diffs before sending to AI providers, reducing token usage by 30-60%. Inspired by [RTK](https://github.com/rtk-ai/rtk)'s token optimization techniques.
+
+When enabled (`compact` mode), the compressor:
+- Strips diff metadata headers (`diff --git`, `index`, `---/+++`)
+- Minimizes context lines (keeps only lines adjacent to changes, replaces distant context with `...`)
+- Caps large hunks and total diff size to protect model context windows
+
+```bash
+# Enable diff compression globally
+aicommit2 config set diffCompression=compact
+
+# Or per model — useful for models with smaller context windows
+aicommit2 config set OLLAMA.diffCompression=compact
+aicommit2 config set OLLAMA.maxHunkLines=100
+aicommit2 config set OLLAMA.maxDiffLines=500
+
+# Tune compression settings
+aicommit2 config set maxHunkLines=200   # max lines per hunk (0=unlimited)
+aicommit2 config set maxDiffLines=1000  # max total diff lines (0=unlimited)
+aicommit2 config set diffContext=1      # reduce git context lines (default: 3)
+
+# Disable compression (default)
+aicommit2 config set diffCompression=none
+```
 
 ## Logging
 
@@ -1234,6 +1268,8 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/denniswebb"><img src="https://avatars.githubusercontent.com/denniswebb" width="100px;" alt=""/><br /><sub><b>@denniswebb</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=denniswebb" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/peinan"><img src="https://avatars.githubusercontent.com/peinan" width="100px;" alt=""/><br /><sub><b>@peinan</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/issues/215" title="Documentation">📖</a></td>
     <td align="center"><a href="https://github.com/totoroot"><img src="https://avatars.githubusercontent.com/totoroot" width="100px;" alt=""/><br /><sub><b>@totoroot</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=totoroot" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/lawrence3699"><img src="https://avatars.githubusercontent.com/lawrence3699" width="100px;" alt=""/><br /><sub><b>@lawrence3699</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=lawrence3699" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/atlet99"><img src="https://avatars.githubusercontent.com/atlet99" width="100px;" alt=""/><br /><sub><b>@atlet99</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=atlet99" title="Code">💻</a></td>
   </tr>
 </table>
 <!-- markdownlint-restore -->

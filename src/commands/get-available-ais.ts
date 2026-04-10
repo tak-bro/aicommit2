@@ -3,6 +3,36 @@ import { BUILTIN_SERVICES, BuiltinService, ModelName, RawConfig, ValidConfig } f
 
 const isNonEmptyString = (value: unknown): value is string => typeof value === 'string' && value.trim().length > 0;
 
+const isCopilotSdkInstalled = (): boolean => {
+    try {
+        const resolve = typeof require !== 'undefined' ? require.resolve : undefined;
+        if (resolve) {
+            resolve('@github/copilot-sdk');
+            return true;
+        }
+        // ESM fallback: import.meta.resolve is sync in Node 20+
+        if (typeof import.meta.resolve === 'function') {
+            import.meta.resolve('@github/copilot-sdk');
+            return true;
+        }
+        return false;
+    } catch {
+        return false;
+    }
+};
+
+let copilotSdkInstalled: boolean | undefined;
+
+const hasCopilotSdkAvailable = (value: RawConfig): boolean => {
+    if (!hasConfiguredModels(value)) {
+        return false;
+    }
+    if (copilotSdkInstalled === undefined) {
+        copilotSdkInstalled = isCopilotSdkInstalled();
+    }
+    return copilotSdkInstalled;
+};
+
 const hasConfiguredModels = (value: RawConfig): boolean => {
     const models = Array.isArray(value.model)
         ? (value.model as string[])
@@ -52,7 +82,7 @@ export const getAvailableAIs = (config: ValidConfig, requestType: RequestType): 
                         return !!value && hasConfiguredModels(value);
                     }
                     if (key === 'COPILOT_SDK') {
-                        return !!value && hasConfiguredModels(value);
+                        return !!value && hasCopilotSdkAvailable(value);
                     }
                     if (key === 'HUGGINGFACE') {
                         return !!value && !!value.cookie;

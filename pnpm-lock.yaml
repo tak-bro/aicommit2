@@ -20,9 +20,6 @@ importers:
       '@dqbd/tiktoken':
         specifier: ^1.0.21
         version: 1.0.21
-      '@github/copilot-sdk':
-        specifier: 0.2.0
-        version: 0.2.0
       '@google/generative-ai':
         specifier: ^0.24.1
         version: 0.24.1
@@ -216,6 +213,10 @@ importers:
       undici-types:
         specifier: ^7.10.0
         version: 7.10.0
+    optionalDependencies:
+      '@github/copilot-sdk':
+        specifier: 0.2.0
+        version: 0.2.0
 
 packages:
 
@@ -1582,49 +1583,41 @@ packages:
     resolution: {integrity: sha512-jon9M7DKRLGZ9VYSkFMflvNqu9hDtOCEnO2QAryFWgT6o6AXU8du56V7YqnaLKr6rAbZBWYsYpikF226v423QA==}
     cpu: [arm64]
     os: [linux]
-    libc: [glibc]
 
   '@unrs/resolver-binding-linux-arm64-musl@1.7.2':
     resolution: {integrity: sha512-c8Cg4/h+kQ63pL43wBNaVMmOjXI/X62wQmru51qjfTvI7kmCy5uHTJvK/9LrF0G8Jdx8r34d019P1DVJmhXQpA==}
     cpu: [arm64]
     os: [linux]
-    libc: [musl]
 
   '@unrs/resolver-binding-linux-ppc64-gnu@1.7.2':
     resolution: {integrity: sha512-A+lcwRFyrjeJmv3JJvhz5NbcCkLQL6Mk16kHTNm6/aGNc4FwPHPE4DR9DwuCvCnVHvF5IAd9U4VIs/VvVir5lg==}
     cpu: [ppc64]
     os: [linux]
-    libc: [glibc]
 
   '@unrs/resolver-binding-linux-riscv64-gnu@1.7.2':
     resolution: {integrity: sha512-hQQ4TJQrSQW8JlPm7tRpXN8OCNP9ez7PajJNjRD1ZTHQAy685OYqPrKjfaMw/8LiHCt8AZ74rfUVHP9vn0N69Q==}
     cpu: [riscv64]
     os: [linux]
-    libc: [glibc]
 
   '@unrs/resolver-binding-linux-riscv64-musl@1.7.2':
     resolution: {integrity: sha512-NoAGbiqrxtY8kVooZ24i70CjLDlUFI7nDj3I9y54U94p+3kPxwd2L692YsdLa+cqQ0VoqMWoehDFp21PKRUoIQ==}
     cpu: [riscv64]
     os: [linux]
-    libc: [musl]
 
   '@unrs/resolver-binding-linux-s390x-gnu@1.7.2':
     resolution: {integrity: sha512-KaZByo8xuQZbUhhreBTW+yUnOIHUsv04P8lKjQ5otiGoSJ17ISGYArc+4vKdLEpGaLbemGzr4ZeUbYQQsLWFjA==}
     cpu: [s390x]
     os: [linux]
-    libc: [glibc]
 
   '@unrs/resolver-binding-linux-x64-gnu@1.7.2':
     resolution: {integrity: sha512-dEidzJDubxxhUCBJ/SHSMJD/9q7JkyfBMT77Px1npl4xpg9t0POLvnWywSk66BgZS/b2Hy9Y1yFaoMTFJUe9yg==}
     cpu: [x64]
     os: [linux]
-    libc: [glibc]
 
   '@unrs/resolver-binding-linux-x64-musl@1.7.2':
     resolution: {integrity: sha512-RvP+Ux3wDjmnZDT4XWFfNBRVG0fMsc+yVzNFUqOflnDfZ9OYujv6nkh+GOr+watwrW4wdp6ASfG/e7bkDradsw==}
     cpu: [x64]
     os: [linux]
-    libc: [musl]
 
   '@unrs/resolver-binding-wasm32-wasi@1.7.2':
     resolution: {integrity: sha512-y797JBmO9IsvXVRCKDXOxjyAE4+CcZpla2GSoBQ33TVb3ILXuFnMrbR/QQZoauBYeOFuu4w3ifWLw52sdHGz6g==}
@@ -5646,6 +5639,7 @@ snapshots:
       '@github/copilot': 1.0.15
       vscode-jsonrpc: 8.2.1
       zod: 4.3.6
+    optional: true
 
   '@github/copilot-win32-arm64@1.0.15':
     optional: true
@@ -5661,6 +5655,7 @@ snapshots:
       '@github/copilot-linux-x64': 1.0.15
       '@github/copilot-win32-arm64': 1.0.15
       '@github/copilot-win32-x64': 1.0.15
+    optional: true
 
   '@google/generative-ai@0.24.1': {}
 
@@ -10180,7 +10175,8 @@ snapshots:
       spdx-correct: 3.2.0
       spdx-expression-parse: 3.0.1
 
-  vscode-jsonrpc@8.2.1: {}
+  vscode-jsonrpc@8.2.1:
+    optional: true
 
   vue-eslint-parser@9.4.3(eslint@8.57.1):
     dependencies:
@@ -10343,4 +10339,5 @@ snapshots:
 
   yoctocolors@2.1.1: {}
 
-  zod@4.3.6: {}
+  zod@4.3.6:
+    optional: true

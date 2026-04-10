@@ -4,7 +4,7 @@ import path from 'path';
 import { execa } from 'execa';
 
 import { KnownError } from '../error.js';
-import { BaseVCSAdapter, CommitOptions, VCSDiff } from './base.adapter.js';
+import { BaseVCSAdapter, CommitOptions, DiffOptions, VCSDiff } from './base.adapter.js';
 
 export class JujutsuAdapter extends BaseVCSAdapter {
     name = 'jujutsu' as const;
@@ -83,7 +83,8 @@ export class JujutsuAdapter extends BaseVCSAdapter {
         '*.lockb',
     ];
 
-    async getStagedDiff(excludeFiles?: string[], exclude?: string[]): Promise<VCSDiff | null> {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    async getStagedDiff(excludeFiles?: string[], exclude?: string[], _options?: DiffOptions): Promise<VCSDiff | null> {
         // In Jujutsu, there's no staging area, so we diff against the parent
         // Use --git flag for Git-compatible output format
         try {
@@ -213,7 +214,8 @@ export class JujutsuAdapter extends BaseVCSAdapter {
         }
     }
 
-    async getCommitDiff(commitHash: string, excludeFiles?: string[], exclude?: string[]): Promise<VCSDiff | null> {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    async getCommitDiff(commitHash: string, excludeFiles?: string[], exclude?: string[], _options?: DiffOptions): Promise<VCSDiff | null> {
         // Only use user-provided exclusions for commit diff
         const userExclusions = [
             ...(excludeFiles ? excludeFiles.map(this.excludeFromDiff) : []),

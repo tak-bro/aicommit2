@@ -13,7 +13,15 @@ import { getBranchName, getStagedDiff } from '../utils/vcs.js';
 const args = process.argv.slice(2).filter(arg => !arg.startsWith('--pre-commit'));
 const [messageFilePath, commitSource] = args;
 
-export default (verbose = false) =>
+export default (
+    locale: string | undefined,
+    generate: number | undefined,
+    excludeFiles: string[],
+    commitType: string | undefined,
+    prompt: string | undefined,
+    includeBody: boolean | undefined,
+    verbose: boolean
+) =>
     (async () => {
         if (!messageFilePath) {
             throw new KnownError('Commit message file path is missing. This file should be called from the "pre-commit framework"');
@@ -34,12 +42,19 @@ export default (verbose = false) =>
         const consoleManager = new ConsoleManager();
         consoleManager.printTitle();
 
-        const cliOverrides: RawConfig = {};
+        const configOverrides: RawConfig = {
+            ...(locale && { locale }),
+            ...(generate != null && { generate: generate.toString() }),
+            ...(commitType && { type: commitType }),
+            ...(prompt && { systemPrompt: prompt }),
+            ...(includeBody === true && { includeBody: 'true' }),
+        };
+
         if (verbose) {
-            cliOverrides.logLevel = 'verbose';
+            configOverrides.logLevel = 'verbose';
         }
 
-        const config = await getConfig(cliOverrides);
+        const config = await getConfig(configOverrides, excludeFiles);
         if (config.systemPromptPath) {
             try {
                 await fs.readFile(path.resolve(config.systemPromptPath), 'utf-8');
