@@ -1,3 +1,19 @@
+## [2.5.12](https://github.com/tak-bro/aicommit2/compare/v2.5.11...v2.5.12) (2026-04-10)
+
+
+### Bug Fixes
+
+* move @github/copilot-sdk to optionalDependencies for Homebrew compatibility ([8cd9d20](https://github.com/tak-bro/aicommit2/commit/8cd9d20e5465a5952ffccb6f9f98369550e638c2))
+
+
+### Features
+
+* add model name display configuration ([7cd38fa](https://github.com/tak-bro/aicommit2/commit/7cd38fa720c93bf8bb017daaee2ca280a1f72c27))
+* add modelNameDisplay configuration option ([77d6e09](https://github.com/tak-bro/aicommit2/commit/77d6e099daf51fc3bf6c4bcde6091bab0d3ac615))
+* add per-model diff compression settings ([3fe1369](https://github.com/tak-bro/aicommit2/commit/3fe1369032d24f255baf783a4b062808ae32408e))
+* add support for diff compression ([429803c](https://github.com/tak-bro/aicommit2/commit/429803cb5d85f6627c33889a1eddba515abcda90))
+* introduce diff compression utility ([85d2f1c](https://github.com/tak-bro/aicommit2/commit/85d2f1c2136d8549882289601dddd32fbf144ee5))
+
 ## [2.5.11](https://github.com/tak-bro/aicommit2/compare/v2.5.10...v2.5.11) (2026-04-09)
 
 
