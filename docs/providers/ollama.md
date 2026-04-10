@@ -68,7 +68,6 @@ aicommit2 config set OLLAMA.model="codellama" \
 | `key`       | Authentication key                                          | -                        |
 | `numCtx`    | The maximum number of tokens the model can process at once  | 2048                     |
 | `maxTokens`    | The maximum number of output tokens (maps to `num_predict`) | -1 (infinite generation) |
-| `maxDiffSize`  | Max characters of diff sent to AI (0 = no limit)            | 0                        |
 
 ## Configuration
 
@@ -138,16 +137,6 @@ The maximum number of output tokens to generate. This maps to Ollama's `num_pred
 
 ```sh
 aicommit2 config set OLLAMA.maxTokens=4000
-```
-
-#### OLLAMA.maxDiffSize
-
-Default: `0` (no limit)
-
-Limit the number of characters in the diff sent to Ollama. Local models with small context windows may produce malformed responses when the diff is too large. Set this to truncate the diff before sending. Other providers are not affected.
-
-```sh
-aicommit2 config set OLLAMA.maxDiffSize=20000
 ```
 
 ## Loading Multiple Ollama Models

@@ -13,6 +13,7 @@ describe('aicommit2', ({ runTestSuite }) => {
     runTestSuite(import('./specs/vcs/index.js'));
     runTestSuite(import('./specs/managers/index.js'));
     runTestSuite(import('./specs/utils/index.js'));
+    runTestSuite(import('./specs/diff-compressor.js'));
     runTestSuite(import('./specs/doctor.js'));
     runTestSuite(import('./specs/stats.js'));
 });

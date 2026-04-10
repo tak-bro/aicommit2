@@ -1,3 +1,9 @@
+// Suppress Node.js ExperimentalWarning (e.g., node:sqlite from Copilot SDK)
+// Setting this env var before module loading prevents the C++ layer from emitting warnings to stderr
+if (!process.env.NODE_NO_WARNINGS) {
+    process.env.NODE_NO_WARNINGS = '1';
+}
+
 import { cli } from 'cleye';
 
 import pkg from '../package.json';
@@ -167,7 +173,15 @@ cli(
         await initializeLogger(config);
         logger.info(`aicommit2 version: ${version}`);
         if (argv.flags['pre-commit']) {
-            preCommitHook(argv.flags.verbose);
+            preCommitHook(
+                argv.flags.locale,
+                argv.flags.generate,
+                argv.flags.exclude,
+                argv.flags.type,
+                argv.flags.prompt,
+                argv.flags['include-body'],
+                argv.flags.verbose
+            );
             return;
         }
 

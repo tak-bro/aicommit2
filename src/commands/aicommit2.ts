@@ -23,7 +23,15 @@ import { ModelName, RawConfig, applyDisableLowerCaseToConfig, applyIncludeBodyTo
 import { ErrorCode, ErrorMessages } from '../utils/error-messages.js';
 import { KnownError, handleCliError } from '../utils/error.js';
 import { validateSystemPrompt } from '../utils/prompt.js';
-import { CommitOptions, assertGitRepo, getBranchName, getStagedDiff, getVCSName, commitChanges as vcsCommitChanges } from '../utils/vcs.js';
+import {
+    CommitOptions,
+    applyDiffCompression,
+    assertGitRepo,
+    getBranchName,
+    getStagedDiff,
+    getVCSName,
+    commitChanges as vcsCommitChanges,
+} from '../utils/vcs.js';
 
 import type { Subscription } from 'rxjs';
 
@@ -147,7 +155,12 @@ export default async (
         }
 
         if (!isJsonMode) {
-            consoleManager.printStagedFiles(staged);
+            const preview = applyDiffCompression(staged, {
+                mode: config.diffCompression,
+                maxHunkLines: config.maxHunkLines,
+                maxDiffLines: config.maxDiffLines,
+            });
+            consoleManager.printStagedFiles(staged, preview.compression);
         }
 
         const availableAIs = getAvailableAIs(config, 'commit');

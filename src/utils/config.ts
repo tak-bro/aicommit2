@@ -4,6 +4,7 @@ import path from 'path';
 
 import ini from 'ini';
 
+import { DEFAULT_DIFF_COMPRESSION_CONFIG, DEFAULT_DIFF_CONTEXT } from './diff-compressor.js';
 import { KnownError } from './error.js';
 import { fileExists } from './fs.js';
 import { flattenDeep } from './utils.js';
@@ -334,6 +335,36 @@ const generalConfigParsers = {
         parseAssert('modelNameDisplay', /^(?:none|short|full)$/.test(modelNameDisplay), 'Must be none, short, or full');
         return modelNameDisplay as 'none' | 'short' | 'full';
     },
+    diffCompression: (diffCompression?: string) => {
+        if (!diffCompression) {
+            return DEFAULT_DIFF_COMPRESSION_CONFIG.mode;
+        }
+        parseAssert('diffCompression', /^(?:none|compact)$/.test(diffCompression), 'Must be none or compact');
+        return diffCompression as 'none' | 'compact';
+    },
+    maxHunkLines: (maxHunkLines?: string) => {
+        if (!maxHunkLines) {
+            return 0; // 0 = unlimited
+        }
+        parseAssert('maxHunkLines', /^\d+$/.test(maxHunkLines), 'Must be an integer');
+        return Number(maxHunkLines);
+    },
+    maxDiffLines: (maxDiffLines?: string) => {
+        if (!maxDiffLines) {
+            return 0; // 0 = unlimited
+        }
+        parseAssert('maxDiffLines', /^\d+$/.test(maxDiffLines), 'Must be an integer');
+        return Number(maxDiffLines);
+    },
+    diffContext: (diffContext?: string) => {
+        if (!diffContext) {
+            return DEFAULT_DIFF_CONTEXT;
+        }
+        parseAssert('diffContext', /^\d+$/.test(diffContext), 'Must be an integer');
+        const parsed = Number(diffContext);
+        parseAssert('diffContext', parsed >= 0 && parsed <= 10, 'Must be between 0 and 10');
+        return parsed;
+    },
     useStats: createBoolParser('useStats', true),
     statsDays: (statsDays?: string) => {
         if (!statsDays) {
@@ -384,6 +415,10 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         stream: generalConfigParsers.stream,
         watchMode: generalConfigParsers.watchMode,
         disableLowerCase: generalConfigParsers.disableLowerCase,
+        diffCompression: generalConfigParsers.diffCompression,
+        maxHunkLines: generalConfigParsers.maxHunkLines,
+        maxDiffLines: generalConfigParsers.maxDiffLines,
+        diffContext: generalConfigParsers.diffContext,
     },
     OPENROUTER: {
         key: (key?: string) => key || '',
@@ -424,6 +459,10 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         stream: generalConfigParsers.stream,
         watchMode: generalConfigParsers.watchMode,
         disableLowerCase: generalConfigParsers.disableLowerCase,
+        diffCompression: generalConfigParsers.diffCompression,
+        maxHunkLines: generalConfigParsers.maxHunkLines,
+        maxDiffLines: generalConfigParsers.maxDiffLines,
+        diffContext: generalConfigParsers.diffContext,
     },
     HUGGINGFACE: {
         cookie: (cookie?: string) => cookie || '',
@@ -452,6 +491,10 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         stream: generalConfigParsers.stream,
         watchMode: generalConfigParsers.watchMode,
         disableLowerCase: generalConfigParsers.disableLowerCase,
+        diffCompression: generalConfigParsers.diffCompression,
+        maxHunkLines: generalConfigParsers.maxHunkLines,
+        maxDiffLines: generalConfigParsers.maxDiffLines,
+        diffContext: generalConfigParsers.diffContext,
     },
     GEMINI: {
         key: (key?: string) => key || '',
@@ -481,6 +524,10 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         stream: generalConfigParsers.stream,
         watchMode: generalConfigParsers.watchMode,
         disableLowerCase: generalConfigParsers.disableLowerCase,
+        diffCompression: generalConfigParsers.diffCompression,
+        maxHunkLines: generalConfigParsers.maxHunkLines,
+        maxDiffLines: generalConfigParsers.maxDiffLines,
+        diffContext: generalConfigParsers.diffContext,
     },
     ANTHROPIC: {
         key: (key?: string) => key || '',
@@ -510,6 +557,10 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         stream: generalConfigParsers.stream,
         watchMode: generalConfigParsers.watchMode,
         disableLowerCase: generalConfigParsers.disableLowerCase,
+        diffCompression: generalConfigParsers.diffCompression,
+        maxHunkLines: generalConfigParsers.maxHunkLines,
+        maxDiffLines: generalConfigParsers.maxDiffLines,
+        diffContext: generalConfigParsers.diffContext,
     },
     MISTRAL: {
         key: (key?: string) => key || '',
@@ -539,6 +590,10 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         stream: generalConfigParsers.stream,
         watchMode: generalConfigParsers.watchMode,
         disableLowerCase: generalConfigParsers.disableLowerCase,
+        diffCompression: generalConfigParsers.diffCompression,
+        maxHunkLines: generalConfigParsers.maxHunkLines,
+        maxDiffLines: generalConfigParsers.maxDiffLines,
+        diffContext: generalConfigParsers.diffContext,
     },
     CODESTRAL: {
         key: (key?: string) => key || '',
@@ -568,6 +623,10 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         stream: generalConfigParsers.stream,
         watchMode: generalConfigParsers.watchMode,
         disableLowerCase: generalConfigParsers.disableLowerCase,
+        diffCompression: generalConfigParsers.diffCompression,
+        maxHunkLines: generalConfigParsers.maxHunkLines,
+        maxDiffLines: generalConfigParsers.maxDiffLines,
+        diffContext: generalConfigParsers.diffContext,
     },
     OLLAMA: {
         model: (models?: string | string[]): string[] => {
@@ -626,15 +685,10 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         stream: generalConfigParsers.stream,
         watchMode: generalConfigParsers.watchMode,
         disableLowerCase: generalConfigParsers.disableLowerCase,
-        maxDiffSize: (maxDiffSize?: string) => {
-            if (!maxDiffSize) {
-                return 0; // 0 = no limit
-            }
-            parseAssert('OLLAMA.maxDiffSize', /^\d+$/.test(maxDiffSize), 'Must be an integer');
-            const parsed = Number(maxDiffSize);
-            parseAssert('OLLAMA.maxDiffSize', parsed >= 1000, 'Must be at least 1000 characters');
-            return parsed;
-        },
+        diffCompression: generalConfigParsers.diffCompression,
+        maxHunkLines: generalConfigParsers.maxHunkLines,
+        maxDiffLines: generalConfigParsers.maxDiffLines,
+        diffContext: generalConfigParsers.diffContext,
     },
     COHERE: {
         key: (key?: string) => key || '',
@@ -671,6 +725,10 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         stream: generalConfigParsers.stream,
         watchMode: generalConfigParsers.watchMode,
         disableLowerCase: generalConfigParsers.disableLowerCase,
+        diffCompression: generalConfigParsers.diffCompression,
+        maxHunkLines: generalConfigParsers.maxHunkLines,
+        maxDiffLines: generalConfigParsers.maxDiffLines,
+        diffContext: generalConfigParsers.diffContext,
     },
     GROQ: {
         key: (key?: string) => key || '',
@@ -700,6 +758,10 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         stream: generalConfigParsers.stream,
         watchMode: generalConfigParsers.watchMode,
         disableLowerCase: generalConfigParsers.disableLowerCase,
+        diffCompression: generalConfigParsers.diffCompression,
+        maxHunkLines: generalConfigParsers.maxHunkLines,
+        maxDiffLines: generalConfigParsers.maxDiffLines,
+        diffContext: generalConfigParsers.diffContext,
     },
     PERPLEXITY: {
         key: (key?: string) => key || '',
@@ -729,6 +791,10 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         stream: generalConfigParsers.stream,
         watchMode: generalConfigParsers.watchMode,
         disableLowerCase: generalConfigParsers.disableLowerCase,
+        diffCompression: generalConfigParsers.diffCompression,
+        maxHunkLines: generalConfigParsers.maxHunkLines,
+        maxDiffLines: generalConfigParsers.maxDiffLines,
+        diffContext: generalConfigParsers.diffContext,
     },
     DEEPSEEK: {
         key: (key?: string) => key || '',
@@ -759,6 +825,10 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         stream: generalConfigParsers.stream,
         watchMode: generalConfigParsers.watchMode,
         disableLowerCase: generalConfigParsers.disableLowerCase,
+        diffCompression: generalConfigParsers.diffCompression,
+        maxHunkLines: generalConfigParsers.maxHunkLines,
+        maxDiffLines: generalConfigParsers.maxDiffLines,
+        diffContext: generalConfigParsers.diffContext,
     },
     GITHUB_MODELS: {
         key: (key?: string) => key || '',
@@ -788,6 +858,10 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         stream: generalConfigParsers.stream,
         watchMode: generalConfigParsers.watchMode,
         disableLowerCase: generalConfigParsers.disableLowerCase,
+        diffCompression: generalConfigParsers.diffCompression,
+        maxHunkLines: generalConfigParsers.maxHunkLines,
+        maxDiffLines: generalConfigParsers.maxDiffLines,
+        diffContext: generalConfigParsers.diffContext,
     },
     COPILOT_SDK: {
         key: (key?: string) => key || '',
@@ -817,6 +891,10 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         stream: generalConfigParsers.stream,
         watchMode: generalConfigParsers.watchMode,
         disableLowerCase: generalConfigParsers.disableLowerCase,
+        diffCompression: generalConfigParsers.diffCompression,
+        maxHunkLines: generalConfigParsers.maxHunkLines,
+        maxDiffLines: generalConfigParsers.maxDiffLines,
+        diffContext: generalConfigParsers.diffContext,
     },
     BEDROCK: {
         key: (key?: string) => key || '',
@@ -908,6 +986,10 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         watchMode: generalConfigParsers.watchMode,
         disableLowerCase: generalConfigParsers.disableLowerCase,
         inferenceParameters: createJsonObjectParser('BEDROCK.inferenceParameters'),
+        diffCompression: generalConfigParsers.diffCompression,
+        maxHunkLines: generalConfigParsers.maxHunkLines,
+        maxDiffLines: generalConfigParsers.maxDiffLines,
+        diffContext: generalConfigParsers.diffContext,
     },
 };
 
@@ -1345,4 +1427,8 @@ const createConfigParser = (serviceName: string) => ({
     watchMode: generalConfigParsers.watchMode,
     disableLowerCase: generalConfigParsers.disableLowerCase,
     autoCopy: generalConfigParsers.autoCopy,
+    diffCompression: generalConfigParsers.diffCompression,
+    maxHunkLines: generalConfigParsers.maxHunkLines,
+    maxDiffLines: generalConfigParsers.maxDiffLines,
+    diffContext: generalConfigParsers.diffContext,
 });
