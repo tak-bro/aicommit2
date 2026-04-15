@@ -6,6 +6,7 @@ import { CommitType, ModelConfig, ModelName, ModelNameDisplay } from '../../util
 import { ErrorCode, ErrorCodeType, detectErrorCode, getPlainErrorMessage, httpStatusToErrorCode } from '../../utils/error-messages.js';
 import { logger } from '../../utils/logger.js';
 import { CommitContext, DEFAULT_PROMPT_OPTIONS, PromptOptions, generatePrompt, generateUserPrompt } from '../../utils/prompt.js';
+import { isReasoningCapableModel } from '../../utils/reasoning-models.js';
 import { IncrementalJsonParser } from '../../utils/stream-json-parser.js';
 import { getFirstWordsFrom, safeJsonParse } from '../../utils/utils.js';
 import { GitDiff } from '../../utils/vcs.js';
@@ -390,12 +391,13 @@ export abstract class AIService {
     }
 
     /**
-     * Build the system prompt for commit message generation.
-     * Shared across all streaming service implementations.
+     * Build PromptOptions with auto-detected reasoning model flag.
+     * Services can use this instead of constructing PromptOptions manually.
      */
-    protected buildCommitPrompt = (): string => {
-        const { systemPrompt, systemPromptPath, codeReviewPromptPath, locale, generate, type, maxLength } = this.params.config;
-        const promptOptions: PromptOptions = {
+    protected buildPromptOptions = (): PromptOptions => {
+        const { systemPrompt, systemPromptPath, codeReviewPromptPath, locale, generate, type, maxLength, model } = this.params.config;
+        const modelName = Array.isArray(model) ? model[0] || '' : String(model || '');
+        return {
             ...DEFAULT_PROMPT_OPTIONS,
             locale,
             maxLength,
@@ -405,8 +407,12 @@ export abstract class AIService {
             systemPromptPath,
             codeReviewPromptPath,
             vcs_branch: this.params.branchName || '',
+            isReasoning: isReasoningCapableModel(modelName),
         };
-        return generatePrompt(promptOptions);
+    };
+
+    protected buildCommitPrompt = (): string => {
+        return generatePrompt(this.buildPromptOptions());
     };
 
     /**

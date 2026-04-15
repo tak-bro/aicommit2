@@ -52,6 +52,46 @@ export default testSuite(({ describe }) => {
                 });
                 expect(result).toContain('Generate in ja language');
             });
+
+            test('should use reasoning prompt when isReasoning is true', () => {
+                const result = generatePrompt({ ...baseOptions, isReasoning: true });
+                expect(result).toContain('expert developer');
+                expect(result).toContain('primary intent');
+                expect(result).toContain('WHY');
+            });
+
+            test('should use default prompt when isReasoning is false', () => {
+                const result = generatePrompt({ ...baseOptions, isReasoning: false });
+                expect(result).toContain('Generate exactly');
+                expect(result).not.toContain('expert developer');
+            });
+
+            test('should use default prompt when isReasoning is not set', () => {
+                const result = generatePrompt(baseOptions);
+                expect(result).not.toContain('expert developer');
+            });
+
+            test('reasoning prompt should still include JSON format instructions', () => {
+                const result = generatePrompt({ ...baseOptions, isReasoning: true });
+                expect(result).toContain('JSON array');
+                expect(result).toContain('"subject"');
+                expect(result).toContain('"body"');
+            });
+
+            test('reasoning prompt should respect locale', () => {
+                const result = generatePrompt({ ...baseOptions, isReasoning: true, locale: 'ko' });
+                expect(result).toContain('ko');
+            });
+
+            test('custom systemPrompt should override reasoning prompt', () => {
+                const result = generatePrompt({
+                    ...baseOptions,
+                    isReasoning: true,
+                    systemPrompt: 'Custom override prompt',
+                });
+                expect(result).toContain('Custom override prompt');
+                expect(result).not.toContain('expert developer');
+            });
         });
 
         describe('generateUserPrompt', ({ test }) => {

@@ -9,7 +9,7 @@ import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.ser
 import { RequestType, logAIComplete, logAIError, logAIPayload, logAIPrompt, logAIRequest, logAIResponse } from '../../utils/ai-log.js';
 import { ModelConfig } from '../../utils/config.js';
 import { isVerboseLoggingEnabled } from '../../utils/logger.js';
-import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
+import { codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 import { safeJsonParse } from '../../utils/utils.js';
 
 const SERVICE_NAME = 'Bedrock';
@@ -248,17 +248,7 @@ export class BedrockService extends AIService {
         const model = config.model;
         const { logging, inferenceParameters } = config;
 
-        const promptOptions: PromptOptions = {
-            ...DEFAULT_PROMPT_OPTIONS,
-            locale: config.locale,
-            maxLength: config.maxLength,
-            type: config.type,
-            generate: config.generate,
-            systemPrompt: config.systemPrompt,
-            systemPromptPath: config.systemPromptPath,
-            codeReviewPromptPath: config.codeReviewPromptPath,
-        };
-
+        const promptOptions = this.buildPromptOptions();
         const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
         const userPrompt = this.buildUserPrompt(diff, requestType);
 

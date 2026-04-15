@@ -11,8 +11,10 @@ export interface PromptOptions {
     systemPrompt?: string;
     systemPromptPath?: string;
     codeReviewPromptPath?: string;
-    // VCS context placeholder
+    // Branch name, available as {vcs_branch} in custom prompt templates
     vcs_branch?: string;
+    // Whether the target model is a reasoning model (o1, o3, gpt-5, deepseek-reasoner, etc.)
+    isReasoning?: boolean;
 }
 
 export const DEFAULT_PROMPT_OPTIONS: PromptOptions = {
@@ -24,6 +26,7 @@ export const DEFAULT_PROMPT_OPTIONS: PromptOptions = {
     systemPromptPath: '',
     codeReviewPromptPath: '',
     vcs_branch: '',
+    isReasoning: false,
 };
 
 const commitTypeFormats: Record<CommitType, string> = {
@@ -266,6 +269,37 @@ const defaultPrompt = (promptOptions: PromptOptions) => {
         .join('\n');
 };
 
+/**
+ * Prompt optimized for reasoning models (o1, o3, gpt-5, deepseek-reasoner, etc.).
+ * These models perform internal chain-of-thought reasoning, so the prompt is:
+ * - Goal-oriented rather than rule-heavy
+ * - Emphasizes understanding intent (WHY) over surface-level changes (WHAT)
+ * - Fewer constraints to let the model reason freely
+ * - Still enforces output format for parsing
+ */
+const reasoningPrompt = (promptOptions: PromptOptions) => {
+    const { type, maxLength, generate, locale } = promptOptions;
+
+    return [
+        `You are an expert developer writing ${type || ''} commit message${generate !== 1 ? 's' : ''} from a git diff.`,
+        '',
+        `Analyze the diff to understand:`,
+        `1. What is the primary intent of these changes? (new feature, bug fix, refactor, etc.)`,
+        `2. What is the scope? (which module, component, or system is affected?)`,
+        `3. Are there any breaking changes or side effects?`,
+        '',
+        `Language: ${locale}`,
+        `Subject: max ${maxLength} chars, imperative mood, no period`,
+        type ? `Format: ${commitTypeFormats[type]}` : '',
+        type ? `Allowed types:${commitTypes[type]}` : '',
+        '',
+        `Generate exactly ${generate} commit message${generate !== 1 ? 's' : ''}.`,
+        `Prioritize explaining WHY the change was made over describing WHAT changed.`,
+    ]
+        .filter(Boolean)
+        .join('\n');
+};
+
 const finalPrompt = (type: CommitType, generate: number, locale: string) => {
     const localizedExample = getLocalizedExample(type, locale);
     const hasTypedFormat = type === 'conventional' || type === 'gitmoji';
@@ -289,21 +323,27 @@ const finalPrompt = (type: CommitType, generate: number, locale: string) => {
 };
 
 export const generatePrompt = (promptOptions: PromptOptions) => {
-    const { systemPrompt, systemPromptPath, type, generate, locale } = promptOptions;
+    const { systemPrompt, systemPromptPath, type, generate, locale, isReasoning } = promptOptions;
+    const suffix = finalPrompt(type, generate, locale);
+
+    // Custom system prompt takes priority (user override)
     if (systemPrompt) {
-        return `${parseTemplate(systemPrompt, promptOptions)}\n${finalPrompt(type, generate, locale)}`;
+        return `${parseTemplate(systemPrompt, promptOptions)}\n${suffix}`;
     }
 
-    if (!systemPromptPath) {
-        return `${defaultPrompt(promptOptions)}\n${finalPrompt(type, generate, locale)}`;
+    // Custom system prompt file
+    if (systemPromptPath) {
+        try {
+            const systemPromptTemplate = fs.readFileSync(resolvePromptPath(systemPromptPath), 'utf-8');
+            return `${parseTemplate(systemPromptTemplate, promptOptions)}\n${suffix}`;
+        } catch (error) {
+            // Fall through to default/reasoning prompt
+        }
     }
 
-    try {
-        const systemPromptTemplate = fs.readFileSync(resolvePromptPath(systemPromptPath), 'utf-8');
-        return `${parseTemplate(systemPromptTemplate, promptOptions)}\n${finalPrompt(type, generate, locale)}`;
-    } catch (error) {
-        return `${defaultPrompt(promptOptions)}\n${finalPrompt(type, generate, locale)}`;
-    }
+    // Use reasoning-optimized prompt for reasoning models, default otherwise
+    const basePrompt = isReasoning ? reasoningPrompt(promptOptions) : defaultPrompt(promptOptions);
+    return `${basePrompt}\n${suffix}`;
 };
 
 export const isValidConventionalMessage = (message: string): boolean => {

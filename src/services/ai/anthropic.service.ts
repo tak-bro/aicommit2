@@ -7,7 +7,7 @@ import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
 import { RequestType, logAIComplete, logAIError, logAIPayload, logAIPrompt, logAIRequest, logAIResponse } from '../../utils/ai-log.js';
 import { isClaudeFourModel } from '../../utils/anthropic.js';
-import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
+import { codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 
 export interface AnthropicServiceError extends AIServiceError {
     error?: {
@@ -98,33 +98,8 @@ export class AnthropicService extends AIService {
 
     private streamChunks = async (subject: Subject<string>): Promise<void> => {
         const diff = this.params.stagedDiff.diff;
-        const {
-            systemPrompt,
-            systemPromptPath,
-            codeReviewPromptPath,
-            logging,
-            temperature,
-            locale,
-            generate,
-            type,
-            maxLength,
-            maxTokens,
-            topP,
-            model,
-        } = this.params.config;
-
-        const promptOptions: PromptOptions = {
-            ...DEFAULT_PROMPT_OPTIONS,
-            locale,
-            maxLength,
-            type,
-            generate,
-            systemPrompt,
-            systemPromptPath,
-            codeReviewPromptPath,
-            vcs_branch: this.params.branchName || '',
-        };
-        const generatedSystemPrompt = generatePrompt(promptOptions);
+        const { logging, temperature, maxTokens, topP, model } = this.params.config;
+        const generatedSystemPrompt = generatePrompt(this.buildPromptOptions());
         const userPrompt = this.buildUserPrompt(diff, 'commit');
 
         // Logging
@@ -181,32 +156,8 @@ export class AnthropicService extends AIService {
 
     private async generateMessage(requestType: RequestType): Promise<AIResponse[]> {
         const diff = this.params.stagedDiff.diff;
-        const {
-            systemPrompt,
-            systemPromptPath,
-            codeReviewPromptPath,
-            logging,
-            temperature,
-            locale,
-            generate,
-            type,
-            maxLength,
-            maxTokens,
-            topP,
-            model,
-        } = this.params.config;
-
-        const promptOptions: PromptOptions = {
-            ...DEFAULT_PROMPT_OPTIONS,
-            locale,
-            maxLength,
-            type,
-            generate,
-            systemPrompt,
-            systemPromptPath,
-            codeReviewPromptPath,
-            vcs_branch: this.params.branchName || '',
-        };
+        const { logging, temperature, generate, type, maxTokens, topP, model } = this.params.config;
+        const promptOptions = this.buildPromptOptions();
         const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
 
         const userPrompt = this.buildUserPrompt(diff, requestType);

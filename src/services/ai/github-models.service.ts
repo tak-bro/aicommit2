@@ -13,7 +13,7 @@ import {
 } from './github-models.utils.js';
 import { RequestType, logAIComplete, logAIError, logAIPayload, logAIPrompt, logAIRequest, logAIResponse } from '../../utils/ai-log.js';
 import { isReasoningModel } from '../../utils/openai.js';
-import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
+import { codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 
 export class GitHubModelsService extends AIService {
     private readonly baseURL = GITHUB_MODELS_BASE_URL;
@@ -71,20 +71,8 @@ export class GitHubModelsService extends AIService {
         }
 
         const diff = this.params.stagedDiff.diff;
-        const { systemPrompt, systemPromptPath, codeReviewPromptPath, locale, generate, type, maxLength } = this.params.config;
-
-        const promptOptions: PromptOptions = {
-            ...DEFAULT_PROMPT_OPTIONS,
-            locale,
-            maxLength,
-            type,
-            generate,
-            systemPrompt,
-            systemPromptPath,
-            codeReviewPromptPath,
-            vcs_branch: this.params.branchName || '',
-        };
-
+        const { generate, type } = this.params.config;
+        const promptOptions = this.buildPromptOptions();
         const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
 
         const result = await this.makeRequest(generatedSystemPrompt, diff, requestType);

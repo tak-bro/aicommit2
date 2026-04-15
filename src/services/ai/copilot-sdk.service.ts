@@ -13,7 +13,7 @@ import {
     isCopilotSdkModelAccessError,
 } from './copilot-sdk.utils.js';
 import { RequestType, logAIComplete, logAIError, logAIPayload, logAIPrompt, logAIRequest, logAIResponse } from '../../utils/ai-log.js';
-import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
+import { codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 
 type CopilotSdkSession = {
     sendAndWait: (params: { prompt: string }) => Promise<unknown>;
@@ -81,20 +81,8 @@ export class CopilotSdkService extends AIService {
 
     private async generateMessage(requestType: RequestType): Promise<AIResponse[]> {
         const diff = this.params.stagedDiff.diff;
-        const { systemPrompt, systemPromptPath, codeReviewPromptPath, locale, generate, type, maxLength } = this.params.config;
-
-        const promptOptions: PromptOptions = {
-            ...DEFAULT_PROMPT_OPTIONS,
-            locale,
-            maxLength,
-            type,
-            generate,
-            systemPrompt,
-            systemPromptPath,
-            codeReviewPromptPath,
-            vcs_branch: this.params.branchName || '',
-        };
-
+        const { generate, type } = this.params.config;
+        const promptOptions = this.buildPromptOptions();
         const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
         const userPrompt = requestType === 'review' ? diff : `Here's the diff:\n\n${diff}`;
         const content = await this.makeRequest(generatedSystemPrompt, userPrompt, requestType, diff);

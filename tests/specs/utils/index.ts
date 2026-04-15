@@ -6,5 +6,6 @@ export default testSuite(({ describe }) => {
         runTestSuite(import('./stream-json-parser.js'));
         runTestSuite(import('./format-model-suffix.js'));
         runTestSuite(import('./prompt.js'));
+        runTestSuite(import('./reasoning-models.js'));
     });
 });
