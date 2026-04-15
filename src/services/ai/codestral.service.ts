@@ -7,7 +7,7 @@ import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
 import { CreateChatCompletionsResponse } from './mistral.service.js';
 import { RequestType, logAIComplete, logAIError, logAIPayload, logAIPrompt, logAIRequest, logAIResponse } from '../../utils/ai-log.js';
-import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt, generateUserPrompt } from '../../utils/prompt.js';
+import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 import { getRandomNumber } from '../../utils/utils.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
 export interface CodestralServiceError extends AIServiceError {}
@@ -92,7 +92,7 @@ export class CodestralService extends AIService {
 
         this.checkAvailableModels();
 
-        const userPrompt = generateUserPrompt(diff, requestType);
+        const userPrompt = this.buildUserPrompt(diff, requestType);
         const baseUrl = this.params.config.url || 'https://codestral.mistral.ai';
         const url = `${baseUrl}/v1/chat/completions`;
         const headers = {
@@ -134,7 +134,7 @@ export class CodestralService extends AIService {
                 },
                 {
                     role: 'user',
-                    content: generateUserPrompt(this.params.stagedDiff.diff, requestType),
+                    content: this.buildUserPrompt(this.params.stagedDiff.diff, requestType),
                 },
             ],
             temperature: this.params.config.temperature,

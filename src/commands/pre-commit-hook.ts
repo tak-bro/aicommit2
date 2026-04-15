@@ -8,7 +8,7 @@ import { AIRequestManager } from '../managers/ai-request.manager.js';
 import { ConsoleManager } from '../managers/console.manager.js';
 import { RawConfig, getConfig } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
-import { getBranchName, getStagedDiff } from '../utils/vcs.js';
+import { getBranchName, getRecentCommits, getStagedDiff } from '../utils/vcs.js';
 
 const args = process.argv.slice(2).filter(arg => !arg.startsWith('--pre-commit'));
 const [messageFilePath, commitSource] = args;
@@ -70,7 +70,8 @@ export default (
         }
 
         const branchName = await getBranchName();
-        const aiRequestManager = new AIRequestManager(config, staged, branchName);
+        const recentCommits = await getRecentCommits();
+        const aiRequestManager = new AIRequestManager(config, staged, branchName, recentCommits);
         let messages: string[];
         try {
             messages = await lastValueFrom(

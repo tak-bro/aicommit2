@@ -6,7 +6,7 @@ import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
 import { RequestType, logAIComplete, logAIError, logAIPayload, logAIPrompt, logAIRequest, logAIResponse } from '../../utils/ai-log.js';
-import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt, generateUserPrompt } from '../../utils/prompt.js';
+import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 
 export interface DeepSeekServiceError extends AIServiceError {}
 
@@ -128,7 +128,7 @@ export class DeepSeekService extends AIService {
 
         this.checkAvailableModels();
 
-        const userPrompt = generateUserPrompt(diff, 'commit');
+        const userPrompt = this.buildUserPrompt(diff, 'commit');
         const baseUrl = this.params.config.url || 'https://api.deepseek.com';
         const url = `${baseUrl}/chat/completions`;
         const headers = {
@@ -207,7 +207,7 @@ export class DeepSeekService extends AIService {
 
         this.checkAvailableModels();
 
-        const userPrompt = generateUserPrompt(diff, requestType);
+        const userPrompt = this.buildUserPrompt(diff, requestType);
         const baseUrl = this.params.config.url || 'https://api.deepseek.com';
         const url = `${baseUrl}/chat/completions`;
         const headers = {

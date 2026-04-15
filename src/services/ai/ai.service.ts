@@ -5,7 +5,7 @@ import { addLogEntry } from '../../utils/ai-log.js';
 import { CommitType, ModelConfig, ModelName, ModelNameDisplay } from '../../utils/config.js';
 import { ErrorCode, ErrorCodeType, detectErrorCode, getPlainErrorMessage, httpStatusToErrorCode } from '../../utils/error-messages.js';
 import { logger } from '../../utils/logger.js';
-import { DEFAULT_PROMPT_OPTIONS, PromptOptions, generatePrompt } from '../../utils/prompt.js';
+import { CommitContext, DEFAULT_PROMPT_OPTIONS, PromptOptions, generatePrompt, generateUserPrompt } from '../../utils/prompt.js';
 import { IncrementalJsonParser } from '../../utils/stream-json-parser.js';
 import { getFirstWordsFrom, safeJsonParse } from '../../utils/utils.js';
 import { GitDiff } from '../../utils/vcs.js';
@@ -51,6 +51,8 @@ export interface AIServiceParams {
     statsDays?: number;
     /** How to display model name in service label: none, short, or full */
     modelNameDisplay?: ModelNameDisplay;
+    /** Recent commit messages for style reference */
+    recentCommits?: string;
 }
 
 export interface AIServiceError extends Error {
@@ -405,6 +407,18 @@ export abstract class AIService {
             vcs_branch: this.params.branchName || '',
         };
         return generatePrompt(promptOptions);
+    };
+
+    /**
+     * Build the user prompt with commit context (recent commits, branch name).
+     * Services should use this instead of calling generateUserPrompt directly.
+     */
+    protected buildUserPrompt = (diff: string, requestType: 'commit' | 'review' = 'commit'): string => {
+        const context: CommitContext = {
+            recentCommits: this.params.recentCommits,
+            branchName: this.params.branchName,
+        };
+        return generateUserPrompt(diff, requestType, context);
     };
 
     /**

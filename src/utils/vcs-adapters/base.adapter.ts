@@ -55,6 +55,11 @@ export abstract class BaseVCSAdapter {
     abstract getBranchName(): Promise<string>;
 
     /**
+     * Get recent commit messages for style reference
+     */
+    abstract getRecentCommits(count?: number): Promise<string>;
+
+    /**
      * Get detected message for current changes
      */
     getDetectedMessage(staged: VCSDiff): string {

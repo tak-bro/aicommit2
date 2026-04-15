@@ -7,7 +7,7 @@ import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
 import { RequestType, logAIComplete, logAIError, logAIPayload, logAIPrompt, logAIRequest, logAIResponse } from '../../utils/ai-log.js';
 import { isClaudeFourModel } from '../../utils/anthropic.js';
-import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt, generateUserPrompt } from '../../utils/prompt.js';
+import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 
 export interface AnthropicServiceError extends AIServiceError {
     error?: {
@@ -125,7 +125,7 @@ export class AnthropicService extends AIService {
             vcs_branch: this.params.branchName || '',
         };
         const generatedSystemPrompt = generatePrompt(promptOptions);
-        const userPrompt = generateUserPrompt(diff, 'commit');
+        const userPrompt = this.buildUserPrompt(diff, 'commit');
 
         // Logging
         const baseUrl = this.params.config.url || 'https://api.anthropic.com';
@@ -209,7 +209,7 @@ export class AnthropicService extends AIService {
         };
         const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
 
-        const userPrompt = generateUserPrompt(diff, requestType);
+        const userPrompt = this.buildUserPrompt(diff, requestType);
 
         // 상세 로깅 (config URL 사용)
         const baseUrl = this.params.config.url || 'https://api.anthropic.com';

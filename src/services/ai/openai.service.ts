@@ -7,7 +7,7 @@ import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
 import { RequestType, logAIComplete, logAIError, logAIPayload, logAIPrompt, logAIRequest, logAIResponse } from '../../utils/ai-log.js';
 import { generateCommitMessage, isReasoningModel } from '../../utils/openai.js';
-import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
+import { CommitContext, DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 import { flattenDeep } from '../../utils/utils.js';
 
 export class OpenAIService extends AIService {
@@ -216,7 +216,8 @@ export class OpenAIService extends AIService {
             generatedSystemPrompt,
             logging,
             requestType,
-            proxy
+            proxy,
+            { recentCommits: this.params.recentCommits, branchName: this.params.branchName } as CommitContext
         );
 
         if (requestType === 'review') {

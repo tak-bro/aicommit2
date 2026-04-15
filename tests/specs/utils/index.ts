@@ -5,5 +5,6 @@ export default testSuite(({ describe }) => {
         runTestSuite(import('./subscription-manager.js'));
         runTestSuite(import('./stream-json-parser.js'));
         runTestSuite(import('./format-model-suffix.js'));
+        runTestSuite(import('./prompt.js'));
     });
 });

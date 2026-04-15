@@ -1,12 +1,6 @@
 import { expect, testSuite } from 'manten';
 
-import {
-    DEFAULT_PROMPT_OPTIONS,
-    PromptOptions,
-    generateBodyPrompt,
-    generatePrompt,
-    generateSubjectOnlyPrompt,
-} from '../../../src/utils/prompt.js';
+import { DEFAULT_PROMPT_OPTIONS, PromptOptions, generatePrompt, generateUserPrompt } from '../../../src/utils/prompt.js';
 
 export default testSuite(({ describe }) => {
     describe('Prompt Generation', ({ test, describe }) => {
@@ -60,118 +54,68 @@ export default testSuite(({ describe }) => {
             });
         });
 
-        describe('generateSubjectOnlyPrompt', ({ test }) => {
-            test('should instruct body to be empty string', () => {
-                const result = generateSubjectOnlyPrompt(baseOptions);
-                expect(result).toContain('MUST be empty string');
+        describe('generateUserPrompt', ({ test }) => {
+            test('should wrap diff in code block', () => {
+                const result = generateUserPrompt('some diff');
+                expect(result).toBe('```diff\nsome diff\n```');
             });
 
-            test('should still include subject instructions', () => {
-                const result = generateSubjectOnlyPrompt(baseOptions);
-                expect(result).toContain('subject');
-                expect(result).toContain('conventional');
-            });
-
-            test('should include JSON format instructions', () => {
-                const result = generateSubjectOnlyPrompt(baseOptions);
-                expect(result).toContain('JSON array');
-                expect(result).toContain('Return valid JSON only');
-            });
-
-            test('should include localized example with empty body', () => {
-                const result = generateSubjectOnlyPrompt(baseOptions);
-                expect(result).toContain('"body": ""');
-                expect(result).toContain('"footer": ""');
-            });
-
-            test('should use custom systemPrompt when provided', () => {
-                const result = generateSubjectOnlyPrompt({
-                    ...baseOptions,
-                    systemPrompt: 'Custom instruction',
+            test('should include recent commits when provided', () => {
+                const result = generateUserPrompt('diff content', 'commit', {
+                    recentCommits: 'feat(auth): add login\nfix(api): handle null',
                 });
-                expect(result).toContain('Custom instruction');
-                expect(result).toContain('MUST be empty string');
+                expect(result).toContain('## Recent Commits (for style reference)');
+                expect(result).toContain('feat(auth): add login');
+                expect(result).toContain('fix(api): handle null');
+                expect(result).toContain('```diff');
             });
 
-            test('should handle gitmoji type', () => {
-                const result = generateSubjectOnlyPrompt({
-                    ...baseOptions,
-                    type: 'gitmoji',
+            test('should include branch name when provided', () => {
+                const result = generateUserPrompt('diff content', 'commit', {
+                    branchName: 'feature/auth',
                 });
-                expect(result).toContain('gitmoji');
-                expect(result).toContain('MUST be empty string');
+                expect(result).toContain('## Branch');
+                expect(result).toContain('feature/auth');
             });
 
-            test('should handle empty commit type', () => {
-                const result = generateSubjectOnlyPrompt({
-                    ...baseOptions,
-                    type: '',
+            test('should work without context (backward compatible)', () => {
+                const result = generateUserPrompt('diff content');
+                expect(result).toBe('```diff\ndiff content\n```');
+            });
+
+            test('should place context before diff', () => {
+                const result = generateUserPrompt('diff content', 'commit', {
+                    recentCommits: 'feat: test',
+                    branchName: 'main',
                 });
-                expect(result).toContain('MUST be empty string');
+                const branchPos = result.indexOf('## Branch');
+                const diffPos = result.indexOf('```diff');
+                expect(branchPos).toBeLessThan(diffPos);
             });
 
-            test('should respect generate count', () => {
-                const result = generateSubjectOnlyPrompt({
-                    ...baseOptions,
-                    generate: 3,
+            test('should skip empty context fields', () => {
+                const result = generateUserPrompt('diff content', 'commit', {
+                    recentCommits: '',
+                    branchName: '',
                 });
-                expect(result).toContain('exactly 3 objects');
-            });
-        });
-
-        describe('generateBodyPrompt', ({ test }) => {
-            test('should include the subject in the prompt', () => {
-                const result = generateBodyPrompt('feat(auth): add login flow', 'en');
-                expect(result).toContain('feat(auth): add login flow');
+                expect(result).toBe('```diff\ndiff content\n```');
             });
 
-            test('should include locale', () => {
-                const result = generateBodyPrompt('fix: bug', 'ko');
-                expect(result).toContain('ko');
+            test('should handle only recentCommits without branchName', () => {
+                const result = generateUserPrompt('diff content', 'commit', {
+                    recentCommits: 'fix: bug',
+                });
+                expect(result).toContain('## Recent Commits');
+                expect(result).not.toContain('## Branch');
             });
 
-            test('should request JSON response', () => {
-                const result = generateBodyPrompt('fix: bug', 'en');
-                expect(result).toContain('JSON');
-                expect(result).toContain('"body"');
-                expect(result).toContain('"footer"');
-            });
-
-            test('should instruct to keep subject as-is', () => {
-                const result = generateBodyPrompt('feat: new feature', 'en');
-                expect(result).toContain('do NOT modify');
-            });
-
-            test('should include WHY guidance', () => {
-                const result = generateBodyPrompt('fix: bug', 'en');
-                expect(result).toContain('WHY');
-            });
-
-            test('should request JSON array format with subject preserved', () => {
-                const subject = 'refactor(api): simplify handlers';
-                const result = generateBodyPrompt(subject, 'en');
-                expect(result).toContain(`"subject": "${subject}"`);
-            });
-        });
-
-        describe('prompt consistency', ({ test }) => {
-            test('generatePrompt and generateSubjectOnlyPrompt should share preamble', () => {
-                const fullPrompt = generatePrompt(baseOptions);
-                const subjectOnly = generateSubjectOnlyPrompt(baseOptions);
-
-                // Both should contain the same default prompt preamble
-                const preambleIndicator = 'commit message';
-                expect(fullPrompt).toContain(preambleIndicator);
-                expect(subjectOnly).toContain(preambleIndicator);
-            });
-
-            test('generateSubjectOnlyPrompt should differ from generatePrompt in final instructions', () => {
-                const fullPrompt = generatePrompt(baseOptions);
-                const subjectOnly = generateSubjectOnlyPrompt(baseOptions);
-
-                // Subject-only should have empty body instruction, full should not
-                expect(subjectOnly).toContain('MUST be empty string');
-                expect(fullPrompt).not.toContain('MUST be empty string');
+            test('should handle only branchName without recentCommits', () => {
+                const result = generateUserPrompt('diff content', 'commit', {
+                    branchName: 'hotfix/urgent',
+                });
+                expect(result).not.toContain('## Recent Commits');
+                expect(result).toContain('## Branch');
+                expect(result).toContain('hotfix/urgent');
             });
         });
     });

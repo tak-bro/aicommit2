@@ -307,3 +307,8 @@ export const getBranchName = async (): Promise<string> => {
     const adapter = await getVCSAdapter();
     return adapter.getBranchName();
 };
+
+export const getRecentCommits = async (count: number = 5): Promise<string> => {
+    const adapter = await getVCSAdapter();
+    return adapter.getRecentCommits(count);
+};

@@ -372,6 +372,21 @@ export const validateSystemPrompt = async (config: ValidConfig) => {
     }
 };
 
-export const generateUserPrompt = (diff: string, _requestType: 'commit' | 'review' = 'commit'): string => {
-    return `\`\`\`diff\n${diff}\n\`\`\``;
+export interface CommitContext {
+    recentCommits?: string;
+    branchName?: string;
+}
+
+export const generateUserPrompt = (diff: string, _requestType: 'commit' | 'review' = 'commit', context?: CommitContext): string => {
+    const sections: string[] = [];
+
+    if (context?.recentCommits) {
+        sections.push(`## Recent Commits (for style reference)\n${context.recentCommits}`);
+    }
+    if (context?.branchName) {
+        sections.push(`## Branch\n${context.branchName}`);
+    }
+
+    const contextBlock = sections.length > 0 ? sections.join('\n\n') + '\n\n' : '';
+    return `${contextBlock}\`\`\`diff\n${diff}\n\`\`\``;
 };

@@ -11,7 +11,8 @@ export class AIRequestManager {
     constructor(
         private readonly config: ValidConfig,
         private readonly stagedDiff: GitDiff,
-        private readonly branchName: string = ''
+        private readonly branchName: string = '',
+        private readonly recentCommits: string = ''
     ) {}
 
     /**
@@ -80,6 +81,7 @@ export class AIRequestManager {
                 stagedDiff: modelDiff,
                 keyName: model as ModelName,
                 branchName: this.branchName,
+                recentCommits: this.recentCommits,
                 statsEnabled: this.config.useStats,
                 statsDays: this.config.statsDays,
                 modelNameDisplay: this.config.modelNameDisplay,
@@ -110,6 +112,7 @@ export class AIRequestManager {
                     stagedDiff: modelDiff,
                     keyName: model as ModelName,
                     branchName: this.branchName,
+                    recentCommits: this.recentCommits,
                     modelNameDisplay: this.config.modelNameDisplay,
                 });
 

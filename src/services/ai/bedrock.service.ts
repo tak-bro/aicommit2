@@ -9,7 +9,7 @@ import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.ser
 import { RequestType, logAIComplete, logAIError, logAIPayload, logAIPrompt, logAIRequest, logAIResponse } from '../../utils/ai-log.js';
 import { ModelConfig } from '../../utils/config.js';
 import { isVerboseLoggingEnabled } from '../../utils/logger.js';
-import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt, generateUserPrompt } from '../../utils/prompt.js';
+import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 import { safeJsonParse } from '../../utils/utils.js';
 
 const SERVICE_NAME = 'Bedrock';
@@ -260,7 +260,7 @@ export class BedrockService extends AIService {
         };
 
         const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
-        const userPrompt = generateUserPrompt(diff, requestType);
+        const userPrompt = this.buildUserPrompt(diff, requestType);
 
         // SECURITY: Ensure credentials are never logged - only configuration metadata
         const loggingHeaders: Record<string, unknown> = {

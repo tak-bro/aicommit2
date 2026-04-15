@@ -8,7 +8,7 @@ import { AIRequestManager } from '../managers/ai-request.manager.js';
 import { ConsoleManager } from '../managers/console.manager.js';
 import { RawConfig, getConfig } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
-import { getBranchName, getCommentChar, getStagedDiff } from '../utils/vcs.js';
+import { getBranchName, getCommentChar, getRecentCommits, getStagedDiff } from '../utils/vcs.js';
 
 const allArgs = process.argv.slice(2);
 const positionalArgs: string[] = [];
@@ -98,7 +98,8 @@ export default (
         }
 
         const branchName = await getBranchName();
-        const aiRequestManager = new AIRequestManager(config, staged, branchName);
+        const recentCommits = await getRecentCommits();
+        const aiRequestManager = new AIRequestManager(config, staged, branchName, recentCommits);
         const spinner = consoleManager.displaySpinner('The AI is analyzing your changes');
         let messages: string[];
         try {

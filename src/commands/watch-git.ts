@@ -16,7 +16,7 @@ import { KnownError, handleCliError } from '../utils/error.js';
 import { logger } from '../utils/logger.js';
 import { validateSystemPrompt } from '../utils/prompt.js';
 import { SubscriptionManager } from '../utils/subscription-manager.js';
-import { GitDiff, assertGitRepo, getBranchName, getCommitDiff, getVCSName } from '../utils/vcs.js';
+import { GitDiff, assertGitRepo, getBranchName, getCommitDiff, getRecentCommits, getVCSName } from '../utils/vcs.js';
 
 const execAsync = promisify(exec);
 
@@ -186,7 +186,8 @@ class WatchGitManager {
         this.cleanupPreviousCodeReview();
 
         const branchName = await getBranchName();
-        const aiRequestManager = new AIRequestManager(config, diffInfo, branchName);
+        const recentCommits = await getRecentCommits();
+        const aiRequestManager = new AIRequestManager(config, diffInfo, branchName, recentCommits);
 
         // Buffer results so they can be replayed if user dismisses prompt early (Enter during loading)
         const bufferedChoices: ReactiveListChoice[] = [];
