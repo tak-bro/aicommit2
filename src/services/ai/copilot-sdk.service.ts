@@ -33,7 +33,7 @@ export class CopilotSdkService extends AIService {
     constructor(protected readonly params: AIServiceParams) {
         super(params);
         this.colors = {
-            primary: '#1f6feb',
+            primary: '#8957e5',
             secondary: '#FFF',
         };
         this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold(`[Copilot SDK${this.formatModelSuffix()}]`);
