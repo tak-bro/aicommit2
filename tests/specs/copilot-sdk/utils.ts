@@ -48,6 +48,11 @@ export default testSuite(({ describe }) => {
             expect(options.env?.GITHUB_TOKEN).toBe(undefined);
         });
 
+        test('sets NODE_NO_WARNINGS in env to suppress SQLite experimental warning in subprocess', () => {
+            const options = buildCopilotSdkClientOptions({});
+            expect(options.env?.NODE_NO_WARNINGS).toBe('1');
+        });
+
         test('builds client options using logged-in user when COPILOT_GITHUB_TOKEN is missing', () => {
             const options = buildCopilotSdkClientOptions({
                 GH_TOKEN: 'ghp_bad',

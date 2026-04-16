@@ -69,6 +69,9 @@ export const isCopilotSdkClassicPatError = (message: string): boolean => {
 export const buildCopilotSdkClientOptions = (env: NodeJS.ProcessEnv = process.env): CopilotSdkClientOptions => {
     const sanitizedEnv: NodeJS.ProcessEnv = { ...env };
 
+    // Suppress Node.js ExperimentalWarning (e.g., SQLite) in the Copilot CLI subprocess.
+    sanitizedEnv.NODE_NO_WARNINGS = '1';
+
     // Prevent COPILOT_SDK auth from being hijacked by generic GitHub token envs.
     delete sanitizedEnv.GH_TOKEN;
     delete sanitizedEnv.GITHUB_TOKEN;
