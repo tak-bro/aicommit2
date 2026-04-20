@@ -5,7 +5,7 @@ import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
 import { RequestType, logAIComplete, logAIError, logAIPrompt, logAIRequest, logAIResponse } from '../../utils/ai-log.js';
-import { DEFAULT_PROMPT_OPTIONS, PromptOptions, codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
+import { codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 
 interface Conversation {
     id: string;
@@ -130,31 +130,8 @@ export class HuggingFaceService extends AIService {
         await this.initialize();
 
         const diff = this.params.stagedDiff.diff;
-        const {
-            systemPrompt,
-            systemPromptPath,
-            codeReviewPromptPath,
-            logging,
-            locale,
-            generate,
-            type,
-            maxLength,
-            temperature,
-            maxTokens,
-            topP,
-            timeout,
-        } = this.params.config;
-        const promptOptions: PromptOptions = {
-            ...DEFAULT_PROMPT_OPTIONS,
-            locale,
-            maxLength,
-            type,
-            generate,
-            systemPrompt,
-            systemPromptPath,
-            codeReviewPromptPath,
-            vcs_branch: this.params.branchName || '',
-        };
+        const { logging, generate, type, temperature, maxTokens, topP, timeout } = this.params.config;
+        const promptOptions = this.buildPromptOptions();
         const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
 
         const userPrompt = `Here is the diff: ${diff}`;

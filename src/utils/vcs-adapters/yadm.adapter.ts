@@ -247,6 +247,15 @@ export class YadmAdapter extends BaseVCSAdapter {
         }
     }
 
+    async getRecentCommits(count: number = 5): Promise<string> {
+        try {
+            const { stdout } = await execa('yadm', ['log', '--format=%s', `-${count}`]);
+            return stdout.trim();
+        } catch {
+            return '';
+        }
+    }
+
     async getBranchName(): Promise<string> {
         try {
             const { stdout } = await execa('yadm', ['branch', '--show-current']);

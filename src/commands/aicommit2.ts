@@ -28,6 +28,7 @@ import {
     applyDiffCompression,
     assertGitRepo,
     getBranchName,
+    getRecentCommits,
     getStagedDiff,
     getVCSName,
     commitChanges as vcsCommitChanges,
@@ -171,7 +172,8 @@ export default async (
         }
 
         const branchName = await getBranchName();
-        const aiRequestManager = new AIRequestManager(config, staged, branchName);
+        const recentCommits = await getRecentCommits();
+        const aiRequestManager = new AIRequestManager(config, staged, branchName, recentCommits);
 
         // JSON output mode: skip TUI, collect all messages, output as JSON Lines
         // Each object on its own line for LazyGit menuFromCommand compatibility

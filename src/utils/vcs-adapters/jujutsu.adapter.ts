@@ -323,6 +323,22 @@ export class JujutsuAdapter extends BaseVCSAdapter {
         }
     }
 
+    async getRecentCommits(count: number = 5): Promise<string> {
+        try {
+            const { stdout } = await execa('jj', [
+                'log',
+                '--limit',
+                count.toString(),
+                '--no-graph',
+                '-T',
+                'description.first_line() ++ "\\n"',
+            ]);
+            return stdout.trim();
+        } catch {
+            return '';
+        }
+    }
+
     async getBranchName(): Promise<string> {
         try {
             // Try to get bookmark name first (jj's equivalent of branch)

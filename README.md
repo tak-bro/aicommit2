@@ -126,6 +126,8 @@ npm install -g aicommit2
 
 > ⚠️ For npm installation, the minimum supported version of Node.js is v18. Check your Node.js version with `node --version`.
 
+> ⚠️ Homebrew installation does not include [Copilot SDK](docs/providers/copilot-sdk.md) support due to its proprietary dependency. Use npm if you need Copilot SDK.
+
 2. Configure your AI provider(s) (**at least ONE provider must be configured**):
 
 **Option A: Interactive setup wizard (recommended)**

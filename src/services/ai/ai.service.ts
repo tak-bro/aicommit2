@@ -5,7 +5,8 @@ import { addLogEntry } from '../../utils/ai-log.js';
 import { CommitType, ModelConfig, ModelName, ModelNameDisplay } from '../../utils/config.js';
 import { ErrorCode, ErrorCodeType, detectErrorCode, getPlainErrorMessage, httpStatusToErrorCode } from '../../utils/error-messages.js';
 import { logger } from '../../utils/logger.js';
-import { DEFAULT_PROMPT_OPTIONS, PromptOptions, generatePrompt } from '../../utils/prompt.js';
+import { CommitContext, DEFAULT_PROMPT_OPTIONS, PromptOptions, generatePrompt, generateUserPrompt } from '../../utils/prompt.js';
+import { isReasoningCapableModel } from '../../utils/reasoning-models.js';
 import { IncrementalJsonParser } from '../../utils/stream-json-parser.js';
 import { getFirstWordsFrom, safeJsonParse } from '../../utils/utils.js';
 import { GitDiff } from '../../utils/vcs.js';
@@ -51,6 +52,8 @@ export interface AIServiceParams {
     statsDays?: number;
     /** How to display model name in service label: none, short, or full */
     modelNameDisplay?: ModelNameDisplay;
+    /** Recent commit messages for style reference */
+    recentCommits?: string;
 }
 
 export interface AIServiceError extends Error {
@@ -388,12 +391,13 @@ export abstract class AIService {
     }
 
     /**
-     * Build the system prompt for commit message generation.
-     * Shared across all streaming service implementations.
+     * Build PromptOptions with auto-detected reasoning model flag.
+     * Services can use this instead of constructing PromptOptions manually.
      */
-    protected buildCommitPrompt = (): string => {
-        const { systemPrompt, systemPromptPath, codeReviewPromptPath, locale, generate, type, maxLength } = this.params.config;
-        const promptOptions: PromptOptions = {
+    protected buildPromptOptions = (): PromptOptions => {
+        const { systemPrompt, systemPromptPath, codeReviewPromptPath, locale, generate, type, maxLength, model } = this.params.config;
+        const modelName = Array.isArray(model) ? model[0] || '' : String(model || '');
+        return {
             ...DEFAULT_PROMPT_OPTIONS,
             locale,
             maxLength,
@@ -403,8 +407,24 @@ export abstract class AIService {
             systemPromptPath,
             codeReviewPromptPath,
             vcs_branch: this.params.branchName || '',
+            isReasoning: isReasoningCapableModel(modelName),
         };
-        return generatePrompt(promptOptions);
+    };
+
+    protected buildCommitPrompt = (): string => {
+        return generatePrompt(this.buildPromptOptions());
+    };
+
+    /**
+     * Build the user prompt with commit context (recent commits, branch name).
+     * Services should use this instead of calling generateUserPrompt directly.
+     */
+    protected buildUserPrompt = (diff: string, requestType: 'commit' | 'review' = 'commit'): string => {
+        const context: CommitContext = {
+            recentCommits: this.params.recentCommits,
+            branchName: this.params.branchName,
+        };
+        return generateUserPrompt(diff, requestType, context);
     };
 
     /**

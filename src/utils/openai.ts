@@ -6,7 +6,7 @@ import createHttpsProxyAgent from 'https-proxy-agent';
 
 import { RequestType, logAIComplete, logAIError, logAIPayload, logAIPrompt, logAIRequest, logAIResponse } from './ai-log.js';
 import { KnownError } from './error.js';
-import { generateUserPrompt } from './prompt.js';
+import { CommitContext, generateUserPrompt } from './prompt.js';
 
 import type { ClientRequest, IncomingMessage } from 'http';
 
@@ -206,10 +206,11 @@ export const generateCommitMessage = async (
     systemPrompt: string,
     logging: boolean,
     requestType: RequestType,
-    proxy?: string
+    proxy?: string,
+    context?: CommitContext
 ) => {
     try {
-        const userPrompt = generateUserPrompt(diff, requestType);
+        const userPrompt = generateUserPrompt(diff, requestType, context);
 
         const reasoningModel = isReasoningModel(model);
 

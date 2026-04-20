@@ -28,6 +28,8 @@ If the primary model is unavailable, _aicommit2_ tries fallback models (`gpt-4.1
 3. Copilot CLI authenticated.
 4. `@github/copilot-sdk` installed in your project/runtime.
 
+> ⚠️ **Homebrew users:** `brew install aicommit2` does not include Copilot SDK due to its proprietary dependency (`@github/copilot`). Install via `npm install -g aicommit2` to use this provider.
+
 You can find additional information at the link: [Copilot CLI installation and setup](https://docs.github.com/en/copilot/managing-copilot/configure-personal-settings/installing-github-copilot-in-the-cli).
 
 You can find additional information at the link: [Copilot model access configuration](https://docs.github.com/en/copilot/how-tos/use-ai-models/configure-access-to-ai-models).
