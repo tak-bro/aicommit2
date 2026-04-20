@@ -1,3 +1,11 @@
+## [2.5.14](https://github.com/tak-bro/aicommit2/compare/v2.5.13...v2.5.14) (2026-04-20)
+
+
+### Features
+
+* include recent commits and branch in user prompt ([886a5b4](https://github.com/tak-bro/aicommit2/commit/886a5b4892edfd6af8cfb7b04644a6634d8d9841))
+* update prompt for reasoning model ([fcb3f10](https://github.com/tak-bro/aicommit2/commit/fcb3f10a2cfd33d14d49495c156a5f31a7c5cbeb))
+
 ## [2.5.13](https://github.com/tak-bro/aicommit2/compare/v2.5.12...v2.5.13) (2026-04-16)
 
 ## [2.5.12](https://github.com/tak-bro/aicommit2/compare/v2.5.11...v2.5.12) (2026-04-10)
