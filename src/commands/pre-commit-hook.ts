@@ -113,11 +113,21 @@ export default (
             instructions += '# ----------------------------------------\n';
         }
 
-        if (hasMultipleMessages) {
-            if (supportsComments) {
-                instructions += '\n# 📝 Choose one of these messages:\n';
-            }
-            instructions += `\n${messages.map(message => `# ${message}`).join('\n')}`;
+        if (hasMultipleMessages && supportsComments) {
+            instructions += '\n# 📝 Choose one of these messages:\n';
+            // Prefix every line of each message (not just the first), otherwise body/footer
+            // lines stay uncommented and git treats them as the actual commit body.
+            instructions += `\n${messages
+                .map(message =>
+                    message
+                        .split('\n')
+                        .map(line => `# ${line}`)
+                        .join('\n')
+                )
+                .join('\n#\n')}`;
+        } else if (hasMultipleMessages) {
+            // --no-edit: no editor to pick from, so auto-select the first message.
+            instructions += `\n${messages[0]}\n`;
         } else {
             if (supportsComments) {
                 instructions += '\n# 📝 Generated commit message:\n';
