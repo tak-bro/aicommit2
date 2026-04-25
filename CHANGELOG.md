@@ -1,3 +1,10 @@
+## [2.5.15](https://github.com/tak-bro/aicommit2/compare/v2.5.14...v2.5.15) (2026-04-25)
+
+
+### Bug Fixes
+
+* **hooks:** comment all lines of multi-line commit messages ([8b239a3](https://github.com/tak-bro/aicommit2/commit/8b239a36c5a2ce430f29ce0a9fdec591804cefdb))
+
 ## [2.5.14](https://github.com/tak-bro/aicommit2/compare/v2.5.13...v2.5.14) (2026-04-20)
 
 
