@@ -8,36 +8,11 @@ import { AIRequestManager } from '../managers/ai-request.manager.js';
 import { ConsoleManager } from '../managers/console.manager.js';
 import { RawConfig, getConfig } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
+import { initializeLogger, logger } from '../utils/logger.js';
+import { parseHookPositionalArgs } from '../utils/parse-hook-args.js';
 import { getBranchName, getCommentChar, getRecentCommits, getStagedDiff } from '../utils/vcs.js';
 
-const allArgs = process.argv.slice(2);
-const positionalArgs: string[] = [];
-let skipNext = false;
-
-for (let i = 0; i < allArgs.length; i++) {
-    const arg = allArgs[i];
-
-    if (skipNext) {
-        skipNext = false;
-        continue;
-    }
-
-    if (arg === '--hook-mode') {
-        continue;
-    }
-
-    if (arg.startsWith('-')) {
-        const nextArg = allArgs[i + 1];
-        if (nextArg && !nextArg.startsWith('-')) {
-            skipNext = true;
-        }
-        continue;
-    }
-
-    positionalArgs.push(arg);
-}
-
-const [messageFilePath, commitSource] = positionalArgs;
+const [messageFilePath, commitSource] = parseHookPositionalArgs(process.argv.slice(2), ['--hook-mode']);
 
 export default (
     locale: string | undefined,
@@ -61,20 +36,11 @@ export default (
             return;
         }
 
-        // All staged files can be ignored by our filter
-        const staged = await getStagedDiff();
-        if (!staged) {
-            return;
-        }
-
-        const consoleManager = new ConsoleManager();
-        consoleManager.printTitle();
-
         const configOverrides: RawConfig = {
-            locale: locale?.toString() as string,
-            generate: generate?.toString() as string,
-            type: commitType?.toString() as string,
-            systemPrompt: prompt?.toString() as string,
+            ...(locale && { locale }),
+            ...(generate != null && { generate: generate.toString() }),
+            ...(commitType && { type: commitType }),
+            ...(prompt && { systemPrompt: prompt }),
             ...(includeBody === true && { includeBody: 'true' }),
         };
 
@@ -82,7 +48,9 @@ export default (
             configOverrides.logLevel = 'verbose';
         }
 
-        const config = await getConfig(configOverrides, excludeFiles);
+        const config = await getConfig(configOverrides);
+        await initializeLogger(config);
+        logger.verbose(`[hook-mode] type=${config.type}, systemPrompt=${config.systemPrompt ? 'set' : 'empty'}`);
         if (config.systemPromptPath) {
             try {
                 await fs.readFile(path.resolve(config.systemPromptPath), 'utf-8');
@@ -90,6 +58,15 @@ export default (
                 throw new KnownError(`Error reading system prompt file: ${config.systemPromptPath}`);
             }
         }
+
+        // All staged files can be ignored by our filter
+        const staged = await getStagedDiff(excludeFiles, config.exclude);
+        if (!staged) {
+            return;
+        }
+
+        const consoleManager = new ConsoleManager();
+        consoleManager.printTitle();
 
         const availableAIs = getAvailableAIs(config, 'commit');
         const hasNoAvailableAIs = availableAIs.length === 0;

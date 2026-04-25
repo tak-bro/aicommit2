@@ -8,10 +8,11 @@ import { AIRequestManager } from '../managers/ai-request.manager.js';
 import { ConsoleManager } from '../managers/console.manager.js';
 import { RawConfig, getConfig } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
+import { initializeLogger, logger } from '../utils/logger.js';
+import { parseHookPositionalArgs } from '../utils/parse-hook-args.js';
 import { getBranchName, getRecentCommits, getStagedDiff } from '../utils/vcs.js';
 
-const args = process.argv.slice(2).filter(arg => !arg.startsWith('--pre-commit'));
-const [messageFilePath, commitSource] = args;
+const [messageFilePath, commitSource] = parseHookPositionalArgs(process.argv.slice(2), ['--pre-commit']);
 
 export default (
     locale: string | undefined,
@@ -33,15 +34,6 @@ export default (
             return;
         }
 
-        // All staged files can be ignored by our filter
-        const staged = await getStagedDiff();
-        if (!staged) {
-            return;
-        }
-
-        const consoleManager = new ConsoleManager();
-        consoleManager.printTitle();
-
         const configOverrides: RawConfig = {
             ...(locale && { locale }),
             ...(generate != null && { generate: generate.toString() }),
@@ -54,7 +46,9 @@ export default (
             configOverrides.logLevel = 'verbose';
         }
 
-        const config = await getConfig(configOverrides, excludeFiles);
+        const config = await getConfig(configOverrides);
+        await initializeLogger(config);
+        logger.verbose(`[pre-commit] type=${config.type}, systemPrompt=${config.systemPrompt ? 'set' : 'empty'}`);
         if (config.systemPromptPath) {
             try {
                 await fs.readFile(path.resolve(config.systemPromptPath), 'utf-8');
@@ -62,6 +56,15 @@ export default (
                 throw new KnownError(`Error reading system prompt file: ${config.systemPromptPath}`);
             }
         }
+
+        // All staged files can be ignored by our filter
+        const staged = await getStagedDiff(excludeFiles, config.exclude);
+        if (!staged) {
+            return;
+        }
+
+        const consoleManager = new ConsoleManager();
+        consoleManager.printTitle();
 
         const availableAIs = getAvailableAIs(config, 'commit');
         const hasNoAvailableAIs = availableAIs.length === 0;

@@ -4,6 +4,7 @@ import chalk from 'chalk';
 import { command } from 'cleye';
 
 import { hasBedrockAccess, hasConfiguredModels } from './get-available-ais.js';
+import { ALL_COPILOT_SDK_KNOWN_MODELS, normalizeCopilotSdkModel } from '../services/ai/copilot-sdk.utils.js';
 import {
     GITHUB_MODELS_API_VERSION,
     GITHUB_MODELS_BASE_URL,
@@ -376,7 +377,9 @@ const checkGitHubModelsConnection = async (
     }
 };
 
-const checkCopilotSdkEnvironment = (providerConfig: RawConfig): { ok: boolean; error?: string; details?: string } => {
+const checkCopilotSdkEnvironment = (
+    providerConfig: RawConfig
+): { ok: boolean; error?: string; details?: string; modelWarning?: string } => {
     const model = Array.isArray(providerConfig.model)
         ? String(providerConfig.model[0] || '').trim()
         : String(providerConfig.model || '').trim();
@@ -407,9 +410,14 @@ const checkCopilotSdkEnvironment = (providerConfig: RawConfig): { ok: boolean; e
         const version = execSync('copilot --version', { stdio: ['ignore', 'pipe', 'pipe'] })
             .toString()
             .trim();
+        const normalizedModel = normalizeCopilotSdkModel(model);
+        const isKnownModel = ALL_COPILOT_SDK_KNOWN_MODELS.includes(normalizedModel);
+        const modelWarning = isKnownModel ? undefined : `Model '${model}' is not in the known working models list and may not work`;
+
         return {
             ok: true,
             details: version ? `CLI: ${version}; Model: ${model}; Node: ${nodeVersion}` : `Model: ${model}; Node: ${nodeVersion}`,
+            modelWarning,
         };
     } catch {
         return {
@@ -560,6 +568,15 @@ const checkProviderHealth = async (provider: BuiltinService, providerConfig: Raw
                 provider,
                 status: 'warning',
                 message: result.error || 'Environment check failed',
+                details: result.details,
+            };
+        }
+
+        if (result.modelWarning) {
+            return {
+                provider,
+                status: 'warning',
+                message: result.modelWarning,
                 details: result.details,
             };
         }
