@@ -1,6 +1,7 @@
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Observable, Subject, catchError, of } from 'rxjs';
 
+import { StreamableChoice } from '../../managers/reactive-prompt.manager.js';
 import { addLogEntry } from '../../utils/ai-log.js';
 import { CommitType, ModelConfig, ModelName, ModelNameDisplay } from '../../utils/config.js';
 import { ErrorCode, ErrorCodeType, detectErrorCode, getPlainErrorMessage, httpStatusToErrorCode } from '../../utils/error-messages.js';
@@ -466,7 +467,7 @@ export abstract class AIService {
         type: CommitType,
         maxCount: number
     ): Observable<ReactiveListChoice> => {
-        const streamKey = `stream-${this.serviceName}-${Date.now()}`;
+        const streamKey = `stream-${this.serviceName}-${crypto.randomUUID()}`;
 
         return new Observable<ReactiveListChoice>(subscriber => {
             const parser = new IncrementalJsonParser();
@@ -476,9 +477,7 @@ export abstract class AIService {
             let lastPreviewTime = 0;
             const PREVIEW_THROTTLE_MS = 100;
             const STREAMING_LABEL = 'streaming';
-            // ReactiveListChoice.disabled is boolean, but we need streamKey for in-place removal
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const removeSentinel: any = { name: '', value: '', streamKey, disabled: true, isError: false };
+            const removeSentinel: StreamableChoice = { name: '', value: '', streamKey, disabled: true, isError: false };
 
             const emitStreamPreview = (force = false): void => {
                 const now = Date.now();
@@ -495,9 +494,7 @@ export abstract class AIService {
                 const displayName = partialSubject ? `${this.serviceName} ${partialSubject}` : `${this.serviceName} Generating...`;
                 const displayDescription = partialBody || partialSubject || '';
 
-                // ReactiveListChoice lacks streamKey/disabled-as-string; using any to extend shape
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const preview: any = {
+                const preview: StreamableChoice = {
                     name: displayName,
                     short: partialSubject || 'Generating...',
                     value: `__streaming__${streamKey}`,

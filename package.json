@@ -92,7 +92,7 @@
         "gradient-string": "^3.0.0",
         "groq-sdk": "^0.7.0",
         "inquirer": "9.2.8",
-        "inquirer-reactive-list-prompt": "^1.0.16",
+        "inquirer-reactive-list-prompt": "1.1.0",
         "ollama": "^0.5.15",
         "openai": "^6.3.0",
         "ora": "^8.2.0",
