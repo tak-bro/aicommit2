@@ -47,36 +47,40 @@ See: [Copilot CLI installation and setup](https://docs.github.com/en/copilot/man
 
 | Model | Notes |
 |-------|-------|
-| `claude-sonnet-4.6` | Default for Pro users |
+| `gpt-5.4` | Default for Pro users |
 | `claude-sonnet-4.5` | |
-| `claude-opus-4.6` | |
 | `claude-opus-4.5` | |
 | `claude-sonnet-4` | |
-| `gpt-5.4` | |
 | `gpt-5.3-codex` | |
 | `gpt-5.2-codex` | |
 | `gpt-5.2` | |
 | `gpt-5.1` | |
 | `gpt-5.4-mini` | |
 
-## Token permissions and auth variables
+## Authentication
 
-For Copilot CLI / Copilot SDK flow:
+The easiest way to authenticate is via Copilot CLI:
 
-- Use a **Fine-Grained PAT** (`github_pat_...`) if you authenticate by token.
-- Required token permission: **Copilot Requests**.
-- Classic PAT (`ghp_...`) is not supported by Copilot CLI.
+1. Run `copilot`
+2. Run `/login` to authenticate
+3. Run `/model` to select your preferred model
 
-`aicommit2` `COPILOT_SDK` provider isolates auth for stability:
+That's it. No tokens or environment variables needed.
+
+### Advanced: token-based authentication
+
+If you prefer token-based auth (e.g., for CI or headless environments):
+
+- Use a **Fine-Grained PAT** (`github_pat_...`) with **Copilot Requests** permission.
+- Classic PAT (`ghp_...`) is **not** supported.
+- Set `COPILOT_GITHUB_TOKEN` environment variable with the token.
+
+`aicommit2` isolates `COPILOT_SDK` auth from other GitHub tokens:
 
 - `COPILOT_GITHUB_TOKEN` is used when present.
-- If `COPILOT_GITHUB_TOKEN` is not set, provider uses logged-in user auth (`copilot` login flow).
 - `GH_TOKEN` and `GITHUB_TOKEN` are ignored for `COPILOT_SDK` requests.
 
-Important distinction:
-
-- `COPILOT_SDK` provider uses Copilot authentication (`Copilot Requests` permission).
-- `GITHUB_MODELS` provider uses GitHub Models API and requires `models: read`.
+> Note: `COPILOT_SDK` uses Copilot authentication (`Copilot Requests` permission), while `GITHUB_MODELS` uses GitHub Models API (`models: read`).
 
 See: [Authenticate Copilot CLI](https://docs.github.com/en/copilot/how-tos/copilot-cli/set-up-copilot-cli/authenticate-copilot-cli)
 
@@ -113,20 +117,15 @@ temperature=0.2
 
 [COPILOT_SDK]
 model=gpt-4.1,claude-haiku-4.5,gpt-4o
-systemPrompt=Generate short, clear conventional commit messages.
 ```
 
-Recommended environment setup:
+Why these settings:
 
-```bash
-export COPILOT_GITHUB_TOKEN="github_pat_xxx"
-```
-
-Why this helps:
-
-- first model is primary, the rest are fallback candidates;
-- avoids classic `ghp_` token issues by using a dedicated Copilot token;
-- keeps generation format strict and inexpensive by default.
+- `generate=1`: produce one commit message per request (faster, lower cost).
+- `includeBody=false`: generate subject line only, keeping messages concise.
+- `maxTokens=256`: limit response length to avoid unnecessarily long outputs.
+- `temperature=0.2`: low randomness for consistent, predictable commit messages.
+- `model=gpt-4.1,...`: first model is primary, the rest are automatic fallback candidates if the primary is unavailable.
 
 ## Verification
 

@@ -572,6 +572,7 @@ const checkProviderHealth = async (provider: BuiltinService, providerConfig: Raw
             };
         }
 
+        // Model warning is shown in `aicommit2 doctor` stdout alongside other provider health checks.
         if (result.modelWarning) {
             return {
                 provider,
