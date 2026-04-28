@@ -122,11 +122,21 @@ export default (
             instructions += `${commentChar} ----------------------------------------\n`;
         }
 
-        if (hasMultipleMessages) {
-            if (supportsComments) {
-                instructions += `\n${commentChar} 📝 Choose one of these messages:\n`;
-            }
-            instructions += `\n${messages.map(message => `${commentChar} ${message}`).join('\n')}`;
+        if (hasMultipleMessages && supportsComments) {
+            instructions += `\n${commentChar} 📝 Choose one of these messages:\n`;
+            // Prefix every line of each message (not just the first), otherwise body/footer
+            // lines stay uncommented and git treats them as the actual commit body.
+            instructions += `\n${messages
+                .map(message =>
+                    message
+                        .split('\n')
+                        .map(line => `${commentChar} ${line}`)
+                        .join('\n')
+                )
+                .join(`\n${commentChar}\n`)}`;
+        } else if (hasMultipleMessages) {
+            // --no-edit: no editor to pick from, so auto-select the first message.
+            instructions += `\n${messages[0]}\n`;
         } else {
             if (supportsComments) {
                 instructions += `\n${commentChar} 📝 Generated commit message:\n`;
