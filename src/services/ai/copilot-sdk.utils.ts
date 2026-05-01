@@ -1,6 +1,27 @@
 export const COPILOT_SDK_DEFAULT_MODEL = 'gpt-4.1';
 export const COPILOT_SDK_FALLBACK_MODELS = ['gpt-4.1', 'gpt-4o', 'gpt-5-mini'] as const;
 
+/**
+ * Known working models by subscription tier (community-tested).
+ * This list may lag behind GitHub's actual model availability.
+ */
+export const COPILOT_SDK_KNOWN_MODELS = {
+    free: ['claude-haiku-4.5', 'gpt-5-mini', 'gpt-4.1'] as const,
+    pro: [
+        'gpt-5.4',
+        'claude-sonnet-4.5',
+        'claude-opus-4.5',
+        'claude-sonnet-4',
+        'gpt-5.3-codex',
+        'gpt-5.2-codex',
+        'gpt-5.2',
+        'gpt-5.1',
+        'gpt-5.4-mini',
+    ] as const,
+} as const;
+
+export const ALL_COPILOT_SDK_KNOWN_MODELS: readonly string[] = [...COPILOT_SDK_KNOWN_MODELS.free, ...COPILOT_SDK_KNOWN_MODELS.pro];
+
 export interface CopilotSdkClientOptions {
     githubToken?: string;
     useLoggedInUser?: boolean;
@@ -53,11 +74,14 @@ export const isCopilotSdkModelAccessError = (message: string): boolean => {
 export const isCopilotSdkAuthError = (message: string): boolean => {
     const normalized = message.toLowerCase();
     return (
-        normalized.includes('auth') ||
+        normalized.includes('authentication') ||
         normalized.includes('unauthorized') ||
         normalized.includes('forbidden') ||
-        normalized.includes('token') ||
-        normalized.includes('copilot cli')
+        normalized.includes('invalid token') ||
+        normalized.includes('token expired') ||
+        normalized.includes('no authentication') ||
+        normalized.includes('copilot cli not found') ||
+        normalized.includes('copilot cli authentication')
     );
 };
 
