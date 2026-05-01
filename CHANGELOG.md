@@ -1,3 +1,10 @@
+## [2.5.16](https://github.com/tak-bro/aicommit2/compare/v2.5.15...v2.5.16) (2026-05-01)
+
+
+### Features
+
+* polish Copilot SDK support with tests, model list, and doctor validation ([c31412e](https://github.com/tak-bro/aicommit2/commit/c31412ebe68fe2afda231cb6685ac2648e53a710)), closes [#235](https://github.com/tak-bro/aicommit2/issues/235)
+
 ## [2.5.15](https://github.com/tak-bro/aicommit2/compare/v2.5.14...v2.5.15) (2026-04-25)
 
 
