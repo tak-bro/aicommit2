@@ -58,7 +58,7 @@ export class DeepSeekService extends AIService {
             return 'Model not found or not accessible. Check if the DeepSeek model name is correct';
         }
         if (errorMsg.includes('Invalid model type')) {
-            return 'Invalid model type. Use supported models: deepseek-reasoner, deepseek-chat';
+            return 'Invalid model type. Use supported models: deepseek-reasoner, deepseek-chat, deepseek-v4-flash, deepseek-v4-pro';
         }
         if (errorMsg.includes('overloaded') || errorMsg.includes('capacity')) {
             return 'DeepSeek service is overloaded. Try again in a few minutes';
@@ -205,7 +205,7 @@ export class DeepSeekService extends AIService {
     }
 
     private checkAvailableModels() {
-        const supportModels = [`deepseek-reasoner`, `deepseek-chat`];
+        const supportModels = [`deepseek-reasoner`, `deepseek-chat`, `deepseek-v4-flash`, `deepseek-v4-pro`];
         if (supportModels.includes(this.params.config.model)) {
             return true;
         }
