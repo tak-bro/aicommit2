@@ -33,6 +33,8 @@ export default testSuite(({ describe }) => {
         });
 
         test('should detect DeepSeek reasoning models', () => {
+            expect(isReasoningCapableModel('deepseek-v4-flash')).toBe(true);
+            expect(isReasoningCapableModel('deepseek-v4-pro')).toBe(true);
             expect(isReasoningCapableModel('deepseek-reasoner')).toBe(true);
             expect(isReasoningCapableModel('deepseek-r1')).toBe(true);
             expect(isReasoningCapableModel('deepseek-r1-distill-qwen-7b')).toBe(true);

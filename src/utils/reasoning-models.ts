@@ -9,7 +9,7 @@
  *
  * Covered:
  * - OpenAI: o1, o3, o4-mini, gpt-5 series
- * - DeepSeek: deepseek-reasoner, deepseek-r1
+ * - DeepSeek: deepseek-v4-flash, deepseek-v4-pro, deepseek-reasoner, deepseek-r1
  * - Google: gemini-2.5-* (thinking models)
  * - Alibaba: qwq, qwen3 (thinking mode)
  * - Microsoft: phi4-mini-reasoning
@@ -24,6 +24,8 @@ const REASONING_PREFIXES: readonly string[] = [
     'o4-mini',
     'gpt-5',
     // DeepSeek
+    'deepseek-v4-flash',
+    'deepseek-v4-pro',
     'deepseek-reasoner',
     'deepseek-r1',
     // Alibaba

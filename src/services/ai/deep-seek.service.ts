@@ -45,6 +45,74 @@ export class DeepSeekService extends AIService {
         });
     }
 
+    private effectiveModel(): string {
+        const m = this.params.config.model;
+        return Array.isArray(m) && m.length > 0 ? m[0] : String(m || '');
+    }
+
+    private modelDefaultsToThinking(model: string): boolean {
+        const lower = model.toLowerCase();
+        if (lower === 'deepseek-chat') {
+            return false;
+        }
+        if (lower === 'deepseek-reasoner') {
+            return true;
+        }
+        if (lower.startsWith('deepseek-v4-')) {
+            return true;
+        }
+        if (lower.startsWith('deepseek-r1')) {
+            return true;
+        }
+        return false;
+    }
+
+    private isDeepSeekV4Model(model: string): boolean {
+        return model.toLowerCase().startsWith('deepseek-v4-');
+    }
+
+    private resolveThinkingMode(): { thinking: boolean; reasoningEffort: 'high' | 'max' } {
+        const model = this.effectiveModel();
+        const cfgThinking = this.params.config.thinking;
+        const cfgEffort = this.params.config.reasoningEffort;
+
+        const thinking = cfgThinking ?? this.modelDefaultsToThinking(model);
+        const reasoningEffort: 'high' | 'max' = cfgEffort ?? 'high';
+
+        return { thinking, reasoningEffort };
+    }
+
+    // OpenAI SDK typing requires `any` for provider-specific fields
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private buildCompletionPayload(messages: OpenAI.Chat.ChatCompletionMessageParam[], stream: boolean): any {
+        const { thinking, reasoningEffort } = this.resolveThinkingMode();
+        const model = this.effectiveModel();
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const payload: any = {
+            messages,
+            model,
+            max_tokens: this.params.config.maxTokens,
+        };
+
+        if (stream) {
+            payload.stream = true;
+        }
+
+        if (thinking) {
+            payload.thinking = { type: 'enabled' };
+            payload.reasoning_effort = reasoningEffort;
+        } else {
+            payload.top_p = this.params.config.topP;
+            payload.temperature = this.params.config.temperature;
+            if (this.isDeepSeekV4Model(model)) {
+                payload.thinking = { type: 'disabled' };
+            }
+        }
+
+        return payload;
+    }
+
     protected getServiceSpecificErrorMessage(error: AIServiceError): string | null {
         const errorMsg = error.message || '';
 
@@ -54,11 +122,11 @@ export class DeepSeekService extends AIService {
         if (errorMsg.includes('rate_limit') || errorMsg.includes('Rate limit')) {
             return 'Rate limit exceeded. Wait a moment and try again, or upgrade your DeepSeek plan';
         }
+        if (errorMsg.includes('Invalid model type')) {
+            return 'Invalid model type. Prefer deepseek-v4-flash or deepseek-v4-pro. Legacy aliases deepseek-chat and deepseek-reasoner map to v4-flash non-thinking and thinking modes (may be deprecated by DeepSeek).';
+        }
         if (errorMsg.includes('model') || errorMsg.includes('Model')) {
             return 'Model not found or not accessible. Check if the DeepSeek model name is correct';
-        }
-        if (errorMsg.includes('Invalid model type')) {
-            return 'Invalid model type. Use supported models: deepseek-reasoner, deepseek-chat, deepseek-v4-flash, deepseek-v4-pro';
         }
         if (errorMsg.includes('overloaded') || errorMsg.includes('capacity')) {
             return 'DeepSeek service is overloaded. Try again in a few minutes';
@@ -115,8 +183,6 @@ export class DeepSeekService extends AIService {
         const { logging } = this.params.config;
         const generatedSystemPrompt = generatePrompt(this.buildPromptOptions());
 
-        this.checkAvailableModels();
-
         const userPrompt = this.buildUserPrompt(diff, 'commit');
         const baseUrl = this.params.config.url || 'https://api.deepseek.com';
         const url = `${baseUrl}/chat/completions`;
@@ -125,22 +191,16 @@ export class DeepSeekService extends AIService {
             'Content-Type': 'application/json',
         };
 
-        logAIRequest(diff, 'commit', 'DeepSeek', this.params.config.model, url, headers, logging);
+        logAIRequest(diff, 'commit', 'DeepSeek', this.effectiveModel(), url, headers, logging);
         logAIPrompt(diff, 'commit', 'DeepSeek', generatedSystemPrompt, userPrompt, logging);
 
-        // OpenAI SDK typing requires `any` for stream-conditional payload
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const payload: any = {
-            messages: [
+        const payload = this.buildCompletionPayload(
+            [
                 { role: 'system', content: generatedSystemPrompt },
                 { role: 'user', content: userPrompt },
             ],
-            model: this.params.config.model,
-            max_tokens: this.params.config.maxTokens,
-            top_p: this.params.config.topP,
-            temperature: this.params.config.temperature,
-            stream: true,
-        };
+            true
+        );
 
         logAIPayload(diff, 'commit', 'DeepSeek', payload, logging);
 
@@ -172,7 +232,6 @@ export class DeepSeekService extends AIService {
 
             subject.complete();
         } catch (error) {
-            const duration = Date.now() - startTime;
             logAIError(diff, 'commit', 'DeepSeek', error, logging);
             subject.error(error);
         }
@@ -184,8 +243,6 @@ export class DeepSeekService extends AIService {
         const promptOptions = this.buildPromptOptions();
         const generatedSystemPrompt = requestType === 'review' ? codeReviewPrompt(promptOptions) : generatePrompt(promptOptions);
 
-        this.checkAvailableModels();
-
         const userPrompt = this.buildUserPrompt(diff, requestType);
         const baseUrl = this.params.config.url || 'https://api.deepseek.com';
         const url = `${baseUrl}/chat/completions`;
@@ -194,7 +251,7 @@ export class DeepSeekService extends AIService {
             'Content-Type': 'application/json',
         };
 
-        logAIRequest(diff, requestType, 'DeepSeek', this.params.config.model, url, headers, logging);
+        logAIRequest(diff, requestType, 'DeepSeek', this.effectiveModel(), url, headers, logging);
         logAIPrompt(diff, requestType, 'DeepSeek', generatedSystemPrompt, userPrompt, logging);
 
         const chatResponse = await this.createChatCompletions(generatedSystemPrompt, userPrompt, requestType);
@@ -204,28 +261,17 @@ export class DeepSeekService extends AIService {
         return this.parseMessage(chatResponse, type, generate);
     }
 
-    private checkAvailableModels() {
-        const supportModels = [`deepseek-reasoner`, `deepseek-chat`, `deepseek-v4-flash`, `deepseek-v4-pro`];
-        if (supportModels.includes(this.params.config.model)) {
-            return true;
-        }
-        throw new Error(`Invalid model type of DeepSeek`);
-    }
-
     private async createChatCompletions(systemPrompt: string, userPrompt: string, requestType: RequestType) {
         const diff = this.params.stagedDiff.diff;
         const { logging } = this.params.config;
 
-        const payload = {
-            messages: [
+        const payload = this.buildCompletionPayload(
+            [
                 { role: 'system' as const, content: systemPrompt },
                 { role: 'user' as const, content: userPrompt },
             ],
-            model: this.params.config.model,
-            max_tokens: this.params.config.maxTokens,
-            top_p: this.params.config.topP,
-            temperature: this.params.config.temperature,
-        };
+            false
+        );
 
         logAIPayload(diff, requestType, 'DeepSeek', payload, logging);
 
@@ -254,7 +300,6 @@ export class DeepSeekService extends AIService {
 
             return result;
         } catch (error) {
-            const duration = Date.now() - startTime;
             logAIError(diff, requestType, 'DeepSeek', error, logging);
             throw error;
         }
