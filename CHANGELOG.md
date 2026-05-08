@@ -1,3 +1,11 @@
+## [2.5.17](https://github.com/tak-bro/aicommit2/compare/v2.5.16...v2.5.17) (2026-05-08)
+
+
+### Features
+
+* **deep-seek:** add support for v4 flash and pro models ([8a6fa87](https://github.com/tak-bro/aicommit2/commit/8a6fa871bdefd4fcf50b64d3a9ee8f8392d151a2))
+* **deepseek:** support v4-flash model and thinking mode ([a27a8ea](https://github.com/tak-bro/aicommit2/commit/a27a8ea1093ffbcf06059bfdd8968f1ab343a635))
+
 ## [2.5.16](https://github.com/tak-bro/aicommit2/compare/v2.5.15...v2.5.16) (2026-05-01)
 
 
