@@ -99,7 +99,7 @@ _aicommit2_ automatically generates commit messages using AI. It supports [Git](
 | Cohere | `command-a-03-2025` | [Guide](docs/providers/cohere.md) |
 | Groq | `llama-3.3-70b-versatile` | [Guide](docs/providers/groq.md) |
 | Perplexity | `sonar` | [Guide](docs/providers/perplexity.md) |
-| DeepSeek | `deepseek-chat` | [Guide](docs/providers/deepseek.md) |
+| DeepSeek | `deepseek-v4-flash` | [Guide](docs/providers/deepseek.md) |
 | GitHub Models | `openai/gpt-4o-mini` | [Guide](docs/providers/github-models.md) |
 | Bedrock | `anthropic.claude-haiku-4-5-20251001-v1:0` | [Guide](docs/providers/bedrock.md) |
 | Ollama | *(user configured)* | [Guide](docs/providers/ollama.md) |

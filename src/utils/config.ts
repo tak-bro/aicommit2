@@ -801,11 +801,29 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         envKey: (envKey?: string) => envKey || '',
         model: (model?: string | string[]): string[] => {
             if (!model) {
-                return ['deepseek-chat'];
+                return ['deepseek-v4-flash'];
             }
             const modelList = typeof model === 'string' ? model?.split(',') : model;
 
             return modelList.map(m => m.trim()).filter(m => !!m && m.length > 0);
+        },
+        thinking: (value?: string | boolean): boolean | undefined => {
+            if (value === undefined || value === null || value === '') {
+                return undefined;
+            }
+            if (typeof value === 'boolean') {
+                return value;
+            }
+            parseAssert('DEEPSEEK.thinking', /^(?:true|false)$/.test(value), 'Must be a boolean(true or false)');
+            return value === 'true';
+        },
+        reasoningEffort: (value?: string): 'high' | 'max' | undefined => {
+            if (!value || value.trim() === '') {
+                return undefined;
+            }
+            const v = value.trim().toLowerCase();
+            parseAssert('DEEPSEEK.reasoningEffort', v === 'high' || v === 'max', 'Must be high or max');
+            return v as 'high' | 'max';
         },
         topP: generalConfigParsers.topP,
         systemPrompt: generalConfigParsers.systemPrompt,

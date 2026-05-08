@@ -64,7 +64,7 @@ const PROVIDER_INFO: Record<string, ProviderInfo> = {
         displayName: 'DeepSeek',
         authType: 'api-key',
         envKeyHint: 'DEEPSEEK_API_KEY',
-        defaultModel: 'deepseek-chat',
+        defaultModel: 'deepseek-v4-flash',
     },
     MISTRAL: {
         displayName: 'Mistral AI',
