@@ -34,7 +34,7 @@ aicommit2 config set DEEPSEEK.key="your-api-key" \
 | ----------------- | --------------------------------------------------------------------------- | ----------------------- |
 | `key`             | API key                                                                     | -                       |
 | `model`           | Model to use                                                                | `deepseek-v4-flash`     |
-| `thinking`        | Enable [thinking mode](https://api-docs.deepseek.com/guides/thinking_mode) | Auto (see below)        |
+| `thinking`        | Enable [thinking mode](https://api-docs.deepseek.com/guides/thinking_mode)  | Auto (see below)        |
 | `reasoningEffort` | `high` or `max` (only when thinking is enabled)                             | `high`                  |
 
 aicommit2 does not maintain a strict allowlist of model names; unsupported names surface as API errors from DeepSeek.
@@ -47,14 +47,14 @@ When thinking is **on**, the API **ignores** `temperature`, `top_p`, `presence_p
 
 ### Defaults
 
-| Model / alias              | Default `thinking` |
-| -------------------------- | ------------------ |
-| `deepseek-v4-flash`      | enabled            |
-| `deepseek-v4-pro`        | enabled            |
-| `deepseek-reasoner`      | enabled (legacy alias) |
-| `deepseek-r1`, `deepseek-r1-*` | enabled      |
-| `deepseek-chat`          | disabled (legacy alias) |
-| Other names              | disabled           |
+| Model / alias                  | Default `thinking`      |
+| ------------------------------ | ----------------------- |
+| `deepseek-v4-flash`            | enabled                 |
+| `deepseek-v4-pro`              | enabled                 |
+| `deepseek-reasoner`            | enabled (legacy alias)  |
+| `deepseek-r1`, `deepseek-r1-*` | enabled                 |
+| `deepseek-chat`                | disabled (legacy alias) |
+| Other names                    | disabled                |
 
 Override with explicit config:
 
@@ -65,13 +65,15 @@ aicommit2 config set DEEPSEEK.reasoningEffort=max
 
 ## Configuration
 
-#### DEEPSEEK.key
+### DEEPSEEK.key
 
 The DeepSeek API key. If you don't have one, please sign up and subscribe in [DeepSeek Platform](https://platform.deepseek.com/).
 
-#### DEEPSEEK.model
+### DEEPSEEK.model
 
 Default: `deepseek-v4-flash`
+
+You can use any DeepSeek model name. The system no longer validates specific model names, allowing you to use new models as soon as they become available.
 
 Current API models and roles (see [Models & Pricing](https://api-docs.deepseek.com/quick_start/pricing)):
 
@@ -79,6 +81,11 @@ Current API models and roles (see [Models & Pricing](https://api-docs.deepseek.c
 - **`deepseek-v4-pro`** — Higher capability; pricing and discounts are documented on the pricing page.
 - **`deepseek-chat`** — **Legacy alias** for `deepseek-v4-flash` in **non-thinking** mode; DeepSeek has indicated these names may be deprecated later.
 - **`deepseek-reasoner`** — **Legacy alias** for `deepseek-v4-flash` in **thinking** mode; same deprecation note.
+
+> [!TIP] 
+> We gently recommend using the newer model names (like `deepseek-v4-flash`) instead of the legacy `chat` and `reasoner` names. As noted in the [official pricing documentation](https://api-docs.deepseek.com/quick_start/pricing):
+>
+> *The model names `deepseek-chat` and `deepseek-reasoner` will be deprecated in the future. For compatibility, they correspond to the non-thinking mode and thinking mode of `deepseek-v4-flash`, respectively.*
 
 ```sh
 aicommit2 config set DEEPSEEK.model="deepseek-v4-flash"
