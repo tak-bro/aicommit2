@@ -1,3 +1,7 @@
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
+
 import { execa } from 'execa';
 
 import { DEFAULT_DIFF_CONTEXT } from '../diff-compressor.js';
@@ -233,6 +237,104 @@ export class GitAdapter extends BaseVCSAdapter {
             return branchName;
         } catch {
             return 'HEAD';
+        }
+    }
+
+    /**
+     * Get the commit message of a specific commit (defaults to HEAD).
+     */
+    async getCommitMessage(commitHash: string = 'HEAD'): Promise<string> {
+        try {
+            const { stdout } = await execa('git', ['log', '--format=%B', '-n', '1', commitHash]);
+            return stdout.trim();
+        } catch {
+            return '';
+        }
+    }
+
+    /**
+     * Rewrite the commit message of a specific commit.
+     * For HEAD: uses `git commit --amend`.
+     * For non-HEAD: uses `git rebase -i` with GIT_SEQUENCE_EDITOR + GIT_EDITOR.
+     */
+    async rewriteCommit(message: string, commitHash: string = 'HEAD'): Promise<void> {
+        try {
+            if (commitHash === 'HEAD') {
+                // --only --allow-empty: amend only the message, ignoring any staged changes
+                // Without --only, git commit --amend folds staged content into the commit
+                await execa('git', ['commit', '--amend', '--only', '--allow-empty', '-m', message], {
+                    stdio: 'inherit',
+                });
+            } else {
+                // Resolve symbolic references (HEAD~1, branch names) to abbreviated commit hash
+                // The rebase todo list uses actual commit hashes, not symbolic names
+                const { stdout: shortHash } = await execa('git', ['rev-parse', '--short', commitHash]);
+                const resolvedHash = shortHash.trim();
+
+                // Write new message to a temp file for GIT_EDITOR to copy
+                const tmpFile = path.join(os.tmpdir(), `aicommit2-rewrite-msg-${Date.now()}.txt`);
+                fs.writeFileSync(tmpFile, message, 'utf8');
+
+                // Determine sed in-place flag for the platform
+                const sedInPlace = process.platform === 'darwin' ? "sed -i ''" : 'sed -i';
+
+                try {
+                    // GIT_SEQUENCE_EDITOR: change 'pick' to 'reword' for the target commit
+                    // GIT_EDITOR: copy the new message file to the commit message file ($1)
+                    await execa('git', ['rebase', '-i', `${commitHash}^`, '--keep-empty'], {
+                        env: {
+                            ...process.env,
+                            GIT_SEQUENCE_EDITOR: `${sedInPlace} 's/^pick ${resolvedHash}/reword ${resolvedHash}/'`,
+                            GIT_EDITOR: `sh -c 'cp "${tmpFile}" "$1"' --`,
+                        },
+                        stdio: 'inherit',
+                    });
+                } finally {
+                    // Clean up temp file
+                    if (fs.existsSync(tmpFile)) {
+                        fs.unlinkSync(tmpFile);
+                    }
+                }
+            }
+        } catch (error) {
+            const execError = error as any;
+
+            if (execError.stderr) {
+                if (execError.stderr.includes('Author identity unknown')) {
+                    throw new KnownError(
+                        'Git author identity not configured.\n\nConfigure with:\n  git config --global user.name "Your Name"\n  git config --global user.email "your.email@example.com"'
+                    );
+                }
+                if (execError.stderr.includes('nothing to amend')) {
+                    throw new KnownError('Nothing to amend. The specified commit has no changes to modify.');
+                }
+                if (execError.stderr.includes('fatal: invalid upstream')) {
+                    throw new KnownError(
+                        `Invalid commit reference: ${commitHash}.\n\n` +
+                            'Make sure the commit hash is correct and the commit exists in this repository.'
+                    );
+                }
+                throw new KnownError(`Git rewrite failed: ${execError.stderr.trim()}`);
+            }
+
+            throw new KnownError(`Failed to rewrite commit: ${execError.message || 'Unknown error'}`);
+        }
+    }
+
+    /**
+     * Check if a commit has been pushed to the remote tracking branch.
+     */
+    async isCommitPushed(commitHash: string = 'HEAD'): Promise<boolean> {
+        try {
+            const { stdout: upstream } = await execa('git', ['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}']);
+            if (!upstream.trim()) {
+                return false;
+            }
+
+            await execa('git', ['merge-base', '--is-ancestor', commitHash, `${upstream.trim()}`]);
+            return true;
+        } catch {
+            return false;
         }
     }
 }

@@ -45,6 +45,21 @@ export abstract class BaseVCSAdapter {
     abstract commit(message: string, args?: string[], options?: CommitOptions): Promise<void>;
 
     /**
+     * Rewrite the commit message of a specific commit (defaults to HEAD)
+     */
+    abstract rewriteCommit?(message: string, commitHash?: string): Promise<void>;
+
+    /**
+     * Get the commit message of a specific commit
+     */
+    abstract getCommitMessage?(commitHash?: string): Promise<string>;
+
+    /**
+     * Check if a commit has been pushed to upstream
+     */
+    abstract isCommitPushed?(commitHash?: string): Promise<boolean>;
+
+    /**
      * Get the comment character used for commit messages
      */
     abstract getCommentChar(): Promise<string>;

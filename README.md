@@ -81,6 +81,7 @@ _aicommit2_ automatically generates commit messages using AI. It supports [Git](
 - **[OpenAI API Compatibility](docs/providers/compatible.md)**: Support for any service that implements the OpenAI API specification
 - **[Reactive CLI](#usage)**: Enables simultaneous requests to multiple AIs and selection of the best commit message
 - **[Code Review](#code-review)**: AI-powered structured code review with severity levels before committing
+- **[Commit Rewrite](#usage)**: Rewrite the commit message of any existing commit with AI (`aicommit2 rewrite`)
 - **[Git Hook Integration](#git-hooks)**: Can be used as a prepare-commit-msg hook
 - **[Custom Prompt](#custom-prompt-template)**: Supports user-defined system prompt templates
 - **[Diff Compression](#diff-compression)**: Reduces token usage by 30-60% with smart diff compression
@@ -454,6 +455,7 @@ In addition to the main commit message generation, aicommit2 provides several ut
 | `aicommit2 config` | Manage configuration (get, set, list, del) |
 | `aicommit2 doctor` | Check health status of AI providers |
 | `aicommit2 stats` | View usage statistics and performance metrics |
+| `aicommit2 rewrite` | Rewrite the commit message of any commit using AI |
 | `aicommit2 hook` | Install/uninstall Git prepare-commit-msg hook |
 | `aicommit2 log` | Manage log files |
 | `aicommit2 github-login` | Login to GitHub for GitHub Models access |
@@ -478,6 +480,11 @@ aicommit2 stats clear   # Clear all stats
 # Git hook
 aicommit2 hook install
 aicommit2 hook uninstall
+
+# Rewrite commit message
+aicommit2 rewrite                 # Rewrite HEAD commit message
+aicommit2 rewrite abc1234         # Rewrite specific commit
+aicommit2 rewrite HEAD~2 --dry-run   # Preview without rewriting
 ```
 
 > GitHub Models tip: use `aicommit2 github-login` and set `GITHUB_MODELS.model` in `publisher/model` format (for example, `openai/gpt-5`).
