@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
-# Script to update flake.nix version and hash
+# Script to update flake.nix version and per-system pnpm deps hash
 # Usage: ./scripts/update-nix-hash.sh [version]
 # Example: ./scripts/update-nix-hash.sh v2.4.9
+#
+# Detects the current system (x86_64-linux or aarch64-darwin) and updates
+# only that system's hash in the pnpmDepsHash map.
 
 set -e
 
@@ -15,6 +18,17 @@ NC='\033[0m' # No Color
 if ! command -v nix &>/dev/null; then
     echo -e "${RED}✗ Error: nix is not installed${NC}"
     echo "Please install nix from https://nixos.org/download.html"
+    exit 1
+fi
+
+# Detect current system
+SYSTEM=$(nix eval --impure --raw --expr 'builtins.currentSystem')
+echo -e "${GREEN}✓ Detected system: ${SYSTEM}${NC}"
+
+# Validate supported system
+if [[ "$SYSTEM" != "x86_64-linux" && "$SYSTEM" != "aarch64-darwin" ]]; then
+    echo -e "${RED}✗ Unsupported system: ${SYSTEM}${NC}"
+    echo "Supported systems: x86_64-linux, aarch64-darwin"
     exit 1
 fi
 
@@ -33,7 +47,7 @@ if [[ ! $VERSION =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     exit 1
 fi
 
-echo "Updating flake.nix to version ${VERSION}..."
+echo "Updating flake.nix to version ${VERSION} (hash for ${SYSTEM})..."
 
 # Backup original file
 cp flake.nix flake.nix.backup
@@ -44,16 +58,16 @@ sed -i.tmp "s/version = \"v[0-9.]*\";/version = \"${VERSION}\";/" flake.nix
 rm -f flake.nix.tmp
 echo -e "${GREEN}✓ Updated version to ${VERSION}${NC}"
 
-# Set a known bad hash to trigger mismatch
-sed -i.tmp 's|hash = "sha256-.*";|hash = "sha256-INVALIDHASHPLACEHOLDER000000000000000000000=";|' flake.nix
+# Set invalid hash for current system to trigger mismatch
+sed -i.tmp "s|\"${SYSTEM}\" = \"sha256-[^\"]*\";|\"${SYSTEM}\" = \"sha256-INVALIDHASHPLACEHOLDER000000000000000000000=\";|" flake.nix
 rm -f flake.nix.tmp
 
 # Build and capture the correct hash
-echo "Building to calculate correct hash (this will fail, that's expected)..."
-BUILD_OUTPUT=$(nix build --print-out-paths 2>&1 || true)
+echo "Building to calculate correct hash for ${SYSTEM} (this will fail, that's expected)..."
+BUILD_OUTPUT=$(nix build .#packages.${SYSTEM}.default 2>&1 || true)
 
 # Extract the correct hash from error message
-CORRECT_HASH=$(echo "$BUILD_OUTPUT" | grep -o 'got:.*' | awk '{print $2}')
+CORRECT_HASH=$(echo "$BUILD_OUTPUT" | grep 'got:' | grep -oE 'sha256-[A-Za-z0-9+/=]{44}' | head -n1)
 
 if [ -z "$CORRECT_HASH" ]; then
     echo -e "${RED}✗ Failed to extract hash from build output${NC}"
@@ -66,16 +80,16 @@ if [ -z "$CORRECT_HASH" ]; then
     exit 1
 fi
 
-echo -e "${GREEN}✓ Calculated hash: ${CORRECT_HASH}${NC}"
+echo -e "${GREEN}✓ Calculated hash for ${SYSTEM}: ${CORRECT_HASH}${NC}"
 
-# Update hash in flake.nix
-sed -i.tmp "s|hash = \"sha256-.*\";|hash = \"${CORRECT_HASH}\";|" flake.nix
+# Update hash for current system in flake.nix
+sed -i.tmp "s|\"${SYSTEM}\" = \"sha256-[^\"]*\";|\"${SYSTEM}\" = \"${CORRECT_HASH}\";|" flake.nix
 rm -f flake.nix.tmp
-echo -e "${GREEN}✓ Updated hash in flake.nix${NC}"
+echo -e "${GREEN}✓ Updated ${SYSTEM} hash in flake.nix${NC}"
 
 # Verify the build works
 echo "Verifying build with new hash..."
-if nix build --print-out-paths >/dev/null 2>&1; then
+if nix build .#packages.${SYSTEM}.default --print-out-paths >/dev/null 2>&1; then
     echo -e "${GREEN}✓ Build successful!${NC}"
 
     # Remove backup
@@ -85,7 +99,8 @@ if nix build --print-out-paths >/dev/null 2>&1; then
     echo -e "${GREEN}==================================${NC}"
     echo -e "${GREEN}Successfully updated flake.nix:${NC}"
     echo -e "  Version: ${VERSION}"
-    echo -e "  Hash: ${CORRECT_HASH}"
+    echo -e "  System:  ${SYSTEM}"
+    echo -e "  Hash:    ${CORRECT_HASH}"
     echo -e "${GREEN}==================================${NC}"
     echo ""
     echo "You can now commit these changes:"
