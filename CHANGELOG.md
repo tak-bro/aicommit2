@@ -1,3 +1,11 @@
+## [2.5.19](https://github.com/tak-bro/aicommit2/compare/v2.5.18...v2.5.19) (2026-05-14)
+
+
+### Bug Fixes
+
+* **ci:** simplify system checks ([c27cb78](https://github.com/tak-bro/aicommit2/commit/c27cb787b89f8a214c87e7321e39893859445df5))
+* update nix flake workflow ([59de2e8](https://github.com/tak-bro/aicommit2/commit/59de2e8f18e08761b6bd3942f9acab758fdf9f74))
+
 ## [2.5.18](https://github.com/tak-bro/aicommit2/compare/v2.5.17...v2.5.18) (2026-05-09)
 
 ## [2.5.17](https://github.com/tak-bro/aicommit2/compare/v2.5.16...v2.5.17) (2026-05-08)
