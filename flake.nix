@@ -10,25 +10,25 @@
     self,
     flake-parts,
     ...
-  }:
+  }: let
+    pnpmDepsHash = {
+      "x86_64-linux" = "sha256-6QDYdwTmVfO3/Chm7coDh7Vx6Ec7eFJ/YR4mvju9Gyc=";
+      "aarch64-darwin" = "sha256-34djAIYi+joZ1BvVatMeB4cQ9r7+PighiHkIYSqRJxU=";
+    };
+  in
     flake-parts.lib.mkFlake {inherit inputs;} {
       systems = ["x86_64-linux" "aarch64-darwin"];
 
-      perSystem = {pkgs, ...}: {
+      perSystem = {pkgs, system, ...}: {
         packages.default = pkgs.stdenvNoCC.mkDerivation (finalAttrs: {
           pname = "aicommit2";
-          version = "v2.5.18";
+          version = "v2.5.19";
           src = self;
-
-          pnpmDepsHash = {
-            "x86_64-linux" = "sha256-6QDYdwTmVfO3/Chm7coDh7Vx6Ec7eFJ/YR4mvju9Gyc=";
-            "aarch64-darwin" = "sha256-34djAIYi+joZ1BvVatMeB4cQ9r7+PighiHkIYSqRJxU=";
-          };
 
           pnpmDeps = pkgs.pnpm.fetchDeps {
             inherit (finalAttrs) pname version src;
             fetcherVersion = 1;
-            hash = finalAttrs.pnpmDepsHash.${pkgs.stdenv.system} or (throw "Unsupported system: ${pkgs.stdenv.system}");
+            hash = pnpmDepsHash.${system} or (throw "Unsupported system: ${system}");
           };
 
           nativeBuildInputs = [
