@@ -12,7 +12,7 @@
     ...
   }:
     flake-parts.lib.mkFlake {inherit inputs;} {
-      systems = ["x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin"];
+      systems = ["x86_64-linux" "aarch64-darwin"];
 
       perSystem = {pkgs, ...}: {
         packages.default = pkgs.stdenvNoCC.mkDerivation (finalAttrs: {
@@ -20,10 +20,15 @@
           version = "v2.5.18";
           src = self;
 
+          pnpmDepsHash = {
+            "x86_64-linux" = "sha256-6QDYdwTmVfO3/Chm7coDh7Vx6Ec7eFJ/YR4mvju9Gyc=";
+            "aarch64-darwin" = "sha256-34djAIYi+joZ1BvVatMeB4cQ9r7+PighiHkIYSqRJxU=";
+          };
+
           pnpmDeps = pkgs.pnpm.fetchDeps {
             inherit (finalAttrs) pname version src;
             fetcherVersion = 1;
-            hash = "sha256-6QDYdwTmVfO3/Chm7coDh7Vx6Ec7eFJ/YR4mvju9Gyc=";
+            hash = finalAttrs.pnpmDepsHash.${pkgs.stdenv.system} or (throw "Unsupported system: ${pkgs.stdenv.system}");
           };
 
           nativeBuildInputs = [
