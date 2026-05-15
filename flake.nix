@@ -6,74 +6,77 @@
     flake-parts.url = "github:hercules-ci/flake-parts";
   };
 
-  outputs = inputs @ {
-    self,
-    flake-parts,
-    ...
-  }:
-    flake-parts.lib.mkFlake {inherit inputs;} {
-      systems = ["x86_64-linux" "aarch64-darwin"];
+  outputs =
+    inputs@{
+      self,
+      flake-parts,
+      ...
+    }:
+    flake-parts.lib.mkFlake { inherit inputs; } {
+      systems = [
+        "x86_64-linux"
+        "aarch64-darwin"
+      ];
 
-      perSystem = {pkgs, ...}: {
-        packages.default = pkgs.stdenvNoCC.mkDerivation (finalAttrs: {
-          pname = "aicommit2";
-          version = "v2.5.18";
-          src = self;
+      perSystem =
+        { pkgs, system, ... }:
+        {
+          packages.default = pkgs.stdenvNoCC.mkDerivation (finalAttrs: {
+            pname = "aicommit2";
+            version = "v2.5.19";
+            src = self;
 
-          pnpmDepsHash = {
-            "x86_64-linux" = "sha256-6QDYdwTmVfO3/Chm7coDh7Vx6Ec7eFJ/YR4mvju9Gyc=";
-            "aarch64-darwin" = "sha256-34djAIYi+joZ1BvVatMeB4cQ9r7+PighiHkIYSqRJxU=";
+            pnpmDeps = pkgs.pnpm.fetchDeps {
+              inherit (finalAttrs) pname version src;
+              fetcherVersion = 3;
+              hash = "sha256-D9H1bkvno+F2uWE3Lj+EWn1ytBknNh0NWJj7Grmm3fk=";
+            };
+
+            nativeBuildInputs = [
+              pkgs.nodejs
+              pkgs.pnpm.configHook
+            ];
+            buildInputs = [ pkgs.nodejs ];
+
+            buildPhase = ''
+              runHook preBuild
+              sed -i 's/"version": "0.0.0-semantic-release"/"version": "${finalAttrs.version}"/' package.json
+              pnpm build
+              runHook postBuild
+            '';
+
+            installPhase = ''
+              runHook preInstall
+
+              mkdir -p $out/{bin,lib/aicommit2}
+              cp -r {dist,node_modules} $out/lib/aicommit2
+
+              ln -s $out/lib/aicommit2/dist/cli.mjs $out/bin/aicommit2
+              ln -s $out/lib/aicommit2/dist/cli.mjs $out/bin/aic2
+
+              runHook postInstall
+            '';
+
+            meta = {
+              description = "A Reactive CLI that generates git commit messages with various AI";
+              homepage = "https://github.com/tak-bro/aicommit2";
+              license = pkgs.lib.licenses.mit;
+              mainProgram = "aicommit2";
+            };
+          });
+
+          formatter = pkgs.nixfmt;
+
+          devShells.default = pkgs.mkShell {
+            buildInputs = [
+              pkgs.nodejs
+              pkgs.pnpm
+              pkgs.pre-commit
+            ];
+            shellHook = ''
+              export PATH=$PWD/node_modules/.bin:$PATH
+            '';
           };
-
-          pnpmDeps = pkgs.pnpm.fetchDeps {
-            inherit (finalAttrs) pname version src;
-            fetcherVersion = 1;
-            hash = finalAttrs.pnpmDepsHash.${pkgs.stdenv.system} or (throw "Unsupported system: ${pkgs.stdenv.system}");
-          };
-
-          nativeBuildInputs = [
-            pkgs.nodejs
-            pkgs.pnpm.configHook
-          ];
-          buildInputs = [pkgs.nodejs];
-
-          buildPhase = ''
-            runHook preBuild
-            sed -i 's/"version": "0.0.0-semantic-release"/"version": "${finalAttrs.version}"/' package.json
-            pnpm build
-            runHook postBuild
-          '';
-
-          installPhase = ''
-            runHook preInstall
-
-            mkdir -p $out/{bin,lib/aicommit2}
-            cp -r {dist,node_modules} $out/lib/aicommit2
-
-            ln -s $out/lib/aicommit2/dist/cli.mjs $out/bin/aicommit2
-            ln -s $out/lib/aicommit2/dist/cli.mjs $out/bin/aic2
-
-            runHook postInstall
-          '';
-
-          meta = {
-            description = "A Reactive CLI that generates git commit messages with various AI";
-            homepage = "https://github.com/tak-bro/aicommit2";
-            license = pkgs.lib.licenses.mit;
-            mainProgram = "aicommit2";
-          };
-        });
-
-        devShells.default = pkgs.mkShell {
-          buildInputs = [
-            pkgs.nodejs
-            pkgs.pnpm
-            pkgs.pre-commit
-          ];
-          shellHook = ''
-            export PATH=$PWD/node_modules/.bin:$PATH
-          '';
         };
-      };
     };
 }
