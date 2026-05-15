@@ -1272,6 +1272,14 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/totoroot"><img src="https://avatars.githubusercontent.com/totoroot" width="100px;" alt=""/><br /><sub><b>@totoroot</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=totoroot" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/lawrence3699"><img src="https://avatars.githubusercontent.com/lawrence3699" width="100px;" alt=""/><br /><sub><b>@lawrence3699</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=lawrence3699" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/atlet99"><img src="https://avatars.githubusercontent.com/atlet99" width="100px;" alt=""/><br /><sub><b>@atlet99</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=atlet99" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/HoChihchou"><img src="https://avatars.githubusercontent.com/HoChihchou" width="100px;" alt=""/><br /><sub><b>@HoChihchou</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=HoChihchou" title="Code">💻</a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/chenmi319"><img src="https://avatars.githubusercontent.com/chenmi319" width="100px;" alt=""/><br /><sub><b>@chenmi319</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=chenmi319" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/JiwaniZakir"><img src="https://avatars.githubusercontent.com/JiwaniZakir" width="100px;" alt=""/><br /><sub><b>@JiwaniZakir</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=JiwaniZakir" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/qistchan"><img src="https://avatars.githubusercontent.com/qistchan" width="100px;" alt=""/><br /><sub><b>@qistchan</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=qistchan" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/Cassius0924"><img src="https://avatars.githubusercontent.com/Cassius0924" width="100px;" alt=""/><br /><sub><b>@Cassius0924</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=Cassius0924" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/Xyhlon"><img src="https://avatars.githubusercontent.com/Xyhlon" width="100px;" alt=""/><br /><sub><b>@Xyhlon</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=Xyhlon" title="Code">💻</a></td>
   </tr>
 </table>
 <!-- markdownlint-restore -->
