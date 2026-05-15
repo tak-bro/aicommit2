@@ -1,3 +1,10 @@
+## [2.5.20](https://github.com/tak-bro/aicommit2/compare/v2.5.19...v2.5.20) (2026-05-15)
+
+
+### Bug Fixes
+
+* **nix:** build and run support fixed for x86-64-linux and aarch64-darwin ([60f6083](https://github.com/tak-bro/aicommit2/commit/60f6083a2bee00396ac62b01ae0507e107dbd283))
+
 ## [2.5.19](https://github.com/tak-bro/aicommit2/compare/v2.5.18...v2.5.19) (2026-05-14)
 
 
