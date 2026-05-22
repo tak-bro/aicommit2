@@ -1,3 +1,10 @@
+## [2.5.21](https://github.com/tak-bro/aicommit2/compare/v2.5.20...v2.5.21) (2026-05-22)
+
+
+### Features
+
+* **cli:** add rewrite command for commit messages ([c265122](https://github.com/tak-bro/aicommit2/commit/c2651222a1a3968a60c60a634650e6c689717afb))
+
 ## [2.5.20](https://github.com/tak-bro/aicommit2/compare/v2.5.19...v2.5.20) (2026-05-15)
 
 
