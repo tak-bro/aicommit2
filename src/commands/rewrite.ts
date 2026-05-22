@@ -375,8 +375,10 @@ async function openEditor(message: string): Promise<string> {
 
         return editedMessage;
     } catch (error) {
-        if (fs.existsSync(tempFile)) {
+        try {
             fs.unlinkSync(tempFile);
+        } catch {
+            // Already removed or never created
         }
 
         if (error instanceof KnownError) {
