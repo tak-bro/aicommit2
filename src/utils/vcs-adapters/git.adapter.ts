@@ -219,10 +219,28 @@ export class GitAdapter extends BaseVCSAdapter {
         }
     }
 
-    async getRecentCommits(count: number = 5): Promise<string> {
+    async getRecentCommits(count: number = 5, excludeHash?: string): Promise<string> {
         try {
-            const { stdout } = await execa('git', ['log', '--format=%s', `-${count}`]);
-            return stdout.trim();
+            if (!excludeHash) {
+                const { stdout } = await execa('git', ['log', '--format=%s', `-${count}`]);
+                return stdout.trim();
+            }
+
+            // Resolve excludeHash (may be 'HEAD', short hash, or symbolic ref) to a full SHA
+            // so exact-match comparison works against the %H column below.
+            const { stdout: resolved } = await execa('git', ['rev-parse', excludeHash]);
+            const excludeSha = resolved.trim();
+
+            // Fetch hash+subject so we can drop the excluded commit, then return the next `count`.
+            // NUL field separator survives subjects with arbitrary content.
+            const { stdout } = await execa('git', ['log', `--format=%H%x00%s`, `-${count + 1}`]);
+            return stdout
+                .split('\n')
+                .map(line => line.split('\x00'))
+                .filter(([hash]) => hash && hash !== excludeSha)
+                .slice(0, count)
+                .map(([, subject]) => subject)
+                .join('\n');
         } catch {
             return '';
         }
@@ -279,6 +297,19 @@ export class GitAdapter extends BaseVCSAdapter {
                             '  git stash push -u\n' +
                             '  # ... run rewrite ...\n' +
                             '  git stash pop'
+                    );
+                }
+
+                // Reject if the rebase range spans merge commits — without --rebase-merges the
+                // history would be silently linearized, dropping the merges. Adding --rebase-merges
+                // changes the replay semantics in ways the user may not expect, so we refuse instead.
+                const { stdout: mergeCount } = await execa('git', ['rev-list', '--merges', '--count', `${commitHash}^..HEAD`]);
+                if (parseInt(mergeCount.trim(), 10) > 0) {
+                    throw new KnownError(
+                        `Cannot rewrite ${commitHash}: the rebase range contains merge commits.\n\n` +
+                            'Rewriting via `git rebase -i` would linearize history and drop the merges.\n' +
+                            'Reword the merge commit directly with `git commit --amend` (if HEAD) or\n' +
+                            'use `git rebase -i --rebase-merges` manually.'
                     );
                 }
 

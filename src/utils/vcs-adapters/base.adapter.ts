@@ -70,9 +70,11 @@ export abstract class BaseVCSAdapter {
     abstract getBranchName(): Promise<string>;
 
     /**
-     * Get recent commit messages for style reference
+     * Get recent commit messages for style reference.
+     * Pass `excludeHash` to omit a specific commit (e.g. when rewriting it,
+     * so the AI doesn't see the old message as context).
      */
-    abstract getRecentCommits(count?: number): Promise<string>;
+    abstract getRecentCommits(count?: number, excludeHash?: string): Promise<string>;
 
     /**
      * Get detected message for current changes

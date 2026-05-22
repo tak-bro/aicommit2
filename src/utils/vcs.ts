@@ -308,9 +308,9 @@ export const getBranchName = async (): Promise<string> => {
     return adapter.getBranchName();
 };
 
-export const getRecentCommits = async (count: number = 5): Promise<string> => {
+export const getRecentCommits = async (count: number = 5, excludeHash?: string): Promise<string> => {
     const adapter = await getVCSAdapter();
-    return adapter.getRecentCommits(count);
+    return adapter.getRecentCommits(count, excludeHash);
 };
 
 export const rewriteCommit = async (message: string, commitHash: string = 'HEAD'): Promise<void> => {

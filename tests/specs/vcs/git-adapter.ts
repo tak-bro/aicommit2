@@ -113,13 +113,9 @@ describe('Git Adapter', ({ test: runTest }) => {
         expect(adapter.rewriteCommit?.length).toBeGreaterThanOrEqual(1);
     });
 
-    runTest('rewriteCommit default commitHash should be HEAD', async () => {
-        const adapter = new GitAdapter();
-        // When called with only message, commitHash defaults to 'HEAD'
-        // This is verified by checking the function parameter default
-        const fnStr = adapter.rewriteCommit?.toString() || '';
-        expect(fnStr).toMatch(/commitHash.*=.*['"]HEAD['"]/);
-    });
+    // Default values (commitHash = 'HEAD') are enforced by the TypeScript signature
+    // and verified end-to-end by the CLI test suite (tests/specs/cli/rewrite.ts),
+    // so no runtime reflection of source strings is needed here.
 
     // ─── getCommitMessage ──────────────────────────────────────
 
@@ -128,22 +124,10 @@ describe('Git Adapter', ({ test: runTest }) => {
         expect(typeof adapter.getCommitMessage).toBe('function');
     });
 
-    runTest('getCommitMessage should accept optional commitHash', () => {
+    runTest('getCommitMessage returns empty string for an invalid ref', async () => {
         const adapter = new GitAdapter();
-        expect(adapter.getCommitMessage?.length).toBeGreaterThanOrEqual(0);
-    });
-
-    runTest('getCommitMessage default commitHash should be HEAD', async () => {
-        const adapter = new GitAdapter();
-        const fnStr = adapter.getCommitMessage?.toString() || '';
-        expect(fnStr).toMatch(/commitHash.*=.*['"]HEAD['"]/);
-    });
-
-    runTest('getCommitMessage returns empty string on error', () => {
-        // Method wraps git log and returns '' on any error
-        const adapter = new GitAdapter();
-        // Test the signature — actual mock test would verify catch path
-        expect(adapter.getCommitMessage).toBeDefined();
+        const result = await adapter.getCommitMessage?.('this-ref-cannot-possibly-exist-12345');
+        expect(result).toBe('');
     });
 
     // ─── isCommitPushed ────────────────────────────────────────
@@ -153,21 +137,10 @@ describe('Git Adapter', ({ test: runTest }) => {
         expect(typeof adapter.isCommitPushed).toBe('function');
     });
 
-    runTest('isCommitPushed should accept optional commitHash', () => {
+    runTest('isCommitPushed returns false for an invalid ref', async () => {
         const adapter = new GitAdapter();
-        expect(adapter.isCommitPushed?.length).toBeGreaterThanOrEqual(0);
-    });
-
-    runTest('isCommitPushed default commitHash should be HEAD', async () => {
-        const adapter = new GitAdapter();
-        const fnStr = adapter.isCommitPushed?.toString() || '';
-        expect(fnStr).toMatch(/commitHash.*=.*['"]HEAD['"]/);
-    });
-
-    runTest('isCommitPushed returns false when upstream not configured', () => {
-        // Method returns false when git rev-parse @{u} fails
-        const adapter = new GitAdapter();
-        expect(adapter.isCommitPushed).toBeDefined();
+        const result = await adapter.isCommitPushed?.('this-ref-cannot-possibly-exist-12345');
+        expect(result).toBe(false);
     });
 
     // ─── rewriteCommit via vcs.ts layer ────────────────────────
