@@ -287,6 +287,17 @@ export class GitAdapter extends BaseVCSAdapter {
                     stdio: 'inherit',
                 });
             } else {
+                // Reject root commits — `git rebase -i <root>^` has no parent to rebase onto
+                try {
+                    await execa('git', ['rev-parse', '--verify', `${commitHash}^`]);
+                } catch {
+                    throw new KnownError(
+                        `Cannot rewrite the initial commit (${commitHash}) via rebase.\n\n` +
+                            'Check out the commit and amend it directly, or use\n' +
+                            '`git rebase --root -i` manually.'
+                    );
+                }
+
                 // Reject if working tree is dirty — rebase would fail with a cryptic error
                 try {
                     await execa('git', ['diff-index', '--quiet', 'HEAD', '--']);
