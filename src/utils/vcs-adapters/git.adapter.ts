@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
@@ -7,6 +8,8 @@ import { execa } from 'execa';
 import { DEFAULT_DIFF_CONTEXT } from '../diff-compressor.js';
 import { KnownError } from '../error.js';
 import { BaseVCSAdapter, CommitOptions, DiffOptions, VCSDiff } from './base.adapter.js';
+
+const REWRITE_MSG_ENV = 'AICOMMIT2_MSG_FILE';
 
 export class GitAdapter extends BaseVCSAdapter {
     name = 'git' as const;
@@ -266,33 +269,49 @@ export class GitAdapter extends BaseVCSAdapter {
                     stdio: 'inherit',
                 });
             } else {
+                // Reject if working tree is dirty — rebase would fail with a cryptic error
+                try {
+                    await execa('git', ['diff-index', '--quiet', 'HEAD', '--']);
+                } catch {
+                    throw new KnownError(
+                        'Working tree has uncommitted changes.\n\n' +
+                            'Stash or commit them before rewriting a non-HEAD commit:\n' +
+                            '  git stash push -u\n' +
+                            '  # ... run rewrite ...\n' +
+                            '  git stash pop'
+                    );
+                }
+
                 // Resolve symbolic references (HEAD~1, branch names) to abbreviated commit hash
                 // The rebase todo list uses actual commit hashes, not symbolic names
                 const { stdout: shortHash } = await execa('git', ['rev-parse', '--short', commitHash]);
                 const resolvedHash = shortHash.trim();
 
-                // Write new message to a temp file for GIT_EDITOR to copy
-                const tmpFile = path.join(os.tmpdir(), `aicommit2-rewrite-msg-${Date.now()}.txt`);
+                // Random filename prevents predictable-path symlink races on shared tmpdir
+                const tmpFile = path.join(os.tmpdir(), `aicommit2-rewrite-msg-${crypto.randomBytes(8).toString('hex')}.txt`);
                 fs.writeFileSync(tmpFile, message, 'utf8');
 
                 // Determine sed in-place flag for the platform
                 const sedInPlace = process.platform === 'darwin' ? "sed -i ''" : 'sed -i';
 
                 try {
-                    // GIT_SEQUENCE_EDITOR: change 'pick' to 'reword' for the target commit
-                    // GIT_EDITOR: copy the new message file to the commit message file ($1)
+                    // GIT_SEQUENCE_EDITOR rewrites the rebase todo, GIT_EDITOR replaces the commit message.
+                    // tmpFile path goes through an env var instead of shell interpolation so paths
+                    // containing quotes can't break out of the sh -c body.
                     await execa('git', ['rebase', '-i', `${commitHash}^`, '--keep-empty'], {
                         env: {
                             ...process.env,
+                            [REWRITE_MSG_ENV]: tmpFile,
                             GIT_SEQUENCE_EDITOR: `${sedInPlace} 's/^pick ${resolvedHash}/reword ${resolvedHash}/'`,
-                            GIT_EDITOR: `sh -c 'cp "${tmpFile}" "$1"' --`,
+                            GIT_EDITOR: `cp "$${REWRITE_MSG_ENV}" "$1"`,
                         },
                         stdio: 'inherit',
                     });
                 } finally {
-                    // Clean up temp file
-                    if (fs.existsSync(tmpFile)) {
+                    try {
                         fs.unlinkSync(tmpFile);
+                    } catch {
+                        // Already removed or never created — nothing to clean up
                     }
                 }
             }
@@ -322,17 +341,15 @@ export class GitAdapter extends BaseVCSAdapter {
     }
 
     /**
-     * Check if a commit has been pushed to the remote tracking branch.
+     * Check if a commit has been pushed to any remote branch.
+     * Uses `git branch -r --contains` so commits pushed via branches other than
+     * the current one's upstream are still detected — important to warn the user
+     * before rewriting already-published history.
      */
     async isCommitPushed(commitHash: string = 'HEAD'): Promise<boolean> {
         try {
-            const { stdout: upstream } = await execa('git', ['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}']);
-            if (!upstream.trim()) {
-                return false;
-            }
-
-            await execa('git', ['merge-base', '--is-ancestor', commitHash, `${upstream.trim()}`]);
-            return true;
+            const { stdout } = await execa('git', ['branch', '-r', '--contains', commitHash]);
+            return stdout.trim().length > 0;
         } catch {
             return false;
         }
