@@ -338,14 +338,19 @@ export class GitAdapter extends BaseVCSAdapter {
 
                 try {
                     // GIT_SEQUENCE_EDITOR rewrites the rebase todo, GIT_EDITOR replaces the commit message.
-                    // tmpFile path goes through an env var instead of shell interpolation so paths
-                    // containing quotes can't break out of the sh -c body.
+                    // The tmpFile path travels through an env var (REWRITE_MSG_ENV) rather than being
+                    // interpolated into the shell body, so paths containing quotes can't break out.
+                    // The inner `sh -c '...' --` wrapper is required: git invokes editors as
+                    // `sh -c "$GIT_EDITOR \"$@\"" "$GIT_EDITOR" <commit-msg-file>`, which would
+                    // otherwise duplicate the commit-msg-file onto our cp command line. Wrapping in
+                    // our own `sh -c` and consuming the outer `$@` via `--` isolates `$1` to the
+                    // commit-msg-file as intended.
                     await execa('git', ['rebase', '-i', `${commitHash}^`, '--keep-empty'], {
                         env: {
                             ...process.env,
                             [REWRITE_MSG_ENV]: tmpFile,
                             GIT_SEQUENCE_EDITOR: `${sedInPlace} 's/^pick ${resolvedHash}/reword ${resolvedHash}/'`,
-                            GIT_EDITOR: `cp "$${REWRITE_MSG_ENV}" "$1"`,
+                            GIT_EDITOR: `sh -c 'cp "$${REWRITE_MSG_ENV}" "$1"' --`,
                         },
                         stdio: 'inherit',
                     });
