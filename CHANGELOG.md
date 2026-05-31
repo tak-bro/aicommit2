@@ -1,3 +1,14 @@
+## [2.5.22](https://github.com/tak-bro/aicommit2/compare/v2.5.21...v2.5.22) (2026-05-31)
+
+
+### Bug Fixes
+
+* **rewrite:** harden non-HEAD rewrite + cross-branch push detection ([b00a0e9](https://github.com/tak-bro/aicommit2/commit/b00a0e91488b501202f5c04ce6e1093193c97520))
+* **rewrite:** reject merge ranges, improve context, fix exit cleanup ([240b0f3](https://github.com/tak-bro/aicommit2/commit/240b0f3a599dc07908f9e6ff634ebb7f1f3f7ff8))
+* **rewrite:** reject root commit explicitly on non-HEAD path ([fc44c86](https://github.com/tak-bro/aicommit2/commit/fc44c861d861d3f4b06cb58cdbafa74c2120ae2d))
+* **rewrite:** replace existsSync+unlinkSync with try/catch in openEditor ([ffcb81d](https://github.com/tak-bro/aicommit2/commit/ffcb81de238371a1f2ef7140a82e4effd74f851c))
+* **rewrite:** restore sh -c wrapper for GIT_EDITOR ([4d2ec93](https://github.com/tak-bro/aicommit2/commit/4d2ec93463209b9b79fbc61ffa2a5160d242a751))
+
 ## [2.5.21](https://github.com/tak-bro/aicommit2/compare/v2.5.20...v2.5.21) (2026-05-22)
 
 
