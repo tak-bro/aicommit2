@@ -205,7 +205,9 @@ export default command(
             }
 
             const branchName = await getBranchName();
-            const recentCommits = await getRecentCommits();
+            // Exclude the target commit from "recent commits" context so the AI doesn't
+            // see the old message it's being asked to replace and unconsciously mirror it.
+            const recentCommits = await getRecentCommits(5, commitHash);
             const aiRequestManager = new AIRequestManager(config, commitDiff, branchName, recentCommits);
 
             const autoSelect = argv.flags['auto-select'] || false;
@@ -275,16 +277,16 @@ export default command(
                     consoleManager.print(`\n${selectedMessage}\n`);
                 }
 
-                // Dry run: output only, don't rewrite
+                // Dry run: output only, don't rewrite. Fall through to finally for cleanup.
                 if (dryRun) {
                     process.stdout.write(selectedMessage + '\n');
-                    process.exit();
+                    return;
                 }
 
-                // Auto-select or confirm
+                // Auto-select or confirm — skip the explicit confirm prompt below
                 if (confirm || (autoSelect && availableAIs.length === 1)) {
                     await performRewrite(selectedMessage, commitHash);
-                    process.exit();
+                    return;
                 }
 
                 const { confirmationPrompt } = await inquirer.prompt([
@@ -301,8 +303,8 @@ export default command(
                 } else {
                     consoleManager.printCancelledCommit();
                 }
-                process.exit();
             } finally {
+                // Runs on every exit path (return, throw) so subscriptions don't leak
                 if (commitMsgSubscription) {
                     commitMsgSubscription.unsubscribe();
                 }
@@ -317,14 +319,15 @@ export default command(
 );
 
 /**
- * Rewrite the commit message, with a push warning.
+ * Rewrite the commit message, warning the user if the commit is already pushed.
+ * Returns without rewriting if the user cancels at the push warning.
  */
 async function performRewrite(message: string, commitHash: string): Promise<void> {
     const pushed = await isCommitPushed(commitHash);
     if (pushed) {
         const isHead = commitHash === 'HEAD';
         consoleManager.printWarning(
-            `⚠  ${isHead ? 'The HEAD' : `Commit ${commitHash.slice(0, 7)}`} appears to have been pushed to the remote.\n` +
+            `${isHead ? 'The HEAD' : `Commit ${commitHash.slice(0, 7)}`} appears to have been pushed to the remote.\n` +
                 '   Rewriting will change its hash. You will need to force push:\n' +
                 '     git push --force-with-lease'
         );
@@ -340,7 +343,7 @@ async function performRewrite(message: string, commitHash: string): Promise<void
 
         if (!proceed) {
             consoleManager.printCancelledCommit();
-            process.exit();
+            return;
         }
     }
 
@@ -372,8 +375,10 @@ async function openEditor(message: string): Promise<string> {
 
         return editedMessage;
     } catch (error) {
-        if (fs.existsSync(tempFile)) {
+        try {
             fs.unlinkSync(tempFile);
+        } catch {
+            // Already removed or never created
         }
 
         if (error instanceof KnownError) {

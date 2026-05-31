@@ -323,7 +323,7 @@ export class JujutsuAdapter extends BaseVCSAdapter {
         }
     }
 
-    async getRecentCommits(count: number = 5): Promise<string> {
+    async getRecentCommits(count: number = 5, _excludeHash?: string): Promise<string> {
         try {
             const { stdout } = await execa('jj', [
                 'log',
