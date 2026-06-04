@@ -3,6 +3,7 @@ import { Observable, Subject, catchError, of } from 'rxjs';
 
 import { StreamableChoice } from '../../managers/reactive-prompt.manager.js';
 import { addLogEntry } from '../../utils/ai-log.js';
+import { buildCommitContext } from '../../utils/commit-context/index.js';
 import { CommitType, ModelConfig, ModelName, ModelNameDisplay } from '../../utils/config.js';
 import { ErrorCode, ErrorCodeType, detectErrorCode, getPlainErrorMessage, httpStatusToErrorCode } from '../../utils/error-messages.js';
 import { logger } from '../../utils/logger.js';
@@ -417,16 +418,20 @@ export abstract class AIService {
     };
 
     /**
-     * Build the user prompt with commit context (recent commits, branch name).
-     * Services should use this instead of calling generateUserPrompt directly.
+     * Assemble the enriched commit context (tickets, conventions, branch intent)
+     * from this request's raw VCS signals. Single source for all providers —
+     * services that build prompts outside buildUserPrompt should call this too.
      */
-    protected buildUserPrompt = (diff: string, requestType: 'commit' | 'review' = 'commit'): string => {
-        const context: CommitContext = {
+    protected getCommitContext = (): CommitContext =>
+        buildCommitContext({
             recentCommits: this.params.recentCommits,
             branchName: this.params.branchName,
-        };
-        return generateUserPrompt(diff, requestType, context);
-    };
+            ticketExtraction: this.params.config.ticketExtraction,
+            learnConventions: this.params.config.learnConventions,
+        });
+
+    protected buildUserPrompt = (diff: string, requestType: 'commit' | 'review' = 'commit'): string =>
+        generateUserPrompt(diff, requestType, this.getCommitContext());
 
     /**
      * Format a raw commit message into an AIResponse-like shape (title + full value).
