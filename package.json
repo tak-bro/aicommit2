@@ -199,10 +199,6 @@
                             "release": "patch"
                         },
                         {
-                            "type": "feat",
-                            "release": "patch"
-                        },
-                        {
                             "scope": "major",
                             "release": "major"
                         },
