@@ -1,3 +1,10 @@
+# [2.6.0](https://github.com/tak-bro/aicommit2/compare/v2.5.22...v2.6.0) (2026-06-04)
+
+
+### Features
+
+* enrich commit context with tickets, conventions, and branch intent ([9bfb6b8](https://github.com/tak-bro/aicommit2/commit/9bfb6b869ef67a2fada284f05d76720238279c67))
+
 ## [2.5.22](https://github.com/tak-bro/aicommit2/compare/v2.5.21...v2.5.22) (2026-05-31)
 
 
