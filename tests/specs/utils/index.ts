@@ -7,5 +7,6 @@ export default testSuite(({ describe }) => {
         runTestSuite(import('./format-model-suffix.js'));
         runTestSuite(import('./prompt.js'));
         runTestSuite(import('./reasoning-models.js'));
+        runTestSuite(import('./commit-context.js'));
     });
 });

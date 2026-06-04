@@ -157,6 +157,62 @@ export default testSuite(({ describe }) => {
                 expect(result).toContain('## Branch');
                 expect(result).toContain('hotfix/urgent');
             });
+
+            test('should render convention profile as active constraints', () => {
+                const result = generateUserPrompt('diff content', 'commit', {
+                    convention: {
+                        dominantType: 'conventional',
+                        typeDistribution: { feat: 3, fix: 1 },
+                        commonScopes: ['auth', 'api'],
+                        avgSubjectLength: 46,
+                    },
+                });
+                expect(result).toContain('## Repository Conventions (match these)');
+                expect(result).toContain('Predominant style: conventional');
+                expect(result).toContain('feat (75%)');
+                expect(result).toContain('Common scopes: auth, api');
+                expect(result).toContain('~46 chars');
+            });
+
+            test('should render ticket reference with footer hint', () => {
+                const result = generateUserPrompt('diff content', 'commit', {
+                    tickets: [{ id: 'PROJ-9', kind: 'key', footerHint: 'Refs PROJ-9' }],
+                });
+                expect(result).toContain('## Ticket Reference');
+                expect(result).toContain('PROJ-9');
+                expect(result).toContain('Refs PROJ-9');
+            });
+
+            test('should render branch intent when type present', () => {
+                const result = generateUserPrompt('diff content', 'commit', {
+                    branchIntent: { type: 'feat', rawPrefix: 'feature' },
+                });
+                expect(result).toContain('## Branch Intent');
+                expect(result).toContain('commit type: feat');
+            });
+
+            test('should skip branch intent when type is null', () => {
+                const result = generateUserPrompt('diff content', 'commit', {
+                    branchIntent: { type: null, rawPrefix: 'main' },
+                });
+                expect(result).not.toContain('## Branch Intent');
+            });
+
+            test('should skip commit-only enrichment sections for review requests', () => {
+                const result = generateUserPrompt('diff content', 'review', {
+                    recentCommits: 'feat: prior',
+                    branchName: 'feature/PROJ-9',
+                    convention: { dominantType: 'conventional', typeDistribution: { feat: 1 }, commonScopes: [], avgSubjectLength: 20 },
+                    tickets: [{ id: 'PROJ-9', kind: 'key', footerHint: 'Refs PROJ-9' }],
+                    branchIntent: { type: 'feat', rawPrefix: 'feature' },
+                });
+                expect(result).not.toContain('## Repository Conventions');
+                expect(result).not.toContain('## Ticket Reference');
+                expect(result).not.toContain('## Branch Intent');
+                // shared context (history, branch) still flows to review prompts
+                expect(result).toContain('## Recent Commits');
+                expect(result).toContain('## Branch');
+            });
         });
     });
 });

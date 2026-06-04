@@ -3,6 +3,8 @@ import fs from 'fs';
 import { CommitType, ValidConfig, resolvePromptPath } from './config.js';
 import { KnownError } from './error.js';
 
+import type { BranchIntent, ConventionProfile, TicketRef } from './commit-context/types.js';
+
 export interface PromptOptions {
     locale: string;
     maxLength: number;
@@ -415,14 +417,62 @@ export const validateSystemPrompt = async (config: ValidConfig) => {
 export interface CommitContext {
     recentCommits?: string;
     branchName?: string;
+    tickets?: TicketRef[];
+    convention?: ConventionProfile;
+    branchIntent?: BranchIntent;
 }
 
-export const generateUserPrompt = (diff: string, _requestType: 'commit' | 'review' = 'commit', context?: CommitContext): string => {
+const renderConvention = (convention: ConventionProfile): string => {
+    const total = Object.values(convention.typeDistribution).reduce((sum, count) => sum + count, 0);
+    const lines = [`## Repository Conventions (match these)`];
+
+    if (convention.dominantType) {
+        lines.push(`- Predominant style: ${convention.dominantType}`);
+    }
+    if (total > 0) {
+        const types = Object.entries(convention.typeDistribution)
+            .sort((a, b) => b[1] - a[1])
+            .map(([type, count]) => `${type} (${Math.round((count / total) * 100)}%)`)
+            .join(', ');
+        lines.push(`- Common types: ${types}`);
+    }
+    if (convention.commonScopes.length > 0) {
+        lines.push(`- Common scopes: ${convention.commonScopes.join(', ')}`);
+    }
+    lines.push(`- Typical subject length: ~${convention.avgSubjectLength} chars`);
+
+    return lines.join('\n');
+};
+
+const renderTickets = (tickets: TicketRef[]): string => {
+    const ids = tickets.map(ticket => ticket.id).join(', ');
+    const hints = tickets.map(ticket => `"${ticket.footerHint}"`).join(', ');
+    return `## Ticket Reference\nBranch references ${ids}. Add ${hints} to the footer if relevant.`;
+};
+
+const renderBranchIntent = (branchIntent: BranchIntent): string =>
+    `## Branch Intent\nBranch prefix suggests commit type: ${branchIntent.type}`;
+
+export const generateUserPrompt = (diff: string, requestType: 'commit' | 'review' = 'commit', context?: CommitContext): string => {
     const sections: string[] = [];
 
     if (context?.recentCommits) {
         sections.push(`## Recent Commits (for style reference)\n${context.recentCommits}`);
     }
+
+    // Commit-message guidance is meaningless for a code-review response.
+    if (requestType === 'commit') {
+        if (context?.convention) {
+            sections.push(renderConvention(context.convention));
+        }
+        if (context?.tickets && context.tickets.length > 0) {
+            sections.push(renderTickets(context.tickets));
+        }
+        if (context?.branchIntent?.type) {
+            sections.push(renderBranchIntent(context.branchIntent));
+        }
+    }
+
     if (context?.branchName) {
         sections.push(`## Branch\n${context.branchName}`);
     }
