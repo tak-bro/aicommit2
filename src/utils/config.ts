@@ -914,7 +914,10 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
         envKey: (envKey?: string) => envKey || '',
         model: (model?: string | string[]): string[] => {
             if (!model) {
-                return ['gpt-4.1'];
+                // No implicit default: an explicitly configured model is the opt-in
+                // signal that activates the Copilot SDK provider (issue #254).
+                // The service falls back to COPILOT_SDK_DEFAULT_MODEL at request time.
+                return [];
             }
             const modelList = typeof model === 'string' ? model?.split(',') : model;
             return modelList.map(m => m.trim()).filter(m => !!m && m.length > 0);

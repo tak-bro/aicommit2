@@ -338,6 +338,61 @@ export default testSuite(({ describe }) => {
             });
         });
 
+        await describe('Copilot SDK configuration', async ({ test }) => {
+            const envKeys = ['AICOMMIT_CONFIG_PATH', 'COPILOT_GITHUB_TOKEN', 'COPILOT_SDK_API_KEY'];
+
+            await test('COPILOT_SDK defaults to no model and stays inactive without opt-in', async () => {
+                const { fixture } = await createFixture();
+                const configPath = path.join(fixture.path, '.config', 'aicommit2', 'config.ini');
+                await ensureDirectoryExists(path.dirname(configPath));
+                await fs.writeFile(configPath, ['[OPENAI]', 'key=sk-test', ''].join('\n'));
+
+                const snapshot = snapshotEnv(envKeys);
+
+                process.env.AICOMMIT_CONFIG_PATH = configPath;
+                delete process.env.COPILOT_GITHUB_TOKEN;
+                delete process.env.COPILOT_SDK_API_KEY;
+
+                const config = (await getConfig({}, [])) as ValidConfig;
+                const copilotSdk = config.COPILOT_SDK as any;
+
+                expect(copilotSdk.model).toEqual([]);
+
+                const commitAIs = getAvailableAIs(config, 'commit');
+
+                expect(commitAIs).toContain('OPENAI');
+                expect(commitAIs).not.toContain('COPILOT_SDK');
+
+                await fixture.rm();
+                restoreEnv(snapshot);
+            });
+
+            await test('COPILOT_SDK activates with an explicitly configured model', async () => {
+                const { fixture } = await createFixture();
+                const configPath = path.join(fixture.path, '.config', 'aicommit2', 'config.ini');
+                await ensureDirectoryExists(path.dirname(configPath));
+                await fs.writeFile(configPath, ['[COPILOT_SDK]', 'model=gpt-4.1', ''].join('\n'));
+
+                const snapshot = snapshotEnv(envKeys);
+
+                process.env.AICOMMIT_CONFIG_PATH = configPath;
+                delete process.env.COPILOT_GITHUB_TOKEN;
+                delete process.env.COPILOT_SDK_API_KEY;
+
+                const config = (await getConfig({}, [])) as ValidConfig;
+                const copilotSdk = config.COPILOT_SDK as any;
+
+                expect(copilotSdk.model).toEqual(['gpt-4.1']);
+
+                const commitAIs = getAvailableAIs(config, 'commit');
+
+                expect(commitAIs).toContain('COPILOT_SDK');
+
+                await fixture.rm();
+                restoreEnv(snapshot);
+            });
+        });
+
         await describe('Bedrock configuration', async ({ test }) => {
             const envKeys = [
                 'AICOMMIT_CONFIG_PATH',

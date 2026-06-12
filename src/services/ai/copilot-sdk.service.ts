@@ -192,7 +192,11 @@ export class CopilotSdkService extends AIService {
                 }
             } finally {
                 if (client?.stop) {
-                    await client.stop();
+                    try {
+                        await client.stop();
+                    } catch {
+                        // Ignore stop failures so they don't mask the in-flight error.
+                    }
                 }
             }
         }
