@@ -1,3 +1,10 @@
+## [2.6.1](https://github.com/tak-bro/aicommit2/compare/v2.6.0...v2.6.1) (2026-06-12)
+
+
+### Bug Fixes
+
+* require explicit opt-in for Copilot SDK provider ([aa6f0c9](https://github.com/tak-bro/aicommit2/commit/aa6f0c959edf74acfdc76325c8c9371cfd4b3014)), closes [#254](https://github.com/tak-bro/aicommit2/issues/254)
+
 # [2.6.0](https://github.com/tak-bro/aicommit2/compare/v2.5.22...v2.6.0) (2026-06-04)
 
 
