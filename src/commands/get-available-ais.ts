@@ -24,7 +24,11 @@ const isCopilotSdkInstalled = (): boolean => {
 let copilotSdkInstalled: boolean | undefined;
 
 const hasCopilotSdkAvailable = (value: RawConfig): boolean => {
-    if (!hasConfiguredModels(value)) {
+    // COPILOT_SDK must be opted into explicitly; the SDK package is a bundled
+    // dependency, so its presence alone is not a signal of user intent (issue #254).
+    const hasOptInSignal =
+        hasConfiguredModels(value) || isNonEmptyString(value.key as string) || isNonEmptyString(process.env.COPILOT_GITHUB_TOKEN);
+    if (!hasOptInSignal) {
         return false;
     }
     if (copilotSdkInstalled === undefined) {
@@ -97,7 +101,7 @@ export const getAvailableAIs = (config: ValidConfig, requestType: RequestType): 
                         return !!value && hasConfiguredModels(value) && codeReview;
                     }
                     if (key === 'COPILOT_SDK') {
-                        return !!value && hasConfiguredModels(value) && codeReview;
+                        return !!value && hasCopilotSdkAvailable(value) && codeReview;
                     }
                     if (key === 'HUGGINGFACE') {
                         return !!value && !!value.cookie && codeReview;
@@ -112,7 +116,7 @@ export const getAvailableAIs = (config: ValidConfig, requestType: RequestType): 
                         return !!value && hasConfiguredModels(value) && watchMode;
                     }
                     if (key === 'COPILOT_SDK') {
-                        return !!value && hasConfiguredModels(value) && watchMode;
+                        return !!value && hasCopilotSdkAvailable(value) && watchMode;
                     }
                     if (key === 'HUGGINGFACE') {
                         return !!value && !!value.cookie && watchMode;

@@ -84,5 +84,74 @@ export default testSuite(({ describe }) => {
             expect(reviewAIs).toContain('COPILOT_SDK');
             expect(watchAIs).toContain('COPILOT_SDK');
         });
+
+        const withCopilotToken = (token: string | undefined, run: () => void) => {
+            const originalToken = process.env.COPILOT_GITHUB_TOKEN;
+            if (token === undefined) {
+                delete process.env.COPILOT_GITHUB_TOKEN;
+            } else {
+                process.env.COPILOT_GITHUB_TOKEN = token;
+            }
+            try {
+                run();
+            } finally {
+                if (originalToken === undefined) {
+                    delete process.env.COPILOT_GITHUB_TOKEN;
+                } else {
+                    process.env.COPILOT_GITHUB_TOKEN = originalToken;
+                }
+            }
+        };
+
+        test('COPILOT_SDK is not available without an explicit opt-in signal', () => {
+            withCopilotToken(undefined, () => {
+                const config = {
+                    codeReview: true,
+                    watchMode: true,
+                    COPILOT_SDK: {
+                        model: [],
+                        key: '',
+                    },
+                } as any;
+
+                const commitAIs = getAvailableAIs(config, 'commit');
+                const reviewAIs = getAvailableAIs(config, 'review');
+                const watchAIs = getAvailableAIs(config, 'watch');
+
+                expect(commitAIs).not.toContain('COPILOT_SDK');
+                expect(reviewAIs).not.toContain('COPILOT_SDK');
+                expect(watchAIs).not.toContain('COPILOT_SDK');
+            });
+        });
+
+        test('COPILOT_SDK is available when COPILOT_GITHUB_TOKEN is set', () => {
+            withCopilotToken('github_pat_test', () => {
+                const config = {
+                    COPILOT_SDK: {
+                        model: [],
+                        key: '',
+                    },
+                } as any;
+
+                const commitAIs = getAvailableAIs(config, 'commit');
+
+                expect(commitAIs).toContain('COPILOT_SDK');
+            });
+        });
+
+        test('COPILOT_SDK is available when key is configured', () => {
+            withCopilotToken(undefined, () => {
+                const config = {
+                    COPILOT_SDK: {
+                        model: [],
+                        key: 'github_pat_test',
+                    },
+                } as any;
+
+                const commitAIs = getAvailableAIs(config, 'commit');
+
+                expect(commitAIs).toContain('COPILOT_SDK');
+            });
+        });
     });
 });
