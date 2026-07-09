@@ -17,6 +17,7 @@ import {
     codeReviewLoader,
     commitMsgLoader,
     emptyCodeReview,
+    requestProgressText,
 } from '../managers/reactive-prompt.manager.js';
 import { recordSelection } from '../services/stats/index.js';
 import { ModelName, RawConfig, applyDisableLowerCaseToConfig, applyIncludeBodyToConfig, getConfig } from '../utils/config.js';
@@ -344,33 +345,47 @@ const handleCommitMessage = async (
 ): Promise<CommitMessageResult> => {
     const commitMsgPromptManager = new ReactivePromptManager(commitMsgLoader);
     let commitMsgSubscription: Subscription | null = null;
+    const totalRequests = aiRequestManager.countRequests(availableAIs);
+    let settledRequests = 0;
 
     try {
         if (autoSelect && availableAIs.length === 1) {
             const messages: CommitChoice[] = [];
-            commitMsgPromptManager.startLoader();
 
-            commitMsgSubscription = aiRequestManager.createCommitMsgRequests$(availableAIs).subscribe({
-                next: (choice: ReactiveListChoice) => {
-                    // Skip streaming preview/sentinel choices — only collect final results
-                    const isStreamingChoice = 'streamKey' in choice;
-                    if (!isStreamingChoice) {
-                        messages.push(choice as CommitChoice);
-                    }
-                    commitMsgPromptManager.refreshChoices(choice);
-                },
-                error: error => {
-                    console.error('Commit message generation error:', error);
-                    commitMsgPromptManager.checkErrorOnChoices(false);
-                },
-                complete: () => commitMsgPromptManager.checkErrorOnChoices(false),
-            });
+            // No interactive prompt on this path, so the prompt's `loader$` has no
+            // subscriber and never builds a spinner. Drive one from the console instead.
+            consoleManager.showLoader(requestProgressText(0, totalRequests));
+
+            commitMsgSubscription = aiRequestManager
+                .createCommitMsgRequests$(availableAIs, () => {
+                    settledRequests++;
+                    consoleManager.showLoader(requestProgressText(settledRequests, totalRequests));
+                })
+                .subscribe({
+                    next: (choice: ReactiveListChoice) => {
+                        // Skip streaming preview/sentinel choices — only collect final results
+                        const isStreamingChoice = 'streamKey' in choice;
+                        if (!isStreamingChoice) {
+                            messages.push(choice as CommitChoice);
+                        }
+                        commitMsgPromptManager.refreshChoices(choice);
+                    },
+                    error: error => {
+                        consoleManager.stopLoader();
+                        console.error('Commit message generation error:', error);
+                        commitMsgPromptManager.checkErrorOnChoices(false);
+                    },
+                    complete: () => {
+                        consoleManager.stopLoader();
+                        commitMsgPromptManager.checkErrorOnChoices(false);
+                    },
+                });
 
             await new Promise<void>(resolve => {
                 commitMsgSubscription?.add(() => resolve());
             });
 
-            commitMsgPromptManager.clearLoader();
+            consoleManager.stopLoader();
 
             consoleManager.moveCursorUp(); // NOTE: reactiveListPrompt has 2 blank lines
             const validMessage = messages.find(msg => msg.value && !msg.isError && !msg.disabled);
@@ -392,35 +407,29 @@ const handleCommitMessage = async (
         const commitMsgInquirer = commitMsgPromptManager.initPrompt();
 
         commitMsgPromptManager.startLoader();
+        commitMsgPromptManager.updateLoaderText(requestProgressText(0, totalRequests));
 
-        // QW-3: Track received messages to show progress in loader
-        let receivedCount = 0;
+        commitMsgSubscription = aiRequestManager
+            .createCommitMsgRequests$(availableAIs, () => {
+                settledRequests++;
+                commitMsgPromptManager.updateLoaderText(requestProgressText(settledRequests, totalRequests));
+            })
+            .subscribe({
+                next: (choice: ReactiveListChoice) => {
+                    const commitChoice = choice as CommitChoice;
+                    // Store choice by value for lookup after selection
+                    if (commitChoice.value) {
+                        choiceMap.set(commitChoice.value, commitChoice);
+                    }
 
-        commitMsgSubscription = aiRequestManager.createCommitMsgRequests$(availableAIs).subscribe({
-            next: (choice: ReactiveListChoice) => {
-                const commitChoice = choice as CommitChoice;
-                // Store choice by value for lookup after selection
-                if (commitChoice.value) {
-                    choiceMap.set(commitChoice.value, commitChoice);
-                }
-
-                // Update loader with response progress
-                const isValidResponse = choice.value && !choice.isError && !choice.disabled;
-                if (isValidResponse) {
-                    receivedCount++;
-                    commitMsgPromptManager.updateLoaderText(
-                        `AI is analyzing your changes (${receivedCount} message${receivedCount > 1 ? 's' : ''} generated)`
-                    );
-                }
-
-                commitMsgPromptManager.refreshChoices(choice);
-            },
-            error: error => {
-                console.error('Commit message generation error:', error);
-                commitMsgPromptManager.checkErrorOnChoices();
-            },
-            complete: () => commitMsgPromptManager.checkErrorOnChoices(),
-        });
+                    commitMsgPromptManager.refreshChoices(choice);
+                },
+                error: error => {
+                    console.error('Commit message generation error:', error);
+                    commitMsgPromptManager.checkErrorOnChoices();
+                },
+                complete: () => commitMsgPromptManager.checkErrorOnChoices(),
+            });
 
         const commitMsgInquirerResult = await commitMsgInquirer;
 

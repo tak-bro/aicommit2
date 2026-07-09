@@ -11,7 +11,7 @@ import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { getAvailableAIs } from './get-available-ais.js';
 import { AIRequestManager } from '../managers/ai-request.manager.js';
 import { ConsoleManager } from '../managers/console.manager.js';
-import { ReactivePromptManager, commitMsgLoader } from '../managers/reactive-prompt.manager.js';
+import { ReactivePromptManager, commitMsgLoader, requestProgressText } from '../managers/reactive-prompt.manager.js';
 import { RawConfig, applyDisableLowerCaseToConfig, getConfig } from '../utils/config.js';
 import { ErrorCode, ErrorMessages } from '../utils/error-messages.js';
 import { KnownError, handleCliError } from '../utils/error.js';
@@ -225,33 +225,32 @@ export default command(
 
                 const commitMsgInquirer = commitMsgPromptManager.initPrompt();
 
+                const totalRequests = aiRequestManager.countRequests(availableAIs);
+                let settledRequests = 0;
+
                 commitMsgPromptManager.startLoader();
+                commitMsgPromptManager.updateLoaderText(requestProgressText(0, totalRequests));
 
-                let receivedCount = 0;
+                commitMsgSubscription = aiRequestManager
+                    .createCommitMsgRequests$(availableAIs, () => {
+                        settledRequests++;
+                        commitMsgPromptManager.updateLoaderText(requestProgressText(settledRequests, totalRequests));
+                    })
+                    .subscribe({
+                        next: (choice: ReactiveListChoice) => {
+                            const rewriteChoice = choice as RewriteChoice;
+                            if (rewriteChoice.value) {
+                                choiceMap.set(rewriteChoice.value, rewriteChoice);
+                            }
 
-                commitMsgSubscription = aiRequestManager.createCommitMsgRequests$(availableAIs).subscribe({
-                    next: (choice: ReactiveListChoice) => {
-                        const rewriteChoice = choice as RewriteChoice;
-                        if (rewriteChoice.value) {
-                            choiceMap.set(rewriteChoice.value, rewriteChoice);
-                        }
-
-                        const isValidResponse = choice.value && !choice.isError && !choice.disabled;
-                        if (isValidResponse) {
-                            receivedCount++;
-                            commitMsgPromptManager.updateLoaderText(
-                                `AI is analyzing your changes (${receivedCount} message${receivedCount > 1 ? 's' : ''} generated)`
-                            );
-                        }
-
-                        commitMsgPromptManager.refreshChoices(choice);
-                    },
-                    error: error => {
-                        console.error('Commit message generation error:', error);
-                        commitMsgPromptManager.checkErrorOnChoices();
-                    },
-                    complete: () => commitMsgPromptManager.checkErrorOnChoices(),
-                });
+                            commitMsgPromptManager.refreshChoices(choice);
+                        },
+                        error: error => {
+                            console.error('Commit message generation error:', error);
+                            commitMsgPromptManager.checkErrorOnChoices();
+                        },
+                        complete: () => commitMsgPromptManager.checkErrorOnChoices(),
+                    });
 
                 const commitMsgInquirerResult = await commitMsgInquirer;
 

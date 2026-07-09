@@ -1,5 +1,5 @@
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
-import { Observable, catchError, from, mergeMap, switchMap } from 'rxjs';
+import { Observable, catchError, finalize, from, mergeMap, switchMap } from 'rxjs';
 
 import { AIServiceFactory } from '../services/ai/ai-service.factory.js';
 import { ProviderRegistry, createErrorChoice, withProviderMetadata } from '../services/ai/provider-registry.js';
@@ -42,26 +42,47 @@ export class AIRequestManager {
         }
     };
 
-    createCommitMsgRequests$ = (modelNames: ModelName[]): Observable<ReactiveListChoice> => {
-        return this.createServiceRequests$(modelNames, 'commit');
+    /**
+     * Number of requests a run will issue. A request is one (provider, model) pair,
+     * so a provider configured with several models issues several requests.
+     */
+    countRequests = (modelNames: ModelName[]): number => modelNames.reduce((total, ai) => total + this.getModels(ai).length, 0);
+
+    createCommitMsgRequests$ = (modelNames: ModelName[], onRequestSettled?: () => void): Observable<ReactiveListChoice> => {
+        return this.createServiceRequests$(modelNames, 'commit', onRequestSettled);
     };
 
-    createCodeReviewRequests$ = (modelNames: ModelName[]): Observable<ReactiveListChoice> => {
-        return this.createServiceRequests$(modelNames, 'review');
+    createCodeReviewRequests$ = (modelNames: ModelName[], onRequestSettled?: () => void): Observable<ReactiveListChoice> => {
+        return this.createServiceRequests$(modelNames, 'review', onRequestSettled);
     };
 
-    private createServiceRequests$ = (modelNames: ModelName[], requestType: 'commit' | 'review'): Observable<ReactiveListChoice> => {
+    private getModels = (ai: ModelName): string[] => {
+        const { model } = this.config[ai];
+        return Array.isArray(model) ? model : [model];
+    };
+
+    private createServiceRequests$ = (
+        modelNames: ModelName[],
+        requestType: 'commit' | 'review',
+        onRequestSettled?: () => void
+    ): Observable<ReactiveListChoice> => {
         return from(modelNames).pipe(
-            mergeMap(ai => this.createProviderRequests$(ai, requestType)),
+            mergeMap(ai => this.createProviderRequests$(ai, requestType, onRequestSettled)),
             catchError(err => createErrorChoice('UNKNOWN', err.message || 'Unknown error'))
         );
     };
 
-    private createProviderRequests$ = (ai: ModelName, requestType: 'commit' | 'review'): Observable<ReactiveListChoice> => {
-        const config = this.config[ai];
-        const models = Array.isArray(config.model) ? config.model : [config.model];
-
-        return from(models).pipe(mergeMap(model => this.createModelRequest$(ai, model, requestType)));
+    private createProviderRequests$ = (
+        ai: ModelName,
+        requestType: 'commit' | 'review',
+        onRequestSettled?: () => void
+    ): Observable<ReactiveListChoice> => {
+        // `finalize` sits on the per-model request: settling is counted per (provider, model),
+        // matching `countRequests`. Error choices carry no provider, so completion is the
+        // only place a failed request can be observed.
+        return from(this.getModels(ai)).pipe(
+            mergeMap(model => this.createModelRequest$(ai, model, requestType).pipe(finalize(() => onRequestSettled?.())))
+        );
     };
 
     private createModelRequest$ = (ai: ModelName, model: string, requestType: 'commit' | 'review'): Observable<ReactiveListChoice> => {
