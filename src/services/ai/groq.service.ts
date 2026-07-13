@@ -76,15 +76,15 @@ export class GroqService extends AIService {
         const { generate, type } = this.params.config;
 
         return this.createStreamingCommitMessages$(
-            subject => {
-                this.streamChunks(subject).catch(err => subject.error(err));
+            (subject, signal) => {
+                this.streamChunks(subject, signal).catch(err => subject.error(err));
             },
             type,
             generate
         );
     };
 
-    private streamChunks = async (subject: Subject<string>): Promise<void> => {
+    private streamChunks = async (subject: Subject<string>, signal: AbortSignal): Promise<void> => {
         const diff = this.params.stagedDiff.diff;
         const { logging, temperature } = this.params.config;
         const maxTokens = this.params.config.maxTokens;
@@ -121,6 +121,7 @@ export class GroqService extends AIService {
         try {
             const stream = await this.groq.chat.completions.create(payload, {
                 timeout: this.params.config.timeout,
+                signal,
             });
 
             for await (const chunk of stream) {
