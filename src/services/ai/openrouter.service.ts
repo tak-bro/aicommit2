@@ -311,15 +311,15 @@ export class OpenRouterService extends AIService {
         const { generate, type } = this.params.config;
 
         return this.createStreamingCommitMessages$(
-            subject => {
-                this.streamChunks(subject).catch(err => subject.error(err));
+            (subject, signal) => {
+                this.streamChunks(subject, signal).catch(err => subject.error(err));
             },
             type,
             generate
         );
     };
 
-    private streamChunks = async (subject: Subject<string>): Promise<void> => {
+    private streamChunks = async (subject: Subject<string>, signal: AbortSignal): Promise<void> => {
         const diff = this.params.stagedDiff.diff;
         const { logging, timeout } = this.params.config;
         const generatedSystemPrompt = generatePrompt(this.buildPromptOptions());
@@ -346,7 +346,7 @@ export class OpenRouterService extends AIService {
         let accumulatedText = '';
 
         try {
-            const stream = await this.openAI.chat.completions.create(payload, { timeout });
+            const stream = await this.openAI.chat.completions.create(payload, { timeout, signal });
             const chatCompletionStream = stream as unknown as AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>;
 
             for await (const chunk of chatCompletionStream) {

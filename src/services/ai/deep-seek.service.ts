@@ -170,15 +170,15 @@ export class DeepSeekService extends AIService {
         const { generate, type } = this.params.config;
 
         return this.createStreamingCommitMessages$(
-            subject => {
-                this.streamChunks(subject).catch(err => subject.error(err));
+            (subject, signal) => {
+                this.streamChunks(subject, signal).catch(err => subject.error(err));
             },
             type,
             generate
         );
     };
 
-    private streamChunks = async (subject: Subject<string>): Promise<void> => {
+    private streamChunks = async (subject: Subject<string>, signal: AbortSignal): Promise<void> => {
         const diff = this.params.stagedDiff.diff;
         const { logging } = this.params.config;
         const generatedSystemPrompt = generatePrompt(this.buildPromptOptions());
@@ -210,6 +210,7 @@ export class DeepSeekService extends AIService {
         try {
             const stream = await this.deepSeek.chat.completions.create(payload, {
                 timeout: this.params.config.timeout,
+                signal,
             });
             const chatCompletionStream = stream as unknown as AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>;
 
