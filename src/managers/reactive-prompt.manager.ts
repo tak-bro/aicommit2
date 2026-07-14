@@ -8,10 +8,11 @@ import { sortByDisabled } from '../utils/utils.js';
 
 // `isLoading` starts true: the prompt mounts while requests are already in flight, and
 // an empty choice list must not read as "nothing was generated" before anything lands.
+// Text is empty so the first frame shows only the spinner until the progress bar arrives.
 export const commitMsgLoader = {
     isLoading: true,
     startOption: {
-        text: 'AI is analyzing your changes',
+        text: '',
     },
 };
 
@@ -21,12 +22,6 @@ export const codeReviewLoader = {
         text: 'AI is performing a code review',
     },
 };
-
-/**
- * Loader text while requests are in flight. `settled` counts requests that finished,
- * including failed ones, so the count always reaches `total`.
- */
-export const requestProgressText = (settled: number, total: number): string => `AI is analyzing your changes (${settled}/${total})`;
 
 export const emptyCommitMessage = `No commit messages were generated`;
 

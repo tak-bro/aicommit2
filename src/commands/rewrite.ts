@@ -11,7 +11,13 @@ import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { getAvailableAIs } from './get-available-ais.js';
 import { AIRequestManager } from '../managers/ai-request.manager.js';
 import { ConsoleManager } from '../managers/console.manager.js';
-import { ReactivePromptManager, commitMsgLoader, requestProgressText } from '../managers/reactive-prompt.manager.js';
+import {
+    ProgressAnimator,
+    createIndeterminateAnimator,
+    createProgressAnimator,
+    shouldAnimateProgress,
+} from '../managers/progress-animator.js';
+import { ReactivePromptManager, commitMsgLoader } from '../managers/reactive-prompt.manager.js';
 import { RawConfig, applyDisableLowerCaseToConfig, getConfig } from '../utils/config.js';
 import { ErrorCode, ErrorMessages } from '../utils/error-messages.js';
 import { KnownError, handleCliError } from '../utils/error.js';
@@ -218,6 +224,7 @@ export default command(
             // Generate and select new commit message
             const commitMsgPromptManager = new ReactivePromptManager(commitMsgLoader);
             let commitMsgSubscription: Subscription | null = null;
+            let progress: ProgressAnimator | null = null;
 
             try {
                 // Store choices with metadata for later lookup
@@ -226,16 +233,14 @@ export default command(
                 const commitMsgInquirer = commitMsgPromptManager.initPrompt();
 
                 const totalRequests = aiRequestManager.countRequests(availableAIs);
-                let settledRequests = 0;
 
                 commitMsgPromptManager.startLoader();
-                commitMsgPromptManager.updateLoaderText(requestProgressText(0, totalRequests));
+                progress = shouldAnimateProgress(totalRequests)
+                    ? createProgressAnimator(totalRequests, text => commitMsgPromptManager.updateLoaderText(text))
+                    : createIndeterminateAnimator(text => commitMsgPromptManager.updateLoaderText(text));
 
                 commitMsgSubscription = aiRequestManager
-                    .createCommitMsgRequests$(availableAIs, () => {
-                        settledRequests++;
-                        commitMsgPromptManager.updateLoaderText(requestProgressText(settledRequests, totalRequests));
-                    })
+                    .createCommitMsgRequests$(availableAIs, () => progress?.settle())
                     .subscribe({
                         next: (choice: ReactiveListChoice) => {
                             const rewriteChoice = choice as RewriteChoice;
@@ -246,10 +251,14 @@ export default command(
                             commitMsgPromptManager.refreshChoices(choice);
                         },
                         error: error => {
+                            progress?.stop();
                             console.error('Commit message generation error:', error);
                             commitMsgPromptManager.checkErrorOnChoices();
                         },
-                        complete: () => commitMsgPromptManager.checkErrorOnChoices(),
+                        complete: () => {
+                            progress?.stop();
+                            commitMsgPromptManager.checkErrorOnChoices();
+                        },
                     });
 
                 const commitMsgInquirerResult = await commitMsgInquirer;
@@ -304,6 +313,7 @@ export default command(
                 }
             } finally {
                 // Runs on every exit path (return, throw) so subscriptions don't leak
+                progress?.stop();
                 if (commitMsgSubscription) {
                     commitMsgSubscription.unsubscribe();
                 }

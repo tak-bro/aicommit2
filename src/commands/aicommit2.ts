@@ -12,12 +12,17 @@ import { getAvailableAIs } from './get-available-ais.js';
 import { AIRequestManager } from '../managers/ai-request.manager.js';
 import { ConsoleManager } from '../managers/console.manager.js';
 import {
+    ProgressAnimator,
+    createIndeterminateAnimator,
+    createProgressAnimator,
+    shouldAnimateProgress,
+} from '../managers/progress-animator.js';
+import {
     DEFAULT_INQUIRER_OPTIONS,
     ReactivePromptManager,
     codeReviewLoader,
     commitMsgLoader,
     emptyCodeReview,
-    requestProgressText,
 } from '../managers/reactive-prompt.manager.js';
 import { recordSelection } from '../services/stats/index.js';
 import { ModelName, RawConfig, applyDisableLowerCaseToConfig, applyIncludeBodyToConfig, getConfig } from '../utils/config.js';
@@ -346,7 +351,7 @@ const handleCommitMessage = async (
     const commitMsgPromptManager = new ReactivePromptManager(commitMsgLoader);
     let commitMsgSubscription: Subscription | null = null;
     const totalRequests = aiRequestManager.countRequests(availableAIs);
-    let settledRequests = 0;
+    let progress: ProgressAnimator | null = null;
 
     try {
         if (autoSelect && availableAIs.length === 1) {
@@ -354,13 +359,12 @@ const handleCommitMessage = async (
 
             // No interactive prompt on this path, so the prompt's `loader$` has no
             // subscriber and never builds a spinner. Drive one from the console instead.
-            consoleManager.showLoader(requestProgressText(0, totalRequests));
+            progress = shouldAnimateProgress(totalRequests)
+                ? createProgressAnimator(totalRequests, text => consoleManager.showLoader(text))
+                : createIndeterminateAnimator(text => consoleManager.showLoader(text));
 
             commitMsgSubscription = aiRequestManager
-                .createCommitMsgRequests$(availableAIs, () => {
-                    settledRequests++;
-                    consoleManager.showLoader(requestProgressText(settledRequests, totalRequests));
-                })
+                .createCommitMsgRequests$(availableAIs, () => progress?.settle())
                 .subscribe({
                     next: (choice: ReactiveListChoice) => {
                         // Skip streaming preview/sentinel choices — only collect final results
@@ -371,11 +375,13 @@ const handleCommitMessage = async (
                         commitMsgPromptManager.refreshChoices(choice);
                     },
                     error: error => {
+                        progress?.stop();
                         consoleManager.stopLoader();
                         console.error('Commit message generation error:', error);
                         commitMsgPromptManager.checkErrorOnChoices(false);
                     },
                     complete: () => {
+                        progress?.stop();
                         consoleManager.stopLoader();
                         commitMsgPromptManager.checkErrorOnChoices(false);
                     },
@@ -385,6 +391,7 @@ const handleCommitMessage = async (
                 commitMsgSubscription?.add(() => resolve());
             });
 
+            progress.stop();
             consoleManager.stopLoader();
 
             consoleManager.moveCursorUp(); // NOTE: reactiveListPrompt has 2 blank lines
@@ -407,13 +414,12 @@ const handleCommitMessage = async (
         const commitMsgInquirer = commitMsgPromptManager.initPrompt();
 
         commitMsgPromptManager.startLoader();
-        commitMsgPromptManager.updateLoaderText(requestProgressText(0, totalRequests));
+        progress = shouldAnimateProgress(totalRequests)
+            ? createProgressAnimator(totalRequests, text => commitMsgPromptManager.updateLoaderText(text))
+            : createIndeterminateAnimator(text => commitMsgPromptManager.updateLoaderText(text));
 
         commitMsgSubscription = aiRequestManager
-            .createCommitMsgRequests$(availableAIs, () => {
-                settledRequests++;
-                commitMsgPromptManager.updateLoaderText(requestProgressText(settledRequests, totalRequests));
-            })
+            .createCommitMsgRequests$(availableAIs, () => progress?.settle())
             .subscribe({
                 next: (choice: ReactiveListChoice) => {
                     const commitChoice = choice as CommitChoice;
@@ -425,10 +431,14 @@ const handleCommitMessage = async (
                     commitMsgPromptManager.refreshChoices(choice);
                 },
                 error: error => {
+                    progress?.stop();
                     console.error('Commit message generation error:', error);
                     commitMsgPromptManager.checkErrorOnChoices();
                 },
-                complete: () => commitMsgPromptManager.checkErrorOnChoices(),
+                complete: () => {
+                    progress?.stop();
+                    commitMsgPromptManager.checkErrorOnChoices();
+                },
             });
 
         const commitMsgInquirerResult = await commitMsgInquirer;
@@ -448,6 +458,7 @@ const handleCommitMessage = async (
             model: selectedChoice?.model || 'unknown',
         };
     } finally {
+        progress?.stop();
         if (commitMsgSubscription) {
             commitMsgSubscription.unsubscribe();
         }
