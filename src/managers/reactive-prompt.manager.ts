@@ -6,15 +6,17 @@ import { BehaviorSubject, ReplaySubject, Subscription } from 'rxjs';
 import { isVerboseLoggingEnabled } from '../utils/logger.js';
 import { sortByDisabled } from '../utils/utils.js';
 
+// `isLoading` starts true: the prompt mounts while requests are already in flight, and
+// an empty choice list must not read as "nothing was generated" before anything lands.
 export const commitMsgLoader = {
-    isLoading: false,
+    isLoading: true,
     startOption: {
         text: 'AI is analyzing your changes',
     },
 };
 
 export const codeReviewLoader = {
-    isLoading: false,
+    isLoading: true,
     startOption: {
         text: 'AI is performing a code review',
     },

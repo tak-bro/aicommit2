@@ -388,41 +388,82 @@ const handleCommitMessage = async (
 
         // Store choices with metadata for later lookup
         const choiceMap = new Map<string, CommitChoice>();
-
-        const commitMsgInquirer = commitMsgPromptManager.initPrompt();
-
-        commitMsgPromptManager.startLoader();
-
+        let promptMounted = false;
+        let commitMsgInquirer: ReturnType<typeof commitMsgPromptManager.initPrompt> | null = null;
         // QW-3: Track received messages to show progress in loader
         let receivedCount = 0;
 
-        commitMsgSubscription = aiRequestManager.createCommitMsgRequests$(availableAIs).subscribe({
-            next: (choice: ReactiveListChoice) => {
-                const commitChoice = choice as CommitChoice;
-                // Store choice by value for lookup after selection
-                if (commitChoice.value) {
-                    choiceMap.set(commitChoice.value, commitChoice);
-                }
+        // While generating, show only a console spinner — mounting the interactive prompt
+        // here would render the "Pick a commit message" question and an empty list before
+        // there is anything to pick. The prompt mounts with the first message instead, so
+        // the question and list appear only once a choice exists.
+        consoleManager.showLoader(commitMsgLoader.startOption.text);
 
-                // Update loader with response progress
-                const isValidResponse = choice.value && !choice.isError && !choice.disabled;
-                if (isValidResponse) {
-                    receivedCount++;
-                    commitMsgPromptManager.updateLoaderText(
-                        `AI is analyzing your changes (${receivedCount} message${receivedCount > 1 ? 's' : ''} generated)`
-                    );
-                }
+        const mountPrompt = () => {
+            if (promptMounted) {
+                return;
+            }
+            promptMounted = true;
+            consoleManager.stopLoader();
+            commitMsgInquirer = commitMsgPromptManager.initPrompt();
+            commitMsgPromptManager.startLoader();
+        };
 
-                commitMsgPromptManager.refreshChoices(choice);
-            },
-            error: error => {
-                console.error('Commit message generation error:', error);
-                commitMsgPromptManager.checkErrorOnChoices();
-            },
-            complete: () => commitMsgPromptManager.checkErrorOnChoices(),
-        });
+        const commitMsgInquirerResult = await new Promise<NonNullable<Awaited<ReturnType<typeof commitMsgPromptManager.initPrompt>>>>(
+            (resolve, reject) => {
+                commitMsgSubscription = aiRequestManager.createCommitMsgRequests$(availableAIs).subscribe({
+                    next: (choice: ReactiveListChoice) => {
+                        const commitChoice = choice as CommitChoice;
+                        // Store choice by value for lookup after selection
+                        if (commitChoice.value) {
+                            choiceMap.set(commitChoice.value, commitChoice);
+                        }
 
-        const commitMsgInquirerResult = await commitMsgInquirer;
+                        if (!promptMounted) {
+                            mountPrompt();
+                            // Settle the outer promise from the now-mounted prompt's result.
+                            commitMsgInquirer!.then(resolve, reject);
+                        }
+
+                        // Update loader with response progress
+                        const isValidResponse = choice.value && !choice.isError && !choice.disabled;
+                        if (isValidResponse) {
+                            receivedCount++;
+                            commitMsgPromptManager.updateLoaderText(
+                                `AI is analyzing your changes (${receivedCount} message${receivedCount > 1 ? 's' : ''} generated)`
+                            );
+                        }
+
+                        commitMsgPromptManager.refreshChoices(choice);
+                    },
+                    error: error => {
+                        if (!promptMounted) {
+                            consoleManager.stopLoader();
+                            console.error('Commit message generation error:', error);
+                            // shouldExit=false: exiting here would bypass the outer
+                            // KnownError reporting and the finally cleanup.
+                            commitMsgPromptManager.checkErrorOnChoices(false);
+                            reject(new KnownError('No valid commit message was generated'));
+                            return;
+                        }
+                        console.error('Commit message generation error:', error);
+                        commitMsgPromptManager.checkErrorOnChoices();
+                    },
+                    complete: () => {
+                        if (!promptMounted) {
+                            // No choice ever arrived (e.g. all requests failed before emitting):
+                            // stop the spinner and report. Failures emit error choices, which
+                            // mount the prompt, so this path is effectively the zero-request case.
+                            consoleManager.stopLoader();
+                            commitMsgPromptManager.checkErrorOnChoices(false);
+                            reject(new KnownError('No valid commit message was generated'));
+                            return;
+                        }
+                        commitMsgPromptManager.checkErrorOnChoices();
+                    },
+                });
+            }
+        );
 
         consoleManager.moveCursorUp(); // NOTE: reactiveListPrompt has 2 blank lines
         const selectedValue = commitMsgInquirerResult.aicommit2Prompt?.value;

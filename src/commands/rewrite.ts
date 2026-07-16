@@ -222,38 +222,74 @@ export default command(
             try {
                 // Store choices with metadata for later lookup
                 const choiceMap = new Map<string, RewriteChoice>();
-
-                const commitMsgInquirer = commitMsgPromptManager.initPrompt();
-
-                commitMsgPromptManager.startLoader();
-
+                let promptMounted = false;
+                let commitMsgInquirer: ReturnType<typeof commitMsgPromptManager.initPrompt> | null = null;
                 let receivedCount = 0;
 
-                commitMsgSubscription = aiRequestManager.createCommitMsgRequests$(availableAIs).subscribe({
-                    next: (choice: ReactiveListChoice) => {
-                        const rewriteChoice = choice as RewriteChoice;
-                        if (rewriteChoice.value) {
-                            choiceMap.set(rewriteChoice.value, rewriteChoice);
-                        }
+                // Show only a console spinner while generating — mounting the interactive
+                // prompt here would render the question and an empty list before there is
+                // anything to pick. It mounts with the first message instead.
+                consoleManager.showLoader(commitMsgLoader.startOption.text);
 
-                        const isValidResponse = choice.value && !choice.isError && !choice.disabled;
-                        if (isValidResponse) {
-                            receivedCount++;
-                            commitMsgPromptManager.updateLoaderText(
-                                `AI is analyzing your changes (${receivedCount} message${receivedCount > 1 ? 's' : ''} generated)`
-                            );
-                        }
+                const mountPrompt = () => {
+                    if (promptMounted) {
+                        return;
+                    }
+                    promptMounted = true;
+                    consoleManager.stopLoader();
+                    commitMsgInquirer = commitMsgPromptManager.initPrompt();
+                    commitMsgPromptManager.startLoader();
+                };
 
-                        commitMsgPromptManager.refreshChoices(choice);
-                    },
-                    error: error => {
-                        console.error('Commit message generation error:', error);
-                        commitMsgPromptManager.checkErrorOnChoices();
-                    },
-                    complete: () => commitMsgPromptManager.checkErrorOnChoices(),
+                const commitMsgInquirerResult = await new Promise<
+                    NonNullable<Awaited<ReturnType<typeof commitMsgPromptManager.initPrompt>>>
+                >((resolve, reject) => {
+                    commitMsgSubscription = aiRequestManager.createCommitMsgRequests$(availableAIs).subscribe({
+                        next: (choice: ReactiveListChoice) => {
+                            const rewriteChoice = choice as RewriteChoice;
+                            if (rewriteChoice.value) {
+                                choiceMap.set(rewriteChoice.value, rewriteChoice);
+                            }
+
+                            if (!promptMounted) {
+                                mountPrompt();
+                                commitMsgInquirer!.then(resolve, reject);
+                            }
+
+                            const isValidResponse = choice.value && !choice.isError && !choice.disabled;
+                            if (isValidResponse) {
+                                receivedCount++;
+                                commitMsgPromptManager.updateLoaderText(
+                                    `AI is analyzing your changes (${receivedCount} message${receivedCount > 1 ? 's' : ''} generated)`
+                                );
+                            }
+
+                            commitMsgPromptManager.refreshChoices(choice);
+                        },
+                        error: error => {
+                            if (!promptMounted) {
+                                consoleManager.stopLoader();
+                                console.error('Commit message generation error:', error);
+                                // shouldExit=false: exiting here would bypass the outer
+                                // KnownError reporting and the finally cleanup.
+                                commitMsgPromptManager.checkErrorOnChoices(false);
+                                reject(new KnownError('No valid commit message was generated'));
+                                return;
+                            }
+                            console.error('Commit message generation error:', error);
+                            commitMsgPromptManager.checkErrorOnChoices();
+                        },
+                        complete: () => {
+                            if (!promptMounted) {
+                                consoleManager.stopLoader();
+                                commitMsgPromptManager.checkErrorOnChoices(false);
+                                reject(new KnownError('No valid commit message was generated'));
+                                return;
+                            }
+                            commitMsgPromptManager.checkErrorOnChoices();
+                        },
+                    });
                 });
-
-                const commitMsgInquirerResult = await commitMsgInquirer;
 
                 const selectedValue = commitMsgInquirerResult.aicommit2Prompt?.value;
                 if (!selectedValue) {
@@ -304,10 +340,10 @@ export default command(
                     consoleManager.printCancelledCommit();
                 }
             } finally {
-                // Runs on every exit path (return, throw) so subscriptions don't leak
-                if (commitMsgSubscription) {
-                    commitMsgSubscription.unsubscribe();
-                }
+                // Runs on every exit path (return, throw) so subscriptions don't leak. The
+                // assignment lives inside the Promise executor, which control-flow analysis
+                // can't see, so re-assert the declared type before the null-guarded call.
+                (commitMsgSubscription as Subscription | null)?.unsubscribe();
                 commitMsgPromptManager.destroy();
             }
         })().catch(error => {
