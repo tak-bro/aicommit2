@@ -4,7 +4,9 @@ import { getAvailableAIs } from '../../../src/commands/get-available-ais.js';
 import {
     buildCopilotSdkClientOptions,
     getCopilotSdkModelCandidates,
+    isCopilotSdkAuthError,
     isCopilotSdkClassicPatError,
+    isCopilotSdkCliNotFoundError,
     isCopilotSdkModelAccessError,
     isCopilotSdkPackageInstalled,
     normalizeCopilotSdkModel,
@@ -36,6 +38,22 @@ export default testSuite(({ describe }) => {
             expect(isCopilotSdkClassicPatError('No authentication information found.')).toBe(false);
         });
 
+        test('classifies a missing bundled CLI as install breakage, not an auth error (issue #259)', () => {
+            // copilot-sdk 0.2.0 mis-resolved the bundled CLI path against
+            // @github/copilot >=1.0.39 layouts; the resulting "Copilot CLI not
+            // found" was reported as an authentication failure, sending users
+            // through login flows that could never fix it.
+            const sdkPathError = 'Copilot CLI not found at /x/node_modules/@github/index.js. Ensure @github/copilot is installed.';
+            const sdkResolveError = 'Could not find @github/copilot package. Searched 3 paths.';
+
+            expect(isCopilotSdkCliNotFoundError(sdkPathError)).toBe(true);
+            expect(isCopilotSdkCliNotFoundError(sdkResolveError)).toBe(true);
+            expect(isCopilotSdkAuthError(sdkPathError)).toBe(false);
+
+            expect(isCopilotSdkCliNotFoundError('No authentication information found.')).toBe(false);
+            expect(isCopilotSdkAuthError('No authentication information found.')).toBe(true);
+        });
+
         test('builds client options with COPILOT_GITHUB_TOKEN and strips generic GitHub envs', () => {
             const options = buildCopilotSdkClientOptions({
                 COPILOT_GITHUB_TOKEN: 'github_pat_test',
@@ -43,7 +61,7 @@ export default testSuite(({ describe }) => {
                 GITHUB_TOKEN: 'ghp_bad_2',
             });
 
-            expect(options.githubToken).toBe('github_pat_test');
+            expect(options.gitHubToken).toBe('github_pat_test');
             expect(options.useLoggedInUser).toBe(false);
             expect(options.env?.COPILOT_GITHUB_TOKEN).toBe('github_pat_test');
             expect(options.env?.GH_TOKEN).toBe(undefined);
@@ -61,7 +79,7 @@ export default testSuite(({ describe }) => {
                 GITHUB_TOKEN: 'ghp_bad_2',
             });
 
-            expect(options.githubToken).toBe(undefined);
+            expect(options.gitHubToken).toBe(undefined);
             expect(options.useLoggedInUser).toBe(true);
             expect(options.env?.COPILOT_GITHUB_TOKEN).toBe(undefined);
             expect(options.env?.GH_TOKEN).toBe(undefined);
@@ -70,7 +88,7 @@ export default testSuite(({ describe }) => {
 
         test('builds client options from an explicit resolved token without reading env', () => {
             const options = buildCopilotSdkClientOptions({ GH_TOKEN: 'ghp_bad' }, 'gho_from_gh');
-            expect(options.githubToken).toBe('gho_from_gh');
+            expect(options.gitHubToken).toBe('gho_from_gh');
             expect(options.useLoggedInUser).toBe(false);
             expect(options.env?.COPILOT_GITHUB_TOKEN).toBe('gho_from_gh');
             expect(options.env?.GH_TOKEN).toBe(undefined);

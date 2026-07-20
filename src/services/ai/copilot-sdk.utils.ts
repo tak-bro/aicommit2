@@ -41,7 +41,8 @@ export const COPILOT_SDK_KNOWN_MODELS = {
 export const ALL_COPILOT_SDK_KNOWN_MODELS: readonly string[] = [...COPILOT_SDK_KNOWN_MODELS.free, ...COPILOT_SDK_KNOWN_MODELS.pro];
 
 export interface CopilotSdkClientOptions {
-    githubToken?: string;
+    /** SDK >=1.0 spells this `gitHubToken`; the 0.x `githubToken` spelling is silently ignored. */
+    gitHubToken?: string;
     useLoggedInUser?: boolean;
     env?: NodeJS.ProcessEnv;
 }
@@ -98,9 +99,19 @@ export const isCopilotSdkAuthError = (message: string): boolean => {
         normalized.includes('invalid token') ||
         normalized.includes('token expired') ||
         normalized.includes('no authentication') ||
-        normalized.includes('copilot cli not found') ||
         normalized.includes('copilot cli authentication')
     );
+};
+
+/**
+ * The SDK's bundled Copilot CLI could not be resolved or spawned. This is an
+ * installation problem (broken/missing @github/copilot), not an auth problem —
+ * telling the user to log in cannot fix it (issue #259: copilot-sdk 0.2.0
+ * mis-resolved the CLI path against @github/copilot >=1.0.39 layouts).
+ */
+export const isCopilotSdkCliNotFoundError = (message: string): boolean => {
+    const normalized = message.toLowerCase();
+    return normalized.includes('copilot cli not found') || normalized.includes('could not find @github/copilot package');
 };
 
 export const isCopilotSdkClassicPatError = (message: string): boolean => {
@@ -169,7 +180,7 @@ export const buildCopilotSdkClientOptions = (env: NodeJS.ProcessEnv = process.en
     if (explicitToken.length > 0) {
         sanitizedEnv.COPILOT_GITHUB_TOKEN = explicitToken;
         return {
-            githubToken: explicitToken,
+            gitHubToken: explicitToken,
             useLoggedInUser: false,
             env: sanitizedEnv,
         };

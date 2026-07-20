@@ -107,7 +107,7 @@
         "yaml": "^2.9.0"
     },
     "optionalDependencies": {
-        "@github/copilot-sdk": "0.2.0"
+        "@github/copilot-sdk": "^1.0.7"
     },
     "devDependencies": {
         "@pvtnbr/eslint-config": "^0.33.0",
