@@ -226,7 +226,9 @@ export class GeminiService extends AIService {
         const startTime = Date.now();
 
         try {
-            const generateOptions = this.params.config.timeout > 10000 ? { request: { timeout: this.params.config.timeout } } : undefined;
+            // SingleRequestOptions is flat; { request: { timeout } } did not match the SDK type.
+            const generateOptions: SingleRequestOptions | undefined =
+                this.params.config.timeout > 10000 ? { timeout: this.params.config.timeout } : undefined;
 
             const result = await model.generateContent(userPrompt, generateOptions);
             const response = result.response;
