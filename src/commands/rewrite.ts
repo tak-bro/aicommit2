@@ -222,74 +222,39 @@ export default command(
             try {
                 // Store choices with metadata for later lookup
                 const choiceMap = new Map<string, RewriteChoice>();
-                let promptMounted = false;
-                let commitMsgInquirer: ReturnType<typeof commitMsgPromptManager.initPrompt> | null = null;
-                let receivedCount = 0;
+                // Progress shown next to the bar as (done/total): final results (including
+                // error entries) over the number of AI requests. Streaming previews excluded.
+                const totalRequests = availableAIs.length;
+                let settledRequests = 0;
 
-                // Show only a console spinner while generating — mounting the interactive
-                // prompt here would render the question and an empty list before there is
-                // anything to pick. It mounts with the first message instead.
-                consoleManager.showLoader(commitMsgLoader.startOption.text);
+                // Mount up front: the library's loading bar hides the question while the list
+                // is empty, so there is no premature question + empty list. The bar animates
+                // through generation and the list fills in as messages stream.
+                const commitMsgInquirer = commitMsgPromptManager.initPrompt();
+                // Single emission: carries both `isLoading: true` and the initial (0/N) progress.
+                commitMsgPromptManager.updateLoaderProgress(settledRequests, totalRequests);
 
-                const mountPrompt = () => {
-                    if (promptMounted) {
-                        return;
-                    }
-                    promptMounted = true;
-                    consoleManager.stopLoader();
-                    commitMsgInquirer = commitMsgPromptManager.initPrompt();
-                    commitMsgPromptManager.startLoader();
-                };
-
-                const commitMsgInquirerResult = await new Promise<
-                    NonNullable<Awaited<ReturnType<typeof commitMsgPromptManager.initPrompt>>>
-                >((resolve, reject) => {
-                    commitMsgSubscription = aiRequestManager.createCommitMsgRequests$(availableAIs).subscribe({
-                        next: (choice: ReactiveListChoice) => {
-                            const rewriteChoice = choice as RewriteChoice;
-                            if (rewriteChoice.value) {
-                                choiceMap.set(rewriteChoice.value, rewriteChoice);
-                            }
-
-                            if (!promptMounted) {
-                                mountPrompt();
-                                commitMsgInquirer!.then(resolve, reject);
-                            }
-
-                            const isValidResponse = choice.value && !choice.isError && !choice.disabled;
-                            if (isValidResponse) {
-                                receivedCount++;
-                                commitMsgPromptManager.updateLoaderText(
-                                    `AI is analyzing your changes (${receivedCount} message${receivedCount > 1 ? 's' : ''} generated)`
-                                );
-                            }
-
-                            commitMsgPromptManager.refreshChoices(choice);
-                        },
-                        error: error => {
-                            if (!promptMounted) {
-                                consoleManager.stopLoader();
-                                console.error('Commit message generation error:', error);
-                                // shouldExit=false: exiting here would bypass the outer
-                                // KnownError reporting and the finally cleanup.
-                                commitMsgPromptManager.checkErrorOnChoices(false);
-                                reject(new KnownError('No valid commit message was generated'));
-                                return;
-                            }
-                            console.error('Commit message generation error:', error);
-                            commitMsgPromptManager.checkErrorOnChoices();
-                        },
-                        complete: () => {
-                            if (!promptMounted) {
-                                consoleManager.stopLoader();
-                                commitMsgPromptManager.checkErrorOnChoices(false);
-                                reject(new KnownError('No valid commit message was generated'));
-                                return;
-                            }
-                            commitMsgPromptManager.checkErrorOnChoices();
-                        },
-                    });
+                commitMsgSubscription = aiRequestManager.createCommitMsgRequests$(availableAIs).subscribe({
+                    next: (choice: ReactiveListChoice) => {
+                        const rewriteChoice = choice as RewriteChoice;
+                        if (rewriteChoice.value) {
+                            choiceMap.set(rewriteChoice.value, rewriteChoice);
+                        }
+                        const isFinalResult = !('streamKey' in choice);
+                        if (isFinalResult && settledRequests < totalRequests) {
+                            settledRequests++;
+                            commitMsgPromptManager.updateLoaderProgress(settledRequests, totalRequests);
+                        }
+                        commitMsgPromptManager.refreshChoices(choice);
+                    },
+                    error: error => {
+                        console.error('Commit message generation error:', error);
+                        commitMsgPromptManager.checkErrorOnChoices();
+                    },
+                    complete: () => commitMsgPromptManager.checkErrorOnChoices(),
                 });
+
+                const commitMsgInquirerResult = await commitMsgInquirer;
 
                 const selectedValue = commitMsgInquirerResult.aicommit2Prompt?.value;
                 if (!selectedValue) {

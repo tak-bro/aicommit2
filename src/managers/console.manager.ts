@@ -3,7 +3,7 @@ import readline from 'readline';
 import chalk from 'chalk';
 import figlet from 'figlet';
 import gradient from 'gradient-string';
-import ora, { Ora } from 'ora';
+import ora, { Options, Ora } from 'ora';
 
 import { getDetectedMessage } from '../utils/vcs.js';
 
@@ -25,12 +25,12 @@ export class ConsoleManager {
         }
     }
 
-    showLoader(text: string) {
+    showLoader(text: string, spinner?: Options['spinner']) {
         if (this.loader) {
             this.loader.text = text;
             return;
         }
-        this.loader = ora(text).start();
+        this.loader = ora({ text, spinner }).start();
     }
 
     stopLoader() {

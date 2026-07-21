@@ -93,7 +93,6 @@ export default testSuite(({ describe }) => {
 
             // These operations should be safe to call but have no effect
             expect(() => manager.startLoader()).not.toThrow();
-            expect(() => manager.clearLoader()).not.toThrow();
             expect(() => manager.cancel()).not.toThrow();
             expect(() => manager.closeInquirerInstance()).not.toThrow();
 

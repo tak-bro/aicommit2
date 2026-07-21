@@ -37,6 +37,10 @@ export const DEFAULT_INQUIRER_OPTIONS = {
     pickKey: 'short',
     isDescriptionDim: true,
     stopMessage: 'Changes analyzed',
+    // Opt into the library's animated loading bar (bounce + elapsed seconds, lib defaults)
+    // instead of the default ora spinner. It hides the question while the list is empty, so
+    // mounting the prompt up front no longer reads as a frozen "Pick a message" + empty list.
+    loadingBar: {},
 };
 
 type InquirerPromptInstance = Awaited<ReturnType<typeof inquirer.prompt>> & {
@@ -79,35 +83,32 @@ export class ReactivePromptManager {
         this.subscriptions.add(subscription);
     }
 
-    initPrompt(options: typeof DEFAULT_INQUIRER_OPTIONS = DEFAULT_INQUIRER_OPTIONS) {
+    initPrompt(options: typeof DEFAULT_INQUIRER_OPTIONS = DEFAULT_INQUIRER_OPTIONS): InquirerPromptInstance {
         this.stopMessage = options.stopMessage;
 
         inquirer.registerPrompt('reactiveListPrompt', ReactiveListPrompt);
-        this.inquirerInstance = inquirer.prompt({
+        // inquirer.prompt returns a Promise that also carries a `.ui` handle; callers await
+        // it for the answer and use `.ui` to close. Return the fresh instance (not the
+        // nullable field) so callers get a non-null result to await.
+        const instance = inquirer.prompt({
             choices$: this.choices$,
             loader$: this.loader$,
             ...options,
-        });
+        }) as unknown as InquirerPromptInstance;
+        this.inquirerInstance = instance;
 
-        return this.inquirerInstance;
+        return instance;
     }
 
     startLoader() {
         this.loader$.next({ isLoading: true });
     }
 
-    updateLoaderText(text: string) {
+    updateLoaderProgress(done: number, total: number) {
         if (this.isDestroyed) {
             return;
         }
-        this.loader$.next({ isLoading: true, startOption: { text } });
-    }
-
-    clearLoader() {
-        if (!this.inquirerInstance) {
-            return;
-        }
-        this.loader$.next({ isLoading: false, clear: true });
+        this.loader$.next({ isLoading: true, progress: { done, total } });
     }
 
     refreshChoices(choice: ReactiveListChoice) {
