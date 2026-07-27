@@ -1,3 +1,24 @@
+# [2.9.0](https://github.com/tak-bro/aicommit2/compare/v2.8.0...v2.9.0) (2026-07-27)
+
+
+### Bug Fixes
+
+* **copilot-sdk:** upgrade SDK to 1.0.x so the bundled CLI resolves ([#259](https://github.com/tak-bro/aicommit2/issues/259)) ([ffff1d9](https://github.com/tak-bro/aicommit2/commit/ffff1d9e3509a16734e95b98d46899f5cdd1d26c))
+* defer the interactive prompt until the first message so loading shows only a spinner ([#258](https://github.com/tak-bro/aicommit2/issues/258)) ([b7282b7](https://github.com/tak-bro/aicommit2/commit/b7282b738947d7031b1ed4725359b88c23535442))
+* **gemini:** pass the non-streaming timeout as flat SingleRequestOptions ([8b686d4](https://github.com/tak-bro/aicommit2/commit/8b686d4c5d26b23eb5800063a5d2f5e05ca16f2f))
+
+
+### Features
+
+* show an animated loading bar with request progress during generation ([#258](https://github.com/tak-bro/aicommit2/issues/258)) ([b65e7af](https://github.com/tak-bro/aicommit2/commit/b65e7afca243da7e85956ef5eb61f224820b6c94))
+
+
+### Performance Improvements
+
+* abort in-flight AI streams on early unsubscribe ([02fadb9](https://github.com/tak-bro/aicommit2/commit/02fadb9c7f351167d3eca0c4c692c44f57b7b1d3))
+* abort in-flight Gemini streams on early unsubscribe ([ee5acdc](https://github.com/tak-bro/aicommit2/commit/ee5acdc5321c2d0b394750ea6af76cf9ab189a0c))
+* abort in-flight Ollama streams on early unsubscribe ([301e01d](https://github.com/tak-bro/aicommit2/commit/301e01daf50787773e31efbbcfc7307afe54b03e))
+
 # [2.8.0](https://github.com/tak-bro/aicommit2/compare/v2.7.0...v2.8.0) (2026-07-10)
 
 
