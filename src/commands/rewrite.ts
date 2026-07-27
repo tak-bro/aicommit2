@@ -222,12 +222,17 @@ export default command(
             try {
                 // Store choices with metadata for later lookup
                 const choiceMap = new Map<string, RewriteChoice>();
+                // Progress shown next to the bar as (done/total): final results (including
+                // error entries) over the number of AI requests. Streaming previews excluded.
+                const totalRequests = availableAIs.length;
+                let settledRequests = 0;
 
+                // Mount up front: the library's loading bar hides the question while the list
+                // is empty, so there is no premature question + empty list. The bar animates
+                // through generation and the list fills in as messages stream.
                 const commitMsgInquirer = commitMsgPromptManager.initPrompt();
-
-                commitMsgPromptManager.startLoader();
-
-                let receivedCount = 0;
+                // Single emission: carries both `isLoading: true` and the initial (0/N) progress.
+                commitMsgPromptManager.updateLoaderProgress(settledRequests, totalRequests);
 
                 commitMsgSubscription = aiRequestManager.createCommitMsgRequests$(availableAIs).subscribe({
                     next: (choice: ReactiveListChoice) => {
@@ -235,15 +240,11 @@ export default command(
                         if (rewriteChoice.value) {
                             choiceMap.set(rewriteChoice.value, rewriteChoice);
                         }
-
-                        const isValidResponse = choice.value && !choice.isError && !choice.disabled;
-                        if (isValidResponse) {
-                            receivedCount++;
-                            commitMsgPromptManager.updateLoaderText(
-                                `AI is analyzing your changes (${receivedCount} message${receivedCount > 1 ? 's' : ''} generated)`
-                            );
+                        const isFinalResult = !('streamKey' in choice);
+                        if (isFinalResult && settledRequests < totalRequests) {
+                            settledRequests++;
+                            commitMsgPromptManager.updateLoaderProgress(settledRequests, totalRequests);
                         }
-
                         commitMsgPromptManager.refreshChoices(choice);
                     },
                     error: error => {
@@ -304,10 +305,10 @@ export default command(
                     consoleManager.printCancelledCommit();
                 }
             } finally {
-                // Runs on every exit path (return, throw) so subscriptions don't leak
-                if (commitMsgSubscription) {
-                    commitMsgSubscription.unsubscribe();
-                }
+                // Runs on every exit path (return, throw) so subscriptions don't leak. The
+                // assignment lives inside the Promise executor, which control-flow analysis
+                // can't see, so re-assert the declared type before the null-guarded call.
+                (commitMsgSubscription as Subscription | null)?.unsubscribe();
                 commitMsgPromptManager.destroy();
             }
         })().catch(error => {

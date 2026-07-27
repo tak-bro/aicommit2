@@ -8,5 +8,6 @@ export default testSuite(({ describe }) => {
         runTestSuite(import('./prompt.js'));
         runTestSuite(import('./reasoning-models.js'));
         runTestSuite(import('./commit-context.js'));
+        runTestSuite(import('./loading-bar.js'));
     });
 });

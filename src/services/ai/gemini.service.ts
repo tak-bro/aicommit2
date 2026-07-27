@@ -1,4 +1,4 @@
-import { GenerationConfig, GoogleGenerativeAI, HarmBlockThreshold, HarmCategory } from '@google/generative-ai';
+import { GenerationConfig, GoogleGenerativeAI, HarmBlockThreshold, HarmCategory, SingleRequestOptions } from '@google/generative-ai';
 import chalk from 'chalk';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Observable, Subject, catchError, concatMap, from, map } from 'rxjs';
@@ -82,15 +82,15 @@ export class GeminiService extends AIService {
         const { generate, type } = this.params.config;
 
         return this.createStreamingCommitMessages$(
-            subject => {
-                this.streamChunks(subject).catch(err => subject.error(err));
+            (subject, signal) => {
+                this.streamChunks(subject, signal).catch(err => subject.error(err));
             },
             type,
             generate
         );
     };
 
-    private streamChunks = async (subject: Subject<string>): Promise<void> => {
+    private streamChunks = async (subject: Subject<string>, signal: AbortSignal): Promise<void> => {
         const diff = this.params.stagedDiff.diff;
         const { logging } = this.params.config;
         const maxTokens = this.params.config.maxTokens;
@@ -137,7 +137,12 @@ export class GeminiService extends AIService {
         let accumulatedText = '';
 
         try {
-            const generateOptions = this.params.config.timeout > 10000 ? { request: { timeout: this.params.config.timeout } } : undefined;
+            // SingleRequestOptions is flat ({ timeout, signal }); the prior { request: { timeout } }
+            // shape did not match the SDK type and was a no-op.
+            const generateOptions: SingleRequestOptions = { signal };
+            if (this.params.config.timeout > 10000) {
+                generateOptions.timeout = this.params.config.timeout;
+            }
 
             const result = await model.generateContentStream(userPrompt, generateOptions);
 
@@ -221,7 +226,9 @@ export class GeminiService extends AIService {
         const startTime = Date.now();
 
         try {
-            const generateOptions = this.params.config.timeout > 10000 ? { request: { timeout: this.params.config.timeout } } : undefined;
+            // SingleRequestOptions is flat; { request: { timeout } } did not match the SDK type.
+            const generateOptions: SingleRequestOptions | undefined =
+                this.params.config.timeout > 10000 ? { timeout: this.params.config.timeout } : undefined;
 
             const result = await model.generateContent(userPrompt, generateOptions);
             const response = result.response;

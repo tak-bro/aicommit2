@@ -22,6 +22,7 @@ import { recordSelection } from '../services/stats/index.js';
 import { ModelName, RawConfig, applyDisableLowerCaseToConfig, applyIncludeBodyToConfig, getConfig } from '../utils/config.js';
 import { ErrorCode, ErrorMessages } from '../utils/error-messages.js';
 import { KnownError, handleCliError } from '../utils/error.js';
+import { barSpinner } from '../utils/loading-bar.js';
 import { validateSystemPrompt } from '../utils/prompt.js';
 import {
     CommitOptions,
@@ -348,7 +349,9 @@ const handleCommitMessage = async (
     try {
         if (autoSelect && availableAIs.length === 1) {
             const messages: CommitChoice[] = [];
-            commitMsgPromptManager.startLoader();
+            // Single AI, no interactive prompt to mount — the console bar is the only
+            // feedback during this wait, so it runs the whole generation here.
+            consoleManager.showLoader(commitMsgLoader.startOption.text, barSpinner);
 
             commitMsgSubscription = aiRequestManager.createCommitMsgRequests$(availableAIs).subscribe({
                 next: (choice: ReactiveListChoice) => {
@@ -370,9 +373,8 @@ const handleCommitMessage = async (
                 commitMsgSubscription?.add(() => resolve());
             });
 
-            commitMsgPromptManager.clearLoader();
+            consoleManager.stopLoader();
 
-            consoleManager.moveCursorUp(); // NOTE: reactiveListPrompt has 2 blank lines
             const validMessage = messages.find(msg => msg.value && !msg.isError && !msg.disabled);
             if (!validMessage || !validMessage.value) {
                 throw new KnownError('No valid commit message was generated');
@@ -388,31 +390,29 @@ const handleCommitMessage = async (
 
         // Store choices with metadata for later lookup
         const choiceMap = new Map<string, CommitChoice>();
+        // Progress shown next to the bar as (done/total): final results (including error
+        // entries) over the number of AI requests in flight. Streaming previews excluded.
+        const totalRequests = availableAIs.length;
+        let settledRequests = 0;
 
+        // Mount the prompt up front. The library's loading bar hides the question while the
+        // list is empty, so there is no premature "Pick a commit message" + empty list — the
+        // bar animates through generation and the list fills in as messages stream.
         const commitMsgInquirer = commitMsgPromptManager.initPrompt();
-
-        commitMsgPromptManager.startLoader();
-
-        // QW-3: Track received messages to show progress in loader
-        let receivedCount = 0;
+        // Single emission: carries both `isLoading: true` and the initial (0/N) progress.
+        commitMsgPromptManager.updateLoaderProgress(settledRequests, totalRequests);
 
         commitMsgSubscription = aiRequestManager.createCommitMsgRequests$(availableAIs).subscribe({
             next: (choice: ReactiveListChoice) => {
                 const commitChoice = choice as CommitChoice;
-                // Store choice by value for lookup after selection
                 if (commitChoice.value) {
                     choiceMap.set(commitChoice.value, commitChoice);
                 }
-
-                // Update loader with response progress
-                const isValidResponse = choice.value && !choice.isError && !choice.disabled;
-                if (isValidResponse) {
-                    receivedCount++;
-                    commitMsgPromptManager.updateLoaderText(
-                        `AI is analyzing your changes (${receivedCount} message${receivedCount > 1 ? 's' : ''} generated)`
-                    );
+                const isFinalResult = !('streamKey' in choice);
+                if (isFinalResult && settledRequests < totalRequests) {
+                    settledRequests++;
+                    commitMsgPromptManager.updateLoaderProgress(settledRequests, totalRequests);
                 }
-
                 commitMsgPromptManager.refreshChoices(choice);
             },
             error: error => {

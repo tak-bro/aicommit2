@@ -468,13 +468,17 @@ export abstract class AIService {
     };
 
     protected createStreamingCommitMessages$ = (
-        chunkProducer: (subject: Subject<string>) => void,
+        chunkProducer: (subject: Subject<string>, signal: AbortSignal) => void,
         type: CommitType,
         maxCount: number
     ): Observable<ReactiveListChoice> => {
         const streamKey = `stream-${this.serviceName}-${crypto.randomUUID()}`;
 
         return new Observable<ReactiveListChoice>(subscriber => {
+            // Aborted on teardown so an early unsubscribe (user picks a message while
+            // other providers are still streaming) cancels the in-flight request instead
+            // of letting it run to completion into a subscriber-less subject.
+            const controller = new AbortController();
             const parser = new IncrementalJsonParser();
             const subject = new Subject<string>();
             let emittedCount = 0;
@@ -569,9 +573,10 @@ export abstract class AIService {
                 },
             });
 
-            chunkProducer(subject);
+            chunkProducer(subject, controller.signal);
 
             return () => {
+                controller.abort();
                 subscription.unsubscribe();
             };
         }).pipe(catchError(this.handleError$));

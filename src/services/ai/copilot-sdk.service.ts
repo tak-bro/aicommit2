@@ -10,6 +10,7 @@ import {
     getCopilotSdkModelCandidates,
     isCopilotSdkAuthError,
     isCopilotSdkClassicPatError,
+    isCopilotSdkCliNotFoundError,
     isCopilotSdkModelAccessError,
     resolveCopilotSdkToken,
 } from './copilot-sdk.utils.js';
@@ -26,7 +27,7 @@ type CopilotSdkClient = {
 };
 
 type CopilotSdkModule = {
-    CopilotClient: new (options?: Record<string, unknown>) => CopilotSdkClient;
+    CopilotClient: new (options?: unknown) => CopilotSdkClient;
     approveAll: unknown;
 };
 
@@ -48,6 +49,9 @@ export class CopilotSdkService extends AIService {
         }
         if (isCopilotSdkClassicPatError(message)) {
             return 'Copilot rejected classic ghp_ token. Use COPILOT_GITHUB_TOKEN with a Fine-Grained PAT or authenticate via copilot /login.';
+        }
+        if (error.code === 'CLI_NOT_INSTALLED' || isCopilotSdkCliNotFoundError(message)) {
+            return 'Copilot CLI runtime is missing or broken. Reinstall: npm install -g aicommit2 @github/copilot-sdk, then retry.';
         }
         if (error.code === 'AUTHENTICATION_FAILED' || isCopilotSdkAuthError(message)) {
             return 'Copilot authentication failed. Run `copilot` to log in, `gh auth login --scopes copilot`, or set COPILOT_GITHUB_TOKEN, then retry.';
@@ -96,7 +100,7 @@ export class CopilotSdkService extends AIService {
 
     private async loadSdkModule(): Promise<CopilotSdkModule> {
         try {
-            return (await import('@github/copilot-sdk')) as CopilotSdkModule;
+            return (await import('@github/copilot-sdk')) as unknown as CopilotSdkModule;
         } catch (error) {
             const sdkError = new Error('Copilot SDK package is missing. Install with: npm install @github/copilot-sdk') as AIServiceError;
             sdkError.code = 'SDK_NOT_INSTALLED';
@@ -180,6 +184,9 @@ export class CopilotSdkService extends AIService {
             } catch (error) {
                 const aiError = error instanceof Error ? (error as AIServiceError) : (new Error(String(error)) as AIServiceError);
                 const message = aiError.message || String(error);
+                if (!aiError.code && isCopilotSdkCliNotFoundError(message)) {
+                    aiError.code = 'CLI_NOT_INSTALLED';
+                }
                 if (!aiError.code && isCopilotSdkAuthError(message)) {
                     aiError.code = 'AUTHENTICATION_FAILED';
                 }

@@ -125,8 +125,11 @@ export default testSuite(({ describe }) => {
             expect(isCopilotSdkAuthError('invalid token provided')).toBe(true);
             expect(isCopilotSdkAuthError('token expired')).toBe(true);
             expect(isCopilotSdkAuthError('No authentication information found')).toBe(true);
-            expect(isCopilotSdkAuthError('copilot cli not found')).toBe(true);
             expect(isCopilotSdkAuthError('copilot cli authentication failed')).toBe(true);
+        });
+
+        test('does not classify a missing bundled CLI as an auth error (issue #259)', () => {
+            expect(isCopilotSdkAuthError('copilot cli not found')).toBe(false);
         });
 
         test('does not false-positive on non-auth messages', () => {

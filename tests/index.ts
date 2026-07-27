@@ -15,6 +15,7 @@ describe('aicommit2', ({ runTestSuite }) => {
     runTestSuite(import('./specs/hook-args.js'));
     runTestSuite(import('./specs/vcs/index.js'));
     runTestSuite(import('./specs/managers/index.js'));
+    runTestSuite(import('./specs/services/index.js'));
     runTestSuite(import('./specs/utils/index.js'));
     runTestSuite(import('./specs/eval/index.js'));
     runTestSuite(import('./specs/diff-compressor.js'));

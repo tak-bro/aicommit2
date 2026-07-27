@@ -7,6 +7,7 @@ import { hasBedrockAccess, hasConfiguredModels } from './get-available-ais.js';
 import {
     ALL_COPILOT_SDK_KNOWN_MODELS,
     buildCopilotSdkClientOptions,
+    isCopilotSdkCliNotFoundError,
     isCopilotSdkPackageInstalled,
     normalizeCopilotSdkModel,
     resolveCopilotSdkToken,
@@ -458,7 +459,7 @@ const checkCopilotSdkPrereqs = (model: string): { error: string; details?: strin
     if (Number.isFinite(nodeMajor) && nodeMajor < 22) {
         return {
             error: `Node.js ${process.versions.node} is too old for Copilot SDK`,
-            details: 'Copilot SDK v0.2.0 requires node:sqlite support (Node.js 22+ recommended)',
+            details: 'Copilot SDK requires Node.js 22+',
         };
     }
 
@@ -487,22 +488,27 @@ const checkCopilotSdkEnvironment = async (
     }
 
     const nodeVersion = process.versions.node;
+    // Global `copilot` binary is informational only: the SDK spawns its own
+    // bundled CLI from @github/copilot, so a missing global install is fine.
     let version = '';
     try {
         version = execSync('copilot --version', { stdio: ['ignore', 'pipe', 'pipe'] })
             .toString()
             .trim();
     } catch {
-        return {
-            ok: false,
-            error: 'Copilot CLI not found',
-            details: 'Install and authenticate Copilot CLI before using COPILOT_SDK provider',
-        };
+        version = '';
     }
 
     // Probe real authentication, not just CLI presence (issue #259).
     const auth = await probeCopilotSdkAuth(timeout);
     if (!auth.ok) {
+        if (isCopilotSdkCliNotFoundError(auth.error || '')) {
+            return {
+                ok: false,
+                error: 'Copilot CLI runtime is missing or broken',
+                details: `${auth.error}. Reinstall: npm install -g aicommit2 @github/copilot-sdk`,
+            };
+        }
         return {
             ok: false,
             error: 'Could not verify Copilot authentication',
