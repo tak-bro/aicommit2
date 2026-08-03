@@ -122,17 +122,14 @@ export const AICOMMIT_CONFIG_FILE_PATH = path.join(AICOMMIT_CONFIG_DIR, 'config.
 export const AICOMMIT_MAIN_LOG_FILE_PATH = path.join(AICOMMIT_LOGS_DIR, 'aicommit2-%DATE%.log');
 export const AICOMMIT_EXCEPTION_LOG_FILE_PATH = path.join(AICOMMIT_LOGS_DIR, 'exceptions-%DATE%.log');
 
+// Configuration section name rules (only uppercase letters, numbers and underscores allowed)
+export const SERVICE_NAME_PATTERN = /^[A-Z][A-Z0-9_]*$/;
+
 const findAllServices = (config: RawConfig): string[] => {
     const sections = Object.keys(config);
 
     // Include all built-in services and added sections
-    const allServices = new Set([
-        ...BUILTIN_SERVICES,
-        ...sections.filter(section =>
-            // Validate configuration section name rules (only uppercase letters and underscores allowed)
-            /^[A-Z][A-Z0-9_]*$/.test(section)
-        ),
-    ]);
+    const allServices = new Set([...BUILTIN_SERVICES, ...sections.filter(section => SERVICE_NAME_PATTERN.test(section))]);
 
     return Array.from(allServices);
 };
@@ -1220,14 +1217,16 @@ export const readConfigFile = async (): Promise<RawConfig> => {
         cachedConfigPath = configPath;
         return cachedRawConfig;
     } catch (error) {
-        // If the file doesn't exist or can't be read, return an empty config
+        loadedConfigPath = undefined;
+        // Not having a config file at all is a supported setup — everything can come from
+        // CLI flags and environment variables.
         if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-            loadedConfigPath = undefined;
             return {};
         }
-        console.error(`Error reading config file ${configPath}:`, error);
-        loadedConfigPath = undefined;
-        return {};
+        // Anything else (unreadable file, malformed INI) used to fall through to an empty
+        // config, so the run failed much later with an unrelated error. Fail here instead,
+        // naming the file that could not be read.
+        throw new KnownError(`Failed to read config file ${configPath}: ${(error as Error).message}`);
     }
 };
 
@@ -1333,7 +1332,7 @@ export const setConfigs = async (keyValues: [key: string, value: any][]) => {
         }
 
         // Custom services
-        const isValidServiceName = /^[A-Z][A-Z0-9_]*$/.test(modelName);
+        const isValidServiceName = SERVICE_NAME_PATTERN.test(modelName);
         if (!isValidServiceName) {
             throw new KnownError(`Invalid service name: ${modelName}. Service names must be uppercase letters, numbers, and underscores.`);
         }
@@ -1447,6 +1446,24 @@ export const listConfigs = async () => {
 
 export const printConfigPath = async () => {
     console.log(await getConfigPath());
+};
+
+/**
+ * One config key's parser. `any` on both sides is deliberate and matches the declared type
+ * of `modelConfigParsers`: parsers are heterogeneous per key (string, number, boolean, JSON
+ * object) and receive raw INI/CLI/env input, so neither side narrows at this seam.
+ */
+export type ConfigParser = (value: any) => any;
+
+/**
+ * Parsers that accept the config keys of a section, or of the top level when no service
+ * name is given. Backs `aicommit2 config validate`, which reports keys no parser accepts.
+ */
+export const getConfigParsers = (serviceName?: string): Record<string, ConfigParser> => {
+    if (!serviceName) {
+        return generalConfigParsers as Record<string, ConfigParser>;
+    }
+    return (modelConfigParsers[serviceName as ModelName] || createConfigParser(serviceName)) as Record<string, ConfigParser>;
 };
 
 const createConfigParser = (serviceName: string) => ({

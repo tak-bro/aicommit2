@@ -11,6 +11,7 @@ describe('aicommit2', ({ runTestSuite }) => {
     runTestSuite(import('./specs/bedrock/index.js'));
     runTestSuite(import('./specs/config.js'));
     runTestSuite(import('./specs/config-env.js'));
+    runTestSuite(import('./specs/config-validate.js'));
     runTestSuite(import('./specs/git-hook.js'));
     runTestSuite(import('./specs/hook-args.js'));
     runTestSuite(import('./specs/vcs/index.js'));

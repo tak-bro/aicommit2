@@ -46,7 +46,9 @@ repos:
     rev: v2.4.1
     hooks:
       - id: codespell
-        args: [-Loll]
+        # `modell` is a deliberate misspelling: README documents it as the typo
+        # `config validate` suggests a correction for
+        args: ['-Loll,modell']
         exclude: ^(flake\.nix|src/utils/prompt\.ts|pnpm-lock\.yaml|tests/eval/golden/.*)$
   - repo: https://github.com/shellcheck-py/shellcheck-py
     rev: v0.10.0.1

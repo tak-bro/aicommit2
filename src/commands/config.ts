@@ -1,11 +1,44 @@
 import fs from 'fs/promises';
 
+import chalk from 'chalk';
 import { command } from 'cleye';
 import ini from 'ini';
 
 import { ConsoleManager } from '../managers/console.manager.js';
+import { validateConfigFile } from '../utils/config-validator.js';
 import { addConfigs, getConfig, getConfigPath, hasOwn, listConfigs, printConfigPath, readConfigFile, setConfigs } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
+
+/**
+ * Report the config file findings. Returns true when at least one of them is an error,
+ * so the caller can exit non-zero for scripts and CI.
+ */
+const printConfigValidation = async (): Promise<boolean> => {
+    const { configPath, exists, issues } = await validateConfigFile();
+    const consoleManager = new ConsoleManager();
+
+    console.log(`Config file: ${configPath}\n`);
+
+    if (!exists) {
+        consoleManager.printWarning('No configuration file found. Every setting comes from CLI flags and environment variables.');
+        return false;
+    }
+
+    if (issues.length === 0) {
+        consoleManager.printSuccess('Configuration is valid');
+        return false;
+    }
+
+    for (const issue of issues) {
+        const icon = issue.level === 'error' ? chalk.red.bold('✖') : chalk.yellow.bold('!');
+        const hint = issue.hint ? ` ${chalk.dim(issue.hint)}` : '';
+        console.log(`${icon} ${chalk.bold(issue.location)}: ${issue.message}${hint}`);
+    }
+
+    const errorCount = issues.filter(issue => issue.level === 'error').length;
+    console.log(`\n${errorCount} error(s), ${issues.length - errorCount} warning(s)`);
+    return errorCount > 0;
+};
 
 export default command(
     {
@@ -69,6 +102,14 @@ export default command(
                 help: {
                     description: 'Display the path of the loaded configuration file.',
                     examples: ['aic2 config path'],
+                },
+            }),
+            command({
+                name: 'validate',
+                parameters: [],
+                help: {
+                    description: 'Check the configuration file for ignored sections, unknown options and invalid values.',
+                    examples: ['aic2 config validate'],
                 },
             }),
         ],
@@ -192,6 +233,14 @@ export default command(
 
             if (mode === 'path') {
                 await printConfigPath();
+                return;
+            }
+
+            if (mode === 'validate') {
+                const hasErrors = await printConfigValidation();
+                if (hasErrors) {
+                    process.exit(1);
+                }
                 return;
             }
 

@@ -9,6 +9,7 @@ import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { lastValueFrom, toArray } from 'rxjs';
 
 import { getAvailableAIs } from './get-available-ais.js';
+import { CommitChoice, CommitMessageResult, selectMessageAutomatically } from './select-message.js';
 import { AIRequestManager } from '../managers/ai-request.manager.js';
 import { ConsoleManager } from '../managers/console.manager.js';
 import {
@@ -22,7 +23,6 @@ import { recordSelection } from '../services/stats/index.js';
 import { ModelName, RawConfig, applyDisableLowerCaseToConfig, applyIncludeBodyToConfig, getConfig } from '../utils/config.js';
 import { ErrorCode, ErrorMessages } from '../utils/error-messages.js';
 import { KnownError, handleCliError } from '../utils/error.js';
-import { barSpinner } from '../utils/loading-bar.js';
 import { validateSystemPrompt } from '../utils/prompt.js';
 import {
     CommitOptions,
@@ -42,23 +42,6 @@ const consoleManager = new ConsoleManager();
 export interface JsonCommitMessage {
     subject: string;
     body: string;
-}
-
-/**
- * Extended ReactiveListChoice with provider metadata for selection tracking
- */
-interface CommitChoice extends ReactiveListChoice {
-    provider?: string;
-    model?: string;
-}
-
-/**
- * Result of commit message selection
- */
-interface CommitMessageResult {
-    value: string;
-    provider: string;
-    model: string;
 }
 
 export default async (
@@ -243,7 +226,7 @@ export default async (
             process.exit();
         }
 
-        if (confirm || (autoSelect && availableAIs.length === 1)) {
+        if (confirm || autoSelect) {
             await commitChanges(selectedCommitMessage, rawArgv, commitOptions);
             process.exit();
         }
@@ -347,52 +330,15 @@ const handleCommitMessage = async (
     let commitMsgSubscription: Subscription | null = null;
 
     try {
-        if (autoSelect && availableAIs.length === 1) {
-            const messages: CommitChoice[] = [];
-            // Single AI, no interactive prompt to mount — the console bar is the only
-            // feedback during this wait, so it runs the whole generation here.
-            consoleManager.showLoader(commitMsgLoader.startOption.text, barSpinner);
-
-            commitMsgSubscription = aiRequestManager.createCommitMsgRequests$(availableAIs).subscribe({
-                next: (choice: ReactiveListChoice) => {
-                    // Skip streaming preview/sentinel choices — only collect final results
-                    const isStreamingChoice = 'streamKey' in choice;
-                    if (!isStreamingChoice) {
-                        messages.push(choice as CommitChoice);
-                    }
-                    commitMsgPromptManager.refreshChoices(choice);
-                },
-                error: error => {
-                    console.error('Commit message generation error:', error);
-                    commitMsgPromptManager.checkErrorOnChoices(false);
-                },
-                complete: () => commitMsgPromptManager.checkErrorOnChoices(false),
-            });
-
-            await new Promise<void>(resolve => {
-                commitMsgSubscription?.add(() => resolve());
-            });
-
-            consoleManager.stopLoader();
-
-            const validMessage = messages.find(msg => msg.value && !msg.isError && !msg.disabled);
-            if (!validMessage || !validMessage.value) {
-                throw new KnownError('No valid commit message was generated');
-            }
-
-            consoleManager.print(`\n${validMessage.name}\n`);
-            return {
-                value: validMessage.value,
-                provider: validMessage.provider || 'unknown',
-                model: validMessage.model || 'unknown',
-            };
+        if (autoSelect) {
+            return await selectMessageAutomatically(aiRequestManager, availableAIs, commitMsgPromptManager);
         }
 
         // Store choices with metadata for later lookup
         const choiceMap = new Map<string, CommitChoice>();
         // Progress shown next to the bar as (done/total): final results (including error
         // entries) over the number of AI requests in flight. Streaming previews excluded.
-        const totalRequests = availableAIs.length;
+        const totalRequests = aiRequestManager.countRequests(availableAIs);
         let settledRequests = 0;
 
         // Mount the prompt up front. The library's loading bar hides the question while the
