@@ -81,6 +81,25 @@ const validateValue = (parse: ConfigParser, location: string, value: unknown): C
 };
 
 /**
+ * Everything wrong with one `key=value`: either no parser accepts the key, or the parser
+ * that does rejects the value. Same rule for a top-level option and a key inside a section.
+ */
+const checkEntry = (
+    parsers: Record<string, ConfigParser>,
+    knownKeys: string[],
+    location: string,
+    key: string,
+    value: unknown
+): ConfigIssue[] => {
+    const parse = parsers[key];
+    if (!parse) {
+        return [unknownKeyIssue(location, key, knownKeys)];
+    }
+    const issue = validateValue(parse, location, value);
+    return issue ? [issue] : [];
+};
+
+/**
  * Check the config file against the parsers the rest of the CLI runs on, reporting the
  * three things a normal run stays silent about: sections dropped for an invalid name,
  * keys no parser accepts, and values a parser rejects.
@@ -100,15 +119,7 @@ export const validateConfigFile = async (): Promise<ConfigValidation> => {
 
     for (const [name, value] of Object.entries(config)) {
         if (!isSection(value)) {
-            const parse = generalParsers[name];
-            if (!parse) {
-                issues.push(unknownKeyIssue(name, name, generalKeys));
-                continue;
-            }
-            const issue = validateValue(parse, name, value);
-            if (issue) {
-                issues.push(issue);
-            }
+            issues.push(...checkEntry(generalParsers, generalKeys, name, name, value));
             continue;
         }
 
@@ -120,15 +131,7 @@ export const validateConfigFile = async (): Promise<ConfigValidation> => {
         const sectionParsers = getConfigParsers(name);
         const sectionKeys = Object.keys(sectionParsers);
         for (const [key, rawValue] of Object.entries(value)) {
-            const parse = sectionParsers[key];
-            if (!parse) {
-                issues.push(unknownKeyIssue(`${name}.${key}`, key, sectionKeys));
-                continue;
-            }
-            const issue = validateValue(parse, `${name}.${key}`, rawValue);
-            if (issue) {
-                issues.push(issue);
-            }
+            issues.push(...checkEntry(sectionParsers, sectionKeys, `${name}.${key}`, key, rawValue));
         }
     }
 

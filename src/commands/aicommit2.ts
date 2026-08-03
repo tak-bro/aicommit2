@@ -9,6 +9,7 @@ import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { lastValueFrom, toArray } from 'rxjs';
 
 import { getAvailableAIs } from './get-available-ais.js';
+import { CommitChoice, CommitMessageResult, selectMessageAutomatically } from './select-message.js';
 import { AIRequestManager } from '../managers/ai-request.manager.js';
 import { ConsoleManager } from '../managers/console.manager.js';
 import {
@@ -22,7 +23,6 @@ import { recordSelection } from '../services/stats/index.js';
 import { ModelName, RawConfig, applyDisableLowerCaseToConfig, applyIncludeBodyToConfig, getConfig } from '../utils/config.js';
 import { ErrorCode, ErrorMessages } from '../utils/error-messages.js';
 import { KnownError, handleCliError } from '../utils/error.js';
-import { barSpinner } from '../utils/loading-bar.js';
 import { validateSystemPrompt } from '../utils/prompt.js';
 import {
     CommitOptions,
@@ -42,23 +42,6 @@ const consoleManager = new ConsoleManager();
 export interface JsonCommitMessage {
     subject: string;
     body: string;
-}
-
-/**
- * Extended ReactiveListChoice with provider metadata for selection tracking
- */
-interface CommitChoice extends ReactiveListChoice {
-    provider?: string;
-    model?: string;
-}
-
-/**
- * Result of commit message selection
- */
-interface CommitMessageResult {
-    value: string;
-    provider: string;
-    model: string;
 }
 
 export default async (
@@ -337,79 +320,6 @@ async function handleCodeReview(aiRequestManager: AIRequestManager, availableAIs
         codeReviewPromptManager.destroy();
     }
 }
-
-/**
- * Pick a message without mounting the interactive prompt. Resolves on the first usable
- * message rather than waiting for every provider — with several configured, waiting for
- * the slowest would make --auto-select slower than picking from the list by hand.
- */
-const selectMessageAutomatically = async (
-    aiRequestManager: AIRequestManager,
-    availableAIs: ModelName[],
-    commitMsgPromptManager: ReactivePromptManager
-): Promise<CommitMessageResult> => {
-    const messages: CommitChoice[] = [];
-    // The promise executor runs synchronously, so this is assigned before subscribing below
-    let resolveSelection!: (message: CommitChoice | null) => void;
-    const selection = new Promise<CommitChoice | null>(resolve => {
-        resolveSelection = resolve;
-    });
-
-    // No prompt is mounted here, so the console bar is the only feedback during the wait
-    consoleManager.showLoader(commitMsgLoader.startOption.text, barSpinner);
-
-    const commitMsgSubscription = aiRequestManager.createCommitMsgRequests$(availableAIs).subscribe({
-        next: (choice: ReactiveListChoice) => {
-            commitMsgPromptManager.refreshChoices(choice);
-            // Skip streaming preview/sentinel choices — only collect final results
-            const isStreamingChoice = 'streamKey' in choice;
-            if (isStreamingChoice) {
-                return;
-            }
-            const commitChoice = choice as CommitChoice;
-            messages.push(commitChoice);
-            if (commitChoice.value && !commitChoice.isError && !commitChoice.disabled) {
-                resolveSelection(commitChoice);
-            }
-        },
-        error: error => {
-            console.error('Commit message generation error:', error);
-            commitMsgPromptManager.checkErrorOnChoices(false);
-            resolveSelection(null);
-        },
-        complete: () => {
-            commitMsgPromptManager.checkErrorOnChoices(false);
-            resolveSelection(null);
-        },
-    });
-
-    try {
-        const selectedMessage = await selection;
-
-        consoleManager.stopLoader();
-
-        if (!selectedMessage || !selectedMessage.value) {
-            // No prompt was mounted, so nothing has rendered the per-model error lines.
-            // Print them before failing — otherwise the run ends with no explanation.
-            messages.forEach(msg => {
-                if (msg.isError && msg.name) {
-                    consoleManager.print(msg.name);
-                }
-            });
-            throw new KnownError('No valid commit message was generated');
-        }
-
-        consoleManager.print(`\n${selectedMessage.name}\n`);
-        return {
-            value: selectedMessage.value,
-            provider: selectedMessage.provider || 'unknown',
-            model: selectedMessage.model || 'unknown',
-        };
-    } finally {
-        // Aborts the requests still in flight behind the one that answered first
-        commitMsgSubscription.unsubscribe();
-    }
-};
 
 const handleCommitMessage = async (
     aiRequestManager: AIRequestManager,

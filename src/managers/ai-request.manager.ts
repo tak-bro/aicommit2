@@ -55,10 +55,16 @@ export class AIRequestManager {
      * request per configured model, so this is not the same as the provider count.
      */
     countRequests = (modelNames: ModelName[]): number => {
-        return modelNames.reduce((total, ai) => {
-            const { model } = this.config[ai];
-            return total + (Array.isArray(model) ? model.length : 1);
-        }, 0);
+        return modelNames.reduce((total, ai) => total + this.getModels(ai).length, 0);
+    };
+
+    /**
+     * Models a provider is configured with. Single source for the fan-out width, so the
+     * progress counter and the requests themselves cannot drift apart.
+     */
+    private getModels = (ai: ModelName): string[] => {
+        const { model } = this.config[ai];
+        return Array.isArray(model) ? model : [model];
     };
 
     private createServiceRequests$ = (modelNames: ModelName[], requestType: 'commit' | 'review'): Observable<ReactiveListChoice> => {
@@ -69,10 +75,7 @@ export class AIRequestManager {
     };
 
     private createProviderRequests$ = (ai: ModelName, requestType: 'commit' | 'review'): Observable<ReactiveListChoice> => {
-        const config = this.config[ai];
-        const models = Array.isArray(config.model) ? config.model : [config.model];
-
-        return from(models).pipe(mergeMap(model => this.createModelRequest$(ai, model, requestType)));
+        return from(this.getModels(ai)).pipe(mergeMap(model => this.createModelRequest$(ai, model, requestType)));
     };
 
     private createModelRequest$ = (ai: ModelName, model: string, requestType: 'commit' | 'review'): Observable<ReactiveListChoice> => {

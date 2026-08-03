@@ -9,6 +9,7 @@ import inquirer from 'inquirer';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 
 import { getAvailableAIs } from './get-available-ais.js';
+import { selectMessageAutomatically } from './select-message.js';
 import { AIRequestManager } from '../managers/ai-request.manager.js';
 import { ConsoleManager } from '../managers/console.manager.js';
 import { ReactivePromptManager, commitMsgLoader } from '../managers/reactive-prompt.manager.js';
@@ -32,14 +33,6 @@ import {
 import type { Subscription } from 'rxjs';
 
 const consoleManager = new ConsoleManager();
-
-/**
- * Extended ReactiveListChoice with provider metadata for selection tracking
- */
-interface RewriteChoice extends ReactiveListChoice {
-    provider?: string;
-    model?: string;
-}
 
 export default command(
     {
@@ -78,7 +71,7 @@ export default command(
             },
             'auto-select': {
                 type: Boolean,
-                description: 'Automatically select the message when only one is generated',
+                description: 'Automatically select the first successfully generated message (skips the picker and the confirmation)',
                 alias: 's',
                 default: false,
             },
@@ -220,48 +213,47 @@ export default command(
             let commitMsgSubscription: Subscription | null = null;
 
             try {
-                // Store choices with metadata for later lookup
-                const choiceMap = new Map<string, RewriteChoice>();
-                // Progress shown next to the bar as (done/total): final results (including
-                // error entries) over the number of AI requests. Streaming previews excluded.
-                const totalRequests = aiRequestManager.countRequests(availableAIs);
-                let settledRequests = 0;
+                let selectedValue: string | undefined;
 
-                // Mount up front: the library's loading bar hides the question while the list
-                // is empty, so there is no premature question + empty list. The bar animates
-                // through generation and the list fills in as messages stream.
-                const commitMsgInquirer = commitMsgPromptManager.initPrompt();
-                // Single emission: carries both `isLoading: true` and the initial (0/N) progress.
-                commitMsgPromptManager.updateLoaderProgress(settledRequests, totalRequests);
+                if (autoSelect) {
+                    selectedValue = (await selectMessageAutomatically(aiRequestManager, availableAIs, commitMsgPromptManager)).value;
+                } else {
+                    // Progress shown next to the bar as (done/total): final results (including
+                    // error entries) over the number of AI requests. Streaming previews excluded.
+                    const totalRequests = aiRequestManager.countRequests(availableAIs);
+                    let settledRequests = 0;
 
-                commitMsgSubscription = aiRequestManager.createCommitMsgRequests$(availableAIs).subscribe({
-                    next: (choice: ReactiveListChoice) => {
-                        const rewriteChoice = choice as RewriteChoice;
-                        if (rewriteChoice.value) {
-                            choiceMap.set(rewriteChoice.value, rewriteChoice);
-                        }
-                        const isFinalResult = !('streamKey' in choice);
-                        if (isFinalResult && settledRequests < totalRequests) {
-                            settledRequests++;
-                            commitMsgPromptManager.updateLoaderProgress(settledRequests, totalRequests);
-                        }
-                        commitMsgPromptManager.refreshChoices(choice);
-                    },
-                    error: error => {
-                        console.error('Commit message generation error:', error);
-                        commitMsgPromptManager.checkErrorOnChoices();
-                    },
-                    complete: () => commitMsgPromptManager.checkErrorOnChoices(),
-                });
+                    // Mount up front: the library's loading bar hides the question while the list
+                    // is empty, so there is no premature question + empty list. The bar animates
+                    // through generation and the list fills in as messages stream.
+                    const commitMsgInquirer = commitMsgPromptManager.initPrompt();
+                    // Single emission: carries both `isLoading: true` and the initial (0/N) progress.
+                    commitMsgPromptManager.updateLoaderProgress(settledRequests, totalRequests);
 
-                const commitMsgInquirerResult = await commitMsgInquirer;
+                    commitMsgSubscription = aiRequestManager.createCommitMsgRequests$(availableAIs).subscribe({
+                        next: (choice: ReactiveListChoice) => {
+                            const isFinalResult = !('streamKey' in choice);
+                            if (isFinalResult && settledRequests < totalRequests) {
+                                settledRequests++;
+                                commitMsgPromptManager.updateLoaderProgress(settledRequests, totalRequests);
+                            }
+                            commitMsgPromptManager.refreshChoices(choice);
+                        },
+                        error: error => {
+                            console.error('Commit message generation error:', error);
+                            commitMsgPromptManager.checkErrorOnChoices();
+                        },
+                        complete: () => commitMsgPromptManager.checkErrorOnChoices(),
+                    });
 
-                const selectedValue = commitMsgInquirerResult.aicommit2Prompt?.value;
+                    const commitMsgInquirerResult = await commitMsgInquirer;
+                    selectedValue = commitMsgInquirerResult.aicommit2Prompt?.value;
+                }
+
                 if (!selectedValue) {
                     throw new KnownError('An error occurred! No selected message');
                 }
 
-                const selectedChoice = choiceMap.get(selectedValue);
                 let selectedMessage = selectedValue;
 
                 if (edit) {
@@ -285,7 +277,7 @@ export default command(
                 }
 
                 // Auto-select or confirm — skip the explicit confirm prompt below
-                if (confirm || (autoSelect && availableAIs.length === 1)) {
+                if (confirm || autoSelect) {
                     await performRewrite(selectedMessage, commitHash);
                     return;
                 }
