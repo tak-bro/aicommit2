@@ -836,6 +836,7 @@ directly in `config.ini` using dotted keys, or set with JSON via `aicommit2 conf
 - READ: `aicommit2 config get [<key> [<key> ...]]`
 - SET: `aicommit2 config set <key>=<value>`
 - DELETE: `aicommit2 config del <config-name>`
+- VALIDATE: `aicommit2 config validate`
 
 Example:
 
@@ -854,6 +855,27 @@ aicommit2 config set OPENAI.generate=3 GEMINI.temperature=0.5
 aicommit2 config del OPENAI.key
 aicommit2 config del GEMINI
 aicommit2 config del timeout
+
+# Check the configuration file
+aicommit2 config validate
+```
+
+#### Validating the Configuration
+
+A hand-edited `config.ini` can contain mistakes that a normal run stays silent about: a
+section whose name is not uppercase is dropped entirely, and an option no provider
+accepts is ignored. `aicommit2 config validate` reports them together with any invalid
+values, and exits with a non-zero status when it finds an error. Values are checked after
+environment variable expansion, so run it in the same environment your commits run in:
+
+```
+Config file: ~/.config/aicommit2/config.ini
+
+✖ [openai]: Invalid section name, so the whole section is ignored. Names must be uppercase letters, numbers and underscores. Did you mean [OPENAI]?
+! OPENAI.modell: Unknown option, silently ignored. Did you mean `model`?
+✖ OPENAI.temperature: Invalid config property temperature: Must be decimal between 0 and 2
+
+2 error(s), 1 warning(s)
 ```
 
 ### Environment Variables
