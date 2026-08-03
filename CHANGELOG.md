@@ -1,3 +1,15 @@
+# [2.10.0](https://github.com/tak-bro/aicommit2/compare/v2.9.0...v2.10.0) (2026-08-03)
+
+
+### Bug Fixes
+
+* make --auto-select work with multiple AI providers ([#262](https://github.com/tak-bro/aicommit2/issues/262)) ([34b8d66](https://github.com/tak-bro/aicommit2/commit/34b8d669ef1947754afc9793d5bf0788e540cc07))
+
+
+### Features
+
+* add `aicommit2 config validate` ([#263](https://github.com/tak-bro/aicommit2/issues/263)) ([91cee8e](https://github.com/tak-bro/aicommit2/commit/91cee8e5803730b5b127eb4a644a7024a7e4cc5a))
+
 # [2.9.0](https://github.com/tak-bro/aicommit2/compare/v2.8.0...v2.9.0) (2026-07-27)
 
 
