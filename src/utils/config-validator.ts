@@ -1,4 +1,4 @@
-import { SERVICE_NAME_PATTERN, getConfigParsers, getConfigPath, readConfigFile } from './config.js';
+import { ConfigParser, SERVICE_NAME_PATTERN, getConfigParsers, getConfigPath, readConfigFile } from './config.js';
 import { fileExists } from './fs.js';
 
 export interface ConfigIssue {
@@ -71,7 +71,7 @@ const invalidSectionIssue = (name: string): ConfigIssue => {
  * Run one parser over one raw value, turning a rejection into an issue instead of aborting.
  * `getConfig` throws on the first bad value; validation reports every one of them.
  */
-const validateValue = (parse: (value: any) => any, location: string, value: unknown): ConfigIssue | null => {
+const validateValue = (parse: ConfigParser, location: string, value: unknown): ConfigIssue | null => {
     try {
         parse(value);
         return null;

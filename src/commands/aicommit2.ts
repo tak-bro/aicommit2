@@ -338,6 +338,79 @@ async function handleCodeReview(aiRequestManager: AIRequestManager, availableAIs
     }
 }
 
+/**
+ * Pick a message without mounting the interactive prompt. Resolves on the first usable
+ * message rather than waiting for every provider — with several configured, waiting for
+ * the slowest would make --auto-select slower than picking from the list by hand.
+ */
+const selectMessageAutomatically = async (
+    aiRequestManager: AIRequestManager,
+    availableAIs: ModelName[],
+    commitMsgPromptManager: ReactivePromptManager
+): Promise<CommitMessageResult> => {
+    const messages: CommitChoice[] = [];
+    // The promise executor runs synchronously, so this is assigned before subscribing below
+    let resolveSelection!: (message: CommitChoice | null) => void;
+    const selection = new Promise<CommitChoice | null>(resolve => {
+        resolveSelection = resolve;
+    });
+
+    // No prompt is mounted here, so the console bar is the only feedback during the wait
+    consoleManager.showLoader(commitMsgLoader.startOption.text, barSpinner);
+
+    const commitMsgSubscription = aiRequestManager.createCommitMsgRequests$(availableAIs).subscribe({
+        next: (choice: ReactiveListChoice) => {
+            commitMsgPromptManager.refreshChoices(choice);
+            // Skip streaming preview/sentinel choices — only collect final results
+            const isStreamingChoice = 'streamKey' in choice;
+            if (isStreamingChoice) {
+                return;
+            }
+            const commitChoice = choice as CommitChoice;
+            messages.push(commitChoice);
+            if (commitChoice.value && !commitChoice.isError && !commitChoice.disabled) {
+                resolveSelection(commitChoice);
+            }
+        },
+        error: error => {
+            console.error('Commit message generation error:', error);
+            commitMsgPromptManager.checkErrorOnChoices(false);
+            resolveSelection(null);
+        },
+        complete: () => {
+            commitMsgPromptManager.checkErrorOnChoices(false);
+            resolveSelection(null);
+        },
+    });
+
+    try {
+        const selectedMessage = await selection;
+
+        consoleManager.stopLoader();
+
+        if (!selectedMessage || !selectedMessage.value) {
+            // No prompt was mounted, so nothing has rendered the per-model error lines.
+            // Print them before failing — otherwise the run ends with no explanation.
+            messages.forEach(msg => {
+                if (msg.isError && msg.name) {
+                    consoleManager.print(msg.name);
+                }
+            });
+            throw new KnownError('No valid commit message was generated');
+        }
+
+        consoleManager.print(`\n${selectedMessage.name}\n`);
+        return {
+            value: selectedMessage.value,
+            provider: selectedMessage.provider || 'unknown',
+            model: selectedMessage.model || 'unknown',
+        };
+    } finally {
+        // Aborts the requests still in flight behind the one that answered first
+        commitMsgSubscription.unsubscribe();
+    }
+};
+
 const handleCommitMessage = async (
     aiRequestManager: AIRequestManager,
     availableAIs: ModelName[],
@@ -348,62 +421,7 @@ const handleCommitMessage = async (
 
     try {
         if (autoSelect) {
-            const messages: CommitChoice[] = [];
-            // No interactive prompt is mounted in auto-select mode — the console bar is the
-            // only feedback during this wait, so it runs the whole generation here.
-            consoleManager.showLoader(commitMsgLoader.startOption.text, barSpinner);
-
-            const selectedMessage = await new Promise<CommitChoice | null>(resolve => {
-                const subscription = aiRequestManager.createCommitMsgRequests$(availableAIs).subscribe({
-                    next: (choice: ReactiveListChoice) => {
-                        commitMsgPromptManager.refreshChoices(choice);
-                        // Skip streaming preview/sentinel choices — only collect final results
-                        const isStreamingChoice = 'streamKey' in choice;
-                        if (isStreamingChoice) {
-                            return;
-                        }
-                        const commitChoice = choice as CommitChoice;
-                        messages.push(commitChoice);
-                        // Resolve on the first usable message rather than waiting for every
-                        // provider — with several configured, waiting for the slowest would
-                        // make --auto-select slower than picking from the list by hand.
-                        // The subscription is torn down in `finally`, aborting in-flight requests.
-                        if (commitChoice.value && !commitChoice.isError && !commitChoice.disabled) {
-                            resolve(commitChoice);
-                        }
-                    },
-                    error: error => {
-                        console.error('Commit message generation error:', error);
-                        commitMsgPromptManager.checkErrorOnChoices(false);
-                        resolve(null);
-                    },
-                    complete: () => {
-                        commitMsgPromptManager.checkErrorOnChoices(false);
-                        resolve(null);
-                    },
-                });
-                commitMsgSubscription = subscription;
-            });
-
-            consoleManager.stopLoader();
-
-            if (!selectedMessage || !selectedMessage.value) {
-                // No prompt was mounted, so nothing has rendered the per-model error lines.
-                // Print them before failing — otherwise the run ends with no explanation.
-                messages.forEach(msg => {
-                    if (msg.isError && msg.name) {
-                        consoleManager.print(msg.name);
-                    }
-                });
-                throw new KnownError('No valid commit message was generated');
-            }
-
-            consoleManager.print(`\n${selectedMessage.name}\n`);
-            return {
-                value: selectedMessage.value,
-                provider: selectedMessage.provider || 'unknown',
-                model: selectedMessage.model || 'unknown',
-            };
+            return await selectMessageAutomatically(aiRequestManager, availableAIs, commitMsgPromptManager);
         }
 
         // Store choices with metadata for later lookup

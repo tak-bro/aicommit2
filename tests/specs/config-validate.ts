@@ -63,6 +63,38 @@ export default testSuite(({ describe }) => {
             expect(exitCode).toBe(1);
         });
 
+        // An unreadable config file used to be swallowed, so the run continued with an empty
+        // config and failed later with something unrelated.
+        test('names the config file when it cannot be read', async () => {
+            const { fixture, aicommit2 } = await createFixture({ 'not-a-file/keep': '' });
+            const configPath = path.join(fixture.path, 'not-a-file');
+
+            const { stdout, exitCode } = await aicommit2(['config', 'validate'], {
+                env: { AICOMMIT_CONFIG_PATH: configPath },
+                reject: false,
+            });
+
+            expect(stdout).toMatch('Failed to read config file');
+            expect(stdout).toMatch(configPath);
+            expect(exitCode).toBe(1);
+            await fixture.rm();
+        });
+
+        test('reports an unreadable config file on a normal run instead of failing later', async () => {
+            const { fixture, aicommit2 } = await createFixture({ 'not-a-file/keep': '' });
+            const configPath = path.join(fixture.path, 'not-a-file');
+
+            const { stdout, exitCode } = await aicommit2(['--all', '--dry-run', '--auto-select'], {
+                env: { AICOMMIT_CONFIG_PATH: configPath },
+                reject: false,
+            });
+
+            expect(stdout).toMatch('Failed to read config file');
+            expect(stdout).toMatch('config validate');
+            expect(exitCode).toBe(1);
+            await fixture.rm();
+        });
+
         test('passes when no config file exists', async () => {
             const { fixture, aicommit2 } = await createFixture();
 

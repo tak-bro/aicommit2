@@ -1449,14 +1449,21 @@ export const printConfigPath = async () => {
 };
 
 /**
+ * One config key's parser. `any` on both sides is deliberate and matches the declared type
+ * of `modelConfigParsers`: parsers are heterogeneous per key (string, number, boolean, JSON
+ * object) and receive raw INI/CLI/env input, so neither side narrows at this seam.
+ */
+export type ConfigParser = (value: any) => any;
+
+/**
  * Parsers that accept the config keys of a section, or of the top level when no service
  * name is given. Backs `aicommit2 config validate`, which reports keys no parser accepts.
  */
-export const getConfigParsers = (serviceName?: string): Record<string, (value: any) => any> => {
+export const getConfigParsers = (serviceName?: string): Record<string, ConfigParser> => {
     if (!serviceName) {
-        return generalConfigParsers as Record<string, (value: any) => any>;
+        return generalConfigParsers as Record<string, ConfigParser>;
     }
-    return (modelConfigParsers[serviceName as ModelName] || createConfigParser(serviceName)) as Record<string, (value: any) => any>;
+    return (modelConfigParsers[serviceName as ModelName] || createConfigParser(serviceName)) as Record<string, ConfigParser>;
 };
 
 const createConfigParser = (serviceName: string) => ({
