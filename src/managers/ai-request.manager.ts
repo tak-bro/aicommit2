@@ -50,6 +50,17 @@ export class AIRequestManager {
         return this.createServiceRequests$(modelNames, 'review');
     };
 
+    /**
+     * Number of requests the given providers will fan out to. Each provider fires one
+     * request per configured model, so this is not the same as the provider count.
+     */
+    countRequests = (modelNames: ModelName[]): number => {
+        return modelNames.reduce((total, ai) => {
+            const { model } = this.config[ai];
+            return total + (Array.isArray(model) ? model.length : 1);
+        }, 0);
+    };
+
     private createServiceRequests$ = (modelNames: ModelName[], requestType: 'commit' | 'review'): Observable<ReactiveListChoice> => {
         return from(modelNames).pipe(
             mergeMap(ai => this.createProviderRequests$(ai, requestType)),

@@ -224,7 +224,7 @@ export default command(
                 const choiceMap = new Map<string, RewriteChoice>();
                 // Progress shown next to the bar as (done/total): final results (including
                 // error entries) over the number of AI requests. Streaming previews excluded.
-                const totalRequests = availableAIs.length;
+                const totalRequests = aiRequestManager.countRequests(availableAIs);
                 let settledRequests = 0;
 
                 // Mount up front: the library's loading bar hides the question while the list

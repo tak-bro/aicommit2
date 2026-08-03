@@ -101,7 +101,7 @@ cli(
             },
             'auto-select': {
                 type: Boolean,
-                description: 'Automatically select the message when only one is generated',
+                description: 'Automatically select the first successfully generated message (skips the picker and the commit confirmation)',
                 alias: 's',
                 default: false,
             },
