@@ -7,22 +7,41 @@ import { expect, testSuite } from 'manten';
 import { createFixture, createGit } from '../../utils.js';
 
 const MOCK_MESSAGE = 'feat: add mock feature';
+const MOCK_REVIEW_SUMMARY = 'Mock review summary';
+
+const commitMessageContent = JSON.stringify([{ subject: MOCK_MESSAGE, body: '', footer: '' }]);
+const codeReviewContent = (severity: string) =>
+    JSON.stringify({
+        summary: MOCK_REVIEW_SUMMARY,
+        items: [{ severity, category: 'correctness', title: 'Mock finding', description: 'Mock description', suggestion: '' }],
+    });
 
 /**
  * Minimal OpenAI-compatible endpoint. Two `compatible` providers point at it, which is
  * what makes these tests exercise the multi-provider path without any API key.
+ * Code review and commit message requests share the endpoint, so the prompt decides which
+ * response shape comes back.
  */
-const startMockProvider = async (): Promise<{ url: string; close: () => Promise<void> }> => {
+const startMockProvider = async (reviewSeverity = 'warning'): Promise<{ url: string; close: () => Promise<void> }> => {
     const server = http.createServer((request, response) => {
-        request.on('data', () => {});
+        let body = '';
+        request.on('data', chunk => {
+            body += chunk;
+        });
         request.on('end', () => {
+            // The prompt is JSON-escaped inside the request body, so match on a bare word
+            // only the code review prompt uses
+            const isCodeReviewRequest = body.includes('severity');
             response.writeHead(200, { 'Content-Type': 'application/json' });
             response.end(
                 JSON.stringify({
                     choices: [
                         {
                             index: 0,
-                            message: { role: 'assistant', content: JSON.stringify([{ subject: MOCK_MESSAGE, body: '', footer: '' }]) },
+                            message: {
+                                role: 'assistant',
+                                content: isCodeReviewRequest ? codeReviewContent(reviewSeverity) : commitMessageContent,
+                            },
                             finish_reason: 'stop',
                         },
                     ],
@@ -57,10 +76,11 @@ type Git = Awaited<ReturnType<typeof createGit>>;
  */
 const withMockProviders = async (
     serverUp: boolean,
-    run: (context: { aicommit2: Fixture['aicommit2']; options: Options; git: Git }) => Promise<void>
+    run: (context: { aicommit2: Fixture['aicommit2']; options: Options; git: Git }) => Promise<void>,
+    extra: { generalConfig?: string; reviewSeverity?: string } = {}
 ) => {
-    const mock = await startMockProvider();
-    const config = twoProviderConfig(mock.url);
+    const mock = await startMockProvider(extra.reviewSeverity);
+    const config = `${extra.generalConfig ?? ''}${twoProviderConfig(mock.url)}`;
     if (!serverUp) {
         await mock.close();
     }
@@ -126,6 +146,39 @@ export default testSuite(({ describe }) => {
                 expect(exitCode).toBe(0);
                 expect(stdout).toMatch(MOCK_MESSAGE);
             });
+        });
+
+        // The code review picker had no `--auto-select` check of its own, so an opted-in
+        // review parked the run at a list plus a confirmation before generation even started.
+        test('prints the code review without prompting', async () => {
+            await withMockProviders(
+                true,
+                async ({ aicommit2, options }) => {
+                    const { stdout, exitCode } = await aicommit2(['--all', '--dry-run', '--auto-select'], options);
+
+                    expect(exitCode).toBe(0);
+                    expect(stdout).toMatch(MOCK_REVIEW_SUMMARY);
+                    expect(stdout).toMatch('Mock finding');
+                    expect(stdout).toMatch(MOCK_MESSAGE);
+                },
+                { generalConfig: 'codeReview=true\n' }
+            );
+        });
+
+        // The picker asks whether to continue on critical findings. Nothing can answer that
+        // here, so the finding has to be visible in the output instead.
+        test('warns about a critical code review finding and still generates a message', async () => {
+            await withMockProviders(
+                true,
+                async ({ aicommit2, options }) => {
+                    const { stdout, exitCode } = await aicommit2(['--all', '--dry-run', '--auto-select'], options);
+
+                    expect(exitCode).toBe(0);
+                    expect(stdout).toMatch('Critical issues found in code review');
+                    expect(stdout).toMatch(MOCK_MESSAGE);
+                },
+                { generalConfig: 'codeReview=true\n', reviewSeverity: 'critical' }
+            );
         });
 
         // Nothing renders the per-model error lines in auto-select mode, so they used to be

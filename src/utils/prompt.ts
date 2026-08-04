@@ -348,6 +348,12 @@ export const generatePrompt = (promptOptions: PromptOptions) => {
     return `${basePrompt}\n${suffix}`;
 };
 
+/**
+ * Embedded in a rendered code review that contains at least one critical item. The commit
+ * flow reads it back to decide what to ask or warn about before committing.
+ */
+export const CRITICAL_ISSUES_MARKER = '<!-- HAS_CRITICAL_ISSUES -->';
+
 export const isValidConventionalMessage = (message: string): boolean => {
     // TODO: check loosely for issue that message is not coming out
     // const conventionalReg =

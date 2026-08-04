@@ -332,6 +332,8 @@ aicommit2 config set codeReview=true
 
 > NOTE: When enabled, aicommit2 will perform a code review before generating commit messages.
 
+With `--auto-select`, the review list never opens: the first review to come back is printed in full and the run continues. Critical findings are reported as a warning rather than stopping the run, because there is no confirmation prompt left to answer.
+
 <img src="https://github.com/tak-bro/aicommit2/blob/main/img/code_review.gif?raw=true" alt="CODE_REVIEW" />
 
 **CAUTION**
