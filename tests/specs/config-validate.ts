@@ -47,6 +47,33 @@ export default testSuite(({ describe }) => {
             expect(exitCode).toBe(0);
         });
 
+        test('offers several candidates when more than one option is close', async () => {
+            const { stdout, exitCode } = await runValidate('[OPENAI]\ntyp=conventional\n');
+
+            expect(stdout).toMatch('Did you mean');
+            expect(stdout).toMatch('`type`');
+            expect(stdout).toMatch('`topP`');
+            expect(exitCode).toBe(0);
+        });
+
+        // A typo too far from anything to guess used to produce a bare "Unknown option" line
+        // with no way forward.
+        test('points at the settings docs when nothing is close enough to suggest', async () => {
+            const { stdout, exitCode } = await runValidate('[OPENAI]\nnonsenseoption=1\n');
+
+            expect(stdout).toMatch('Unknown option');
+            expect(stdout).toMatch('Supported options');
+            expect(stdout).toMatch('docs/settings.md');
+            expect(exitCode).toBe(0);
+        });
+
+        test('links the settings entry for a rejected value', async () => {
+            const { stdout, exitCode } = await runValidate('[OPENAI]\ntemperature=99\n');
+
+            expect(stdout).toMatch('docs/settings.md#temperature');
+            expect(exitCode).toBe(1);
+        });
+
         test('reports every invalid value, not just the first', async () => {
             const { stdout, exitCode } = await runValidate('[OPENAI]\ntemperature=99\nmaxTokens=abc\n');
 
