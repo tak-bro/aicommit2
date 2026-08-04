@@ -31,29 +31,45 @@ const editDistance = (a: string, b: string): number => {
     return previous[b.length];
 };
 
+const SETTINGS_DOCS_URL = 'https://github.com/tak-bro/aicommit2/blob/main/docs/settings.md';
+
 /**
- * Closest accepted key for a key nothing accepts — case differences first, then typos.
+ * Anchor for one option in the settings reference. Headings there are `### <key>`, and
+ * GitHub lowercases them into the fragment.
  */
-const suggestKey = (key: string, knownKeys: string[]): string | undefined => {
+const docsLinkFor = (key: string): string => `${SETTINGS_DOCS_URL}#${key.toLowerCase()}`;
+
+const MAX_SUGGESTIONS = 3;
+
+/**
+ * Accepted keys close enough to a key nothing accepts — an exact case difference on its
+ * own, otherwise up to three typo candidates. Deliberately not the full accepted list: a
+ * service section has dozens of keys and dumping them buries the answer.
+ */
+const suggestKeys = (key: string, knownKeys: string[]): string[] => {
     const lowered = key.toLowerCase();
     const caseMatch = knownKeys.find(known => known.toLowerCase() === lowered);
     if (caseMatch) {
-        return caseMatch;
+        return [caseMatch];
     }
-    const [closest] = knownKeys
+    return knownKeys
         .map(known => ({ known, distance: editDistance(lowered, known.toLowerCase()) }))
         .filter(({ distance }) => distance <= 2)
-        .sort((first, second) => first.distance - second.distance);
-    return closest?.known;
+        .sort((first, second) => first.distance - second.distance)
+        .slice(0, MAX_SUGGESTIONS)
+        .map(({ known }) => known);
 };
 
 const unknownKeyIssue = (location: string, key: string, knownKeys: string[]): ConfigIssue => {
-    const suggestion = suggestKey(key, knownKeys);
+    const suggestions = suggestKeys(key, knownKeys);
     return {
         level: 'warning',
         location,
         message: 'Unknown option, silently ignored.',
-        hint: suggestion && `Did you mean \`${suggestion}\`?`,
+        hint:
+            suggestions.length > 0
+                ? `Did you mean ${suggestions.map(suggestion => `\`${suggestion}\``).join(', ')}? See ${SETTINGS_DOCS_URL}`
+                : `Supported options: ${SETTINGS_DOCS_URL}`,
     };
 };
 
@@ -63,7 +79,7 @@ const invalidSectionIssue = (name: string): ConfigIssue => {
         level: 'error',
         location: `[${name}]`,
         message: 'Invalid section name, so the whole section is ignored. Names must be uppercase letters, numbers and underscores.',
-        hint: SERVICE_NAME_PATTERN.test(upperCased) ? `Did you mean [${upperCased}]?` : undefined,
+        hint: SERVICE_NAME_PATTERN.test(upperCased) ? `Did you mean [${upperCased}]?` : `Supported sections: ${SETTINGS_DOCS_URL}`,
     };
 };
 
@@ -71,12 +87,14 @@ const invalidSectionIssue = (name: string): ConfigIssue => {
  * Run one parser over one raw value, turning a rejection into an issue instead of aborting.
  * `getConfig` throws on the first bad value; validation reports every one of them.
  */
-const validateValue = (parse: ConfigParser, location: string, value: unknown): ConfigIssue | null => {
+const validateValue = (parse: ConfigParser, location: string, key: string, value: unknown): ConfigIssue | null => {
     try {
         parse(value);
         return null;
     } catch (error) {
-        return { level: 'error', location, message: (error as Error).message };
+        // Parser messages carry no trailing period, so the hint would run straight into them
+        const message = (error as Error).message.replace(/\.?$/, '.');
+        return { level: 'error', location, message, hint: `Accepted values: ${docsLinkFor(key)}` };
     }
 };
 
@@ -95,7 +113,7 @@ const checkEntry = (
     if (!parse) {
         return [unknownKeyIssue(location, key, knownKeys)];
     }
-    const issue = validateValue(parse, location, value);
+    const issue = validateValue(parse, location, key, value);
     return issue ? [issue] : [];
 };
 

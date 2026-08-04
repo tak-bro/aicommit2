@@ -408,6 +408,7 @@ Run `aicommit2 --help` to see all available options grouped by category.
 - `--confirm` or `-y`: Skip confirmation when committing after message generation (default: **false**)
 - `--auto-select` or `-s`: Automatically select the first successfully generated message (default: **false**)
   - Runs non-interactively: skips both the message picker and the commit confirmation, regardless of how many AI providers are configured
+  - With [`codeReview`](./docs/settings.md#codereview) enabled, the first review is printed in full instead of opening the review list. Critical findings are printed as a warning and the run continues, since there is no prompt to answer
 - `--edit` or `-e`: Open the AI-generated commit message in your default editor (default: **false**)
 - `--clipboard` or `-c`: Copy the selected message to clipboard and exit **without committing** (default: **false**)
 - `--dry-run` or `-d`: Generate commit message without committing (default: **false**)
