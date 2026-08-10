@@ -1,3 +1,15 @@
+# [2.11.0](https://github.com/tak-bro/aicommit2/compare/v2.10.0...v2.11.0) (2026-08-10)
+
+
+### Bug Fixes
+
+* **auto-select:** skip the code review picker with --auto-select ([2434213](https://github.com/tak-bro/aicommit2/commit/243421348b07aa0c8c202732c559d08e012c5962))
+
+
+### Features
+
+* **config:** suggest several options and link the docs on invalid config ([45d3f3e](https://github.com/tak-bro/aicommit2/commit/45d3f3e0385c7e5689e57055c2d960d3bdf51318))
+
 # [2.10.0](https://github.com/tak-bro/aicommit2/compare/v2.9.0...v2.10.0) (2026-08-03)
 
 
