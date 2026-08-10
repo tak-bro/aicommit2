@@ -7,7 +7,14 @@ import { buildCommitContext } from '../../utils/commit-context/index.js';
 import { CommitType, ModelConfig, ModelName, ModelNameDisplay } from '../../utils/config.js';
 import { ErrorCode, ErrorCodeType, detectErrorCode, getPlainErrorMessage, httpStatusToErrorCode } from '../../utils/error-messages.js';
 import { logger } from '../../utils/logger.js';
-import { CommitContext, DEFAULT_PROMPT_OPTIONS, PromptOptions, generatePrompt, generateUserPrompt } from '../../utils/prompt.js';
+import {
+    CRITICAL_ISSUES_MARKER,
+    CommitContext,
+    DEFAULT_PROMPT_OPTIONS,
+    PromptOptions,
+    generatePrompt,
+    generateUserPrompt,
+} from '../../utils/prompt.js';
 import { isReasoningCapableModel } from '../../utils/reasoning-models.js';
 import { IncrementalJsonParser } from '../../utils/stream-json-parser.js';
 import { getFirstWordsFrom, safeJsonParse } from '../../utils/utils.js';
@@ -660,7 +667,7 @@ export abstract class AIService {
     };
 
     private formatReviewAsMarkdown = (summary: string, items: CodeReviewItem[], hasCritical: boolean): string => {
-        const criticalMarker = hasCritical ? '\n<!-- HAS_CRITICAL_ISSUES -->\n' : '';
+        const criticalMarker = hasCritical ? `\n${CRITICAL_ISSUES_MARKER}\n` : '';
         const lines: string[] = [`## Summary\n${summary}${criticalMarker}\n`];
 
         const severityOrder: CodeReviewSeverity[] = ['critical', 'warning', 'suggestion', 'praise'];

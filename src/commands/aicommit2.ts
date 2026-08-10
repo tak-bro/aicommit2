@@ -9,7 +9,7 @@ import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { lastValueFrom, toArray } from 'rxjs';
 
 import { getAvailableAIs } from './get-available-ais.js';
-import { CommitChoice, CommitMessageResult, selectMessageAutomatically } from './select-message.js';
+import { CommitChoice, CommitMessageResult, selectCodeReviewAutomatically, selectMessageAutomatically } from './select-message.js';
 import { AIRequestManager } from '../managers/ai-request.manager.js';
 import { ConsoleManager } from '../managers/console.manager.js';
 import {
@@ -23,7 +23,7 @@ import { recordSelection } from '../services/stats/index.js';
 import { ModelName, RawConfig, applyDisableLowerCaseToConfig, applyIncludeBodyToConfig, getConfig } from '../utils/config.js';
 import { ErrorCode, ErrorMessages } from '../utils/error-messages.js';
 import { KnownError, handleCliError } from '../utils/error.js';
-import { validateSystemPrompt } from '../utils/prompt.js';
+import { CRITICAL_ISSUES_MARKER, validateSystemPrompt } from '../utils/prompt.js';
 import {
     CommitOptions,
     applyDiffCompression,
@@ -171,7 +171,7 @@ export default async (
 
         const codeReviewAIs = getAvailableAIs(config, 'review');
         if (codeReviewAIs.length > 0) {
-            await handleCodeReview(aiRequestManager, codeReviewAIs);
+            await handleCodeReview(aiRequestManager, codeReviewAIs, autoSelect);
         }
 
         const commitResult = await handleCommitMessage(aiRequestManager, availableAIs, autoSelect);
@@ -260,11 +260,21 @@ export default async (
         process.exit(1);
     });
 
-async function handleCodeReview(aiRequestManager: AIRequestManager, availableAIs: ModelName[]) {
+async function handleCodeReview(aiRequestManager: AIRequestManager, availableAIs: ModelName[], autoSelect: boolean) {
     const codeReviewPromptManager = new ReactivePromptManager(codeReviewLoader);
     let codeReviewSubscription: Subscription | null = null;
 
     try {
+        if (autoSelect) {
+            const review = await selectCodeReviewAutomatically(aiRequestManager, availableAIs, codeReviewPromptManager);
+            // The interactive path asks whether to continue on critical issues. There is no
+            // prompt here, and --auto-select means the run goes through, so warn instead.
+            if (review.includes(CRITICAL_ISSUES_MARKER)) {
+                consoleManager.printWarning('Critical issues found in code review.');
+            }
+            return;
+        }
+
         const codeReviewInquirer = codeReviewPromptManager.initPrompt({
             ...DEFAULT_INQUIRER_OPTIONS,
             name: 'codeReviewPrompt',
@@ -295,7 +305,7 @@ async function handleCodeReview(aiRequestManager: AIRequestManager, availableAIs
 
         consoleManager.moveCursorUp();
 
-        const hasCritical = selectedCodeReview.includes('<!-- HAS_CRITICAL_ISSUES -->');
+        const hasCritical = selectedCodeReview.includes(CRITICAL_ISSUES_MARKER);
         const confirmMessage = hasCritical
             ? 'Critical issues found in code review. Continue without fixing?'
             : 'Will you continue without changing the code?';
