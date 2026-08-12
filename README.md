@@ -91,6 +91,7 @@ _aicommit2_ automatically generates commit messages using AI. It supports [Git](
 | Provider | Default Model | Documentation |
 |----------|---------------|---------------|
 | OpenAI | `gpt-4o-mini` | [Guide](docs/providers/openai.md) |
+| Atlas Cloud | `qwen/qwen3.8-max` | [Guide](docs/providers/atlascloud.md) |
 | Copilot SDK (Preview) | `gpt-4.1` | [Guide](docs/providers/copilot-sdk.md) |
 | Claude Code (Preview) | `sonnet` | [Guide](docs/providers/claude-code.md) |
 | Gemini CLI (Preview) | *(CLI default)* | [Guide](docs/providers/gemini-cli.md) |
@@ -886,6 +887,8 @@ You can configure API keys using environment variables. This is particularly use
 ```bash
 # OpenAI
 OPENAI_API_KEY="your-openai-key"
+# Atlas Cloud
+ATLASCLOUD_API_KEY="your-atlascloud-key"
 # Anthropic
 ANTHROPIC_API_KEY="your-anthropic-key"
 # Google
@@ -969,6 +972,7 @@ aicommit2 config set \
 > 🔍 **Detailed Support Info**: Check each provider's documentation for specific limits and behaviors:
 >
 > - [OpenAI](docs/providers/openai.md)
+> - [Atlas Cloud](docs/providers/atlascloud.md)
 > - [Anthropic Claude](docs/providers/anthropic.md)
 > - [Gemini](docs/providers/gemini.md)
 > - [Mistral & Codestral](docs/providers/mistral.md)

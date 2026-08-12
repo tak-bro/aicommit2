@@ -23,6 +23,12 @@ const PROVIDER_INFO: Record<string, ProviderInfo> = {
         envKeyHint: 'OPENAI_API_KEY',
         defaultModel: 'gpt-4o-mini',
     },
+    ATLASCLOUD: {
+        displayName: 'Atlas Cloud',
+        authType: 'api-key',
+        envKeyHint: 'ATLASCLOUD_API_KEY',
+        defaultModel: 'qwen/qwen3.8-max',
+    },
     COPILOT_SDK: {
         displayName: 'GitHub Copilot SDK (Preview)',
         authType: 'none',
@@ -112,7 +118,7 @@ const PROVIDER_INFO: Record<string, ProviderInfo> = {
 };
 
 // Popular providers shown first for selection
-const POPULAR_PROVIDERS = ['OPENAI', 'OPENROUTER', 'ANTHROPIC', 'GEMINI', 'OLLAMA', 'GROQ', 'DEEPSEEK'];
+const POPULAR_PROVIDERS = ['OPENAI', 'ATLASCLOUD', 'OPENROUTER', 'ANTHROPIC', 'GEMINI', 'OLLAMA', 'GROQ', 'DEEPSEEK'];
 
 export default command(
     {

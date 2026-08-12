@@ -338,6 +338,35 @@ export default testSuite(({ describe }) => {
             });
         });
 
+        await describe('Atlas Cloud configuration', async ({ test }) => {
+            const envKeys = ['AICOMMIT_CONFIG_PATH', 'ATLASCLOUD_API_KEY'];
+
+            await test('uses built-in defaults and the provider-specific environment key', async () => {
+                const { fixture } = await createFixture();
+                const configPath = path.join(fixture.path, '.config', 'aicommit2', 'config.ini');
+                await ensureDirectoryExists(path.dirname(configPath));
+                await fs.writeFile(configPath, '[ATLASCLOUD]\n');
+
+                const snapshot = snapshotEnv(envKeys);
+                process.env.AICOMMIT_CONFIG_PATH = configPath;
+                process.env.ATLASCLOUD_API_KEY = 'test-atlas-key';
+                invalidateConfigCache();
+
+                const config = (await getConfig({}, [])) as ValidConfig;
+                const atlasCloud = config.ATLASCLOUD as any;
+
+                expect(atlasCloud.key).toBe('test-atlas-key');
+                expect(atlasCloud.model).toEqual(['qwen/qwen3.8-max']);
+                expect(atlasCloud.url).toBe('https://api.atlascloud.ai');
+                expect(atlasCloud.path).toBe('/v1');
+                expect(getAvailableAIs(config, 'commit')).toContain('ATLASCLOUD');
+
+                await fixture.rm();
+                restoreEnv(snapshot);
+                invalidateConfigCache();
+            });
+        });
+
         await describe('Copilot SDK configuration', async ({ test }) => {
             const envKeys = ['AICOMMIT_CONFIG_PATH', 'COPILOT_GITHUB_TOKEN', 'COPILOT_SDK_API_KEY'];
 
