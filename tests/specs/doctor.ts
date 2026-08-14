@@ -80,14 +80,28 @@ export default testSuite(({ describe }) => {
         // COPILOT_SDK opts in on a model OR a key OR COPILOT_GITHUB_TOKEN, so gating
         // doctor on the model alone reported an env-token-only setup as unconfigured
         // while generation worked — the same divergence as issue #268.
-        test('doctor opts COPILOT_SDK in on COPILOT_GITHUB_TOKEN alone, with no model configured', async () => {
+        test('doctor runs the COPILOT_SDK environment check once the provider is opted in', async () => {
             const { fixture, aicommit2 } = await createFixture();
+            await aicommit2(['config', 'set', 'COPILOT_SDK.model=gpt-4.1']);
             const { stdout } = await aicommit2(['doctor'], { env: { COPILOT_GITHUB_TOKEN: 'ghp_classicTokenForTest' } });
 
-            // The classic-PAT rejection sits behind the opt-in gate and needs no network,
-            // so reaching it proves the gate passed without a configured model.
+            // The classic-PAT rejection sits behind both gates and needs no network. Reaching
+            // it also pins branch order: the shared subscription-CLI gate runs after this one,
+            // and would have reported the configured model as healthy instead.
             expect(providerLine(stdout, 'COPILOT_SDK')).toMatch('Unsupported classic PAT');
-            expect(providerLine(stdout, 'COPILOT_SDK')).not.toMatch('Not configured');
+            expect(providerLine(stdout, 'COPILOT_SDK')).not.toMatch('Model configured');
+            await fixture.rm();
+        });
+
+        // The fan-out is one request per configured model, so opting in without a model
+        // selects the provider and then sends nothing. Reporting that as healthy would be
+        // the #268 false report pointed the other way.
+        test('doctor warns when COPILOT_SDK is opted in by token but has no model', async () => {
+            const { fixture, aicommit2 } = await createFixture();
+            const { stdout } = await aicommit2(['doctor'], { env: { COPILOT_GITHUB_TOKEN: 'github_pat_tokenForTest' } });
+
+            expect(providerLine(stdout, 'COPILOT_SDK')).toMatch('no model configured');
+            expect(providerLine(stdout, 'COPILOT_SDK')).not.toMatch('Not configured (needs');
             await fixture.rm();
         });
 

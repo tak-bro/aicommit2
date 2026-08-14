@@ -6,7 +6,6 @@ import { command } from 'cleye';
 import { getConfiguredModels, hasBedrockAccess, hasConfiguredModels, hasCopilotSdkAvailable } from './get-available-ais.js';
 import {
     ALL_COPILOT_SDK_KNOWN_MODELS,
-    COPILOT_SDK_DEFAULT_MODEL,
     buildCopilotSdkClientOptions,
     isCopilotSdkCliNotFoundError,
     isCopilotSdkPackageInstalled,
@@ -470,12 +469,11 @@ const checkCopilotSdkEnvironment = async (
     providerConfig: RawConfig,
     timeout: number
 ): Promise<{ ok: boolean; error?: string; details?: string; modelWarning?: string }> => {
-    // Mirror the service: an unset model is not a failure, it selects the default
-    // (copilot-sdk.service.ts). Reporting "No model configured" here contradicted the
-    // runtime, which activates on a key or COPILOT_GITHUB_TOKEN alone (issue #268).
-    const configuredModel = getConfiguredModels(providerConfig)[0] || '';
-    const model = configuredModel || COPILOT_SDK_DEFAULT_MODEL;
-    const modelLabel = configuredModel ? model : `${model} (default)`;
+    // Callers gate on a configured model before reaching here, so this is never empty.
+    // The service's own `|| COPILOT_SDK_DEFAULT_MODEL` fallback cannot stand in for it:
+    // the fan-out is `from(getModels(ai))` (ai-request.manager.ts), so an empty model
+    // list emits zero requests and the service default is never consulted.
+    const model = getConfiguredModels(providerConfig)[0] || '';
 
     const prereqFailure = checkCopilotSdkPrereqs();
     if (prereqFailure) {
@@ -526,8 +524,8 @@ const checkCopilotSdkEnvironment = async (
     return {
         ok: true,
         details: version
-            ? `CLI: ${version}${authLabel}; Model: ${modelLabel}; Node: ${nodeVersion}`
-            : `Model: ${modelLabel}${authLabel}; Node: ${nodeVersion}`,
+            ? `CLI: ${version}${authLabel}; Model: ${model}; Node: ${nodeVersion}`
+            : `Model: ${model}${authLabel}; Node: ${nodeVersion}`,
         modelWarning,
     };
 };
@@ -659,13 +657,25 @@ const checkProviderHealth = async (provider: BuiltinService, providerConfig: Raw
 
     if (provider === 'COPILOT_SDK') {
         // Opt-in is a model OR a key OR COPILOT_GITHUB_TOKEN — the same signal the
-        // runtime uses (issue #254). Gating on the model alone made doctor report an
-        // env-token-only setup as unconfigured while generation worked (issue #268).
+        // runtime uses (issue #254). Gating the skip on the model alone told a user who
+        // opted in with a key or a token that nothing was configured (issue #268).
         if (!hasCopilotSdkAvailable(providerConfig)) {
             return {
                 provider,
                 status: 'skipped',
                 message: 'Not configured (needs model, key, or COPILOT_GITHUB_TOKEN)',
+            };
+        }
+
+        // Opted in, but the request fan-out is one request per configured model
+        // (ai-request.manager.ts), so an empty model list sends nothing. The provider is
+        // selected and still produces no suggestions — a warning, not healthy.
+        if (getConfiguredModels(providerConfig).length === 0) {
+            return {
+                provider,
+                status: 'warning',
+                message: 'Opted in but no model configured — no requests will be sent',
+                details: 'Set COPILOT_SDK.model (e.g. gpt-4.1)',
             };
         }
 

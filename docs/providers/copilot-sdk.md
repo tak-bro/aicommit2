@@ -138,8 +138,11 @@ aicommit2 doctor
 Expected healthy signal for `COPILOT_SDK`:
 
 - Copilot CLI detected
-- Model resolved — the configured model, or `gpt-4.1 (default)` when none is set (warns if the model is not in the known working list)
+- Model configured (warns if model is not in known working list)
 - Node runtime compatible
+
+Opting in with only a key or `COPILOT_GITHUB_TOKEN` and no `model` is reported as a warning: the
+provider is selected but sends no requests, because the fan-out is one request per configured model.
 
 Then validate generation in a git repo:
 
