@@ -138,7 +138,7 @@ aicommit2 doctor
 Expected healthy signal for `COPILOT_SDK`:
 
 - Copilot CLI detected
-- Model configured (warns if model is not in known working list)
+- Model resolved — the configured model, or `gpt-4.1 (default)` when none is set (warns if the model is not in the known working list)
 - Node runtime compatible
 
 Then validate generation in a git repo:

@@ -3,6 +3,10 @@ import { expect, testSuite } from 'manten';
 import { summarizeOpenRouterCapabilities } from '../../src/commands/doctor.js';
 import { createFixture } from '../utils.js';
 
+// doctor prints one line per provider; assertions target that line so a message
+// belonging to another provider cannot satisfy them.
+const providerLine = (stdout: string, provider: string): string => stdout.split('\n').find(line => line.includes(provider)) || '';
+
 export default testSuite(({ describe }) => {
     describe('doctor command', async ({ test }) => {
         test('doctor shows health check output', async () => {
@@ -41,6 +45,59 @@ export default testSuite(({ describe }) => {
             expect(stdout).toMatch('GITHUB_MODELS');
             expect(stdout).toMatch('Invalid model ID format');
             expect(stdout).toMatch('publisher/model');
+            await fixture.rm();
+        });
+
+        // Subscription-CLI providers have no API key, so doctor must gate them on a
+        // configured model like the runtime does. Regression guard for issue #268,
+        // where both fell through to the API key check and reported "Not configured"
+        // while generation worked fine.
+        test('doctor reports subscription-CLI providers as healthy when a model is configured', async () => {
+            const { fixture, aicommit2 } = await createFixture();
+            await aicommit2(['config', 'set', 'CLAUDE_CODE.model=sonnet']);
+            await aicommit2(['config', 'set', 'GEMINI_CLI.model=gemini-2.5-pro']);
+
+            const { stdout } = await aicommit2(['doctor']);
+
+            expect(providerLine(stdout, 'CLAUDE_CODE')).toMatch('Model configured');
+            expect(providerLine(stdout, 'CLAUDE_CODE')).toMatch('Model: sonnet');
+            expect(providerLine(stdout, 'CLAUDE_CODE')).not.toMatch('Not configured');
+
+            expect(providerLine(stdout, 'GEMINI_CLI')).toMatch('Model configured');
+            expect(providerLine(stdout, 'GEMINI_CLI')).not.toMatch('Not configured');
+            await fixture.rm();
+        });
+
+        test('doctor reports subscription-CLI providers as missing models, not missing keys', async () => {
+            const { fixture, aicommit2 } = await createFixture();
+            const { stdout } = await aicommit2(['doctor']);
+
+            expect(providerLine(stdout, 'CLAUDE_CODE')).toMatch('No models configured');
+            expect(providerLine(stdout, 'GEMINI_CLI')).toMatch('No models configured');
+            await fixture.rm();
+        });
+
+        // COPILOT_SDK opts in on a model OR a key OR COPILOT_GITHUB_TOKEN, so gating
+        // doctor on the model alone reported an env-token-only setup as unconfigured
+        // while generation worked — the same divergence as issue #268.
+        test('doctor opts COPILOT_SDK in on COPILOT_GITHUB_TOKEN alone, with no model configured', async () => {
+            const { fixture, aicommit2 } = await createFixture();
+            const { stdout } = await aicommit2(['doctor'], { env: { COPILOT_GITHUB_TOKEN: 'ghp_classicTokenForTest' } });
+
+            // The classic-PAT rejection sits behind the opt-in gate and needs no network,
+            // so reaching it proves the gate passed without a configured model.
+            expect(providerLine(stdout, 'COPILOT_SDK')).toMatch('Unsupported classic PAT');
+            expect(providerLine(stdout, 'COPILOT_SDK')).not.toMatch('Not configured');
+            await fixture.rm();
+        });
+
+        // The skip message names all three opt-in signals: after the gate widened, telling
+        // the user to configure a model would hide the key and token paths.
+        test('doctor still skips COPILOT_SDK when no opt-in signal is present', async () => {
+            const { fixture, aicommit2 } = await createFixture();
+            const { stdout } = await aicommit2(['doctor']);
+
+            expect(providerLine(stdout, 'COPILOT_SDK')).toMatch('Not configured (needs model, key, or COPILOT_GITHUB_TOKEN)');
             await fixture.rm();
         });
 

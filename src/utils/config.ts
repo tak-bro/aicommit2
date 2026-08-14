@@ -57,6 +57,17 @@ export const BUILTIN_SERVICES = [
 ] as const;
 export type BuiltinService = (typeof BUILTIN_SERVICES)[number];
 
+// Providers that authenticate through their own subscription CLI rather than an API key.
+// Membership means "no key to check", not "a configured model is the only opt-in signal":
+// COPILOT_SDK also activates on a key or COPILOT_GITHUB_TOKEN (issue #254).
+//
+// Consumed by doctor's health check, where it exists so a future member inherits the model
+// gate instead of the API-key check that misreported CLAUDE_CODE and GEMINI_CLI (issue
+// #268). It is deliberately NOT the runtime gate's grouping in get-available-ais.ts — that
+// one groups OLLAMA with CLAUDE_CODE/GEMINI_CLI and gives COPILOT_SDK its own wider
+// predicate, so swapping this set in there would reintroduce #268 from the other side.
+export const SUBSCRIPTION_CLI_SERVICES: readonly BuiltinService[] = ['COPILOT_SDK', 'CLAUDE_CODE', 'GEMINI_CLI'];
+
 const getXdgBaseDirectory = (type: 'config' | 'data' | 'cache' | 'state'): string => {
     const platform = os.platform();
     const homeDir = os.homedir();
