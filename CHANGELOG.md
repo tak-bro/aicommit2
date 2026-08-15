@@ -1,3 +1,11 @@
+## [2.11.1](https://github.com/tak-bro/aicommit2/compare/v2.11.0...v2.11.1) (2026-08-15)
+
+
+### Bug Fixes
+
+* **doctor:** report subscription-CLI providers by their opt-in signal ([bfb1ab3](https://github.com/tak-bro/aicommit2/commit/bfb1ab359c45fc5d0e7fa54a82d723d08a3f4d8c)), closes [#268](https://github.com/tak-bro/aicommit2/issues/268)
+* **doctor:** warn instead of healthy when COPILOT_SDK has no model ([864aebc](https://github.com/tak-bro/aicommit2/commit/864aebc4c2d002cfa5feba1fa77dd8b517ba3159)), closes [#268](https://github.com/tak-bro/aicommit2/issues/268)
+
 # [2.11.0](https://github.com/tak-bro/aicommit2/compare/v2.10.0...v2.11.0) (2026-08-10)
 
 
