@@ -17,14 +17,14 @@ const hasCopilotSdkAvailable = (value: RawConfig): boolean => {
     return hasConfiguredModels(value) || isNonEmptyString(value.key as string) || isNonEmptyString(process.env.COPILOT_GITHUB_TOKEN);
 };
 
-const hasConfiguredModels = (value: RawConfig): boolean => {
-    const models = Array.isArray(value.model)
-        ? (value.model as string[])
-        : isNonEmptyString(value.model)
-          ? [(value.model as string).trim()]
-          : [];
-    return models.length > 0;
+const getConfiguredModels = (value: RawConfig): string[] => {
+    if (Array.isArray(value.model)) {
+        return value.model as string[];
+    }
+    return isNonEmptyString(value.model) ? [(value.model as string).trim()] : [];
 };
+
+const hasConfiguredModels = (value: RawConfig): boolean => getConfiguredModels(value).length > 0;
 
 const hasBedrockAccess = (value: RawConfig): boolean => {
     const hasApiKey = isNonEmptyString(value.key as string);
@@ -114,4 +114,4 @@ export const getAvailableAIs = (config: ValidConfig, requestType: RequestType): 
         .map(([key]) => key);
 };
 
-export { hasBedrockAccess, hasConfiguredModels };
+export { getConfiguredModels, hasBedrockAccess, hasConfiguredModels, hasCopilotSdkAvailable };

@@ -141,6 +141,9 @@ Expected healthy signal for `COPILOT_SDK`:
 - Model configured (warns if model is not in known working list)
 - Node runtime compatible
 
+Opting in with only a key or `COPILOT_GITHUB_TOKEN` and no `model` is reported as a warning: the
+provider is selected but sends no requests, because the fan-out is one request per configured model.
+
 Then validate generation in a git repo:
 
 ```bash

@@ -3,7 +3,7 @@ import { execSync } from 'child_process';
 import chalk from 'chalk';
 import { command } from 'cleye';
 
-import { hasBedrockAccess, hasConfiguredModels } from './get-available-ais.js';
+import { getConfiguredModels, hasBedrockAccess, hasConfiguredModels, hasCopilotSdkAvailable } from './get-available-ais.js';
 import {
     ALL_COPILOT_SDK_KNOWN_MODELS,
     buildCopilotSdkClientOptions,
@@ -20,7 +20,15 @@ import {
     isValidGitHubModelsModelId,
 } from '../services/ai/github-models.utils.js';
 import { HttpRequestBuilder } from '../services/http/http-request.builder.js';
-import { BUILTIN_SERVICES, BuiltinService, DEFAULT_OLLAMA_HOST, RawConfig, ValidConfig, getConfig } from '../utils/config.js';
+import {
+    BUILTIN_SERVICES,
+    BuiltinService,
+    DEFAULT_OLLAMA_HOST,
+    RawConfig,
+    SUBSCRIPTION_CLI_SERVICES,
+    ValidConfig,
+    getConfig,
+} from '../utils/config.js';
 import { handleCliError } from '../utils/error.js';
 import { findLazygitConfig, hasAicommitIntegration, isLazygitInstalled } from '../utils/lazygit.js';
 
@@ -81,15 +89,6 @@ const STATUS_LABELS: Record<HealthStatus, (text: string) => string> = {
  */
 const hasApiKey = (value: RawConfig): boolean => {
     return typeof value.key === 'string' && value.key.trim().length > 0;
-};
-
-const hasConfiguredModel = (value: RawConfig): boolean => {
-    const models = Array.isArray(value.model)
-        ? (value.model as string[])
-        : typeof value.model === 'string' && value.model.trim().length > 0
-          ? [(value.model as string).trim()]
-          : [];
-    return models.length > 0;
 };
 
 const isNonEmptyObject = (value: unknown): value is Record<string, unknown> => {
@@ -267,11 +266,7 @@ const checkOpenRouterConnection = async (
 
         const models = response.data?.data ?? [];
 
-        const configuredModels = hasConfiguredModel(providerConfig)
-            ? Array.isArray(providerConfig.model)
-                ? (providerConfig.model as string[])
-                : [providerConfig.model as string]
-            : [];
+        const configuredModels = getConfiguredModels(providerConfig);
 
         if (configuredModels.length === 0) {
             return {
@@ -442,11 +437,7 @@ const probeCopilotSdkAuth = async (
 
 // Static (non-network) prerequisites for COPILOT_SDK. Returns a failure reason,
 // or null when the environment is ready for the live auth probe.
-const checkCopilotSdkPrereqs = (model: string): { error: string; details?: string } | null => {
-    if (!model) {
-        return { error: 'No model configured' };
-    }
-
+const checkCopilotSdkPrereqs = (): { error: string; details?: string } | null => {
     const copilotEnvToken = (process.env.COPILOT_GITHUB_TOKEN || '').trim();
     if (copilotEnvToken.startsWith('ghp_')) {
         return {
@@ -478,11 +469,13 @@ const checkCopilotSdkEnvironment = async (
     providerConfig: RawConfig,
     timeout: number
 ): Promise<{ ok: boolean; error?: string; details?: string; modelWarning?: string }> => {
-    const model = Array.isArray(providerConfig.model)
-        ? String(providerConfig.model[0] || '').trim()
-        : String(providerConfig.model || '').trim();
+    // Callers gate on a configured model before reaching here, so this is never empty.
+    // The service's own `|| COPILOT_SDK_DEFAULT_MODEL` fallback cannot stand in for it:
+    // the fan-out is `from(getModels(ai))` (ai-request.manager.ts), so an empty model
+    // list emits zero requests and the service default is never consulted.
+    const model = getConfiguredModels(providerConfig)[0] || '';
 
-    const prereqFailure = checkCopilotSdkPrereqs(model);
+    const prereqFailure = checkCopilotSdkPrereqs();
     if (prereqFailure) {
         return { ok: false, ...prereqFailure };
     }
@@ -663,11 +656,26 @@ const checkProviderHealth = async (provider: BuiltinService, providerConfig: Raw
     }
 
     if (provider === 'COPILOT_SDK') {
-        if (!hasConfiguredModel(providerConfig)) {
+        // Opt-in is a model OR a key OR COPILOT_GITHUB_TOKEN — the same signal the
+        // runtime uses (issue #254). Gating the skip on the model alone told a user who
+        // opted in with a key or a token that nothing was configured (issue #268).
+        if (!hasCopilotSdkAvailable(providerConfig)) {
             return {
                 provider,
                 status: 'skipped',
-                message: 'No models configured',
+                message: 'Not configured (needs model, key, or COPILOT_GITHUB_TOKEN)',
+            };
+        }
+
+        // Opted in, but the request fan-out is one request per configured model
+        // (ai-request.manager.ts), so an empty model list sends nothing. The provider is
+        // selected and still produces no suggestions — a warning, not healthy.
+        if (getConfiguredModels(providerConfig).length === 0) {
+            return {
+                provider,
+                status: 'warning',
+                message: 'Opted in but no model configured — no requests will be sent',
+                details: 'Set COPILOT_SDK.model (e.g. gpt-4.1)',
             };
         }
 
@@ -696,6 +704,33 @@ const checkProviderHealth = async (provider: BuiltinService, providerConfig: Raw
             status: 'healthy',
             message: 'SDK environment ready',
             details: result.details,
+        };
+    }
+
+    // Subscription-CLI providers authenticate through their own CLI and never carry a
+    // key, so a configured model is the opt-in signal (issue #254, mirrors the runtime
+    // gate in get-available-ais.ts). Without this branch they fall through to the API
+    // key check below and always report "Not configured", even while generation works
+    // (issue #268). COPILOT_SDK is a member of the set too but returns from its own branch
+    // above, so it never reaches here — the COPILOT_GITHUB_TOKEN test in tests/specs/doctor.ts
+    // pins that ordering, since reaching this gate would report it as having no models.
+    // Any future member lands on this model gate by default.
+    if (SUBSCRIPTION_CLI_SERVICES.includes(provider)) {
+        const models = getConfiguredModels(providerConfig);
+
+        if (models.length === 0) {
+            return {
+                provider,
+                status: 'skipped',
+                message: 'No models configured',
+            };
+        }
+
+        return {
+            provider,
+            status: 'healthy',
+            message: 'Model configured',
+            details: `Model: ${models.join(', ')}`,
         };
     }
 
