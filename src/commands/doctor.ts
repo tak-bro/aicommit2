@@ -37,6 +37,7 @@ import {
     compareVersions,
     detectInstallSource,
     fetchLatestVersion,
+    isReleaseVersion,
     resolveInstalledBinPath,
 } from '../utils/version-check.js';
 
@@ -842,43 +843,34 @@ export const checkVersion = async (
     currentVersion: string = installedVersion,
     fetchLatest: () => Promise<string> = fetchLatestVersion
 ): Promise<ProviderHealthResult> => {
-    const isReleaseBuild = compareVersions(currentVersion, currentVersion) === 'same';
-    if (!isReleaseBuild) {
-        return {
-            provider: 'VERSION',
-            status: 'skipped',
-            message: 'Development build, version check skipped',
-            details: currentVersion,
-        };
+    const versionResult = (status: HealthStatus, message: string, details?: string): ProviderHealthResult => ({
+        provider: 'VERSION',
+        status,
+        message,
+        details,
+    });
+
+    if (!isReleaseVersion(currentVersion)) {
+        return versionResult('skipped', 'Development build, version check skipped', currentVersion);
     }
 
     let latestVersion: string;
     try {
         latestVersion = await fetchLatest();
     } catch {
-        return {
-            provider: 'VERSION',
-            status: 'skipped',
-            message: 'Could not reach the npm registry',
-            details: `installed v${currentVersion}`,
-        };
+        return versionResult('skipped', 'Could not reach the npm registry', `installed v${currentVersion}`);
     }
 
     if (compareVersions(currentVersion, latestVersion) === 'outdated') {
         const installSource = detectInstallSource(resolveInstalledBinPath());
-        return {
-            provider: 'VERSION',
-            status: 'warning',
-            message: `Update available: v${currentVersion} → v${latestVersion}`,
-            details: `Run \`${UPGRADE_COMMANDS[installSource]}\``,
-        };
+        return versionResult(
+            'warning',
+            `Update available: v${currentVersion} → v${latestVersion}`,
+            `Run \`${UPGRADE_COMMANDS[installSource]}\``
+        );
     }
 
-    return {
-        provider: 'VERSION',
-        status: 'healthy',
-        message: `Up to date (v${currentVersion})`,
-    };
+    return versionResult('healthy', `Up to date (v${currentVersion})`);
 };
 
 // Pre-calculate max provider name length for consistent formatting
@@ -889,15 +881,14 @@ const formatProviderName = (name: string): string => name.padEnd(MAX_PROVIDER_LE
 /**
  * Print health check results to console
  */
-const printResults = (
-    results: ProviderHealthResult[],
-    integrations: ProviderHealthResult[] = [],
-    installation: ProviderHealthResult[] = []
-): void => {
+interface ResultSection {
+    title: string;
+    results: ProviderHealthResult[];
+}
+
+const printResults = (sections: ResultSection[]): void => {
     console.log('');
     console.log(chalk.bold('🩺 aicommit2 Health Check'));
-    console.log('');
-    console.log(chalk.bold('Providers:'));
 
     const printResultLine = (result: ProviderHealthResult) => {
         const icon = STATUS_ICONS[result.status];
@@ -908,22 +899,17 @@ const printResults = (
         console.log(`  ${icon} ${name}  ${message}${details}`);
     };
 
-    results.forEach(printResultLine);
-
-    if (integrations.length > 0) {
+    for (const section of sections) {
+        if (section.results.length === 0) {
+            continue;
+        }
         console.log('');
-        console.log(chalk.bold('Integrations:'));
-        integrations.forEach(printResultLine);
-    }
-
-    if (installation.length > 0) {
-        console.log('');
-        console.log(chalk.bold('Installation:'));
-        installation.forEach(printResultLine);
+        console.log(chalk.bold(`${section.title}:`));
+        section.results.forEach(printResultLine);
     }
 
     // Summary
-    const allResults = [...results, ...integrations, ...installation];
+    const allResults = sections.flatMap(section => section.results);
     const counts = {
         healthy: allResults.filter(r => r.status === 'healthy').length,
         error: allResults.filter(r => r.status === 'error').length,
@@ -967,7 +953,11 @@ export const doctorCommand = command(
             const config = await getConfig({}, []);
             // The registry lookup runs alongside the provider checks so its timeout is not additive
             const [results, versionResult] = await Promise.all([runHealthChecks(config), checkVersion()]);
-            printResults(results, [checkLazygitIntegration()], [versionResult]);
+            printResults([
+                { title: 'Providers', results },
+                { title: 'Integrations', results: [checkLazygitIntegration()] },
+                { title: 'Installation', results: [versionResult] },
+            ]);
         })().catch(error => {
             console.error(chalk.red(error.message));
             handleCliError(error);

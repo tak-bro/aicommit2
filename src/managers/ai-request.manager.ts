@@ -17,13 +17,13 @@ export class AIRequestManager {
 
     /**
      * Apply per-model diff compression based on model config. The parser always fills
-     * `diffCompression` (default `auto`), so there is no raw-diff fallback here.
+     * these three fields (mode defaults to `auto`, caps to 0), so no fallbacks here.
      */
     private getDiffForModel = (modelConfig: ValidConfig[ModelName]): GitDiff => {
         const compressionConfig: DiffCompressionConfig = {
             mode: modelConfig.diffCompression,
-            maxHunkLines: modelConfig.maxHunkLines || 0,
-            maxDiffLines: modelConfig.maxDiffLines || 0,
+            maxHunkLines: modelConfig.maxHunkLines,
+            maxDiffLines: modelConfig.maxDiffLines,
         };
         return applyDiffCompression(this.stagedDiff, compressionConfig);
     };

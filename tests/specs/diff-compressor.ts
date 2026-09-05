@@ -244,6 +244,7 @@ export default testSuite(({ describe }) => {
             const hunk = ['@@ -1,2 +1,2002 @@', ' context line before', ...lines, ' context line after'].join('\n');
             return createDiffBlock('src/big.ts', [hunk]);
         };
+        const TRUNCATED_BY_DEFAULT_CAP = '[... 1852 lines truncated]'; // 2,002 hunk lines - 150 cap
 
         test('mode=auto leaves a diff under the threshold unchanged', () => {
             const raw = createDiffBlock('src/foo.ts', [createHunk(1, 3, 2)]);
@@ -258,13 +259,13 @@ export default testSuite(({ describe }) => {
 
             const { diff, stats } = compressDiff(raw, { mode: 'auto' });
             expect(diff).toContain('=== src/big.ts ===');
-            expect(diff).toContain('[... 1852 lines truncated]'); // 2,002 hunk lines - 150 cap
+            expect(diff).toContain(TRUNCATED_BY_DEFAULT_CAP);
             expect(stats.truncatedHunks).toBe(1);
         });
 
         test('mode=auto is the default mode', () => {
             const { diff } = compressDiff(createLargeDiff());
-            expect(diff).toContain('[... 1852 lines truncated]');
+            expect(diff).toContain(TRUNCATED_BY_DEFAULT_CAP);
         });
 
         test('mode=auto lets an explicit maxHunkLines override the default cap', () => {

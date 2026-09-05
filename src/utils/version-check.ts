@@ -36,7 +36,8 @@ export const detectInstallSource = (binPath: string): InstallSource => {
  * Real path of the running script. Symlinks (npm global bin, Homebrew) are followed so the
  * install source can be read from the final location; an unresolvable path is used as-is.
  */
-export const resolveInstalledBinPath = (scriptPath: string = process.argv[1]): string => {
+export const resolveInstalledBinPath = (): string => {
+    const scriptPath = process.argv[1];
     try {
         return fs.realpathSync(scriptPath);
     } catch {
@@ -51,6 +52,9 @@ const parseVersion = (version: string): number[] | null => {
     }
     return match.slice(1).map(Number);
 };
+
+/** Plain x.y.z, i.e. a published build rather than `0.0.0-semantic-release`. */
+export const isReleaseVersion = (version: string): boolean => parseVersion(version) !== null;
 
 /**
  * `outdated` only when the registry version is strictly newer. A build ahead of the

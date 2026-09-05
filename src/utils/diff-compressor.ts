@@ -43,9 +43,6 @@ export const DEFAULT_DIFF_COMPRESSION_CONFIG: DiffCompressionConfig = {
     maxDiffLines: 0,
 };
 
-/**
- * Turn `auto` into a concrete `none` / `compact` config for this diff.
- */
 const resolveAutoMode = (raw: string, config: DiffCompressionConfig): DiffCompressionConfig => {
     if (config.mode !== 'auto') {
         return config;

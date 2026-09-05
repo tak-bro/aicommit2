@@ -260,10 +260,9 @@ export default testSuite(({ describe }) => {
 
             test('setting diffCompression=auto', async () => {
                 const { fixture, aicommit2 } = await createFixture();
-                const { stdout } = await aicommit2(['config', 'set', 'diffCompression=auto'], {
-                    reject: false,
-                });
-                expect(stdout).not.toMatch('Invalid config property');
+                await aicommit2(['config', 'set', 'diffCompression=auto']);
+                const { stdout } = await aicommit2(['config', 'get', 'diffCompression']);
+                expect(stdout).toMatch('diffCompression auto');
                 await fixture.rm();
             });
         });
