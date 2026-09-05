@@ -15,7 +15,11 @@ const getHookPath = async (): Promise<string> => {
     const vcsName = await getVCSName();
 
     if (vcsName === 'git') {
-        return `.git/hooks/${hookName}`;
+        // Git resolves the hooks directory (linked worktrees, core.hooksPath — see
+        // tests/specs/git-hook.ts "Git hook path resolution") and may answer relative to cwd.
+        const { execa } = await import('execa');
+        const { stdout } = await execa('git', ['rev-parse', '--git-path', `hooks/${hookName}`]);
+        return path.resolve(stdout.trim());
     }
 
     if (vcsName === 'yadm') {
@@ -61,9 +65,17 @@ const getHookPath = async (): Promise<string> => {
 
 const hookPath = fileURLToPath(new URL('cli.mjs', import.meta.url));
 
-export const isCalledFromGitHook = process.argv[1]
-    .replace(/\\/g, '/') // Replace Windows back slashes with forward slashes
-    .includes(`/hooks/${hookName}`);
+/**
+ * Whether the running script is the installed prepare-commit-msg hook. Only the file name
+ * is checked: the hooks directory is whatever Git resolved at install time (`.git/hooks`,
+ * a worktree's shared hooks dir, or a custom `core.hooksPath` such as `.githooks`).
+ */
+export const isGitHookInvocation = (scriptPath: string): boolean => {
+    const normalizedPath = scriptPath.replace(/\\/g, '/'); // Windows back slashes → forward slashes
+    return normalizedPath.endsWith(`/${hookName}`);
+};
+
+export const isCalledFromGitHook = isGitHookInvocation(process.argv[1]);
 
 const isWindows = process.platform === 'win32';
 const windowsHook = `

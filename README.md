@@ -647,6 +647,8 @@ In the Git repository you want to install the hook in:
 aicommit2 hook install
 ```
 
+The hook location is resolved by Git itself, so linked worktrees (`git worktree add`) and a custom `core.hooksPath` are supported.
+
 #### Manual Installation
 
 If you prefer to set up the hook manually, create or edit the `.git/hooks/prepare-commit-msg` file:

@@ -61,4 +61,38 @@ export default testSuite(({ describe }) => {
             await fixture.rm();
         });
     });
+
+    // Path resolution needs no API key: `hook install` never contacts a provider.
+    describe('Git hook path resolution', ({ test }) => {
+        test('installs into the main repository from a linked worktree', async () => {
+            const { fixture, aicommit2 } = await createFixture({ 'data.json': '{}' });
+            const git = await createGit(fixture.path);
+            await git('add', ['data.json']);
+            await git('commit', ['-m', 'init']);
+
+            const worktreePath = path.join(fixture.path, 'linked-worktree');
+            await git('worktree', ['add', '--detach', worktreePath]);
+
+            const { stdout } = await aicommit2(['hook', 'install'], { cwd: worktreePath });
+            expect(stdout).toMatch('Hook installed');
+
+            expect(await fixture.exists('.git/hooks/prepare-commit-msg')).toBe(true);
+
+            await fixture.rm();
+        });
+
+        test('respects core.hooksPath', async () => {
+            const { fixture, aicommit2 } = await createFixture({ 'data.json': '{}' });
+            const git = await createGit(fixture.path);
+            await git('config', ['core.hooksPath', '.githooks']);
+
+            const { stdout } = await aicommit2(['hook', 'install']);
+            expect(stdout).toMatch('Hook installed');
+
+            expect(await fixture.exists('.githooks/prepare-commit-msg')).toBe(true);
+            expect(await fixture.exists('.git/hooks/prepare-commit-msg')).toBe(false);
+
+            await fixture.rm();
+        });
+    });
 });
