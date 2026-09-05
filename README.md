@@ -1004,7 +1004,7 @@ For detailed information about all available settings, see the [General Settings
 | `systemPromptPath`     | Path to custom system prompt file                                   | -            |
 | `modelNameDisplay`     | Model name display in CLI labels (`none` / `short` / `full`)       | short        |
 | `stream`               | **Experimental.** Enable streaming for real-time commit message generation | false        |
-| `diffCompression`      | Diff compression mode (`none` / `compact`)                          | none         |
+| `diffCompression`      | Diff compression mode (`auto` / `compact` / `none`)                 | auto         |
 | `maxHunkLines`         | Max lines per hunk in compressed diff (0 = unlimited)               | 0            |
 | `maxDiffLines`         | Max total lines in compressed diff (0 = unlimited)                  | 0            |
 | `diffContext`           | Number of context lines in git diff (0-10)                          | 3            |
@@ -1039,13 +1039,15 @@ aicommit2 config set ANTHROPIC.includeBody=true
 
 aicommit2 can compress git diffs before sending to AI providers, reducing token usage by 30-60%. Inspired by [RTK](https://github.com/rtk-ai/rtk)'s token optimization techniques.
 
-When enabled (`compact` mode), the compressor:
+When compressing (`compact` mode, or `auto` mode on a large diff), the compressor:
 - Strips diff metadata headers (`diff --git`, `index`, `---/+++`)
 - Minimizes context lines (keeps only lines adjacent to changes, replaces distant context with `...`)
 - Caps large hunks and total diff size to protect model context windows
 
+The default `auto` mode sends diffs under 100 KB untouched and compresses larger ones with a 150-line hunk cap and a 3,000-line total cap (unless you set `maxHunkLines` / `maxDiffLines` yourself), so a big staged change no longer fails at the provider.
+
 ```bash
-# Enable diff compression globally
+# Always compress, regardless of diff size
 aicommit2 config set diffCompression=compact
 
 # Or per model — useful for models with smaller context windows
@@ -1058,7 +1060,10 @@ aicommit2 config set maxHunkLines=200   # max lines per hunk (0=unlimited)
 aicommit2 config set maxDiffLines=1000  # max total diff lines (0=unlimited)
 aicommit2 config set diffContext=1      # reduce git context lines (default: 3)
 
-# Disable compression (default)
+# Restore the default (compress only large diffs)
+aicommit2 config set diffCompression=auto
+
+# Never compress, even for large diffs (behavior of versions before auto mode)
 aicommit2 config set diffCompression=none
 ```
 

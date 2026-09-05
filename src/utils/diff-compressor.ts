@@ -1,4 +1,10 @@
-export type DiffCompressionMode = 'none' | 'compact';
+/**
+ * - `none`: send the raw diff
+ * - `compact`: always strip headers, minimize context and apply the configured caps
+ * - `auto`: `none` below LARGE_DIFF_THRESHOLD_BYTES, `compact` above it with the AUTO_* caps
+ *   standing in for unset (0) limits
+ */
+export type DiffCompressionMode = 'none' | 'compact' | 'auto';
 
 export interface DiffCompressionConfig {
     mode: DiffCompressionMode;
@@ -24,10 +30,37 @@ export const DEFAULT_DIFF_CONTEXT = 3;
 
 export const CONTEXT_PROXIMITY = 3;
 
+/** Diffs above this size get the "large diff" warning and, in `auto` mode, compaction. */
+export const LARGE_DIFF_THRESHOLD_BYTES = 100_000;
+
+/** Caps `auto` mode falls back to when the user has not set maxHunkLines / maxDiffLines. */
+export const AUTO_MAX_HUNK_LINES = 150;
+export const AUTO_MAX_DIFF_LINES = 3000;
+
 export const DEFAULT_DIFF_COMPRESSION_CONFIG: DiffCompressionConfig = {
-    mode: 'none',
+    mode: 'auto',
     maxHunkLines: 0,
     maxDiffLines: 0,
+};
+
+/**
+ * Turn `auto` into a concrete `none` / `compact` config for this diff.
+ */
+const resolveAutoMode = (raw: string, config: DiffCompressionConfig): DiffCompressionConfig => {
+    if (config.mode !== 'auto') {
+        return config;
+    }
+
+    const isLargeDiff = Buffer.byteLength(raw, 'utf8') > LARGE_DIFF_THRESHOLD_BYTES;
+    if (!isLargeDiff) {
+        return { ...config, mode: 'none' };
+    }
+
+    return {
+        mode: 'compact',
+        maxHunkLines: config.maxHunkLines || AUTO_MAX_HUNK_LINES,
+        maxDiffLines: config.maxDiffLines || AUTO_MAX_DIFF_LINES,
+    };
 };
 
 /**
@@ -35,7 +68,7 @@ export const DEFAULT_DIFF_COMPRESSION_CONFIG: DiffCompressionConfig = {
  * Applies the selected compression mode to raw diff output.
  */
 export const compressDiff = (raw: string, config: Partial<DiffCompressionConfig> = {}): CompressedDiff => {
-    const resolved: DiffCompressionConfig = { ...DEFAULT_DIFF_COMPRESSION_CONFIG, ...config };
+    const resolved = resolveAutoMode(raw, { ...DEFAULT_DIFF_COMPRESSION_CONFIG, ...config });
     const originalLines = raw.split('\n').length;
 
     if (resolved.mode === 'none' || !raw.trim()) {

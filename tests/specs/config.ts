@@ -248,6 +248,26 @@ export default testSuite(({ describe }) => {
             });
         });
 
+        await describe('diffCompression', ({ test }) => {
+            test('setting invalid diffCompression config', async () => {
+                const { fixture, aicommit2 } = await createFixture();
+                const { stdout } = await aicommit2(['config', 'set', 'diffCompression=bogus'], {
+                    reject: false,
+                });
+                expect(stdout).toMatch('\n✖ Invalid config property diffCompression: Must be none, compact or auto');
+                await fixture.rm();
+            });
+
+            test('setting diffCompression=auto', async () => {
+                const { fixture, aicommit2 } = await createFixture();
+                const { stdout } = await aicommit2(['config', 'set', 'diffCompression=auto'], {
+                    reject: false,
+                });
+                expect(stdout).not.toMatch('Invalid config property');
+                await fixture.rm();
+            });
+        });
+
         await describe('autoCopy', ({ test }) => {
             test('setting autoCopy to true', async () => {
                 const { fixture, aicommit2 } = await createFixture();

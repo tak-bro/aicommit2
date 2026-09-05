@@ -16,12 +16,12 @@ export class AIRequestManager {
     ) {}
 
     /**
-     * Apply per-model diff compression based on model config.
-     * Falls back to raw diff if model has no compression settings.
+     * Apply per-model diff compression based on model config. The parser always fills
+     * `diffCompression` (default `auto`), so there is no raw-diff fallback here.
      */
     private getDiffForModel = (modelConfig: ValidConfig[ModelName]): GitDiff => {
         const compressionConfig: DiffCompressionConfig = {
-            mode: modelConfig.diffCompression || 'none',
+            mode: modelConfig.diffCompression,
             maxHunkLines: modelConfig.maxHunkLines || 0,
             maxDiffLines: modelConfig.maxDiffLines || 0,
         };
