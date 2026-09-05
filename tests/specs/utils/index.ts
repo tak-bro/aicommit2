@@ -9,5 +9,6 @@ export default testSuite(({ describe }) => {
         runTestSuite(import('./reasoning-models.js'));
         runTestSuite(import('./commit-context.js'));
         runTestSuite(import('./loading-bar.js'));
+        runTestSuite(import('./version-check.js'));
     });
 });

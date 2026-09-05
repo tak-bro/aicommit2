@@ -462,7 +462,7 @@ In addition to the main commit message generation, aicommit2 provides several ut
 | `aicommit2 setup` | Interactive setup wizard for configuring AI providers |
 | `aicommit2 setup lazygit` | Set up the [LazyGit integration](#lazygit) |
 | `aicommit2 config` | Manage configuration (get, set, list, del) |
-| `aicommit2 doctor` | Check health status of AI providers and integrations |
+| `aicommit2 doctor` | Check health status of AI providers, integrations and the installed version |
 | `aicommit2 stats` | View usage statistics and performance metrics |
 | `aicommit2 rewrite` | Rewrite the commit message of any commit using AI |
 | `aicommit2 hook` | Install/uninstall Git prepare-commit-msg hook |
@@ -1293,7 +1293,7 @@ Check the installed version with:
 aicommit2 --version
 ```
 
-If it's not the [latest version](https://github.com/tak-bro/aicommit2/releases/latest), run:
+`aicommit2 doctor` also compares the installed version with the npm registry and prints the upgrade command for your install method. If it's not the [latest version](https://github.com/tak-bro/aicommit2/releases/latest), run:
 
 ```bash
 # Via Homebrew

@@ -4,6 +4,7 @@ import chalk from 'chalk';
 import { command } from 'cleye';
 
 import { getConfiguredModels, hasBedrockAccess, hasConfiguredModels, hasCopilotSdkAvailable } from './get-available-ais.js';
+import { version as installedVersion } from '../../package.json';
 import {
     ALL_COPILOT_SDK_KNOWN_MODELS,
     buildCopilotSdkClientOptions,
@@ -31,6 +32,13 @@ import {
 } from '../utils/config.js';
 import { handleCliError } from '../utils/error.js';
 import { findLazygitConfig, hasAicommitIntegration, isLazygitInstalled } from '../utils/lazygit.js';
+import {
+    UPGRADE_COMMANDS,
+    compareVersions,
+    detectInstallSource,
+    fetchLatestVersion,
+    resolveInstalledBinPath,
+} from '../utils/version-check.js';
 
 /**
  * Health check status for a provider
@@ -825,6 +833,54 @@ export const checkLazygitIntegration = (): ProviderHealthResult => {
     };
 };
 
+/**
+ * Compare the running build against the npm registry. Network trouble and development
+ * builds are reported as skipped so the rest of the health check is unaffected.
+ * `fetchLatest` is injectable so every branch can be exercised without the registry.
+ */
+export const checkVersion = async (
+    currentVersion: string = installedVersion,
+    fetchLatest: () => Promise<string> = fetchLatestVersion
+): Promise<ProviderHealthResult> => {
+    const isReleaseBuild = compareVersions(currentVersion, currentVersion) === 'same';
+    if (!isReleaseBuild) {
+        return {
+            provider: 'VERSION',
+            status: 'skipped',
+            message: 'Development build, version check skipped',
+            details: currentVersion,
+        };
+    }
+
+    let latestVersion: string;
+    try {
+        latestVersion = await fetchLatest();
+    } catch {
+        return {
+            provider: 'VERSION',
+            status: 'skipped',
+            message: 'Could not reach the npm registry',
+            details: `installed v${currentVersion}`,
+        };
+    }
+
+    if (compareVersions(currentVersion, latestVersion) === 'outdated') {
+        const installSource = detectInstallSource(resolveInstalledBinPath());
+        return {
+            provider: 'VERSION',
+            status: 'warning',
+            message: `Update available: v${currentVersion} → v${latestVersion}`,
+            details: `Run \`${UPGRADE_COMMANDS[installSource]}\``,
+        };
+    }
+
+    return {
+        provider: 'VERSION',
+        status: 'healthy',
+        message: `Up to date (v${currentVersion})`,
+    };
+};
+
 // Pre-calculate max provider name length for consistent formatting
 const MAX_PROVIDER_LENGTH = Math.max(...BUILTIN_SERVICES.map(s => s.length));
 
@@ -833,7 +889,11 @@ const formatProviderName = (name: string): string => name.padEnd(MAX_PROVIDER_LE
 /**
  * Print health check results to console
  */
-const printResults = (results: ProviderHealthResult[], integrations: ProviderHealthResult[] = []): void => {
+const printResults = (
+    results: ProviderHealthResult[],
+    integrations: ProviderHealthResult[] = [],
+    installation: ProviderHealthResult[] = []
+): void => {
     console.log('');
     console.log(chalk.bold('🩺 aicommit2 Health Check'));
     console.log('');
@@ -856,8 +916,14 @@ const printResults = (results: ProviderHealthResult[], integrations: ProviderHea
         integrations.forEach(printResultLine);
     }
 
+    if (installation.length > 0) {
+        console.log('');
+        console.log(chalk.bold('Installation:'));
+        installation.forEach(printResultLine);
+    }
+
     // Summary
-    const allResults = [...results, ...integrations];
+    const allResults = [...results, ...integrations, ...installation];
     const counts = {
         healthy: allResults.filter(r => r.status === 'healthy').length,
         error: allResults.filter(r => r.status === 'error').length,
@@ -899,8 +965,9 @@ export const doctorCommand = command(
     () => {
         (async () => {
             const config = await getConfig({}, []);
-            const results = await runHealthChecks(config);
-            printResults(results, [checkLazygitIntegration()]);
+            // The registry lookup runs alongside the provider checks so its timeout is not additive
+            const [results, versionResult] = await Promise.all([runHealthChecks(config), checkVersion()]);
+            printResults(results, [checkLazygitIntegration()], [versionResult]);
         })().catch(error => {
             console.error(chalk.red(error.message));
             handleCliError(error);

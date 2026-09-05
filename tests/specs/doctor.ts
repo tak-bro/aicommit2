@@ -1,6 +1,6 @@
 import { expect, testSuite } from 'manten';
 
-import { summarizeOpenRouterCapabilities } from '../../src/commands/doctor.js';
+import { checkVersion, summarizeOpenRouterCapabilities } from '../../src/commands/doctor.js';
 import { createFixture } from '../utils.js';
 
 // doctor prints one line per provider; assertions target that line so a message
@@ -26,6 +26,49 @@ export default testSuite(({ describe }) => {
             // Without any config, most providers should be skipped
             expect(stdout).toMatch('Not configured');
             await fixture.rm();
+        });
+
+        test('doctor reports the installed version', async () => {
+            const { fixture, aicommit2 } = await createFixture();
+            const { stdout } = await aicommit2(['doctor']);
+
+            expect(stdout).toMatch('Installation:');
+            // Status depends on network access and on whether this is a release build,
+            // so only the presence of the line is asserted.
+            expect(providerLine(stdout, 'VERSION')).not.toBe('');
+            await fixture.rm();
+        });
+
+        test('checkVersion skips a development build without touching the registry', async () => {
+            const fetchLatest = async () => {
+                throw new Error('registry must not be called');
+            };
+            const result = await checkVersion('0.0.0-semantic-release', fetchLatest);
+            expect(result.status).toBe('skipped');
+            expect(result.message).toMatch('Development build');
+        });
+
+        test('checkVersion skips when the registry is unreachable', async () => {
+            const fetchLatest = async () => {
+                throw new Error('ECONNREFUSED');
+            };
+            const result = await checkVersion('2.11.1', fetchLatest);
+            expect(result.status).toBe('skipped');
+            expect(result.message).toMatch('Could not reach');
+            expect(result.details).toMatch('v2.11.1');
+        });
+
+        test('checkVersion warns with an upgrade command when the registry is ahead', async () => {
+            const result = await checkVersion('2.10.0', async () => '2.11.1');
+            expect(result.status).toBe('warning');
+            expect(result.message).toBe('Update available: v2.10.0 → v2.11.1');
+            expect(result.details).toMatch('aicommit2');
+        });
+
+        test('checkVersion reports healthy when up to date', async () => {
+            const result = await checkVersion('2.11.1', async () => '2.11.1');
+            expect(result.status).toBe('healthy');
+            expect(result.message).toBe('Up to date (v2.11.1)');
         });
 
         test('doctor help shows description', async () => {
