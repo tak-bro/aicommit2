@@ -78,3 +78,6 @@ tests/eval/golden/corpus.json
 # Grilling artifacts (local planning docs)
 /CONTEXT.md
 /docs/adr/
+
+# zvec-grep local index
+/.zvec-grep/
