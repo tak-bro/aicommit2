@@ -494,6 +494,7 @@ aicommit2 hook uninstall
 aicommit2 rewrite                 # Rewrite HEAD commit message
 aicommit2 rewrite abc1234         # Rewrite specific commit
 aicommit2 rewrite HEAD~2 --dry-run   # Preview without rewriting
+aicommit2 rewrite -i              # Include the commit body in the rewritten message
 ```
 
 > GitHub Models tip: use `aicommit2 github-login` and set `GITHUB_MODELS.model` in `publisher/model` format (for example, `openai/gpt-5`).

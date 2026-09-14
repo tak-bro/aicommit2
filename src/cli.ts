@@ -24,6 +24,7 @@ import { RawConfig, ValidConfig, getConfig } from './utils/config.js';
 import { handleCliError } from './utils/error.js';
 import { renderGroupedHelp } from './utils/help-renderer.js';
 import { initializeLogger, logger } from './utils/logger.js';
+import { sharedMessageFlags } from './utils/message-flags.js';
 
 const rawArgv = process.argv.slice(2);
 const { version, description } = pkg;
@@ -38,16 +39,7 @@ cli(
          * https://git-scm.com/docs/git-commit
          */
         flags: {
-            locale: {
-                type: String,
-                description: 'Locale to use for the generated commit messages (default: en)',
-                alias: 'l',
-            },
-            generate: {
-                type: Number,
-                description: 'Number of messages to generate (Warning: generating multiple costs more) (default: 1)',
-                alias: 'g',
-            },
+            ...sharedMessageFlags,
             exclude: {
                 type: [String],
                 description: 'Files to exclude from AI analysis',
@@ -58,11 +50,6 @@ cli(
                 description: 'Automatically stage changes in tracked files for the commit',
                 alias: 'a',
                 default: false,
-            },
-            type: {
-                type: String,
-                description: 'Type of commit message to generate (default: conventional)',
-                alias: 't',
             },
             confirm: {
                 type: Boolean,
@@ -76,11 +63,6 @@ cli(
                 alias: 'c',
                 default: false,
             },
-            prompt: {
-                type: String,
-                description: 'Custom prompt to let users fine-tune provided prompt',
-                alias: 'p',
-            },
             'watch-commit': {
                 type: Boolean,
                 default: false,
@@ -93,35 +75,6 @@ cli(
             'pre-commit': {
                 type: Boolean,
                 description: 'Run in pre-commit Framework, allowing chaining with other hooks',
-                default: false,
-            },
-            'include-body': {
-                type: Boolean,
-                description: 'Force include commit body in all generated messages',
-                alias: 'i',
-                default: false,
-            },
-            'auto-select': {
-                type: Boolean,
-                description: 'Automatically select the first successfully generated message (skips the picker and the commit confirmation)',
-                alias: 's',
-                default: false,
-            },
-            edit: {
-                type: Boolean,
-                description: 'Open the AI-generated commit message in your default editor',
-                alias: 'e',
-                default: false,
-            },
-            'disable-lowercase': {
-                type: Boolean,
-                description: 'Disable automatic lowercase conversion of commit messages',
-                default: false,
-            },
-            verbose: {
-                type: Boolean,
-                description: 'Enable verbose logging for this run',
-                alias: 'v',
                 default: false,
             },
             git: {
