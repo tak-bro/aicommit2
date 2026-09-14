@@ -4,7 +4,7 @@ import path from 'path';
 
 import ini from 'ini';
 
-import { DEFAULT_DIFF_COMPRESSION_CONFIG, DEFAULT_DIFF_CONTEXT } from './diff-compressor.js';
+import { DEFAULT_DIFF_COMPRESSION_CONFIG, DEFAULT_DIFF_CONTEXT, DiffCompressionMode } from './diff-compressor.js';
 import { KnownError } from './error.js';
 import { fileExists } from './fs.js';
 import { flattenDeep } from './utils.js';
@@ -351,8 +351,8 @@ const generalConfigParsers = {
         if (!diffCompression) {
             return DEFAULT_DIFF_COMPRESSION_CONFIG.mode;
         }
-        parseAssert('diffCompression', /^(?:none|compact)$/.test(diffCompression), 'Must be none or compact');
-        return diffCompression as 'none' | 'compact';
+        parseAssert('diffCompression', /^(?:none|compact|auto)$/.test(diffCompression), 'Must be none, compact or auto');
+        return diffCompression as DiffCompressionMode;
     },
     maxHunkLines: (maxHunkLines?: string) => {
         if (!maxHunkLines) {

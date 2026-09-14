@@ -13,10 +13,16 @@ import { selectMessageAutomatically } from './select-message.js';
 import { AIRequestManager } from '../managers/ai-request.manager.js';
 import { ConsoleManager } from '../managers/console.manager.js';
 import { ReactivePromptManager, commitMsgLoader } from '../managers/reactive-prompt.manager.js';
-import { RawConfig, applyDisableLowerCaseToConfig, getConfig } from '../utils/config.js';
+import { getConfig } from '../utils/config.js';
 import { ErrorCode, ErrorMessages } from '../utils/error-messages.js';
 import { KnownError, handleCliError } from '../utils/error.js';
 import { initializeLogger } from '../utils/logger.js';
+import {
+    MessageFlagValues,
+    buildMessageConfigOverrides,
+    forceMessageFlagsOnProviders,
+    sharedMessageFlags,
+} from '../utils/message-flags.js';
 import { validateSystemPrompt } from '../utils/prompt.js';
 import {
     applyDiffCompression,
@@ -43,59 +49,17 @@ export default command(
             examples: ['aicommit2 rewrite', 'aicommit2 rewrite -g 3', 'aicommit2 rewrite abc1234', 'aicommit2 rewrite HEAD~2 --dry-run'],
         },
         flags: {
-            locale: {
-                type: String,
-                description: 'Locale to use for the generated commit messages (default: en)',
-                alias: 'l',
-            },
-            generate: {
-                type: Number,
-                description: 'Number of messages to generate (default: 1)',
-                alias: 'g',
-            },
-            type: {
-                type: String,
-                description: 'Type of commit message to generate (default: conventional)',
-                alias: 't',
-            },
+            ...sharedMessageFlags,
             confirm: {
                 type: Boolean,
                 description: 'Skip confirmation when rewriting after message generation (default: false)',
                 alias: 'y',
                 default: false,
             },
-            prompt: {
-                type: String,
-                description: 'Custom prompt to fine-tune the generated message',
-                alias: 'p',
-            },
-            'auto-select': {
-                type: Boolean,
-                description: 'Automatically select the first successfully generated message (skips the picker and the confirmation)',
-                alias: 's',
-                default: false,
-            },
-            edit: {
-                type: Boolean,
-                description: 'Open the AI-generated commit message in your default editor',
-                alias: 'e',
-                default: false,
-            },
-            verbose: {
-                type: Boolean,
-                description: 'Enable verbose logging for this run',
-                alias: 'v',
-                default: false,
-            },
             'dry-run': {
                 type: Boolean,
                 description: 'Generate commit message without rewriting (output only)',
                 alias: 'd',
-                default: false,
-            },
-            'disable-lowercase': {
-                type: Boolean,
-                description: 'Disable automatic lowercase conversion of commit messages',
                 default: false,
             },
         },
@@ -136,25 +100,21 @@ export default command(
 
             initSpinner.text = 'Loading configuration...';
 
-            const configOverrides: RawConfig = {
-                locale: argv.flags.locale?.toString() as string,
-                generate: argv.flags.generate?.toString() as string,
-                type: argv.flags.type?.toString() as string,
-                systemPrompt: argv.flags.prompt?.toString() as string,
-                ...(argv.flags['disable-lowercase'] === true && { disableLowerCase: 'true' }),
+            const messageFlags: MessageFlagValues = {
+                locale: argv.flags.locale,
+                generate: argv.flags.generate,
+                type: argv.flags.type,
+                prompt: argv.flags.prompt,
+                includeBody: argv.flags['include-body'],
+                disableLowerCase: argv.flags['disable-lowercase'],
+                verbose: argv.flags.verbose,
             };
 
-            if (argv.flags.verbose) {
-                configOverrides.logLevel = 'verbose';
-            }
-
-            const config = await getConfig(configOverrides, []);
+            const config = await getConfig(buildMessageConfigOverrides(messageFlags), []);
 
             await initializeLogger(config);
 
-            if (argv.flags['disable-lowercase']) {
-                applyDisableLowerCaseToConfig(config);
-            }
+            forceMessageFlagsOnProviders(config, messageFlags);
 
             await validateSystemPrompt(config);
 

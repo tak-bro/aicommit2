@@ -30,7 +30,7 @@ Please check the documentation for each specific model to confirm which settings
 | `modelNameDisplay`     | Model name display in CLI labels (`none` / `short` / `full`)       | short        |
 | `disabled`             | Whether a specific model is enabled or disabled                     | false        |
 | `stream`               | **Experimental.** Enable streaming for real-time commit message generation | false        |
-| `diffCompression`      | Diff compression mode (`none` / `compact`)                          | none         |
+| `diffCompression`      | Diff compression mode (`auto` / `compact` / `none`)                 | auto         |
 | `maxHunkLines`         | Max lines per hunk in compressed diff (0 = unlimited)               | 0            |
 | `maxDiffLines`         | Max total lines in compressed diff (0 = unlimited)                  | 0            |
 | `diffContext`           | Number of context lines in git diff (0-10)                          | 3            |
@@ -374,10 +374,12 @@ aicommit2 config set ANTHROPIC.stream=true
 ### diffCompression
 
 - Controls how git diff output is compressed before sending to AI providers.
-- `none` (default): Sends the raw diff as-is, no compression applied.
-- `compact`: Strips diff metadata headers, minimizes context lines (keeps only lines adjacent to changes), and applies hunk/total line caps. Reduces token usage by 30-60% on typical diffs.
+- `auto` (default): Sends diffs under 100 KB as-is. Larger diffs are compressed like `compact`, with a 150-line hunk cap and a 3,000-line total cap unless `maxHunkLines` / `maxDiffLines` are set.
+- `compact`: Always strips diff metadata headers, minimizes context lines (keeps only lines adjacent to changes), and applies hunk/total line caps. Reduces token usage by 30-60% on typical diffs.
+- `none`: Sends the raw diff as-is regardless of size (the behavior of versions before `auto` existed).
 
 ```bash
+aicommit2 config set diffCompression=auto
 aicommit2 config set diffCompression=compact
 aicommit2 config set diffCompression=none
 
@@ -388,7 +390,7 @@ aicommit2 config set OPENAI.diffCompression=none
 
 ### maxHunkLines
 
-- Maximum number of lines per hunk in compact mode. Hunks exceeding this limit are truncated with a `[... N lines truncated]` notice.
+- Maximum number of lines per hunk when compressing (`compact` mode, or `auto` mode on a large diff). Hunks exceeding this limit are truncated with a `[... N lines truncated]` notice.
 - Default: `0` (unlimited). Set to a positive number to cap hunk size.
 
 ```bash

@@ -1,5 +1,6 @@
 import { expect, testSuite } from 'manten';
 
+import { MOCK_BODY, MOCK_MESSAGE, withMockProviders } from './mock-provider.js';
 import { createFixture, createGit } from '../../utils.js';
 
 export default testSuite(({ describe }) => {
@@ -23,6 +24,26 @@ export default testSuite(({ describe }) => {
             // Error may come from git directly or from VCS layer
             expect(stdout).toMatch(/Could not retrieve|Command failed|No supported VCS|No staged changes|fatal/);
             await fixture.rm();
+        });
+
+        // Issue #271: `rewrite` hand-copied the root flag table and `--include-body` was never
+        // added, so `-i` was silently ignored and only the subject came out.
+        test('--include-body keeps the body in the rewritten message', async () => {
+            await withMockProviders(
+                true,
+                async ({ aicommit2, options, git }) => {
+                    await git('commit', ['-m', 'chore: initial']);
+                    await git('add', ['data2.json']);
+                    await git('commit', ['-m', 'chore: second']);
+
+                    const { stdout, exitCode } = await aicommit2(['rewrite', '--dry-run', '--auto-select', '-i'], options);
+
+                    expect(exitCode).toBe(0);
+                    expect(stdout).toMatch(MOCK_MESSAGE);
+                    expect(stdout).toMatch(MOCK_BODY);
+                },
+                { commitBody: MOCK_BODY }
+            );
         });
 
         // ─── Commit hash validation ─────────────────────────────

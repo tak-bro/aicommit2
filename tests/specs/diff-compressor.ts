@@ -1,6 +1,6 @@
 import { expect, testSuite } from 'manten';
 
-import { compressDiff } from '../../src/utils/diff-compressor.js';
+import { LARGE_DIFF_THRESHOLD_BYTES, compressDiff } from '../../src/utils/diff-compressor.js';
 
 const createDiffBlock = (fileName: string, hunks: string[]): string => {
     return [
@@ -233,6 +233,50 @@ export default testSuite(({ describe }) => {
             const { diff } = compressDiff(raw, { mode: 'compact', maxHunkLines: 0, maxDiffLines: 0 });
             expect(diff).toContain('=== empty.ts ===');
             expect(diff).not.toContain('truncated');
+        });
+    });
+
+    describe('diff-compressor auto mode', ({ test }) => {
+        // 2,000 added lines of ~60 bytes: ~120 KB, comfortably over the 100 KB threshold.
+        // Hunk = 1 context + 2,000 changes + 1 context = 2,002 lines, all kept by context minimization.
+        const createLargeDiff = () => {
+            const lines = Array.from({ length: 2000 }, (_, i) => `+${String(i).padStart(5, '0')} ${'x'.repeat(52)}`);
+            const hunk = ['@@ -1,2 +1,2002 @@', ' context line before', ...lines, ' context line after'].join('\n');
+            return createDiffBlock('src/big.ts', [hunk]);
+        };
+        const TRUNCATED_BY_DEFAULT_CAP = '[... 1852 lines truncated]'; // 2,002 hunk lines - 150 cap
+
+        test('mode=auto leaves a diff under the threshold unchanged', () => {
+            const raw = createDiffBlock('src/foo.ts', [createHunk(1, 3, 2)]);
+            const { diff, stats } = compressDiff(raw, { mode: 'auto' });
+            expect(diff).toBe(raw);
+            expect(stats.compressedChars).toBe(stats.originalChars);
+        });
+
+        test('mode=auto compacts a diff over the threshold with the default hunk cap', () => {
+            const raw = createLargeDiff();
+            expect(Buffer.byteLength(raw, 'utf8')).toBeGreaterThan(LARGE_DIFF_THRESHOLD_BYTES);
+
+            const { diff, stats } = compressDiff(raw, { mode: 'auto' });
+            expect(diff).toContain('=== src/big.ts ===');
+            expect(diff).toContain(TRUNCATED_BY_DEFAULT_CAP);
+            expect(stats.truncatedHunks).toBe(1);
+        });
+
+        test('mode=auto is the default mode', () => {
+            const { diff } = compressDiff(createLargeDiff());
+            expect(diff).toContain(TRUNCATED_BY_DEFAULT_CAP);
+        });
+
+        test('mode=auto lets an explicit maxHunkLines override the default cap', () => {
+            const { diff } = compressDiff(createLargeDiff(), { mode: 'auto', maxHunkLines: 10 });
+            expect(diff).toContain('[... 1992 lines truncated]');
+        });
+
+        test('mode=none leaves a diff over the threshold unchanged', () => {
+            const raw = createLargeDiff();
+            const { diff } = compressDiff(raw, { mode: 'none' });
+            expect(diff).toBe(raw);
         });
     });
 });

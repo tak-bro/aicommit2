@@ -1,5 +1,6 @@
 import { expect, testSuite } from 'manten';
 
+import { isGitHookInvocation } from '../../src/commands/hook.js';
 import { parseHookPositionalArgs } from '../../src/utils/parse-hook-args.js';
 
 export default testSuite(({ describe }) => {
@@ -55,6 +56,28 @@ export default testSuite(({ describe }) => {
         test('works without skipFlags', () => {
             const result = parseHookPositionalArgs(['--verbose', '.git/COMMIT_EDITMSG']);
             expect(result).toEqual(['.git/COMMIT_EDITMSG']);
+        });
+    });
+
+    describe('isGitHookInvocation', ({ test }) => {
+        test('detects the default hooks directory', () => {
+            expect(isGitHookInvocation('/repo/.git/hooks/prepare-commit-msg')).toBe(true);
+        });
+
+        test('detects a custom core.hooksPath directory', () => {
+            expect(isGitHookInvocation('/repo/.githooks/prepare-commit-msg')).toBe(true);
+        });
+
+        test('detects Windows paths', () => {
+            expect(isGitHookInvocation('C:\\repo\\.git\\hooks\\prepare-commit-msg')).toBe(true);
+        });
+
+        test('ignores the CLI entrypoint', () => {
+            expect(isGitHookInvocation('/usr/local/lib/node_modules/aicommit2/dist/cli.mjs')).toBe(false);
+        });
+
+        test('ignores other hooks', () => {
+            expect(isGitHookInvocation('/repo/.git/hooks/pre-commit')).toBe(false);
         });
     });
 });

@@ -462,7 +462,7 @@ In addition to the main commit message generation, aicommit2 provides several ut
 | `aicommit2 setup` | Interactive setup wizard for configuring AI providers |
 | `aicommit2 setup lazygit` | Set up the [LazyGit integration](#lazygit) |
 | `aicommit2 config` | Manage configuration (get, set, list, del) |
-| `aicommit2 doctor` | Check health status of AI providers and integrations |
+| `aicommit2 doctor` | Check health status of AI providers, integrations and the installed version |
 | `aicommit2 stats` | View usage statistics and performance metrics |
 | `aicommit2 rewrite` | Rewrite the commit message of any commit using AI |
 | `aicommit2 hook` | Install/uninstall Git prepare-commit-msg hook |
@@ -494,6 +494,7 @@ aicommit2 hook uninstall
 aicommit2 rewrite                 # Rewrite HEAD commit message
 aicommit2 rewrite abc1234         # Rewrite specific commit
 aicommit2 rewrite HEAD~2 --dry-run   # Preview without rewriting
+aicommit2 rewrite -i              # Include the commit body in the rewritten message
 ```
 
 > GitHub Models tip: use `aicommit2 github-login` and set `GITHUB_MODELS.model` in `publisher/model` format (for example, `openai/gpt-5`).
@@ -646,6 +647,8 @@ In the Git repository you want to install the hook in:
 ```bash
 aicommit2 hook install
 ```
+
+The hook location is resolved by Git itself, so linked worktrees (`git worktree add`) and a custom `core.hooksPath` are supported.
 
 #### Manual Installation
 
@@ -1002,7 +1005,7 @@ For detailed information about all available settings, see the [General Settings
 | `systemPromptPath`     | Path to custom system prompt file                                   | -            |
 | `modelNameDisplay`     | Model name display in CLI labels (`none` / `short` / `full`)       | short        |
 | `stream`               | **Experimental.** Enable streaming for real-time commit message generation | false        |
-| `diffCompression`      | Diff compression mode (`none` / `compact`)                          | none         |
+| `diffCompression`      | Diff compression mode (`auto` / `compact` / `none`)                 | auto         |
 | `maxHunkLines`         | Max lines per hunk in compressed diff (0 = unlimited)               | 0            |
 | `maxDiffLines`         | Max total lines in compressed diff (0 = unlimited)                  | 0            |
 | `diffContext`           | Number of context lines in git diff (0-10)                          | 3            |
@@ -1037,13 +1040,15 @@ aicommit2 config set ANTHROPIC.includeBody=true
 
 aicommit2 can compress git diffs before sending to AI providers, reducing token usage by 30-60%. Inspired by [RTK](https://github.com/rtk-ai/rtk)'s token optimization techniques.
 
-When enabled (`compact` mode), the compressor:
+When compressing (`compact` mode, or `auto` mode on a large diff), the compressor:
 - Strips diff metadata headers (`diff --git`, `index`, `---/+++`)
 - Minimizes context lines (keeps only lines adjacent to changes, replaces distant context with `...`)
 - Caps large hunks and total diff size to protect model context windows
 
+The default `auto` mode sends diffs under 100 KB untouched and compresses larger ones with a 150-line hunk cap and a 3,000-line total cap (unless you set `maxHunkLines` / `maxDiffLines` yourself), so a big staged change no longer fails at the provider.
+
 ```bash
-# Enable diff compression globally
+# Always compress, regardless of diff size
 aicommit2 config set diffCompression=compact
 
 # Or per model — useful for models with smaller context windows
@@ -1056,7 +1061,10 @@ aicommit2 config set maxHunkLines=200   # max lines per hunk (0=unlimited)
 aicommit2 config set maxDiffLines=1000  # max total diff lines (0=unlimited)
 aicommit2 config set diffContext=1      # reduce git context lines (default: 3)
 
-# Disable compression (default)
+# Restore the default (compress only large diffs)
+aicommit2 config set diffCompression=auto
+
+# Never compress, even for large diffs (behavior of versions before auto mode)
 aicommit2 config set diffCompression=none
 ```
 
@@ -1286,7 +1294,7 @@ Check the installed version with:
 aicommit2 --version
 ```
 
-If it's not the [latest version](https://github.com/tak-bro/aicommit2/releases/latest), run:
+`aicommit2 doctor` also compares the installed version with the npm registry and prints the upgrade command for your install method. If it's not the [latest version](https://github.com/tak-bro/aicommit2/releases/latest), run:
 
 ```bash
 # Via Homebrew

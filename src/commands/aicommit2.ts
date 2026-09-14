@@ -20,9 +20,10 @@ import {
     emptyCodeReview,
 } from '../managers/reactive-prompt.manager.js';
 import { recordSelection } from '../services/stats/index.js';
-import { ModelName, RawConfig, applyDisableLowerCaseToConfig, applyIncludeBodyToConfig, getConfig } from '../utils/config.js';
+import { ModelName, getConfig } from '../utils/config.js';
 import { ErrorCode, ErrorMessages } from '../utils/error-messages.js';
 import { KnownError, handleCliError } from '../utils/error.js';
+import { MessageFlagValues, buildMessageConfigOverrides, forceMessageFlagsOnProviders } from '../utils/message-flags.js';
 import { CRITICAL_ISSUES_MARKER, validateSystemPrompt } from '../utils/prompt.js';
 import {
     CommitOptions,
@@ -95,29 +96,19 @@ export default async (
             initSpinner.text = 'Loading configuration...';
         }
 
-        const configOverrides: RawConfig = {
-            locale: locale?.toString() as string,
-            generate: generate?.toString() as string,
-            type: commitType?.toString() as string,
-            systemPrompt: prompt?.toString() as string,
-            ...(includeBody === true && { includeBody: 'true' }),
-            ...(disableLowerCase === true && { disableLowerCase: 'true' }),
+        const messageFlags: MessageFlagValues = {
+            locale,
+            generate,
+            type: commitType,
+            prompt,
+            includeBody,
+            disableLowerCase,
+            verbose,
         };
 
-        if (verbose) {
-            configOverrides.logLevel = 'verbose';
-        }
+        const config = await getConfig(buildMessageConfigOverrides(messageFlags), rawArgv);
 
-        const config = await getConfig(configOverrides, rawArgv);
-
-        const shouldIncludeBody = includeBody === true || config.includeBody === true;
-        if (shouldIncludeBody) {
-            applyIncludeBodyToConfig(config);
-        }
-
-        if (disableLowerCase) {
-            applyDisableLowerCaseToConfig(config);
-        }
+        forceMessageFlagsOnProviders(config, messageFlags);
 
         await validateSystemPrompt(config);
 
