@@ -1,3 +1,10 @@
+# [2.12.0](https://github.com/tak-bro/aicommit2/compare/v2.11.1...v2.12.0) (2026-09-14)
+
+
+### Features
+
+* worktree hook install, auto diff compression, doctor version check, rewrite --include-body ([60eb351](https://github.com/tak-bro/aicommit2/commit/60eb3511438ca2a6f189874d0baad0159b7134cb)), closes [#271](https://github.com/tak-bro/aicommit2/issues/271) [#262](https://github.com/tak-bro/aicommit2/issues/262) [#271](https://github.com/tak-bro/aicommit2/issues/271)
+
 ## [2.11.1](https://github.com/tak-bro/aicommit2/compare/v2.11.0...v2.11.1) (2026-08-15)
 
 
