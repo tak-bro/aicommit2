@@ -6,9 +6,10 @@ import { filter, lastValueFrom, map, toArray } from 'rxjs';
 import { getAvailableAIs } from './get-available-ais.js';
 import { AIRequestManager } from '../managers/ai-request.manager.js';
 import { ConsoleManager } from '../managers/console.manager.js';
-import { RawConfig, getConfig } from '../utils/config.js';
+import { getConfig } from '../utils/config.js';
 import { KnownError, handleCliError } from '../utils/error.js';
 import { initializeLogger, logger } from '../utils/logger.js';
+import { MessageFlagValues, buildMessageConfigOverrides, forceMessageFlagsOnProviders } from '../utils/message-flags.js';
 import { parseHookPositionalArgs } from '../utils/parse-hook-args.js';
 import { getBranchName, getRecentCommits, getStagedDiff } from '../utils/vcs.js';
 
@@ -34,20 +35,11 @@ export default (
             return;
         }
 
-        const configOverrides: RawConfig = {
-            ...(locale && { locale }),
-            ...(generate != null && { generate: generate.toString() }),
-            ...(commitType && { type: commitType }),
-            ...(prompt && { systemPrompt: prompt }),
-            ...(includeBody === true && { includeBody: 'true' }),
-        };
+        const messageFlags: MessageFlagValues = { locale, generate, type: commitType, prompt, includeBody, verbose };
 
-        if (verbose) {
-            configOverrides.logLevel = 'verbose';
-        }
-
-        const config = await getConfig(configOverrides);
+        const config = await getConfig(buildMessageConfigOverrides(messageFlags));
         await initializeLogger(config);
+        forceMessageFlagsOnProviders(config, messageFlags);
         logger.verbose(`[pre-commit] type=${config.type}, systemPrompt=${config.systemPrompt ? 'set' : 'empty'}`);
         if (config.systemPromptPath) {
             try {
