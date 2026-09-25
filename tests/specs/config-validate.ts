@@ -111,13 +111,15 @@ export default testSuite(({ describe }) => {
             const { fixture, aicommit2 } = await createFixture({ 'not-a-file/keep': '' });
             const configPath = path.join(fixture.path, 'not-a-file');
 
-            const { stdout, exitCode } = await aicommit2(['--all', '--dry-run', '--auto-select'], {
+            const { stdout, stderr, exitCode } = await aicommit2(['--all', '--dry-run', '--auto-select'], {
                 env: { AICOMMIT_CONFIG_PATH: configPath },
                 reject: false,
             });
 
-            expect(stdout).toMatch('Failed to read config file');
-            expect(stdout).toMatch('config validate');
+            // Piped --dry-run: the error must not reach stdout, or `$(aicommit2 -d)` captures it
+            expect(stderr).toMatch('Failed to read config file');
+            expect(stderr).toMatch('config validate');
+            expect(stdout).toBe('');
             expect(exitCode).toBe(1);
             await fixture.rm();
         });

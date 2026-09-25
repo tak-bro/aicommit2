@@ -41,7 +41,6 @@ export const ErrorCode = {
 
     // VCS errors
     NO_STAGED_CHANGES: 'NO_STAGED_CHANGES',
-    EMPTY_COMMIT_MESSAGE: 'EMPTY_COMMIT_MESSAGE',
     VCS_NOT_FOUND: 'VCS_NOT_FOUND',
 
     // Config errors
@@ -175,8 +174,23 @@ export const ErrorMessages = {
         ].join('\n');
     },
 
-    emptyCommitMessage: (): string => {
-        return 'Commit message cannot be empty.';
+    // `vcs` is the binary to commit with: yadm's repo lives outside $HOME's work tree, so `git commit -F` fails there
+    commitFailedMessageSaved: (savePath: string, vcs: string): string => {
+        return [
+            `The commit message was saved to ${theme.highlight(savePath)}`,
+            '',
+            `${theme.label('→')} Retry: ${theme.command('aicommit2 --retry')}`,
+            // `rm` so a later `aicommit2 --retry` cannot commit this message a second time
+            `${theme.label('→')} Or: ${theme.command(`${vcs} commit -F ${savePath} && rm ${savePath}`)}`,
+        ].join('\n');
+    },
+
+    noSavedMessage: (): string => {
+        return 'No saved commit message. aicommit2 saves one when a commit fails.';
+    },
+
+    retryUnsupported: (vcs: string): string => {
+        return `--retry is not supported for ${theme.highlight(vcs)}: it has no commit hooks, so no message is ever saved.`;
     },
 
     vcsNotFound: (vcs: string): string => {

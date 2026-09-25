@@ -6,6 +6,7 @@ export interface VCSDiff {
     files: string[];
     diff: string;
     compression?: DiffCompressionStats;
+    omittedFiles?: string[]; // Changed files whose diff was left out as lockfile/generated
 }
 
 export interface CommitOptions {
@@ -14,7 +15,11 @@ export interface CommitOptions {
 
 export interface DiffOptions {
     diffContext?: number; // git -U{n} context lines (default: 3)
+    includeGenerated?: boolean; // Send generated-file diffs too (default: false)
 }
+
+// File a message is kept in when its commit fails, so `aicommit2 --retry` can reuse it
+export const MESSAGE_SAVE_FILE = 'AICOMMIT2_MSG';
 
 export abstract class BaseVCSAdapter {
     abstract name: 'git' | 'jujutsu' | 'yadm';
@@ -75,6 +80,13 @@ export abstract class BaseVCSAdapter {
      * so the AI doesn't see the old message as context).
      */
     abstract getRecentCommits(count?: number, excludeHash?: string): Promise<string>;
+
+    /**
+     * Absolute path a failed commit's message is saved to, or null when this VCS keeps none
+     */
+    async getMessageSavePath(): Promise<string | null> {
+        return null;
+    }
 
     /**
      * Get detected message for current changes

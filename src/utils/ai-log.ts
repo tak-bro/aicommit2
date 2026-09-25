@@ -251,15 +251,8 @@ const cleanup = () => {
     serviceLoggers.clear();
 };
 
+// Signals exit through subscription-manager.ts (loaded first), and process.exit fires 'exit'
 process.on('exit', cleanup);
-process.on('SIGINT', () => {
-    cleanup();
-    process.exit(0);
-});
-process.on('SIGTERM', () => {
-    cleanup();
-    process.exit(0);
-});
 
 // 오래된 로그 파일 정리
 export const compressOldLogs = async (daysToKeep: number = 7) => {

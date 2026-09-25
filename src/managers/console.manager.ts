@@ -46,7 +46,7 @@ export class ConsoleManager {
         spinner.clear();
     }
 
-    printStagedFiles(staged: { files: string[]; diff: string }, compressionStats?: DiffCompressionStats) {
+    printStagedFiles(staged: { files: string[]; diff: string; omittedFiles?: string[] }, compressionStats?: DiffCompressionStats) {
         const diffSizeBytes = Buffer.byteLength(staged.diff, 'utf8');
         const diffSize = this.formatBytes(diffSizeBytes);
         const detectedMsg = getDetectedMessage(staged);
@@ -59,7 +59,10 @@ export class ConsoleManager {
                 (compressionInfo ? chalk.cyan(` ${compressionInfo}`) : '') +
                 chalk.bold(':')
         );
-        console.log(`${staged.files.map(file => `     ${file}`).join('\n')}\n`);
+        // Mark what the model gets by name only, so a weak message has a visible cause
+        const omitted = new Set(staged.omittedFiles ?? []);
+        const fileLines = staged.files.map(file => `     ${file}${omitted.has(file) ? chalk.dim(' (diff omitted)') : ''}`);
+        console.log(`${fileLines.join('\n')}\n`);
 
         const isLargeDiff = diffSizeBytes > LARGE_DIFF_THRESHOLD_BYTES;
         if (isLargeDiff && !compressionStats) {

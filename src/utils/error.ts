@@ -24,6 +24,21 @@ export class KnownError extends Error {
     }
 }
 
+/**
+ * The VCS commit itself failed (hook, identity, nothing staged), as opposed to anything around
+ * it. Only this one is worth retrying with the same message.
+ */
+export class CommitFailedError extends KnownError {
+    // Where the message was kept, or null when nothing was saved (jj, or the write failed)
+    readonly savedPath: string | null;
+
+    constructor(message: string, savedPath: string | null, options: KnownErrorOptions = {}) {
+        super(message, options);
+        this.name = 'CommitFailedError';
+        this.savedPath = savedPath;
+    }
+}
+
 const indent = '    ';
 
 /**

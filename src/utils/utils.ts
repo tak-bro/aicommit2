@@ -40,6 +40,19 @@ export const truncateString = (str: string, maxLength: number) => {
     }
 };
 
+// Conventional 72-char subject limit (git itself enforces none); `maxLength` is the softer target given to the model
+const GIT_SUBJECT_HARD_LIMIT = 72;
+
+/**
+ * ` (80>72)` when the subject is past `max(maxLength, 72)`, otherwise ''. Code points, not
+ * UTF-16 units, so CJK and emoji count one each.
+ */
+export const getSubjectLengthMarker = (subject: string, maxLength = 0): string => {
+    const limit = Math.max(maxLength, GIT_SUBJECT_HARD_LIMIT);
+    const length = [...subject].length;
+    return length > limit ? ` (${length}>${limit})` : '';
+};
+
 export const sortByDisabled = (a: ReactiveListChoice, b: ReactiveListChoice) => {
     if (a.disabled && !b.disabled) {
         return 1;
@@ -139,4 +152,27 @@ export const safeJsonParse = (jsonString: string): { ok: true; data: any } | { o
     } catch (error: any) {
         return { ok: false, error };
     }
+};
+
+/**
+ * Exits 1 with a message if stdin closes while `pending` (an inquirer prompt) waits for an
+ * answer. On EOF the prompt never settles, the event loop drains, and Node would exit with the
+ * default code 0 although the prompt was never answered. `beforeExit` fires exactly at that drain and
+ * never on an explicit `process.exit()`. Returns `pending` itself, so the prompt's `.ui` handle
+ * survives.
+ */
+export const failOnClosedInput = <P extends Promise<unknown>>(pending: P): P => {
+    const onDrain = () => {
+        process.stderr.write('Input closed before the prompt was answered.\n');
+        // exitCode rather than process.exit(1): exit() can cut off pending stdout/stderr writes
+        // (Node docs, process.exit)
+        process.exitCode = 1;
+    };
+    process.once('beforeExit', onDrain);
+    const stopWatching = () => {
+        process.off('beforeExit', onDrain);
+    };
+    // then(fn, fn) rather than finally: finally would re-reject into an unhandled rejection
+    pending.then(stopWatching, stopWatching);
+    return pending;
 };

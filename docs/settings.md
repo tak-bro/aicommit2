@@ -26,6 +26,7 @@ Please check the documentation for each specific model to confirm which settings
 | `codeReviewPromptPath` | Path to code review prompt file                                     | -            |
 | `autoCopy`             | Auto-copy commit message to clipboard (commits normally)            | false        |
 | `useStats`             | Enable usage statistics tracking                                    | true         |
+| `excludeGenerated`     | Send lockfile/generated files by name only, without their diff      | true         |
 | `statsDays`            | Days to retain statistics data (auto-cleanup)                       | 30           |
 | `modelNameDisplay`     | Model name display in CLI labels (`none` / `short` / `full`)       | short        |
 | `disabled`             | Whether a specific model is enabled or disabled                     | false        |
@@ -179,6 +180,8 @@ Default: `50`
 ```bash
 aicommit2 config set maxLength=100
 ```
+
+The value is an instruction to the model, not a hard cut. In the picker, a candidate whose subject is longer than `maxLength` or 72 characters (whichever is larger) ends in a dim marker such as `(80>72)`. The marker is display-only; it never reaches the committed message.
 
 ### disableLowerCase
 
@@ -417,6 +420,18 @@ aicommit2 config set maxDiffLines=0    # unlimited (default)
 ```bash
 aicommit2 config set diffContext=3
 aicommit2 config set diffContext=1    # fewer context lines, saves tokens
+```
+
+### excludeGenerated
+
+- Lockfiles (`package-lock.json`, `pnpm-lock.yaml`, `*.lock`, `*.lockb`), `*.min.js`, `*.min.css`, `*.map`, `*.snap`, and files marked `linguist-generated` in `.gitattributes` are sent by name only. Their diff is left out of the prompt.
+- Git and YADM: the staged file list marks them `(diff omitted)`. A commit that only touches such files still gets a message. Jujutsu leaves them out entirely.
+- `--exclude` is different: excluded files are hidden from the model entirely.
+- Set to `false` (or pass `--include-generated`) to send their diffs too. Lockfiles stay name-only either way.
+- `linguist-generated` needs Git 2.13+. Jujutsu applies the patterns but not `.gitattributes`.
+
+```bash
+aicommit2 config set excludeGenerated=false
 ```
 
 ## Available Settings by Model

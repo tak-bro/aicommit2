@@ -7,7 +7,7 @@ if (!process.env.NODE_NO_WARNINGS) {
 import { cli } from 'cleye';
 
 import pkg from '../package.json';
-import aicommit2 from './commands/aicommit2.js';
+import aicommit2, { retryCommit } from './commands/aicommit2.js';
 import configCommand from './commands/config.js';
 import { doctorCommand } from './commands/doctor.js';
 import githubLoginCommand from './commands/github-login.js';
@@ -24,7 +24,7 @@ import { RawConfig, ValidConfig, getConfig } from './utils/config.js';
 import { handleCliError } from './utils/error.js';
 import { renderGroupedHelp } from './utils/help-renderer.js';
 import { initializeLogger, logger } from './utils/logger.js';
-import { sharedMessageFlags } from './utils/message-flags.js';
+import { isPipedDryRun, routeConsoleToStderr, sharedMessageFlags } from './utils/message-flags.js';
 
 const rawArgv = process.argv.slice(2);
 const { version, description } = pkg;
@@ -44,6 +44,11 @@ cli(
                 type: [String],
                 description: 'Files to exclude from AI analysis',
                 alias: 'x',
+            },
+            'include-generated': {
+                type: Boolean,
+                description: 'Send generated-file diffs too (default: false, only their names are sent; lockfiles stay name-only)',
+                default: false,
             },
             all: {
                 type: Boolean,
@@ -103,6 +108,11 @@ cli(
                 alias: 'd',
                 default: false,
             },
+            retry: {
+                type: Boolean,
+                description: 'Commit the message a failed commit saved, without generating a new one',
+                default: false,
+            },
             output: {
                 type: String,
                 description: 'Output format for non-interactive mode (json). For LazyGit integration',
@@ -120,6 +130,18 @@ cli(
         ignoreArgv: type => type === 'unknown-flag' || type === 'argument',
     },
     async argv => {
+        // Before anything prints, including the config error below: `$(aicommit2 -d)` must
+        // capture the message alone, never an error text that git would commit
+        if (isPipedDryRun(argv.flags['dry-run'], argv.flags.output === 'json')) {
+            routeConsoleToStderr();
+        }
+
+        // Needs no provider, so it runs before the config that a retry must not depend on
+        if (argv.flags.retry) {
+            await retryCommit(rawArgv);
+            return;
+        }
+
         const cliOverrides: RawConfig = {};
         if (argv.flags.verbose) {
             cliOverrides.logLevel = 'verbose';
@@ -189,6 +211,7 @@ cli(
             argv.flags['dry-run'],
             argv.flags['jj-auto-new'],
             argv.flags.output,
+            argv.flags['include-generated'],
             rawArgv
         );
     },
