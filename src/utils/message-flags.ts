@@ -100,3 +100,17 @@ export const forceMessageFlagsOnProviders = (config: ValidConfig, flags: Message
         applyDisableLowerCaseToConfig(config);
     }
 };
+
+/**
+ * `msg=$(aicommit2 --dry-run)`: stdout is captured, so nobody can drive the picker and anything
+ * but the message would pollute the result. Such a run picks the first message itself.
+ */
+export const isPipedDryRun = (dryRun: boolean, isJsonMode = false): boolean => dryRun && !isJsonMode && !process.stdout.isTTY;
+
+/**
+ * Sends human-facing `console.log` output (title, staged files, warnings) to stderr so only the
+ * message written via `process.stdout.write` reaches stdout.
+ */
+export const routeConsoleToStderr = () => {
+    console.log = console.error;
+};

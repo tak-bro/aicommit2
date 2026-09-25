@@ -5,6 +5,7 @@ import { execa } from 'execa';
 
 import { KnownError } from '../error.js';
 import { BaseVCSAdapter, CommitOptions, DiffOptions, VCSDiff } from './base.adapter.js';
+import { defaultJjExcludeFilesets } from './default-excludes.js';
 
 export class JujutsuAdapter extends BaseVCSAdapter {
     name = 'jujutsu' as const;
@@ -75,16 +76,9 @@ export class JujutsuAdapter extends BaseVCSAdapter {
         return `~"${path}"`;
     };
 
-    private filesToExclude = [
-        'package-lock.json',
-        'pnpm-lock.yaml',
-        // yarn.lock, Cargo.lock, Gemfile.lock, Pipfile.lock, etc.
-        '*.lock',
-        '*.lockb',
-    ];
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    async getStagedDiff(excludeFiles?: string[], exclude?: string[], _options?: DiffOptions): Promise<VCSDiff | null> {
+    // Jujutsu filesets have no gitattributes support, so `linguist-generated` is git-only, and
+    // excluded files drop out entirely here (no "diff omitted" list)
+    async getStagedDiff(excludeFiles?: string[], exclude?: string[], options?: DiffOptions): Promise<VCSDiff | null> {
         // In Jujutsu, there's no staging area, so we diff against the parent
         // Use --git flag for Git-compatible output format
         try {
@@ -103,7 +97,7 @@ export class JujutsuAdapter extends BaseVCSAdapter {
             }
 
             // Build exclusion patterns using Jujutsu fileset syntax
-            const defaultExclusions = this.filesToExclude.map(this.excludeFromDiff);
+            const defaultExclusions = defaultJjExcludeFilesets(options?.includeGenerated);
             const userExclusions = [
                 ...(excludeFiles ? excludeFiles.map(this.excludeFromDiff) : []),
                 ...(exclude ? exclude.map(this.excludeFromDiff) : []),
@@ -279,37 +273,9 @@ export class JujutsuAdapter extends BaseVCSAdapter {
                 });
             }
         } catch (error) {
-            const execError = error as any;
-
-            if (execError.stderr) {
-                // Parse jj-specific commit errors
-                if (execError.stderr.includes('Empty commit message')) {
-                    throw new KnownError('Commit message cannot be empty.\n\nProvide a meaningful commit message.');
-                }
-                if (execError.stderr.includes('No changes to commit')) {
-                    throw new KnownError('No changes to commit.\n\nMake some changes first, then try again.');
-                }
-                if (execError.stderr.includes('Invalid revision')) {
-                    throw new KnownError(
-                        `Jujutsu commit error: ${execError.stderr.trim()}\n\nEnsure you're in a valid workspace with changes.`
-                    );
-                }
-                if (execError.stderr.includes('Operation not allowed')) {
-                    throw new KnownError(
-                        `Jujutsu operation not allowed: ${execError.stderr.trim()}\n\nCheck repository state with: jj status`
-                    );
-                }
-
-                // Generic jj error
-                throw new KnownError(`Jujutsu describe failed: ${execError.stderr.trim()}`);
-            }
-
-            // Handle exit codes
-            if (execError.exitCode === 1) {
-                throw new KnownError('Jujutsu commit failed. Check your changes and repository state.');
-            }
-
-            throw new KnownError(`Failed to commit with Jujutsu: ${execError.message || 'Unknown error'}`);
+            const exitCode = error instanceof Error && 'exitCode' in error ? error.exitCode : 'unknown';
+            // stdio is inherited, so jj's own error is already on screen and nothing was captured to parse
+            throw new KnownError(`Jujutsu commit failed (exit code ${exitCode}).`);
         }
     }
 

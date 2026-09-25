@@ -135,8 +135,18 @@ const cleanup = () => {
 };
 
 process.on('exit', cleanup);
-process.on('SIGINT', cleanup);
-process.on('SIGTERM', cleanup);
+process.on('SIGINT', () => {
+    cleanup();
+    // Registering a listener disables Node's default SIGINT exit, so exit here (128 + SIGINT).
+    // cli.ts loads this module at startup through watch-git.ts, so every command gets this handler.
+    // Other modules' cleanup runs through their 'exit' listeners or by prepending their own handler.
+    process.exit(130);
+});
+process.on('SIGTERM', () => {
+    cleanup();
+    // Same reason as SIGINT: a listener disables Node's default exit (128 + SIGTERM)
+    process.exit(143);
+});
 process.on('uncaughtException', error => {
     console.error('Uncaught exception:', error);
     cleanup();

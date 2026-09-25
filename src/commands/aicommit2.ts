@@ -1,41 +1,40 @@
-import crypto from 'crypto';
-import fs from 'fs';
-import os from 'os';
-import path from 'path';
-
 import { execa } from 'execa';
 import inquirer from 'inquirer';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { lastValueFrom, toArray } from 'rxjs';
 
 import { getAvailableAIs } from './get-available-ais.js';
-import { CommitChoice, CommitMessageResult, selectCodeReviewAutomatically, selectMessageAutomatically } from './select-message.js';
+import {
+    CommitMessageResult,
+    confirmCommitMessage,
+    editCommitMessage,
+    selectCodeReviewAutomatically,
+    selectCommitMessage,
+} from './select-message.js';
 import { AIRequestManager } from '../managers/ai-request.manager.js';
 import { ConsoleManager } from '../managers/console.manager.js';
-import {
-    DEFAULT_INQUIRER_OPTIONS,
-    ReactivePromptManager,
-    codeReviewLoader,
-    commitMsgLoader,
-    emptyCodeReview,
-} from '../managers/reactive-prompt.manager.js';
+import { DEFAULT_INQUIRER_OPTIONS, ReactivePromptManager, codeReviewLoader, emptyCodeReview } from '../managers/reactive-prompt.manager.js';
 import { recordSelection } from '../services/stats/index.js';
 import { ModelName, getConfig } from '../utils/config.js';
 import { ErrorCode, ErrorMessages } from '../utils/error-messages.js';
-import { KnownError, handleCliError } from '../utils/error.js';
-import { MessageFlagValues, buildMessageConfigOverrides, forceMessageFlagsOnProviders } from '../utils/message-flags.js';
+import { CommitFailedError, KnownError, handleCliError } from '../utils/error.js';
+import { MessageFlagValues, buildMessageConfigOverrides, forceMessageFlagsOnProviders, isPipedDryRun } from '../utils/message-flags.js';
 import { CRITICAL_ISSUES_MARKER, validateSystemPrompt } from '../utils/prompt.js';
+import { failOnClosedInput } from '../utils/utils.js';
 import {
     CommitOptions,
     applyDiffCompression,
     assertGitRepo,
     getBranchName,
+    getMessageSavePath,
     getRecentCommits,
     getStagedDiff,
     getVCSName,
+    readSavedMessage,
     commitChanges as vcsCommitChanges,
 } from '../utils/vcs.js';
 
+import type { Ora } from 'ora';
 import type { Subscription } from 'rxjs';
 
 const consoleManager = new ConsoleManager();
@@ -62,10 +61,13 @@ export default async (
     dryRun: boolean,
     jjAutoNew: boolean,
     outputFormat: string | undefined,
+    includeGenerated: boolean,
     rawArgv: string[]
 ) =>
     (async () => {
         const isJsonMode = outputFormat === 'json';
+        // Output is already routed to stderr by cli.ts; nobody can drive the picker here
+        const shouldAutoSelect = autoSelect || isPipedDryRun(dryRun, isJsonMode);
 
         if (!isJsonMode) {
             consoleManager.printTitle();
@@ -81,9 +83,9 @@ export default async (
             }
             const vcsName = await getVCSName();
             if (vcsName === 'git') {
-                // Use 'git add .' to stage all changes including untracked files in the project directory
-                // This is safe for Git projects (unlike YADM in home directory)
-                await execa('git', ['add', '.']);
+                // NOTE: should be equivalent behavior to `git commit --all` (tracked files only)
+                // Independent: `--update` never touches untracked files
+                await Promise.all([execa('git', ['add', '--update']), warnUntrackedFiles(initSpinner)]);
             } else if (vcsName === 'yadm') {
                 // Use '--update' for YADM to only stage already-tracked files
                 // This prevents accidentally staging thousands of files in the home directory
@@ -120,7 +122,7 @@ export default async (
         if (initSpinner) {
             initSpinner.text = 'Detecting staged files...';
         }
-        const staged = await getStagedDiff(excludeFiles, config.exclude);
+        const staged = await getStagedDiff(excludeFiles, config.exclude, includeGenerated);
         initSpinner?.stop();
 
         if (!staged) {
@@ -162,10 +164,20 @@ export default async (
 
         const codeReviewAIs = getAvailableAIs(config, 'review');
         if (codeReviewAIs.length > 0) {
-            await handleCodeReview(aiRequestManager, codeReviewAIs, autoSelect);
+            await handleCodeReview(aiRequestManager, codeReviewAIs, shouldAutoSelect);
         }
 
-        const commitResult = await handleCommitMessage(aiRequestManager, availableAIs, autoSelect);
+        // One round = pick, then edit when `-e` is set; `r` at the confirm prompt runs another
+        const pickCommitMessage = async (): Promise<CommitMessageResult> => {
+            const picked = await selectCommitMessage(aiRequestManager, availableAIs, shouldAutoSelect);
+            return edit ? { ...picked, value: await editCommitMessage(picked.value, 'Commit') } : picked;
+        };
+
+        // Only a run that would have asked "Use selected message?" gets the confirm loop
+        const isInteractiveConfirm = !dryRun && !useClipboard && !confirm && !autoSelect;
+        const firstPick = await pickCommitMessage();
+        const commitResult = isInteractiveConfirm ? await confirmCommitMessage(firstPick, pickCommitMessage, 'Commit') : firstPick;
+        const selectedCommitMessage = commitResult.value;
 
         // Record selection for stats (fire-and-forget, enabled by default)
         if (config.useStats !== false) {
@@ -176,22 +188,6 @@ export default async (
             }).catch(() => {
                 // Silently ignore selection recording errors
             });
-        }
-
-        let selectedCommitMessage = commitResult.value;
-
-        if (edit) {
-            consoleManager.printInfo('Opening editor to modify commit message...');
-            selectedCommitMessage = await openEditor(selectedCommitMessage);
-
-            if (!selectedCommitMessage.trim()) {
-                throw new KnownError(ErrorMessages.emptyCommitMessage(), {
-                    code: ErrorCode.EMPTY_COMMIT_MESSAGE,
-                });
-            }
-
-            consoleManager.printSuccess('Commit message edited successfully!');
-            consoleManager.print(`\n${selectedCommitMessage}\n`);
         }
 
         // Copy to clipboard if enabled (CLI flag or config)
@@ -217,24 +213,10 @@ export default async (
             process.exit();
         }
 
-        if (confirm || autoSelect) {
-            await commitChanges(selectedCommitMessage, rawArgv, commitOptions);
-            process.exit();
-        }
-
-        const { confirmationPrompt } = await inquirer.prompt([
-            {
-                type: 'confirm',
-                name: 'confirmationPrompt',
-                message: `Use selected message?`,
-                default: true,
-            },
-        ]);
-
-        if (confirmationPrompt) {
-            await commitChanges(selectedCommitMessage, rawArgv, commitOptions);
+        if (isInteractiveConfirm) {
+            await commitWithRetryPrompt(selectedCommitMessage, rawArgv, commitOptions);
         } else {
-            consoleManager.printCancelledCommit();
+            await commitChanges(selectedCommitMessage, rawArgv, commitOptions);
         }
         process.exit();
     })().catch(error => {
@@ -301,18 +283,20 @@ async function handleCodeReview(aiRequestManager: AIRequestManager, availableAIs
             ? 'Critical issues found in code review. Continue without fixing?'
             : 'Will you continue without changing the code?';
 
-        const { continuePrompt } = await inquirer.prompt([
-            {
-                type: 'confirm',
-                name: 'continuePrompt',
-                message: confirmMessage,
-                default: !hasCritical,
-            },
-        ]);
+        const { continuePrompt } = await failOnClosedInput(
+            inquirer.prompt([
+                {
+                    type: 'confirm',
+                    name: 'continuePrompt',
+                    message: confirmMessage,
+                    default: !hasCritical,
+                },
+            ])
+        );
 
         if (!continuePrompt) {
             consoleManager.printCancelledCommit();
-            process.exit();
+            process.exit(1);
         }
     } finally {
         if (codeReviewSubscription) {
@@ -322,132 +306,84 @@ async function handleCodeReview(aiRequestManager: AIRequestManager, availableAIs
     }
 }
 
-const handleCommitMessage = async (
-    aiRequestManager: AIRequestManager,
-    availableAIs: ModelName[],
-    autoSelect: boolean
-): Promise<CommitMessageResult> => {
-    const commitMsgPromptManager = new ReactivePromptManager(commitMsgLoader);
-    let commitMsgSubscription: Subscription | null = null;
-
-    try {
-        if (autoSelect) {
-            return await selectMessageAutomatically(aiRequestManager, availableAIs, commitMsgPromptManager);
-        }
-
-        // Store choices with metadata for later lookup
-        const choiceMap = new Map<string, CommitChoice>();
-        // Progress shown next to the bar as (done/total): final results (including error
-        // entries) over the number of AI requests in flight. Streaming previews excluded.
-        const totalRequests = aiRequestManager.countRequests(availableAIs);
-        let settledRequests = 0;
-
-        // Mount the prompt up front. The library's loading bar hides the question while the
-        // list is empty, so there is no premature "Pick a commit message" + empty list — the
-        // bar animates through generation and the list fills in as messages stream.
-        const commitMsgInquirer = commitMsgPromptManager.initPrompt();
-        // Single emission: carries both `isLoading: true` and the initial (0/N) progress.
-        commitMsgPromptManager.updateLoaderProgress(settledRequests, totalRequests);
-
-        commitMsgSubscription = aiRequestManager.createCommitMsgRequests$(availableAIs).subscribe({
-            next: (choice: ReactiveListChoice) => {
-                const commitChoice = choice as CommitChoice;
-                if (commitChoice.value) {
-                    choiceMap.set(commitChoice.value, commitChoice);
-                }
-                const isFinalResult = !('streamKey' in choice);
-                if (isFinalResult && settledRequests < totalRequests) {
-                    settledRequests++;
-                    commitMsgPromptManager.updateLoaderProgress(settledRequests, totalRequests);
-                }
-                commitMsgPromptManager.refreshChoices(choice);
-            },
-            error: error => {
-                console.error('Commit message generation error:', error);
-                commitMsgPromptManager.checkErrorOnChoices();
-            },
-            complete: () => commitMsgPromptManager.checkErrorOnChoices(),
-        });
-
-        const commitMsgInquirerResult = await commitMsgInquirer;
-
-        consoleManager.moveCursorUp(); // NOTE: reactiveListPrompt has 2 blank lines
-        const selectedValue = commitMsgInquirerResult.aicommit2Prompt?.value;
-        if (!selectedValue) {
-            throw new KnownError('An error occurred! No selected message');
-        }
-
-        // Look up the selected choice to get provider metadata
-        const selectedChoice = choiceMap.get(selectedValue);
-
-        return {
-            value: selectedValue,
-            provider: selectedChoice?.provider || 'unknown',
-            model: selectedChoice?.model || 'unknown',
-        };
-    } finally {
-        if (commitMsgSubscription) {
-            commitMsgSubscription.unsubscribe();
-        }
-        commitMsgPromptManager.destroy();
+// `-a` no longer sweeps in new files, so say so instead of letting them silently miss the commit
+const warnUntrackedFiles = async (spinner: Ora | null) => {
+    const { stdout } = await execa('git', ['ls-files', '--others', '--exclude-standard', '--', ':/']);
+    const untrackedCount = stdout.split('\n').filter(Boolean).length;
+    if (untrackedCount > 0) {
+        // Clear the spinner frame first so the hint gets its own line; the next frame repaints
+        spinner?.clear();
+        process.stderr.write(`${untrackedCount} untracked file(s) not staged (use git add)\n`);
     }
 };
 
-async function openEditor(message: string): Promise<string> {
-    const editor = process.env.VISUAL || process.env.EDITOR || (process.platform === 'win32' ? 'notepad' : 'vi');
-    // Add random suffix to prevent file name collisions
-    const tempFile = path.join(os.tmpdir(), `aicommit2-${Date.now()}-${crypto.randomBytes(4).toString('hex')}.txt`);
-
+/**
+ * `aicommit2 --retry`: commit the message a failed commit saved, with no provider call. Runs
+ * before the config is loaded, so a broken or keyless config cannot block it.
+ */
+export const retryCommit = async (rawArgv: string[]) => {
+    const consoleManager = new ConsoleManager();
     try {
-        fs.writeFileSync(tempFile, message, 'utf8');
-
-        // Parse EDITOR string to handle flags (e.g., "zed --new --wait")
-        // Simple space-split handles most cases while being more secure than shell interpolation
-        // Previously failed because execa() treated entire string as binary name
-        // See: https://github.com/tak-bro/aicommit2/issues/197
-        const editorParts = editor.split(' ');
-        const [binary, ...flags] = editorParts;
-
-        await execa(binary, [...flags, tempFile], { stdio: 'inherit' });
-
-        const editedMessage = fs.readFileSync(tempFile, 'utf8').trim();
-        fs.unlinkSync(tempFile);
-
-        if (!editedMessage) {
-            throw new KnownError('Commit cancelled - empty message');
+        await assertGitRepo();
+        const savePath = await getMessageSavePath();
+        if (!savePath) {
+            throw new KnownError(ErrorMessages.retryUnsupported(await getVCSName()));
         }
-
-        return editedMessage;
+        const message = await readSavedMessage(savePath);
+        if (!message) {
+            throw new KnownError(ErrorMessages.noSavedMessage());
+        }
+        // Show what is about to be committed: the saved message may be from an older attempt
+        consoleManager.print(`\n${message.trim()}\n`);
+        await commitChanges(message, rawArgv, {});
+        process.exit(0);
     } catch (error) {
-        if (fs.existsSync(tempFile)) {
-            fs.unlinkSync(tempFile);
-        }
+        consoleManager.printError(error instanceof Error ? error.message : String(error));
+        handleCliError(error);
+        process.exit(1);
+    }
+};
 
-        if (error instanceof KnownError) {
-            throw error;
-        }
-
-        if (error && typeof error === 'object' && 'exitCode' in error) {
-            if ((error as any).exitCode !== 0) {
-                throw new KnownError('Commit cancelled');
+/**
+ * A failed commit (typically a pre-commit hook) asks `Commit failed. Retry? (Rqh)` instead of
+ * exiting, so the user can fix the problem in another pane and commit the same message. When
+ * the save worked, the message is on disk before the prompt appears, so quitting or Ctrl-C
+ * loses nothing; the quit label says when it did not (jj, or a failed write).
+ */
+const commitWithRetryPrompt = async (message: string, rawArgv: string[], options: CommitOptions) => {
+    for (;;) {
+        try {
+            await commitChanges(message, rawArgv, options);
+            return;
+        } catch (error) {
+            if (!(error instanceof CommitFailedError)) {
+                throw error;
+            }
+            consoleManager.printError(error.message);
+            const { action } = await failOnClosedInput(
+                inquirer.prompt<{ action: 'retry' | 'quit' }>([
+                    {
+                        type: 'expand',
+                        name: 'action',
+                        message: 'Commit failed. Retry?',
+                        default: 0,
+                        choices: [
+                            { key: 'r', name: 'Retry the commit with the same message', value: 'retry' },
+                            {
+                                key: 'q',
+                                name: error.savedPath ? 'Quit (the message stays saved)' : 'Quit (the message is not saved)',
+                                value: 'quit',
+                            },
+                        ],
+                    },
+                ])
+            );
+            if (action === 'quit') {
+                process.exit(1);
             }
         }
-
-        const hasEditorEnv = process.env.VISUAL || process.env.EDITOR;
-        if (!hasEditorEnv) {
-            throw new KnownError(
-                `Failed to open editor "${editor}". Please set your EDITOR or VISUAL environment variable to a valid editor command.`
-            );
-        } else {
-            throw new KnownError(
-                `Failed to open editor "${editor}". Please check:\n` +
-                    '  - Editor binary exists in PATH\n' +
-                    '  - Editor flags are correct\n' +
-                    '  - EDITOR/VISUAL is set correctly'
-            );
-        }
     }
-}
+};
 
 const commitChanges = async (message: string, rawArgv: string[], options: CommitOptions) => {
     await vcsCommitChanges(message, rawArgv, options);

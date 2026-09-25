@@ -48,18 +48,16 @@ class WatchGitManager {
     private readonly REFS_PATH = path.join(this.GIT_PATH, 'refs', 'heads');
     private readonly COMMIT_MSG_PATH = path.join(this.GIT_PATH, 'COMMIT_EDITMSG');
 
-    constructor() {
-        this.setupProcessHandlers();
-    }
-
     private setupProcessHandlers = (): void => {
         const cleanup = () => {
             this.destroy();
             process.exit(0);
         };
 
-        process.on('SIGINT', cleanup);
-        process.on('SIGTERM', cleanup);
+        // Prepended: the global SIGINT/SIGTERM handlers (subscription-manager.ts) exit immediately,
+        // so watch mode stops its watchers first and keeps exit 0 as its normal stop
+        process.prependListener('SIGINT', cleanup);
+        process.prependListener('SIGTERM', cleanup);
         process.on('SIGQUIT', cleanup);
     };
 
@@ -71,6 +69,9 @@ class WatchGitManager {
         verbose: boolean,
         rawArgv: string[]
     ): Promise<void> => {
+        // Registered here, not in the constructor: the manager is created at import time, and a
+        // constructor-time handler made Ctrl-C exit 0 in every command, not just watch mode
+        this.setupProcessHandlers();
         this.consoleManager.printTitle();
         await assertGitRepo();
 

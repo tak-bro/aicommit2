@@ -4,7 +4,7 @@ import ReactiveListPrompt, { ChoiceItem, ReactiveListChoice, ReactiveListLoader 
 import { BehaviorSubject, ReplaySubject, Subscription } from 'rxjs';
 
 import { isVerboseLoggingEnabled } from '../utils/logger.js';
-import { sortByDisabled } from '../utils/utils.js';
+import { failOnClosedInput, sortByDisabled } from '../utils/utils.js';
 
 // `isLoading` starts true: the prompt mounts while requests are already in flight, and
 // an empty choice list must not read as "nothing was generated" before anything lands.
@@ -90,11 +90,13 @@ export class ReactivePromptManager {
         // inquirer.prompt returns a Promise that also carries a `.ui` handle; callers await
         // it for the answer and use `.ui` to close. Return the fresh instance (not the
         // nullable field) so callers get a non-null result to await.
-        const instance = inquirer.prompt({
-            choices$: this.choices$,
-            loader$: this.loader$,
-            ...options,
-        }) as unknown as InquirerPromptInstance;
+        const instance = failOnClosedInput(
+            inquirer.prompt({
+                choices$: this.choices$,
+                loader$: this.loader$,
+                ...options,
+            })
+        ) as unknown as InquirerPromptInstance;
         this.inquirerInstance = instance;
 
         return instance;

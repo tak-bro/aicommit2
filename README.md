@@ -132,6 +132,7 @@ npm install -g aicommit2
 ```
 
 > ⚠️ For npm installation, the minimum supported version of Node.js is v18. Check your Node.js version with `node --version`.
+> Git 2.13 or later is required (for `.gitattributes`-aware diff filtering).
 
 > ⚠️ Homebrew installation does not include [Copilot SDK](docs/providers/copilot-sdk.md) support due to its proprietary dependency. Use npm if you need Copilot SDK.
 
@@ -404,6 +405,12 @@ Run `aicommit2 --help` to see all available options grouped by category.
 
 ##### Behavior
 
+After you pick a message, `Use selected message? (Ynerh)` takes one key: `y` (or Enter) commits, `n` cancels (exit 1), `e` opens `$VISUAL`/`$EDITOR` and commits the result, `r` asks the providers again and shows a new picker (the code review is not repeated), and `h` lists the keys. `aicommit2 rewrite` asks with the same keys; there, `n` or declining the "already pushed" warning exits 1 and leaves the commit unchanged.
+
+If the commit then fails (for example, a pre-commit hook rejects it), aicommit2 asks `Commit failed. Retry? (Rqh)`: fix the problem in another terminal and press `r` to commit the same message again, or `q` to quit (exit 1). With Git and YADM the message is saved before the prompt appears, so `aicommit2 --retry` works later too; if the save itself fails, a warning says so and the quit option reads `the message is not saved`.
+
+If stdin closes while any of these prompts waits for an answer (for example `aicommit2 < /dev/null`), aicommit2 prints `Input closed before the prompt was answered` and exits 1 without committing. Use `--auto-select` (`-s`) for runs that have no one to answer: `--confirm` skips only the final confirmation, not the message picker.
+
 - `--all` or `-a`: Automatically stage changes in tracked files for the commit (default: **false**)
 - `--confirm` or `-y`: Skip confirmation when committing after message generation (default: **false**)
 - `--auto-select` or `-s`: Automatically select the first successfully generated message (default: **false**)
@@ -411,7 +418,7 @@ Run `aicommit2 --help` to see all available options grouped by category.
   - With [`codeReview`](./docs/settings.md#codereview) enabled, the first review is printed in full instead of opening the review list. Critical findings are printed as a warning and the run continues, since there is no prompt to answer
 - `--edit` or `-e`: Open the AI-generated commit message in your default editor (default: **false**)
 - `--clipboard` or `-c`: Copy the selected message to clipboard and exit **without committing** (default: **false**)
-- `--dry-run` or `-d`: Generate commit message without committing (default: **false**)
+- `--dry-run` or `-d`: Generate commit message without committing (default: **false**). When stdout is piped or captured, the first message is picked without prompting and only the message is written to stdout (everything else goes to stderr)
   - Useful for reviewing messages before manual commit (e.g., with GitHub Desktop)
 - `--output` or `-o`: Output format for non-interactive mode (default: **none**)
   - Use `--output json` for [LazyGit](#lazygit) integration
@@ -431,7 +438,9 @@ Run `aicommit2 --help` to see all available options grouped by category.
 ##### Formatting & Debug
 
 - `--exclude` or `-x`: Files to exclude from AI analysis
+- `--include-generated`: Also send generated-file diffs (default: **false**; lockfiles always stay name-only). By default, lockfiles, `*.min.js`, `*.min.css`, `*.map`, `*.snap`, and files marked `linguist-generated` in `.gitattributes` are listed by name only, and shown as `(diff omitted)` in the staged file list
 - `--disable-lowercase`: Preserve original casing of commit messages (default: **false**)
+- `--retry`: Commit the message a failed commit saved (for example, after a pre-commit hook fails), without generating a new one. Unknown flags are passed to `git commit`, so `aicommit2 --retry --no-verify` works
 - `--verbose` or `-v`: Enable verbose logging for debugging (default: **false**)
 
 Examples:
@@ -445,6 +454,12 @@ aicommit2 --edit --type conventional # or gitmoji
 
 # Generate message without committing (dry-run)
 aicommit2 --dry-run # or -d
+
+# Capture the message in a script (no prompt, message only on stdout)
+git commit -m "$(aicommit2 -d)"
+
+# A pre-commit hook failed: fix the issue, then commit the saved message again
+aicommit2 --retry
 
 # Dry-run with clipboard (generate, select, then copy)
 aicommit2 -d -c
@@ -1001,6 +1016,7 @@ For detailed information about all available settings, see the [General Settings
 | `codeReviewPromptPath` | Path to custom code review prompt file                              | -            |
 | `autoCopy`             | Auto-copy commit message to clipboard (commits normally)            | false        |
 | `useStats`             | Enable usage statistics tracking                                    | true         |
+| `excludeGenerated`     | Send lockfile/generated files by name only, without their diff      | true         |
 | `statsDays`            | Days to retain statistics data (auto-cleanup)                       | 30           |
 | `systemPromptPath`     | Path to custom system prompt file                                   | -            |
 | `modelNameDisplay`     | Model name display in CLI labels (`none` / `short` / `full`)       | short        |

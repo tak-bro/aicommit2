@@ -10,5 +10,7 @@ export default testSuite(({ describe }) => {
         runTestSuite(import('./commit-context.js'));
         runTestSuite(import('./loading-bar.js'));
         runTestSuite(import('./version-check.js'));
+        runTestSuite(import('./piped-dry-run.js'));
+        runTestSuite(import('./subject-length.js'));
     });
 });
