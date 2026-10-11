@@ -5,14 +5,19 @@ import path from 'path';
 
 import { execa } from 'execa';
 
-import { DEFAULT_DIFF_CONTEXT } from '../diff-compressor.js';
 import { KnownError } from '../error.js';
-import { BaseVCSAdapter, CommitOptions, DiffOptions, VCSDiff } from './base.adapter.js';
+import { readCommitDiff, readStagedDiff } from './assemble-diff.js';
+import { BaseVCSAdapter, CommitOptions, DiffOptions, MESSAGE_SAVE_FILE, VCSDiff } from './base.adapter.js';
 
 const REWRITE_MSG_ENV = 'AICOMMIT2_MSG_FILE';
 
 export class GitAdapter extends BaseVCSAdapter {
     name = 'git' as const;
+
+    // Diff commands run here when set (tests point it at a fixture repo); otherwise process.cwd()
+    constructor(private readonly cwd?: string) {
+        super();
+    }
 
     async assertRepo(): Promise<string> {
         try {
@@ -42,129 +47,14 @@ export class GitAdapter extends BaseVCSAdapter {
         }
     }
 
-    private excludeFromDiff = (path: string) => `:(exclude)${path}`;
-
-    private filesToExclude = [
-        'package-lock.json',
-        'pnpm-lock.yaml',
-        // yarn.lock, Cargo.lock, Gemfile.lock, Pipfile.lock, etc.
-        '*.lock',
-        '*.lockb',
-    ].map(this.excludeFromDiff);
+    private run = (args: string[]) => execa('git', args, this.cwd ? { cwd: this.cwd } : {});
 
     async getStagedDiff(excludeFiles?: string[], exclude?: string[], options?: DiffOptions): Promise<VCSDiff | null> {
-        const contextArg = options?.diffContext !== undefined ? `-U${options.diffContext}` : `-U${DEFAULT_DIFF_CONTEXT}`;
-        const diffCached = ['diff', '--cached', '--diff-algorithm=minimal', contextArg];
-        const userExcludeArgs = [
-            ...(excludeFiles ? excludeFiles.map(this.excludeFromDiff) : []),
-            ...(exclude ? exclude.map(this.excludeFromDiff) : []),
-        ];
-        const defaultExcludeArgs = [...this.filesToExclude, ...userExcludeArgs];
-
-        // Run file list, diff content, and binary detection in parallel
-        const [filesResult, diffResult, numstatResult] = await Promise.all([
-            execa('git', [...diffCached, '--name-only', ...defaultExcludeArgs]),
-            execa('git', [...diffCached, ...defaultExcludeArgs]),
-            execa('git', [...diffCached, '--numstat', ...userExcludeArgs]),
-        ]);
-
-        const files = filesResult.stdout;
-        if (!files) {
-            return null;
-        }
-
-        const diff = diffResult.stdout;
-        const allFiles = files.split('\n').filter(Boolean);
-        const binaryCheck = numstatResult.stdout;
-
-        const binaryFiles: string[] = [];
-        const numstatLines = binaryCheck.split('\n').filter(Boolean);
-
-        for (const line of numstatLines) {
-            const parts = line.split('\t');
-            // Binary files show as "-\t-\t" in numstat
-            if (parts[0] === '-' && parts[1] === '-' && parts[2]) {
-                binaryFiles.push(parts[2]);
-            }
-        }
-
-        // Build enhanced diff with binary file information
-        let enhancedDiff = diff;
-
-        if (binaryFiles.length > 0) {
-            if (!diff.trim()) {
-                enhancedDiff = '';
-            }
-
-            // Add binary file information to the diff
-            enhancedDiff += '\n\n--- Binary Files Changed ---\n';
-            for (const file of binaryFiles) {
-                const { stdout: fileStatus } = await execa('git', ['status', '--porcelain', file]);
-                const status = fileStatus.substring(0, 2).trim();
-                const action = status === 'A' ? 'added' : status === 'M' ? 'modified' : status === 'D' ? 'deleted' : 'changed';
-                enhancedDiff += `Binary file ${file} ${action}\n`;
-            }
-        }
-
-        // Include all files (both text and binary) in the file list
-        const allStagedFiles = [...new Set([...allFiles, ...binaryFiles])];
-
-        return {
-            files: allStagedFiles,
-            diff: enhancedDiff || `Files changed: ${allStagedFiles.join(', ')}`,
-        };
+        return readStagedDiff(this.run, { excludeFiles, exclude, options });
     }
 
     async getCommitDiff(commitHash: string, excludeFiles?: string[], exclude?: string[], options?: DiffOptions): Promise<VCSDiff | null> {
-        const contextArg = options?.diffContext !== undefined ? `-U${options.diffContext}` : `-U${DEFAULT_DIFF_CONTEXT}`;
-        const userExcludeArgs = [
-            ...(excludeFiles ? excludeFiles.map(this.excludeFromDiff) : []),
-            ...(exclude ? exclude.map(this.excludeFromDiff) : []),
-        ];
-        const defaultExcludeArgs = [...this.filesToExclude, ...userExcludeArgs];
-
-        // Run file list, diff content, and binary detection in parallel
-        const [filesResult, diffResult, numstatResult] = await Promise.all([
-            execa('git', ['diff-tree', '-r', '--no-commit-id', '--name-only', commitHash, ...defaultExcludeArgs]),
-            execa('git', ['show', contextArg, commitHash, '--', ...defaultExcludeArgs]),
-            execa('git', ['diff-tree', '-r', '--numstat', commitHash, ...userExcludeArgs]),
-        ]);
-
-        const files = filesResult.stdout;
-        if (!files) {
-            return null;
-        }
-
-        const diff = diffResult.stdout;
-        const binaryCheck = numstatResult.stdout;
-
-        const binaryFiles: string[] = [];
-        const numstatLines = binaryCheck.split('\n').filter(Boolean);
-
-        for (const line of numstatLines) {
-            const parts = line.split('\t');
-            if (parts[0] === '-' && parts[1] === '-' && parts[2]) {
-                binaryFiles.push(parts[2]);
-            }
-        }
-
-        let enhancedDiff = diff;
-        if (binaryFiles.length > 0) {
-            if (!diff.trim()) {
-                enhancedDiff = '';
-            }
-            enhancedDiff += '\n\n--- Binary Files Changed ---\n';
-            for (const file of binaryFiles) {
-                enhancedDiff += `Binary file ${file} changed\n`;
-            }
-        }
-
-        const allFiles = [...new Set([...files.split('\n').filter(Boolean), ...binaryFiles])];
-
-        return {
-            files: allFiles,
-            diff: enhancedDiff || `Files changed: ${allFiles.join(', ')}`,
-        };
+        return readCommitDiff(this.run, commitHash, { excludeFiles, exclude, options });
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -174,40 +64,17 @@ export class GitAdapter extends BaseVCSAdapter {
                 stdio: 'inherit',
             });
         } catch (error) {
-            const execError = error as any;
-
-            if (execError.stderr) {
-                // Parse git-specific commit errors
-                if (execError.stderr.includes('nothing to commit')) {
-                    throw new KnownError(
-                        'Nothing to commit.\n\nStage your changes with: git add <files>\nOr use the --all flag to stage all changes.'
-                    );
-                }
-                if (execError.stderr.includes('Please enter the commit message')) {
-                    throw new KnownError('Commit message cannot be empty.\n\nProvide a meaningful commit message.');
-                }
-                if (execError.stderr.includes('Author identity unknown')) {
-                    throw new KnownError(
-                        'Git author identity not configured.\n\nConfigure with:\n  git config --global user.name "Your Name"\n  git config --global user.email "your.email@example.com"'
-                    );
-                }
-                if (execError.stderr.includes('Permission denied')) {
-                    throw new KnownError(
-                        `Git permission error: ${execError.stderr.trim()}\n\nCheck repository permissions and file access.`
-                    );
-                }
-
-                // Generic git error
-                throw new KnownError(`Git commit failed: ${execError.stderr.trim()}`);
-            }
-
-            // Handle exit codes
-            if (execError.exitCode === 1) {
-                throw new KnownError('Git commit failed. Check your staged changes and try again.');
-            }
-
-            throw new KnownError(`Failed to commit with Git: ${execError.message || 'Unknown error'}`);
+            const exitCode = error instanceof Error && 'exitCode' in error ? error.exitCode : 'unknown';
+            // stdio is inherited, so git's own error (and any hook output) is already on screen
+            // and nothing was captured to parse
+            throw new KnownError(`Git commit failed (exit code ${exitCode}).`);
         }
+    }
+
+    // `--git-path` resolves inside a linked worktree's own gitdir; the output is cwd-relative
+    async getMessageSavePath(): Promise<string | null> {
+        const { stdout } = await this.run(['rev-parse', '--git-path', MESSAGE_SAVE_FILE]);
+        return path.resolve(this.cwd ?? process.cwd(), stdout.trim());
     }
 
     async getCommentChar(): Promise<string> {

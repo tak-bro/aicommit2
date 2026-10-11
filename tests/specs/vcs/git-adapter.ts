@@ -1,5 +1,6 @@
 import { describe, expect } from 'manten';
 
+import { toGitExcludePathspec } from '../../../src/utils/vcs-adapters/default-excludes.js';
 import { GitAdapter } from '../../../src/utils/vcs-adapters/git.adapter.js';
 
 describe('Git Adapter', ({ test: runTest }) => {
@@ -85,8 +86,8 @@ describe('Git Adapter', ({ test: runTest }) => {
         // Test file exclusion logic
         const excludeFiles = ['package-lock.json', 'yarn.lock'];
 
-        // Verify that excludeFromDiff helper works correctly
-        expect(typeof adapter['excludeFromDiff']).toBe('function');
+        // Exclusions are built by the shared default-excludes helpers
+        expect(excludeFiles.map(toGitExcludePathspec)).toEqual([':(exclude)package-lock.json', ':(exclude)yarn.lock']);
 
         // Test would mock git diff and verify exclude patterns are applied
     });

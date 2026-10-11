@@ -1,3 +1,4 @@
+import chalk from 'chalk';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Observable, Subject, catchError, of } from 'rxjs';
 
@@ -17,7 +18,7 @@ import {
 } from '../../utils/prompt.js';
 import { isReasoningCapableModel } from '../../utils/reasoning-models.js';
 import { IncrementalJsonParser } from '../../utils/stream-json-parser.js';
-import { getFirstWordsFrom, safeJsonParse } from '../../utils/utils.js';
+import { getFirstWordsFrom, getSubjectLengthMarker, safeJsonParse } from '../../utils/utils.js';
 import { GitDiff } from '../../utils/vcs.js';
 
 export interface AIResponse {
@@ -454,7 +455,8 @@ export abstract class AIService {
      * Build a ReactiveListChoice from an AIResponse (title + value).
      */
     protected formatAsChoice = (data: AIResponse): ReactiveListChoice => ({
-        name: `${this.serviceName} ${data.title}`,
+        // The marker is display-only: `short` and `value` feed the commit
+        name: `${this.serviceName} ${data.title}${chalk.dim(getSubjectLengthMarker(data.title, this.params.config.maxLength))}`,
         short: data.title,
         value: this.params.config.includeBody ? data.value : data.title,
         description: this.params.config.includeBody ? data.value : '',

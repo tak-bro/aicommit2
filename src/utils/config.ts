@@ -378,6 +378,8 @@ const generalConfigParsers = {
         return parsed;
     },
     useStats: createBoolParser('useStats', true),
+    // Omit lockfile/generated diffs from the prompt (their names are still listed)
+    excludeGenerated: createBoolParser('excludeGenerated', true),
     statsDays: (statsDays?: string) => {
         if (!statsDays) {
             return 30; // Default: 30 days retention, matches DEFAULT_DISPLAY_DAYS in stats.service.ts
