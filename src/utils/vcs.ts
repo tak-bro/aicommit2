@@ -334,6 +334,9 @@ const saveMessage = async (savePath: string | null, message: string): Promise<st
         return savePath;
     } catch (error) {
         process.stderr.write(`Could not save the commit message to ${savePath}: ${toError(error).message}\n`);
+        // A message from an older attempt, or one ENOSPC cut short, must not reach --retry. Best
+        // effort: whatever blocked the write may block this too, and the warning above stands
+        await fs.rm(savePath, { force: true }).catch(() => {});
         return null;
     }
 };

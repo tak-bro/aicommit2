@@ -198,6 +198,27 @@ export default testSuite(({ describe }) => {
             });
         });
 
+        // Otherwise "the message is not saved" would be false and --retry would commit the old message
+        test('a save that fails removes a message saved by an earlier attempt', async () => {
+            // root writes through a read-only mode, so the save would not fail
+            if (process.getuid?.() === 0) {
+                return;
+            }
+            await withMockProviders(true, async ({ aicommit2, options, fixture }) => {
+                await failPreCommit(fixture);
+                const savedPath = path.join(fixture.path, '.git/AICOMMIT2_MSG');
+                await fs.writeFile(savedPath, 'fix: an older attempt');
+                // A read-only file fails the write; removing it needs only the directory to be writable
+                await fs.chmod(savedPath, 0o444);
+
+                const { stderr, exitCode } = await aicommit2(['--auto-select'], options);
+
+                expect(exitCode).toBe(1);
+                expect(stderr).toMatch('Could not save the commit message');
+                expect(await readSaved(savedPath)).toBe(null);
+            });
+        });
+
         // In a linked worktree `.git` is a file, so a hand-joined `.git/AICOMMIT2_MSG` breaks
         test('in a linked worktree the message is saved under that worktree gitdir', async () => {
             await withMockProviders(true, async ({ aicommit2, options, fixture, git }) => {
