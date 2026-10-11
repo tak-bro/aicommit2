@@ -138,6 +138,11 @@ cli(
 
         // Needs no provider, so it runs before the config that a retry must not depend on
         if (argv.flags.retry) {
+            // --retry always commits, so a flag that promises no commit must not be silently ignored
+            if (argv.flags['dry-run'] || argv.flags.clipboard) {
+                new ConsoleManager().printError('--retry cannot be combined with --dry-run or --clipboard: it always commits.');
+                process.exit(1);
+            }
             await retryCommit(rawArgv);
             return;
         }

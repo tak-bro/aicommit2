@@ -176,12 +176,14 @@ export const ErrorMessages = {
 
     // `vcs` is the binary to commit with: yadm's repo lives outside $HOME's work tree, so `git commit -F` fails there
     commitFailedMessageSaved: (savePath: string, vcs: string): string => {
+        // POSIX single quotes, so a repo path with spaces or `$` survives a copy-paste
+        const quotedPath = `'${savePath.replace(/'/g, `'\\''`)}'`;
         return [
             `The commit message was saved to ${theme.highlight(savePath)}`,
             '',
             `${theme.label('→')} Retry: ${theme.command('aicommit2 --retry')}`,
             // `rm` so a later `aicommit2 --retry` cannot commit this message a second time
-            `${theme.label('→')} Or: ${theme.command(`${vcs} commit -F ${savePath} && rm ${savePath}`)}`,
+            `${theme.label('→')} Or: ${theme.command(`${vcs} commit -F ${quotedPath} && rm ${quotedPath}`)}`,
         ].join('\n');
     },
 

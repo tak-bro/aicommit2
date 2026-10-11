@@ -407,7 +407,7 @@ Run `aicommit2 --help` to see all available options grouped by category.
 
 After you pick a message, `Use selected message? (Ynerh)` takes one key: `y` (or Enter) commits, `n` cancels (exit 1), `e` opens `$VISUAL`/`$EDITOR` and commits the result, `r` asks the providers again and shows a new picker (the code review is not repeated), and `h` lists the keys. `aicommit2 rewrite` asks with the same keys; there, `n` or declining the "already pushed" warning exits 1 and leaves the commit unchanged.
 
-If the commit then fails (for example, a pre-commit hook rejects it), aicommit2 asks `Commit failed. Retry? (Rqh)`: fix the problem in another terminal and press `r` to commit the same message again, or `q` to quit (exit 1). With Git and YADM the message is saved before the prompt appears, so `aicommit2 --retry` works later too; if the save itself fails, a warning says so and the quit option reads `the message is not saved`.
+If the commit then fails (for example, a pre-commit hook rejects it), aicommit2 asks `Commit failed. Retry? (Rqh)`: fix the problem in another terminal and press `r` to commit the same message again, or `q` to quit (exit 1). With Git and YADM the message is saved before the commit runs its hooks, so `aicommit2 --retry` works later too, even after Ctrl-C during a slow hook; if the save itself fails, a warning says so and the quit option reads `the message is not saved`.
 
 If stdin closes while any of these prompts waits for an answer (for example `aicommit2 < /dev/null`), aicommit2 prints `Input closed before the prompt was answered` and exits 1 without committing. Use `--auto-select` (`-s`) for runs that have no one to answer: `--confirm` skips only the final confirmation, not the message picker.
 
@@ -440,7 +440,7 @@ If stdin closes while any of these prompts waits for an answer (for example `aic
 - `--exclude` or `-x`: Files to exclude from AI analysis
 - `--include-generated`: Also send generated-file diffs (default: **false**; lockfiles always stay name-only). By default, lockfiles, `*.min.js`, `*.min.css`, `*.map`, `*.snap`, and files marked `linguist-generated` in `.gitattributes` are listed by name only, and shown as `(diff omitted)` in the staged file list
 - `--disable-lowercase`: Preserve original casing of commit messages (default: **false**)
-- `--retry`: Commit the message a failed commit saved (for example, after a pre-commit hook fails), without generating a new one. Unknown flags are passed to `git commit`, so `aicommit2 --retry --no-verify` works
+- `--retry`: Commit the message a failed commit saved (for example, after a pre-commit hook fails), without generating a new one. Unknown flags are passed to `git commit`, so `aicommit2 --retry --no-verify` works. It always commits, so it refuses `--dry-run` and `--clipboard`
 - `--verbose` or `-v`: Enable verbose logging for debugging (default: **false**)
 
 Examples:

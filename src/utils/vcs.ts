@@ -321,41 +321,42 @@ export const getMessageSavePath = async (): Promise<string | null> => {
 };
 
 /**
- * Keeps the message of a failed commit so neither `aicommit2 --retry` nor the user has to
- * generate it again. A save that fails only warns: the commit failure is the error to report.
+ * Keeps the message so neither `aicommit2 --retry` nor the user has to generate it again if
+ * the commit fails. Returns the path it was saved to, or null; a save that fails only warns,
+ * since the commit may still succeed and a commit failure is the error to report.
  */
-const saveFailedMessage = async (
-    savePath: string | null,
-    message: string,
-    commitError: Error,
-    vcsName: string
-): Promise<CommitFailedError> => {
-    const unsaved = new CommitFailedError(commitError.message, null, { cause: commitError });
+const saveMessage = async (savePath: string | null, message: string): Promise<string | null> => {
     if (!savePath) {
-        return unsaved;
+        return null;
     }
     try {
         await fs.writeFile(savePath, message, 'utf8');
-    } catch (writeError) {
-        process.stderr.write(`Could not save the commit message to ${savePath}: ${toError(writeError).message}\n`);
-        return unsaved;
+        return savePath;
+    } catch (error) {
+        process.stderr.write(`Could not save the commit message to ${savePath}: ${toError(error).message}\n`);
+        return null;
     }
-    return new CommitFailedError(`${commitError.message}\n\n${ErrorMessages.commitFailedMessageSaved(savePath, vcsName)}`, savePath, {
-        cause: commitError,
-    });
 };
 
 /**
- * Commits, saving the message on failure and clearing a stale saved message on success
+ * Commits, keeping the message on failure and clearing it on success
  */
 export const commitChanges = async (message: string, args?: string[], options?: CommitOptions): Promise<void> => {
     const adapter = await getVCSAdapter();
     const savePath = await getMessageSavePath();
+    // Saved before the commit, not after it rejects: Ctrl-C during a slow hook exits from the
+    // SIGINT handler (subscription-manager.ts) before any rejection handler could run
+    const savedPath = await saveMessage(savePath, message);
     try {
         await adapter.commit(message, args || [], options);
     } catch (error) {
-        throw await saveFailedMessage(savePath, message, toError(error), adapter.name);
+        const commitError = toError(error);
+        const text = savedPath
+            ? `${commitError.message}\n\n${ErrorMessages.commitFailedMessageSaved(savedPath, adapter.name)}`
+            : commitError.message;
+        throw new CommitFailedError(text, savedPath, { cause: commitError });
     }
+    // Even when this save failed: a stale message from an older attempt must not reach --retry
     if (!savePath) {
         return;
     }

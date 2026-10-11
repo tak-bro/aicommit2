@@ -32,7 +32,14 @@ export default testSuite(({ describe }) => {
         // yadm's repo is outside the $HOME work tree, so a `git commit -F` hint would fail there
         test('the saved-message hint commits with the VCS that failed', () => {
             expect(ErrorMessages.commitFailedMessageSaved('/repo.git/AICOMMIT2_MSG', 'yadm')).toMatch(
-                'yadm commit -F /repo.git/AICOMMIT2_MSG && rm /repo.git/AICOMMIT2_MSG'
+                "yadm commit -F '/repo.git/AICOMMIT2_MSG' && rm '/repo.git/AICOMMIT2_MSG'"
+            );
+        });
+
+        // An unquoted path splits on the space, so the pasted command fails
+        test('the saved-message hint quotes paths with spaces and quotes', () => {
+            expect(ErrorMessages.commitFailedMessageSaved("/my repo/it's/.git/AICOMMIT2_MSG", 'git')).toMatch(
+                "git commit -F '/my repo/it'\\''s/.git/AICOMMIT2_MSG' && rm '/my repo/it'\\''s/.git/AICOMMIT2_MSG'"
             );
         });
     });
@@ -51,7 +58,7 @@ export default testSuite(({ describe }) => {
                 const savedPath = path.join(fixture.path, '.git/AICOMMIT2_MSG');
                 expect(await readSaved(savedPath)).toBe(MOCK_MESSAGE);
                 // printError writes to stdout like every other aicommit2 error (stderr under piped -d)
-                expect(stdout).toMatch(`git commit -F ${savedPath}`);
+                expect(stdout).toMatch(`git commit -F '${savedPath}'`);
             });
         });
 
@@ -116,6 +123,39 @@ export default testSuite(({ describe }) => {
                 expect(exitCode).toBe(0);
                 const { stdout: log } = await git('log', ['--format=%s']);
                 expect(log).toBe(MOCK_MESSAGE);
+            });
+        });
+
+        // Ctrl-C during a slow hook exits from the SIGINT handler, so a save after the rejection never runs
+        test('the message is saved before the commit runs its hooks', async () => {
+            await withMockProviders(true, async ({ aicommit2, options, fixture }) => {
+                const hookPath = path.join(fixture.path, '.git/hooks/pre-commit');
+                await fs.mkdir(path.dirname(hookPath), { recursive: true });
+                await fs.writeFile(hookPath, '#!/bin/sh\ncat .git/AICOMMIT2_MSG >&2\nexit 1\n');
+                await fs.chmod(hookPath, 0o755);
+
+                const { stderr, exitCode } = await aicommit2(['--auto-select'], options);
+
+                expect(exitCode).toBe(1);
+                expect(stderr).toMatch(MOCK_MESSAGE);
+            });
+        });
+
+        // --retry always commits; honouring it over -d would commit what the user asked only to see
+        test('--retry refuses --dry-run and --clipboard', async () => {
+            await withMockProviders(true, async ({ aicommit2, options, fixture, git }) => {
+                await failPreCommit(fixture);
+                await aicommit2(['--auto-select'], options);
+                await removePreCommit(fixture);
+
+                for (const flag of ['-d', '--clipboard']) {
+                    const { stdout, stderr, exitCode } = await aicommit2(['--retry', flag], options);
+
+                    expect(exitCode).toBe(1);
+                    expect(`${stdout}${stderr}`).toMatch('--retry cannot be combined');
+                }
+                const { stdout: log } = await git('log', ['--format=%s']).catch(() => ({ stdout: '' }));
+                expect(log).not.toMatch(MOCK_MESSAGE);
             });
         });
 
