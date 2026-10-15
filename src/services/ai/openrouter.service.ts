@@ -35,6 +35,12 @@ export class OpenRouterService extends AIService {
     private static readonly FREE_MODEL_KEYWORD = 'free';
     private static readonly FREE_MODEL_RACE_LIMIT = 5;
 
+    protected readonly selfDescribingErrors: ReadonlySet<string> = new Set([
+        'InvalidJsonResponse',
+        'FreeModelRaceFailed',
+        'FreeModelUnavailable',
+    ]);
+
     constructor(protected readonly params: AIServiceParams) {
         super(params);
         this.colors = {
@@ -396,7 +402,15 @@ export class OpenRouterService extends AIService {
         logAIPrompt(diff, requestType, serviceName, generatedSystemPrompt, userPrompt, logging);
 
         if (this.isFreeModelMode()) {
-            return this.generateFreeModelMessage(requestType, generatedSystemPrompt, userPrompt);
+            const startTime = Date.now();
+            try {
+                const { messages, raw } = await this.generateFreeModelMessage(requestType, generatedSystemPrompt, userPrompt);
+                logAIComplete(diff, requestType, serviceName, Date.now() - startTime, raw, logging);
+                return messages;
+            } catch (error) {
+                logAIError(diff, requestType, serviceName, error, logging);
+                throw error;
+            }
         }
 
         // OpenRouter adds extra request fields beyond the base OpenAI SDK typing.
@@ -436,13 +450,19 @@ export class OpenRouterService extends AIService {
     private getFreeJsonCapableModels = async (): Promise<OpenRouterModel[]> => {
         const catalog = await this.fetchOpenRouterCatalog();
 
-        return catalog
-            .filter(model => !!model.id && model.id.endsWith(':free') && (model.supported_parameters?.includes('response_format') ?? false))
-            .slice(0, OpenRouterService.FREE_MODEL_RACE_LIMIT);
+        const candidates = catalog.filter(
+            model => !!model.id && model.id.endsWith(':free') && (model.supported_parameters?.includes('response_format') ?? false)
+        );
+        // Shuffle so a rate-limited head of the catalog does not fail every run
+        for (let i = candidates.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+        }
+        return candidates.slice(0, OpenRouterService.FREE_MODEL_RACE_LIMIT);
     };
 
     private applyWinningModel = (modelId: string): void => {
-        (this.params.config as unknown as { model: string }).model = modelId;
+        this.params.config.model = [modelId];
         this.serviceName = this.buildServiceName();
         this.errorPrefix = chalk.red.bold(`[OpenRouter${this.formatModelSuffix()}]`);
     };
@@ -452,9 +472,10 @@ export class OpenRouterService extends AIService {
         requestType: RequestType,
         systemPrompt: string,
         userPrompt: string
-    ): Promise<AIResponse[]> {
+    ): Promise<{ messages: AIResponse[]; raw: string }> {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const payload: any = await this.buildChatCompletionPayload(systemPrompt, userPrompt, false, modelId);
+        logAIPayload(this.params.stagedDiff.diff, requestType, 'OpenRouter', payload, this.params.config.logging);
         const chatCompletion = await this.openAI.chat.completions.create(payload, {
             timeout: this.params.config.timeout,
         });
@@ -464,10 +485,11 @@ export class OpenRouterService extends AIService {
             throw new Error('empty response');
         }
 
-        if (requestType === 'review') {
-            return this.parseCodeReview(result);
-        }
-        return this.parseMessage(result, this.params.config.type, this.params.config.generate);
+        const messages =
+            requestType === 'review'
+                ? this.parseCodeReview(result)
+                : this.parseMessage(result, this.params.config.type, this.params.config.generate);
+        return { messages, raw: result };
     }
 
     private logRace = (level: 'info' | 'warn', message: string): void => {
@@ -476,7 +498,11 @@ export class OpenRouterService extends AIService {
         }
     };
 
-    private async generateFreeModelMessage(requestType: RequestType, systemPrompt: string, userPrompt: string): Promise<AIResponse[]> {
+    private async generateFreeModelMessage(
+        requestType: RequestType,
+        systemPrompt: string,
+        userPrompt: string
+    ): Promise<{ messages: AIResponse[]; raw: string }> {
         const candidates = await this.getFreeJsonCapableModels();
         if (candidates.length === 0) {
             const error: AIServiceError = new Error('No free OpenRouter models with JSON output support are currently available.');
@@ -484,9 +510,9 @@ export class OpenRouterService extends AIService {
             throw error;
         }
 
-        this.logRace('info', `${this.serviceName} Racing ${candidates.length} free models: ${candidates.map(c => c.id).join(', ')}`);
+        this.logRace('info', `OpenRouter: racing ${candidates.length} free models: ${candidates.map(c => c.id).join(', ')}`);
 
-        return new Promise<AIResponse[]>((resolve, reject) => {
+        return new Promise((resolve, reject) => {
             let settled = false;
             const failures: string[] = [];
 
@@ -495,19 +521,19 @@ export class OpenRouterService extends AIService {
                 const startTime = Date.now();
 
                 this.requestFreeModel(modelId, requestType, systemPrompt, userPrompt)
-                    .then(messages => {
+                    .then(result => {
                         if (settled) {
                             return;
                         }
                         settled = true;
-                        this.logRace('info', `${this.serviceName} Free model ${modelId} won in ${Date.now() - startTime}ms`);
+                        this.logRace('info', `OpenRouter: free model ${modelId} won in ${Date.now() - startTime}ms`);
                         this.applyWinningModel(modelId);
-                        resolve(messages);
+                        resolve(result);
                     })
                     .catch(error => {
                         const message = error instanceof Error ? error.message : String(error);
                         failures.push(`${modelId}: ${message}`);
-                        this.logRace('warn', `${this.serviceName} Free model ${modelId} failed: ${message}`);
+                        this.logRace('warn', `OpenRouter: free model ${modelId} failed: ${message}`);
 
                         if (!settled && failures.length === candidates.length) {
                             const raceError: AIServiceError = new Error(`All free OpenRouter models failed. ${failures.join('; ')}`);

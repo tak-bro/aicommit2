@@ -47,12 +47,13 @@ export default testSuite(({ describe }) => {
             await withMockProviders(
                 true,
                 async ({ aicommit2, options }) => {
-                    const { stdout, exitCode } = await aicommit2(['--all', '--dry-run', '--auto-select'], options);
+                    const { stdout, stderr, exitCode } = await aicommit2(['--all', '--dry-run', '--auto-select'], options);
 
+                    // Piped --dry-run keeps stdout for the message; everything else goes to stderr
                     expect(exitCode).toBe(0);
-                    expect(stdout).toMatch(MOCK_REVIEW_SUMMARY);
-                    expect(stdout).toMatch('Mock finding');
-                    expect(stdout).toMatch(MOCK_MESSAGE);
+                    expect(stderr).toMatch(MOCK_REVIEW_SUMMARY);
+                    expect(stderr).toMatch('Mock finding');
+                    expect(stdout).toBe(MOCK_MESSAGE);
                 },
                 { generalConfig: 'codeReview=true\n' }
             );
@@ -64,11 +65,11 @@ export default testSuite(({ describe }) => {
             await withMockProviders(
                 true,
                 async ({ aicommit2, options }) => {
-                    const { stdout, exitCode } = await aicommit2(['--all', '--dry-run', '--auto-select'], options);
+                    const { stdout, stderr, exitCode } = await aicommit2(['--all', '--dry-run', '--auto-select'], options);
 
                     expect(exitCode).toBe(0);
-                    expect(stdout).toMatch('Critical issues found in code review');
-                    expect(stdout).toMatch(MOCK_MESSAGE);
+                    expect(stderr).toMatch('Critical issues found in code review');
+                    expect(stdout).toBe(MOCK_MESSAGE);
                 },
                 { generalConfig: 'codeReview=true\n', reviewSeverity: 'critical' }
             );
@@ -78,12 +79,13 @@ export default testSuite(({ describe }) => {
         // swallowed entirely and the run ended with no explanation.
         test('prints the per-model errors when every provider fails', async () => {
             await withMockProviders(false, async ({ aicommit2, options }) => {
-                const { stdout, exitCode } = await aicommit2(['--all', '--dry-run', '--auto-select'], options);
+                const { stdout, stderr, exitCode } = await aicommit2(['--all', '--dry-run', '--auto-select'], options);
 
                 expect(exitCode).toBe(1);
-                expect(stdout).toMatch('M1');
-                expect(stdout).toMatch('M2');
-                expect(stdout).toMatch('No valid commit message was generated');
+                expect(stderr).toMatch('M1');
+                expect(stderr).toMatch('M2');
+                expect(stderr).toMatch('No valid commit message was generated');
+                expect(stdout).toBe('');
             });
         });
     });

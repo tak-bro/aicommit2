@@ -1,3 +1,10 @@
+## [2.12.1](https://github.com/tak-bro/aicommit2/compare/v2.12.0...v2.12.1) (2026-10-11)
+
+
+### Bug Fixes
+
+* **core:** make the commit loop behave like git and recover failures ([#273](https://github.com/tak-bro/aicommit2/issues/273)) ([3755f45](https://github.com/tak-bro/aicommit2/commit/3755f45c2057a8c292c577163465af727733e446))
+
 # [2.12.0](https://github.com/tak-bro/aicommit2/compare/v2.11.1...v2.12.0) (2026-09-14)
 
 

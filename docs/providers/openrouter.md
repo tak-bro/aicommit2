@@ -23,7 +23,7 @@ temperature=0.2
 
 [OPENROUTER]
 envKey=OPENROUTER_BASE_TOKEN
-model=free
+model=stepfun/step-3.5-flash:free
 url=https://openrouter.ai
 path=/api/v1/chat/completions
 systemPromptPath=prompts/aicommit_prompt.txt
@@ -40,7 +40,7 @@ next to the config file.
 
 ```sh
 aicommit2 config set OPENROUTER.key="your-api-key"
-aicommit2 config set OPENROUTER.model="free"
+aicommit2 config set OPENROUTER.model="openrouter/auto"
 aicommit2 config set OPENROUTER.responseFormat='{"type":"json_object"}'
 aicommit2 config set OPENROUTER.provider='{"allow_fallbacks":true,"require_parameters":false}'
 ```
@@ -62,7 +62,7 @@ aicommit2 config set OPENROUTER.key="your-api-key" \
 | Setting | Description      | Default |
 | ------- | ---------------- | ------- |
 | `key`   | API key          | - |
-| `model` | Model slug to pin, or `free` to race JSON-capable free models | `free` |
+| `model` | Model slug, or `free` to race JSON-capable free models | `openrouter/auto` |
 | `url`   | API endpoint URL | `https://openrouter.ai` |
 | `path`  | API path         | `/api/v1/chat/completions` |
 | `responseFormat` | OpenRouter `response_format` payload object | - |
@@ -90,27 +90,27 @@ aicommit2 config set OPENROUTER.key="your api key"
 
 #### OPENROUTER.model
 
-Default: `free`
+Default: `openrouter/auto`
 
-Without an explicit model, aicommit2 races JSON-capable free models (see below).
-To pin a specific model, use a slug that OpenRouter exposes, such as:
+Use a model slug that OpenRouter exposes, such as:
 
 - `openrouter/auto`
 - `anthropic/claude`
-- `free` — race every `:free` model that supports JSON output and use the first valid response
 - any other model slug listed in the OpenRouter catalog
+
+Or set the keyword `free` to race free models instead of calling one (see below).
 
 ```sh
 aicommit2 config set OPENROUTER.model="anthropic/claude"
 ```
 
-##### `model=free` (auto-race free models)
+##### `model=free` (race free models, opt-in)
 
-This is the default when `OPENROUTER.model` is not set. With `free`, aicommit2:
+With `free` (case-insensitive), aicommit2:
 
 1. Fetches the OpenRouter catalog.
 2. Keeps only `:free` models that advertise `response_format` support. Guardrail/classifier models (for example `nvidia/nemotron-3.5-content-safety:free`) never return commit JSON, so they are skipped.
-3. Sends the same request to up to 5 of them in parallel.
+3. Sends the same request to 5 randomly chosen candidates in parallel.
 4. Returns the first response that parses into valid JSON and shows the winning model name in the UI.
 
 ```ini
@@ -126,6 +126,8 @@ aicommit2 -acds
 
 Notes:
 
+- Your staged diff is sent to every raced model (up to 5 upstream providers per commit), which is why `free` is opt-in.
+- The winning model is shown in the UI and recorded in stats; `aicommit2 doctor` reports how many candidates the catalog offers.
 - Free models are rate-limited by OpenRouter; when a model answers `429` or returns non-JSON text, the race simply moves on to the others.
 - Streaming is disabled in `free` mode because the winner is resolved from complete responses.
 - If every candidate fails, the error lists the failure reason per model.

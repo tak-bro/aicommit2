@@ -10,12 +10,18 @@ export const MOCK_REVIEW_SUMMARY = 'Mock review summary';
 
 export const MOCK_BODY = 'Mock body explaining why the feature exists';
 
-const commitMessageContent = (body: string) => JSON.stringify([{ subject: MOCK_MESSAGE, body, footer: '' }]);
+const commitMessageContent = (subject: string, body: string) => JSON.stringify([{ subject, body, footer: '' }]);
 const codeReviewContent = (severity: string) =>
     JSON.stringify({
         summary: MOCK_REVIEW_SUMMARY,
         items: [{ severity, category: 'correctness', title: 'Mock finding', description: 'Mock description', suggestion: '' }],
     });
+
+// Live counters: tests read them after a run to prove a path made (or skipped) provider calls
+export interface RequestCounts {
+    commit: number;
+    review: number;
+}
 
 /**
  * Minimal OpenAI-compatible endpoint. Two `compatible` providers point at it, which is
@@ -23,7 +29,12 @@ const codeReviewContent = (severity: string) =>
  * Code review and commit message requests share the endpoint, so the prompt decides which
  * response shape comes back.
  */
-const startMockProvider = async (reviewSeverity = 'warning', commitBody = ''): Promise<{ url: string; close: () => Promise<void> }> => {
+const startMockProvider = async (
+    reviewSeverity = 'warning',
+    commitBody = '',
+    commitSubject = MOCK_MESSAGE
+): Promise<{ url: string; close: () => Promise<void>; requests: RequestCounts }> => {
+    const requests: RequestCounts = { commit: 0, review: 0 };
     const server = http.createServer((request, response) => {
         let body = '';
         request.on('data', chunk => {
@@ -33,6 +44,7 @@ const startMockProvider = async (reviewSeverity = 'warning', commitBody = ''): P
             // The prompt is JSON-escaped inside the request body, so match on a bare word
             // only the code review prompt uses
             const isCodeReviewRequest = body.includes('severity');
+            requests[isCodeReviewRequest ? 'review' : 'commit'] += 1;
             response.writeHead(200, { 'Content-Type': 'application/json' });
             response.end(
                 JSON.stringify({
@@ -41,7 +53,9 @@ const startMockProvider = async (reviewSeverity = 'warning', commitBody = ''): P
                             index: 0,
                             message: {
                                 role: 'assistant',
-                                content: isCodeReviewRequest ? codeReviewContent(reviewSeverity) : commitMessageContent(commitBody),
+                                content: isCodeReviewRequest
+                                    ? codeReviewContent(reviewSeverity)
+                                    : commitMessageContent(commitSubject, commitBody),
                             },
                             finish_reason: 'stop',
                         },
@@ -57,6 +71,7 @@ const startMockProvider = async (reviewSeverity = 'warning', commitBody = ''): P
     return {
         url: `http://127.0.0.1:${port}`,
         close: () => new Promise<void>(resolve => server.close(() => resolve())),
+        requests,
     };
 };
 
@@ -73,15 +88,22 @@ type Git = Awaited<ReturnType<typeof createGit>>;
 
 /**
  * A git repo with one staged file and both mock providers configured, plus the run options
- * every test needs. `commitBody` is what the mock puts in the message body (empty by default).
+ * every test needs. `commitBody` is what the mock puts in the message body (empty by default),
+ * `commitSubject` the subject (MOCK_MESSAGE by default).
  * `serverUp: false` closes the mock first, so every provider fails.
  */
 export const withMockProviders = async (
     serverUp: boolean,
-    run: (context: { aicommit2: Fixture['aicommit2']; options: Options; git: Git }) => Promise<void>,
-    extra: { generalConfig?: string; reviewSeverity?: string; commitBody?: string } = {}
+    run: (context: {
+        aicommit2: Fixture['aicommit2'];
+        options: Options;
+        git: Git;
+        fixture: Fixture['fixture'];
+        requests: RequestCounts;
+    }) => Promise<void>,
+    extra: { generalConfig?: string; reviewSeverity?: string; commitBody?: string; commitSubject?: string } = {}
 ) => {
-    const mock = await startMockProvider(extra.reviewSeverity, extra.commitBody);
+    const mock = await startMockProvider(extra.reviewSeverity, extra.commitBody, extra.commitSubject);
     const config = `${extra.generalConfig ?? ''}${twoProviderConfig(mock.url)}`;
     if (!serverUp) {
         await mock.close();
@@ -95,6 +117,8 @@ export const withMockProviders = async (
         await run({
             aicommit2,
             git,
+            fixture,
+            requests: mock.requests,
             options: {
                 env: { AICOMMIT_CONFIG_PATH: `${fixture.path}/.aicommit2` },
                 reject: false,

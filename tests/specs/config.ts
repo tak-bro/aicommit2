@@ -356,7 +356,7 @@ export default testSuite(({ describe }) => {
                 restoreEnv(snapshot);
             });
 
-            await test('defaults to free model race when model is omitted', async () => {
+            await test('keeps openrouter/auto as the default when model is omitted', async () => {
                 const { fixture } = await createFixture();
                 const configPath = path.join(fixture.path, '.config', 'aicommit2', 'config.ini');
                 await ensureDirectoryExists(path.dirname(configPath));
@@ -370,7 +370,7 @@ export default testSuite(({ describe }) => {
                 const config = (await getConfig({}, [])) as ValidConfig;
                 const openRouter = config.OPENROUTER as any;
 
-                expect(openRouter.model).toEqual(['free']);
+                expect(openRouter.model).toEqual(['openrouter/auto']);
 
                 await fixture.rm();
                 restoreEnv(snapshot);

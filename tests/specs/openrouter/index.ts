@@ -1,10 +1,25 @@
+import os from 'os';
+import path from 'path';
+
 import { expect, testSuite } from 'manten';
+import { firstValueFrom } from 'rxjs';
 
 import { OpenRouterService } from '../../../src/services/ai/openrouter.service.js';
 import { HttpRequestBuilder } from '../../../src/services/http/http-request.builder.js';
+import { initializeLogger, isLoggerInitialized } from '../../../src/utils/logger.js';
 
 export default testSuite(async ({ describe }) => {
     await describe('OpenRouterService', async ({ test }) => {
+        // generateCommitMessage$() maps errors through handleError$, which logs
+        if (!isLoggerInitialized()) {
+            const logDir = path.join(os.tmpdir(), 'aicommit2-openrouter-test');
+            await initializeLogger({
+                logging: false,
+                logFilePath: path.join(logDir, 'main.log'),
+                exceptionLogFilePath: path.join(logDir, 'exception.log'),
+            });
+        }
+
         const resetOpenRouterCaches = () => {
             (OpenRouterService as any).catalogCache?.clear?.();
             (OpenRouterService as any).modelCache?.clear?.();
@@ -620,10 +635,10 @@ export default testSuite(async ({ describe }) => {
                 const result = await (service as any).generateMessage('commit');
 
                 expect(result[0].title).toBe('[FEATURE] - add free model racing;');
-                expect((service as any).params.config.model).toBe('google/gemma-4-31b-it:free');
+                expect((service as any).params.config.model).toEqual(['google/gemma-4-31b-it:free']);
                 expect((service as any).serviceName).toMatch('gemma-4-31b-it');
 
-                const racedModels = capturedPayloads.map(payload => payload.model);
+                const racedModels = capturedPayloads.map(payload => payload.model).sort();
                 expect(racedModels).toEqual(['apodex/apodex-1.1-mini:free', 'google/gemma-4-31b-it:free']);
                 expect(capturedPayloads.every(payload => payload.stream === false)).toBe(true);
                 expect(capturedPayloads.every(payload => payload.response_format !== undefined)).toBe(true);
@@ -698,9 +713,10 @@ export default testSuite(async ({ describe }) => {
                     },
                 };
 
-                await expect((service as any).generateMessage('commit')).rejects.toThrow(
-                    /All free OpenRouter models failed.*apodex\/apodex-1\.1-mini:free: 429 rate limited/
-                );
+                // Assert on the emitted choice so the service error mapping is covered too
+                const choice = await firstValueFrom(service.generateCommitMessage$());
+                expect(choice.isError).toBe(true);
+                expect(choice.name).toMatch(/All free OpenRouter models failed.*apodex\/apodex-1\.1-mini:free: 429 rate limited/);
             } finally {
                 HttpRequestBuilder.prototype.execute = originalExecute;
             }
@@ -747,9 +763,9 @@ export default testSuite(async ({ describe }) => {
                 },
             };
 
-            await expect((service as any).generateMessage('commit')).rejects.toThrow(
-                /did not contain a valid JSON object or array\. Raw response: User Safety: safe/
-            );
+            const choice = await firstValueFrom(service.generateCommitMessage$());
+            expect(choice.isError).toBe(true);
+            expect(choice.name).toMatch(/did not contain a valid JSON object or array\. Raw response: User Safety: safe/);
         });
     });
 });

@@ -1,3 +1,4 @@
+import chalk from 'chalk';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { Observable, Subject, catchError, of } from 'rxjs';
 
@@ -17,7 +18,7 @@ import {
 } from '../../utils/prompt.js';
 import { isReasoningCapableModel } from '../../utils/reasoning-models.js';
 import { IncrementalJsonParser } from '../../utils/stream-json-parser.js';
-import { getFirstWordsFrom, safeJsonParse } from '../../utils/utils.js';
+import { getFirstWordsFrom, getSubjectLengthMarker, safeJsonParse } from '../../utils/utils.js';
 import { GitDiff } from '../../utils/vcs.js';
 
 export interface AIResponse {
@@ -71,6 +72,9 @@ export interface AIServiceError extends Error {
     content?: unknown;
     originalError?: unknown;
 }
+
+/** A choice carrying the model that produced it (differs from the configured one for OpenRouter `free`). */
+export type ModelChoice = ReactiveListChoice & { model?: string };
 
 export interface Theme {
     primary: string;
@@ -127,6 +131,13 @@ export abstract class AIService {
         return this.serviceName.replace(ansiPattern, '').replace(/\[|\]/g, '').trim();
     }
 
+    protected readonly selfDescribingErrors: ReadonlySet<string> = new Set(['InvalidJsonResponse']);
+
+    protected getActiveModel(): string | undefined {
+        const { model } = this.params.config;
+        return (Array.isArray(model) ? model[0] : model) || undefined;
+    }
+
     /**
      * Get detailed error message using centralized error message system
      */
@@ -135,6 +146,11 @@ export abstract class AIService {
         const provider = this.getProviderName();
         const model = this.params.config.model?.[0];
         const timeout = this.params.config.timeout;
+
+        // These messages already explain the failure (and may quote model output); keyword mapping would hide them
+        if (this.selfDescribingErrors.has(error.name)) {
+            return errorMsg;
+        }
 
         // Check for service-specific error message first
         const serviceSpecificMessage = this.getServiceSpecificErrorMessage(error);
@@ -463,18 +479,15 @@ export abstract class AIService {
     /**
      * Build a ReactiveListChoice from an AIResponse (title + value).
      */
-    protected formatAsChoice = (data: AIResponse): ReactiveListChoice => {
-        const model = Array.isArray(this.params.config.model) ? this.params.config.model[0] : this.params.config.model;
-
-        return {
-            name: `${this.serviceName} ${data.title}`,
-            short: data.title,
-            value: this.params.config.includeBody ? data.value : data.title,
-            description: this.params.config.includeBody ? data.value : '',
-            isError: false,
-            model: model || undefined,
-        } as ReactiveListChoice;
-    };
+    protected formatAsChoice = (data: AIResponse): ModelChoice => ({
+        // The marker is display-only: `short` and `value` feed the commit
+        name: `${this.serviceName} ${data.title}${chalk.dim(getSubjectLengthMarker(data.title, this.params.config.maxLength))}`,
+        short: data.title,
+        value: this.params.config.includeBody ? data.value : data.title,
+        description: this.params.config.includeBody ? data.value : '',
+        isError: false,
+        model: this.getActiveModel(),
+    });
 
     /**
      * Extract a human-readable preview from partial JSON streaming buffer.
@@ -655,18 +668,14 @@ export abstract class AIService {
     /**
      * Build a ReactiveListChoice from a code review AIResponse.
      */
-    protected formatCodeReviewAsChoice = (data: AIResponse): ReactiveListChoice => {
-        const model = Array.isArray(this.params.config.model) ? this.params.config.model[0] : this.params.config.model;
-
-        return {
-            name: `${this.serviceName} ${data.title}`,
-            short: data.title,
-            value: data.value,
-            description: data.value,
-            isError: false,
-            model: model || undefined,
-        } as ReactiveListChoice;
-    };
+    protected formatCodeReviewAsChoice = (data: AIResponse): ModelChoice => ({
+        name: `${this.serviceName} ${data.title}`,
+        short: data.title,
+        value: data.value,
+        description: data.value,
+        isError: false,
+        model: this.getActiveModel(),
+    });
 
     private formatReviewSummaryTitle = (summary: string, items: CodeReviewItem[]): string => {
         const counts = items.reduce(

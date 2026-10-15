@@ -1,10 +1,13 @@
+import fs from 'fs/promises';
+
 import { getConfig } from './config.js';
 import { DEFAULT_DIFF_CONTEXT, compressDiff } from './diff-compressor.js';
-import { KnownError } from './error.js';
+import { ErrorMessages } from './error-messages.js';
+import { CommitFailedError, KnownError } from './error.js';
 import { GitAdapter, JujutsuAdapter, YadmAdapter } from './vcs-adapters/index.js';
 
 import type { DiffCompressionConfig } from './diff-compressor.js';
-import type { BaseVCSAdapter, CommitOptions, VCSDiff } from './vcs-adapters/index.js';
+import type { BaseVCSAdapter, CommitOptions, DiffOptions, VCSDiff } from './vcs-adapters/index.js';
 
 export type { CommitOptions };
 
@@ -12,6 +15,7 @@ export type { CommitOptions };
 export interface GitDiff extends VCSDiff {}
 export type { VCSDiff };
 
+let cachedDiffDefaults: { diffContext: number; excludeGenerated: boolean } | null = null;
 let vcsAdapter: BaseVCSAdapter | null = null;
 
 /**
@@ -211,25 +215,28 @@ export const resetVCSAdapter = (): void => {
  * Reset diff config cache (useful for testing)
  */
 export const resetDiffConfigCache = (): void => {
-    cachedDiffContext = null;
+    cachedDiffDefaults = null;
 };
 
-let cachedDiffContext: number | null = null;
-
 /**
- * Resolve diffContext from the global config file (cached after first call).
+ * Resolve diff settings from the global config file (cached after first call).
  */
-const resolveDiffContext = async (): Promise<number> => {
-    if (cachedDiffContext !== null) {
-        return cachedDiffContext;
+const resolveDiffDefaults = async () => {
+    if (cachedDiffDefaults !== null) {
+        return cachedDiffDefaults;
     }
     try {
         const config = await getConfig({});
-        cachedDiffContext = config.diffContext;
+        cachedDiffDefaults = { diffContext: config.diffContext, excludeGenerated: config.excludeGenerated };
     } catch {
-        cachedDiffContext = DEFAULT_DIFF_CONTEXT;
+        cachedDiffDefaults = { diffContext: DEFAULT_DIFF_CONTEXT, excludeGenerated: true };
     }
-    return cachedDiffContext;
+    return cachedDiffDefaults;
+};
+
+const resolveDiffOptions = async (includeGenerated?: boolean): Promise<DiffOptions> => {
+    const { diffContext, excludeGenerated } = await resolveDiffDefaults();
+    return { diffContext, includeGenerated: includeGenerated || !excludeGenerated };
 };
 
 /**
@@ -253,10 +260,9 @@ export const assertGitRepo = async (): Promise<string> => {
     return adapter.assertRepo();
 };
 
-export const getStagedDiff = async (excludeFiles?: string[], exclude?: string[]): Promise<GitDiff | null> => {
+export const getStagedDiff = async (excludeFiles?: string[], exclude?: string[], includeGenerated?: boolean): Promise<GitDiff | null> => {
     const adapter = await getVCSAdapter();
-    const diffContext = await resolveDiffContext();
-    const diff = await adapter.getStagedDiff(excludeFiles, exclude, { diffContext });
+    const diff = await adapter.getStagedDiff(excludeFiles, exclude, await resolveDiffOptions(includeGenerated));
     if (!diff) {
         return null;
     }
@@ -268,8 +274,7 @@ export const getCommitDiff = async (commitHash: string, excludeFiles?: string[],
     if (!adapter.getCommitDiff) {
         throw new KnownError(`Commit diff not supported for ${adapter.name}`);
     }
-    const diffContext = await resolveDiffContext();
-    const diff = await adapter.getCommitDiff(commitHash, excludeFiles, exclude, { diffContext });
+    const diff = await adapter.getCommitDiff(commitHash, excludeFiles, exclude, await resolveDiffOptions());
     if (!diff) {
         return null;
     }
@@ -298,9 +303,89 @@ export const getVCSName = async (): Promise<string> => {
     return adapter.name;
 };
 
+// Catch-clause boundary: `unknown` is what a catch binding is, normalized once here
+const toError = (error: unknown): Error => (error instanceof Error ? error : new Error(String(error)));
+
+/**
+ * Where a failed commit's message is kept, or null when this VCS keeps none (jj). A lookup
+ * that fails warns and returns null: saving is a convenience that must not block the commit.
+ */
+export const getMessageSavePath = async (): Promise<string | null> => {
+    const adapter = await getVCSAdapter();
+    try {
+        return await adapter.getMessageSavePath();
+    } catch (error) {
+        process.stderr.write(`Could not resolve where to save the commit message: ${toError(error).message}\n`);
+        return null;
+    }
+};
+
+/**
+ * Keeps the message so neither `aicommit2 --retry` nor the user has to generate it again if
+ * the commit fails. Returns the path it was saved to, or null; a save that fails only warns,
+ * since the commit may still succeed and a commit failure is the error to report.
+ */
+const saveMessage = async (savePath: string | null, message: string): Promise<string | null> => {
+    if (!savePath) {
+        return null;
+    }
+    try {
+        await fs.writeFile(savePath, message, 'utf8');
+        return savePath;
+    } catch (error) {
+        process.stderr.write(`Could not save the commit message to ${savePath}: ${toError(error).message}\n`);
+        // A message from an older attempt, or one ENOSPC cut short, must not reach --retry. Best
+        // effort: whatever blocked the write may block this too, and the warning above stands
+        await fs.rm(savePath, { force: true }).catch(() => {});
+        return null;
+    }
+};
+
+/**
+ * Commits, keeping the message on failure and clearing it on success
+ */
 export const commitChanges = async (message: string, args?: string[], options?: CommitOptions): Promise<void> => {
     const adapter = await getVCSAdapter();
-    await adapter.commit(message, args || [], options);
+    const savePath = await getMessageSavePath();
+    // Saved before the commit, not after it rejects: Ctrl-C during a slow hook exits from the
+    // SIGINT handler (subscription-manager.ts) before any rejection handler could run
+    const savedPath = await saveMessage(savePath, message);
+    try {
+        await adapter.commit(message, args || [], options);
+    } catch (error) {
+        const commitError = toError(error);
+        const text = savedPath
+            ? `${commitError.message}\n\n${ErrorMessages.commitFailedMessageSaved(savedPath, adapter.name)}`
+            : commitError.message;
+        throw new CommitFailedError(text, savedPath, { cause: commitError });
+    }
+    // Even when this save failed: a stale message from an older attempt must not reach --retry
+    if (!savePath) {
+        return;
+    }
+    // The commit already succeeded; a leftover file only risks a stale --retry, so warn
+    try {
+        await fs.rm(savePath, { force: true });
+    } catch (error) {
+        process.stderr.write(`Could not remove the saved commit message ${savePath}: ${toError(error).message}\n`);
+    }
+};
+
+/**
+ * The message a failed commit left at `savePath`, or null when there is none. Read errors
+ * other than a missing file propagate: "nothing saved" would hide them.
+ */
+export const readSavedMessage = async (savePath: string): Promise<string | null> => {
+    try {
+        const message = await fs.readFile(savePath, 'utf8');
+        return message.trim() ? message : null;
+    } catch (error) {
+        const isMissing = error instanceof Error && 'code' in error && error.code === 'ENOENT';
+        if (isMissing) {
+            return null;
+        }
+        throw error;
+    }
 };
 
 export const getBranchName = async (): Promise<string> => {

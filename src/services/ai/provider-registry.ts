@@ -2,7 +2,7 @@ import chalk from 'chalk';
 import { ReactiveListChoice } from 'inquirer-reactive-list-prompt';
 import { MonoTypeOperatorFunction, Observable, from, of, switchMap, tap } from 'rxjs';
 
-import { AIService, AIServiceParams } from './ai.service.js';
+import { AIService, AIServiceParams, ModelChoice } from './ai.service.js';
 import { ModelName } from '../../utils/config.js';
 import { RecordMetricOptions, recordMetric } from '../stats/index.js';
 
@@ -34,13 +34,14 @@ interface ProviderMetadataOptions {
  * Shared RxJS operator that attaches provider metadata and records metrics.
  * Used by both ProviderRegistry and AIRequestManager to avoid duplication.
  */
-export const withProviderMetadata = (opts: ProviderMetadataOptions): MonoTypeOperatorFunction<ReactiveListChoice> => {
+export const withProviderMetadata = (opts: ProviderMetadataOptions): MonoTypeOperatorFunction<ModelChoice> => {
     let metricRecorded = false;
 
     return tap({
         next: choice => {
-            // Attach provider metadata to the choice for selection tracking, keeping a service-provided model (free-mode winner)
-            Object.assign(choice, { provider: opts.provider, model: (choice as { model?: string }).model || opts.model });
+            // Prefer the model the service reports (the OpenRouter `free` race winner) over the configured one
+            const model = choice.model || opts.model;
+            Object.assign(choice, { provider: opts.provider, model });
 
             // Skip metric recording if stats is disabled (enabled by default)
             if (opts.statsEnabled === false) {
@@ -56,7 +57,7 @@ export const withProviderMetadata = (opts: ProviderMetadataOptions): MonoTypeOpe
             const isError = choice.isError === true;
             const metricOpts: RecordMetricOptions = {
                 provider: opts.provider,
-                model: opts.model,
+                model,
                 responseTimeMs: Date.now() - opts.startTime,
                 success: !isError,
                 errorCode: isError ? 'REQUEST_ERROR' : undefined,
