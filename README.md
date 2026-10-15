@@ -813,6 +813,51 @@ You can find the path of the currently loaded configuration file using the `conf
 aicommit2 config path
 ```
 
+When a project config file is found (see below), `config path` still prints the global path on stdout and names the project file on stderr, so `$(aicommit2 config path)` keeps pointing at the writable global file.
+
+### Project Configuration
+
+A repository can carry its own settings in `.aicommit2/config.ini`. aicommit2 looks for it from the current directory up to the repository root (the first directory containing `.git` or `.jj`); outside a repository only the current directory is checked. The first file found is layered over the global config section by section, so a project key replaces the global key of the same section and every other key keeps its global value:
+
+1. Command-line arguments
+2. Environment variables
+3. Project config (`.aicommit2/config.ini`)
+4. Global config file
+5. Default values
+
+```ini
+# .aicommit2/config.ini
+locale=ko
+type=conventional
+systemPromptPath=prompts/commit.txt
+providers=OLLAMA
+
+[OLLAMA]
+model=qwen2.5-coder
+```
+
+Because the file comes from whoever wrote the repository, only content and shape settings are read from it: `locale`, `generate`, `type`, `maxLength`, `includeBody`, `systemPrompt`, `systemPromptPath`, `codeReviewPromptPath`, `exclude`, `excludeGenerated`, `model` (per provider), `temperature`, `topP`, `maxTokens`, `timeout`, `codeReview`, `disabled`, `stream`, `disableLowerCase`, `ticketExtraction`, `learnConventions`, `diffCompression`, `maxHunkLines`, `maxDiffLines`, `diffContext` and `providers`. Everything else is ignored with a one-line warning on stderr, including:
+
+- API keys, `envKey`, `url`, `path`, `host` and other endpoint or authentication settings, so a cloned repository cannot send your keys elsewhere
+- sections for providers that are neither built in nor defined in your global config
+- `disabled=false`, so a repository cannot re-enable a provider you disabled
+- a top-level `model`, and a provider `model` for `OLLAMA`, `CLAUDE_CODE`, `GEMINI_CLI`, `COPILOT_SDK` or `BEDROCK` unless your global config already sets a model for it, so a repository cannot turn a provider on
+- a provider `model` listing more than one model or starting with `-`; a repository picks one model per provider, so it cannot fan out billed requests on your key
+- `systemPromptPath`/`codeReviewPromptPath` that are absolute or resolve (symlinks followed) outside the `.aicommit2/` directory; relative paths resolve against that directory, so `.git/config` or an untracked `.env` cannot reach the prompt
+- the whole file when `.aicommit2/` is a symlink, or `.aicommit2/config.ini` resolves outside the repository
+
+`$VAR`/`${VAR}` is not expanded in the project file. `config set`, `config add`, `config list` and `config validate` keep working on the global file only.
+
+#### Restricting providers
+
+`providers` limits the providers aicommit2 may use to a comma-separated list. In a project file it lets an air-gapped repository stay on local models:
+
+```ini
+providers=OLLAMA
+```
+
+Only listed providers that are otherwise configured run. When both the global and the project config set `providers`, the project list is intersected with the global one, so a repository can narrow the set but never add a provider back.
+
 ### Environment Variable Expansion in Config File
 
 You can use environment variables in your configuration file values. Both `$VAR` and `${VAR}` syntax are supported.

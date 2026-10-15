@@ -2,11 +2,14 @@ import fs from 'fs/promises';
 import os from 'os';
 import path from 'path';
 
+import chalk from 'chalk';
 import ini from 'ini';
 
 import { DEFAULT_DIFF_COMPRESSION_CONFIG, DEFAULT_DIFF_CONTEXT, DiffCompressionMode } from './diff-compressor.js';
 import { KnownError } from './error.js';
 import { fileExists } from './fs.js';
+import { expandDottedKeys } from './ini-keys.js';
+import { findProjectConfigPath, mergeProjectConfig, readProjectConfig } from './project-config.js';
 import { flattenDeep } from './utils.js';
 
 export const resolvePromptPath = (promptPath: string): string => {
@@ -188,6 +191,13 @@ const createJsonObjectParser =
             throw new KnownError(`Invalid ${name}: Must be valid JSON. Error: ${(error as Error).message}`);
         }
     };
+
+export const parseProviderList = (providers: unknown): string[] => {
+    const isList = typeof providers === 'string' || (Array.isArray(providers) && providers.every(item => typeof item === 'string'));
+    parseAssert('providers', isList, 'Must be a comma-separated list of provider names');
+    const list = typeof providers === 'string' ? providers.split(',') : (providers as string[]);
+    return list.map(provider => provider.trim().toUpperCase()).filter(provider => provider.length > 0);
+};
 
 const generalConfigParsers = {
     systemPrompt(systemPrompt?: string) {
@@ -388,6 +398,13 @@ const generalConfigParsers = {
         const parsed = Number(statsDays);
         parseAssert('statsDays', parsed > 0, 'Must be greater than 0');
         return parsed;
+    },
+    // Restrict active providers to this list; undefined = no restriction, [] = none (empty intersection of both layers)
+    providers: (providers?: unknown): string[] | undefined => {
+        if (providers === undefined || providers === '') {
+            return undefined;
+        }
+        return parseProviderList(providers);
     },
 } as const;
 
@@ -1182,38 +1199,6 @@ const expandEnvVariables = (content: string) => {
     });
 };
 
-const expandDottedKeys = (value: unknown): unknown => {
-    if (Array.isArray(value) || value === null || typeof value !== 'object') {
-        return value;
-    }
-
-    const result: Record<string, unknown> = {};
-
-    for (const [key, nestedValue] of Object.entries(value as Record<string, unknown>)) {
-        const normalizedValue = expandDottedKeys(nestedValue);
-
-        if (!key.includes('.')) {
-            result[key] = normalizedValue;
-            continue;
-        }
-
-        const parts = key.split('.');
-        let current: Record<string, unknown> = result;
-
-        for (const part of parts.slice(0, -1)) {
-            const existing = current[part];
-            if (!existing || typeof existing !== 'object' || Array.isArray(existing)) {
-                current[part] = {};
-            }
-            current = current[part] as Record<string, unknown>;
-        }
-
-        current[parts[parts.length - 1]] = normalizedValue;
-    }
-
-    return result;
-};
-
 export const readConfigFile = async (): Promise<RawConfig> => {
     const configPath = await getConfigPath();
 
@@ -1251,8 +1236,49 @@ export const invalidateConfigCache = (): void => {
     cachedConfigPath = null;
 };
 
+// Each project file's dropped entries are reported once per process, not on every getConfig call
+const reportedProjectConfigs = new Set<string>();
+
+// Names come from the repository's file; escape sequences there could clear or hide this warning
+// eslint-disable-next-line no-control-regex -- matching control characters is the point
+const stripControlChars = (name: string) => name.replace(/[\x00-\x1f\x7f]/g, '');
+
+/**
+ * The global file with the repository's `.aicommit2/config.ini` layered on top. Only getConfig
+ * reads this; `config set/add/list/validate` keep working on the global file alone.
+ */
+const readLayeredConfig = async (): Promise<{ config: RawConfig; projectPath?: string }> => {
+    const global = await readConfigFile();
+    const project = await readProjectConfig(global, BUILTIN_SERVICES, parseProviderList);
+    if (!project) {
+        return { config: global };
+    }
+
+    if (project.ignored.length > 0 && !reportedProjectConfigs.has(project.path)) {
+        reportedProjectConfigs.add(project.path);
+        console.error(
+            chalk.yellow(
+                `aicommit2: ignored in project config ${project.path}: ${project.ignored.map(stripControlChars).join(', ')} (not allowed from a repository; see "Project Configuration" in the aicommit2 README)`
+            )
+        );
+    }
+    return { config: mergeProjectConfig(global, project.config), projectPath: project.path };
+};
+
 export const getConfig = async (cliConfig: RawConfig, rawArgv: string[] = []): Promise<ValidConfig> => {
-    const config = await readConfigFile();
+    const { config, projectPath } = await readLayeredConfig();
+    try {
+        return parseConfig(config, cliConfig, rawArgv);
+    } catch (error) {
+        // An invalid value may come from the repository's file, which `config validate` does not check
+        if (projectPath && error instanceof KnownError) {
+            throw new KnownError(`${error.message}\nProject config in effect: ${projectPath}`);
+        }
+        throw error;
+    }
+};
+
+const parseConfig = (config: RawConfig, cliConfig: RawConfig, rawArgv: string[]): ValidConfig => {
     const parsedCliArgs = parseCliArgs(rawArgv);
     const mergedCliConfig = { ...cliConfig, ...parsedCliArgs };
     const parsedConfig: Record<string, unknown> = {};
@@ -1325,7 +1351,13 @@ export const setConfigs = async (keyValues: [key: string, value: any][]) => {
             if (!parser) {
                 throw new KnownError(`Invalid config property: ${key}`);
             }
-            config[key] = parser(value);
+            const parsed = parser(value);
+            // An empty value (e.g. `providers=`) clears the key instead of storing undefined
+            if (parsed === undefined) {
+                delete config[key];
+            } else {
+                config[key] = parsed;
+            }
             continue;
         }
 
@@ -1459,6 +1491,11 @@ export const listConfigs = async () => {
 
 export const printConfigPath = async () => {
     console.log(await getConfigPath());
+    // stderr keeps `$(aicommit2 config path)` pointing at the writable global file
+    const project = await findProjectConfigPath();
+    if (project) {
+        console.error(`project config: ${project.configPath}`);
+    }
 };
 
 /**
