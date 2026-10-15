@@ -127,6 +127,8 @@ aicommit2 -acds
 Notes:
 
 - Your staged diff is sent to every raced model (up to 5 upstream providers per commit), which is why `free` is opt-in.
+- Each raced request counts against your OpenRouter free-tier daily quota; losing requests are aborted once a winner arrives, but may already have been counted.
+- With [`codeReview`](../settings.md#codereview) enabled, the review request races the same way and the first non-empty review wins.
 - The winning model is shown in the UI and recorded in stats; `aicommit2 doctor` reports how many candidates the catalog offers.
 - Free models are rate-limited by OpenRouter; when a model answers `429` or returns non-JSON text, the race simply moves on to the others.
 - Streaming is disabled in `free` mode because the winner is resolved from complete responses.

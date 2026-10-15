@@ -471,13 +471,15 @@ export class OpenRouterService extends AIService {
         modelId: string,
         requestType: RequestType,
         systemPrompt: string,
-        userPrompt: string
+        userPrompt: string,
+        signal: AbortSignal
     ): Promise<{ messages: AIResponse[]; raw: string }> {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const payload: any = await this.buildChatCompletionPayload(systemPrompt, userPrompt, false, modelId);
         logAIPayload(this.params.stagedDiff.diff, requestType, 'OpenRouter', payload, this.params.config.logging);
         const chatCompletion = await this.openAI.chat.completions.create(payload, {
             timeout: this.params.config.timeout,
+            signal,
         });
 
         const result = this.extractOpenRouterText(chatCompletion.choices?.[0]?.message);
@@ -515,27 +517,34 @@ export class OpenRouterService extends AIService {
         return new Promise((resolve, reject) => {
             let settled = false;
             const failures: string[] = [];
+            // Abort the losers once a winner resolves so they stop consuming free-tier quota
+            const controllers = candidates.map(() => new AbortController());
 
-            candidates.forEach(candidate => {
+            candidates.forEach((candidate, index) => {
                 const modelId = candidate.id as string;
                 const startTime = Date.now();
 
-                this.requestFreeModel(modelId, requestType, systemPrompt, userPrompt)
+                this.requestFreeModel(modelId, requestType, systemPrompt, userPrompt, controllers[index].signal)
                     .then(result => {
                         if (settled) {
                             return;
                         }
                         settled = true;
+                        controllers.forEach((controller, i) => i !== index && controller.abort());
                         this.logRace('info', `OpenRouter: free model ${modelId} won in ${Date.now() - startTime}ms`);
                         this.applyWinningModel(modelId);
                         resolve(result);
                     })
                     .catch(error => {
+                        if (settled) {
+                            return;
+                        }
                         const message = error instanceof Error ? error.message : String(error);
-                        failures.push(`${modelId}: ${message}`);
+                        // Full reason goes to the log; the select list gets a short one per model
+                        failures.push(`${modelId}: ${message.length > 80 ? `${message.slice(0, 80)}...` : message}`);
                         this.logRace('warn', `OpenRouter: free model ${modelId} failed: ${message}`);
 
-                        if (!settled && failures.length === candidates.length) {
+                        if (failures.length === candidates.length) {
                             const raceError: AIServiceError = new Error(`All free OpenRouter models failed. ${failures.join('; ')}`);
                             raceError.name = 'FreeModelRaceFailed';
                             reject(raceError);

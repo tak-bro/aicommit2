@@ -297,7 +297,7 @@ const checkOpenRouterConnection = async (
         if (hasMissingModel || capabilityNotes.includes(FREE_MODEL_RACE_UNAVAILABLE)) {
             return {
                 ok: false,
-                error: 'Selected model not found in OpenRouter catalog',
+                error: hasMissingModel ? 'Selected model not found in OpenRouter catalog' : FREE_MODEL_RACE_UNAVAILABLE,
                 details: capabilityNotes.join('; '),
             };
         }
