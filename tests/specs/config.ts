@@ -355,6 +355,26 @@ export default testSuite(({ describe }) => {
                 await fixture.rm();
                 restoreEnv(snapshot);
             });
+
+            await test('keeps openrouter/auto as the default when model is omitted', async () => {
+                const { fixture } = await createFixture();
+                const configPath = path.join(fixture.path, '.config', 'aicommit2', 'config.ini');
+                await ensureDirectoryExists(path.dirname(configPath));
+                await fs.writeFile(configPath, ['[OPENROUTER]', 'key=test-api-key', ''].join('\n'));
+
+                const snapshot = snapshotEnv(envKeys);
+
+                process.env.AICOMMIT_CONFIG_PATH = configPath;
+                delete process.env.OPENROUTER_API_KEY;
+
+                const config = (await getConfig({}, [])) as ValidConfig;
+                const openRouter = config.OPENROUTER as any;
+
+                expect(openRouter.model).toEqual(['openrouter/auto']);
+
+                await fixture.rm();
+                restoreEnv(snapshot);
+            });
         });
 
         await describe('Copilot SDK configuration', async ({ test }) => {

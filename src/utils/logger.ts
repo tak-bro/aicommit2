@@ -97,6 +97,10 @@ export function getCurrentLogLevel(): string {
     return currentLogLevel;
 }
 
+export function isLoggerInitialized(): boolean {
+    return loggerInstance !== undefined;
+}
+
 export function isVerboseLoggingEnabled(): boolean {
     const levels = winston.config.npm.levels;
     const levelValue = levels[currentLogLevel] ?? levels.info;

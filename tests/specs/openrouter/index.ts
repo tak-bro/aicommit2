@@ -1,10 +1,25 @@
+import os from 'os';
+import path from 'path';
+
 import { expect, testSuite } from 'manten';
+import { firstValueFrom } from 'rxjs';
 
 import { OpenRouterService } from '../../../src/services/ai/openrouter.service.js';
 import { HttpRequestBuilder } from '../../../src/services/http/http-request.builder.js';
+import { initializeLogger, isLoggerInitialized } from '../../../src/utils/logger.js';
 
 export default testSuite(async ({ describe }) => {
     await describe('OpenRouterService', async ({ test }) => {
+        // generateCommitMessage$() maps errors through handleError$, which logs
+        if (!isLoggerInitialized()) {
+            const logDir = path.join(os.tmpdir(), 'aicommit2-openrouter-test');
+            await initializeLogger({
+                logging: false,
+                logFilePath: path.join(logDir, 'main.log'),
+                exceptionLogFilePath: path.join(logDir, 'exception.log'),
+            });
+        }
+
         const resetOpenRouterCaches = () => {
             (OpenRouterService as any).catalogCache?.clear?.();
             (OpenRouterService as any).modelCache?.clear?.();
@@ -522,6 +537,235 @@ export default testSuite(async ({ describe }) => {
             } finally {
                 HttpRequestBuilder.prototype.execute = originalExecute;
             }
+        });
+
+        await test('model=free races JSON-capable free models and returns the first valid response', async () => {
+            resetOpenRouterCaches();
+
+            const originalExecute = HttpRequestBuilder.prototype.execute;
+
+            HttpRequestBuilder.prototype.execute = async function <T>() {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const baseURL = (this as any).config?.baseURL || '';
+
+                if (baseURL.endsWith('/models/user')) {
+                    throw new Error('404 Not Found');
+                }
+
+                if (baseURL.endsWith('/models')) {
+                    return {
+                        data: {
+                            data: [
+                                {
+                                    id: 'nvidia/nemotron-3.5-content-safety:free',
+                                    supported_parameters: ['reasoning', 'include_reasoning', 'max_tokens'],
+                                },
+                                {
+                                    id: 'apodex/apodex-1.1-mini:free',
+                                    supported_parameters: ['response_format', 'reasoning'],
+                                },
+                                {
+                                    id: 'google/gemma-4-31b-it:free',
+                                    supported_parameters: ['response_format'],
+                                },
+                            ],
+                        },
+                    } as any;
+                }
+
+                throw new Error(`Unexpected catalog URL: ${baseURL}`);
+            };
+
+            try {
+                const params = {
+                    config: {
+                        model: 'free',
+                        key: 'test-api-key',
+                        url: 'https://openrouter.ai',
+                        path: '/api/v1/chat/completions',
+                        maxTokens: 4096,
+                        temperature: 0.2,
+                        topP: 0.9,
+                        timeout: 120000,
+                        logging: false,
+                        locale: 'ru',
+                        generate: 1,
+                        type: 'conventional',
+                        maxLength: 50,
+                        systemPrompt: '',
+                        systemPromptPath: '',
+                        codeReviewPromptPath: '',
+                        responseFormat: { type: 'json_object' },
+                        stream: true,
+                    },
+                    stagedDiff: { diff: 'diff --git a/file b/file', files: [] },
+                    keyName: 'OPENROUTER' as const,
+                    branchName: 'main',
+                };
+
+                const service = new OpenRouterService(params as any);
+                const capturedPayloads: Record<string, unknown>[] = [];
+
+                (service as any).openAI = {
+                    chat: {
+                        completions: {
+                            create: async (payload: Record<string, unknown>) => {
+                                capturedPayloads.push(payload);
+
+                                if (payload.model === 'apodex/apodex-1.1-mini:free') {
+                                    return {
+                                        choices: [{ message: { content: 'User Safety: safe' } }],
+                                    };
+                                }
+
+                                return {
+                                    choices: [
+                                        {
+                                            message: {
+                                                content: '{"subject":"[FEATURE] - add free model racing;","body":"","footer":""}',
+                                            },
+                                        },
+                                    ],
+                                };
+                            },
+                        },
+                    },
+                };
+
+                const result = await (service as any).generateMessage('commit');
+
+                expect(result[0].title).toBe('[FEATURE] - add free model racing;');
+                expect((service as any).params.config.model).toEqual(['google/gemma-4-31b-it:free']);
+                expect((service as any).serviceName).toMatch('gemma-4-31b-it');
+
+                const racedModels = capturedPayloads.map(payload => payload.model).sort();
+                expect(racedModels).toEqual(['apodex/apodex-1.1-mini:free', 'google/gemma-4-31b-it:free']);
+                expect(capturedPayloads.every(payload => payload.stream === false)).toBe(true);
+                expect(capturedPayloads.every(payload => payload.response_format !== undefined)).toBe(true);
+            } finally {
+                HttpRequestBuilder.prototype.execute = originalExecute;
+            }
+        });
+
+        await test('model=free rejects with per-model failures when every free model fails', async () => {
+            resetOpenRouterCaches();
+
+            const originalExecute = HttpRequestBuilder.prototype.execute;
+
+            HttpRequestBuilder.prototype.execute = async function <T>() {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const baseURL = (this as any).config?.baseURL || '';
+
+                if (baseURL.endsWith('/models/user')) {
+                    throw new Error('404 Not Found');
+                }
+
+                if (baseURL.endsWith('/models')) {
+                    return {
+                        data: {
+                            data: [
+                                {
+                                    id: 'apodex/apodex-1.1-mini:free',
+                                    supported_parameters: ['response_format'],
+                                },
+                            ],
+                        },
+                    } as any;
+                }
+
+                throw new Error(`Unexpected catalog URL: ${baseURL}`);
+            };
+
+            try {
+                const params = {
+                    config: {
+                        model: 'free',
+                        key: 'test-api-key',
+                        url: 'https://openrouter.ai',
+                        path: '/api/v1/chat/completions',
+                        maxTokens: 4096,
+                        temperature: 0.2,
+                        topP: 0.9,
+                        timeout: 120000,
+                        logging: false,
+                        locale: 'ru',
+                        generate: 1,
+                        type: 'conventional',
+                        maxLength: 50,
+                        systemPrompt: '',
+                        systemPromptPath: '',
+                        codeReviewPromptPath: '',
+                    },
+                    stagedDiff: { diff: 'diff --git a/file b/file', files: [] },
+                    keyName: 'OPENROUTER' as const,
+                    branchName: 'main',
+                };
+
+                const service = new OpenRouterService(params as any);
+
+                (service as any).openAI = {
+                    chat: {
+                        completions: {
+                            create: async () => {
+                                throw new Error('429 rate limited');
+                            },
+                        },
+                    },
+                };
+
+                // Assert on the emitted choice so the service error mapping is covered too
+                const choice = await firstValueFrom(service.generateCommitMessage$());
+                expect(choice.isError).toBe(true);
+                expect(choice.name).toMatch(/All free OpenRouter models failed.*apodex\/apodex-1\.1-mini:free: 429 rate limited/);
+            } finally {
+                HttpRequestBuilder.prototype.execute = originalExecute;
+            }
+        });
+
+        await test('invalid JSON errors include the raw model output', async () => {
+            resetOpenRouterCaches();
+
+            const params = {
+                config: {
+                    model: 'nvidia/nemotron-3.5-content-safety:free',
+                    key: 'test-api-key',
+                    url: 'https://openrouter.ai',
+                    path: '/api/v1/chat/completions',
+                    maxTokens: 4096,
+                    temperature: 0.2,
+                    topP: 0.9,
+                    timeout: 120000,
+                    logging: false,
+                    locale: 'ru',
+                    generate: 1,
+                    type: 'conventional',
+                    maxLength: 50,
+                    systemPrompt: '',
+                    systemPromptPath: '',
+                    codeReviewPromptPath: '',
+                },
+                stagedDiff: { diff: 'diff --git a/file b/file', files: [] },
+                keyName: 'OPENROUTER' as const,
+                branchName: 'main',
+            };
+
+            const service = new OpenRouterService(params as any);
+
+            (service as any).isResponseFormatSupported = async () => false;
+            (service as any).isReasoningSupported = async () => false;
+            (service as any).openAI = {
+                chat: {
+                    completions: {
+                        create: async () => ({
+                            choices: [{ message: { content: 'User Safety: safe' } }],
+                        }),
+                    },
+                },
+            };
+
+            const choice = await firstValueFrom(service.generateCommitMessage$());
+            expect(choice.isError).toBe(true);
+            expect(choice.name).toMatch(/did not contain a valid JSON object or array\. Raw response: User Safety: safe/);
         });
     });
 });

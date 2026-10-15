@@ -62,7 +62,7 @@ aicommit2 config set OPENROUTER.key="your-api-key" \
 | Setting | Description      | Default |
 | ------- | ---------------- | ------- |
 | `key`   | API key          | - |
-| `model` | Model to use     | `openrouter/auto` |
+| `model` | Model slug, or `free` to race JSON-capable free models | `openrouter/auto` |
 | `url`   | API endpoint URL | `https://openrouter.ai` |
 | `path`  | API path         | `/api/v1/chat/completions` |
 | `responseFormat` | OpenRouter `response_format` payload object | - |
@@ -98,9 +98,42 @@ Use a model slug that OpenRouter exposes, such as:
 - `anthropic/claude`
 - any other model slug listed in the OpenRouter catalog
 
+Or set the keyword `free` to race free models instead of calling one (see below).
+
 ```sh
 aicommit2 config set OPENROUTER.model="anthropic/claude"
 ```
+
+##### `model=free` (race free models, opt-in)
+
+With `free` (case-insensitive), aicommit2:
+
+1. Fetches the OpenRouter catalog.
+2. Keeps only `:free` models that advertise `response_format` support. Guardrail/classifier models (for example `nvidia/nemotron-3.5-content-safety:free`) never return commit JSON, so they are skipped.
+3. Sends the same request to 5 randomly chosen candidates in parallel.
+4. Returns the first response that parses into valid JSON and shows the winning model name in the UI.
+
+```ini
+[OPENROUTER]
+key=your-api-key
+model=free
+```
+
+```sh
+# First valid answer is auto-selected and printed, nothing is committed
+aicommit2 -acds
+```
+
+Notes:
+
+- Your staged diff is sent to every raced model (up to 5 upstream providers per commit), which is why `free` is opt-in.
+- Each raced request counts against your OpenRouter free-tier daily quota; losing requests are aborted once a winner arrives, but may already have been counted.
+- With [`codeReview`](../settings.md#codereview) enabled, the review request races the same way and the first non-empty review wins.
+- The winning model is shown in the UI and recorded in stats; `aicommit2 doctor` reports how many candidates the catalog offers.
+- Free models are rate-limited by OpenRouter; when a model answers `429` or returns non-JSON text, the race simply moves on to the others.
+- Streaming is disabled in `free` mode because the winner is resolved from complete responses.
+- If every candidate fails, the error lists the failure reason per model.
+- If a specific model does not support `response_format`, JSON output cannot be enforced by the API and the raw model response is included in the error message to make the cause obvious.
 
 #### OPENROUTER.url
 

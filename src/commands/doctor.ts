@@ -187,6 +187,8 @@ const formatOpenRouterCapabilityMessage = (selectedModel: string, providerConfig
     return suffixParts.length > 0 ? `${selectedModel} (${suffixParts.join('; ')})` : selectedModel;
 };
 
+const FREE_MODEL_RACE_UNAVAILABLE = 'No free JSON-capable models in catalog';
+
 export const summarizeOpenRouterCapabilities = (providerConfig: RawConfig, catalog: OpenRouterModel[]): string[] => {
     const messages: string[] = [];
     const selectedModels = Array.isArray(providerConfig.model)
@@ -198,6 +200,12 @@ export const summarizeOpenRouterCapabilities = (providerConfig: RawConfig, catal
     for (const selectedModel of selectedModels) {
         if (selectedModel === 'openrouter/auto') {
             messages.push('Auto routing enabled');
+            continue;
+        }
+
+        if (selectedModel.trim().toLowerCase() === 'free') {
+            const candidates = catalog.filter(model => !!model.id?.endsWith(':free') && supportsParameter(model, 'response_format')).length;
+            messages.push(candidates > 0 ? `Free model race enabled (${candidates} JSON-capable candidates)` : FREE_MODEL_RACE_UNAVAILABLE);
             continue;
         }
 
@@ -284,21 +292,12 @@ const checkOpenRouterConnection = async (
             };
         }
 
-        const openRouterAuto = configuredModels.includes('openrouter/auto');
-        if (openRouterAuto) {
-            const notes = summarizeOpenRouterCapabilities(providerConfig, models);
-            return {
-                ok: true,
-                details: notes.length > 0 ? notes.join('; ') : `Auto routing enabled (${models.length} models)`,
-            };
-        }
-
         const capabilityNotes = summarizeOpenRouterCapabilities(providerConfig, models);
         const hasMissingModel = capabilityNotes.some(note => note.startsWith('Model not found in catalog:'));
-        if (hasMissingModel) {
+        if (hasMissingModel || capabilityNotes.includes(FREE_MODEL_RACE_UNAVAILABLE)) {
             return {
                 ok: false,
-                error: 'Selected model not found in OpenRouter catalog',
+                error: hasMissingModel ? 'Selected model not found in OpenRouter catalog' : FREE_MODEL_RACE_UNAVAILABLE,
                 details: capabilityNotes.join('; '),
             };
         }

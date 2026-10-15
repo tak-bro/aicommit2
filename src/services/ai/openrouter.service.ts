@@ -6,6 +6,7 @@ import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 
 import { AIResponse, AIService, AIServiceError, AIServiceParams } from './ai.service.js';
 import { RequestType, logAIComplete, logAIError, logAIPayload, logAIPrompt, logAIRequest, logAIResponse } from '../../utils/ai-log.js';
+import { isLoggerInitialized, logger } from '../../utils/logger.js';
 import { isReasoningModel } from '../../utils/openai.js';
 import { codeReviewPrompt, generatePrompt } from '../../utils/prompt.js';
 import { HttpRequestBuilder } from '../http/http-request.builder.js';
@@ -31,6 +32,14 @@ export class OpenRouterService extends AIService {
     private openAI: OpenAI;
     private static readonly catalogCache = new Map<string, OpenRouterModel[]>();
     private static readonly modelCache = new Map<string, OpenRouterModel | null>();
+    private static readonly FREE_MODEL_KEYWORD = 'free';
+    private static readonly FREE_MODEL_RACE_LIMIT = 5;
+
+    protected readonly selfDescribingErrors: ReadonlySet<string> = new Set([
+        'InvalidJsonResponse',
+        'FreeModelRaceFailed',
+        'FreeModelUnavailable',
+    ]);
 
     constructor(protected readonly params: AIServiceParams) {
         super(params);
@@ -38,7 +47,7 @@ export class OpenRouterService extends AIService {
             primary: '#f97316',
             secondary: '#fff',
         };
-        this.serviceName = chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold(`[OpenRouter${this.formatModelSuffix()}]`);
+        this.serviceName = this.buildServiceName();
         this.errorPrefix = chalk.red.bold(`[OpenRouter${this.formatModelSuffix()}]`);
 
         const baseUrl = this.params.config.url || 'https://openrouter.ai';
@@ -51,6 +60,10 @@ export class OpenRouterService extends AIService {
             },
         });
     }
+
+    private buildServiceName = (): string => {
+        return chalk.bgHex(this.colors.primary).hex(this.colors.secondary).bold(`[OpenRouter${this.formatModelSuffix()}]`);
+    };
 
     private getOpenRouterBaseUrl = (): string => {
         return (this.params.config.url || 'https://openrouter.ai').replace(/\/$/, '');
@@ -88,8 +101,8 @@ export class OpenRouterService extends AIService {
         return `${this.getOpenRouterCatalogUrl()}|${this.params.config.key || ''}`;
     };
 
-    private getModelCacheKey = (): string => {
-        return `${this.getCatalogCacheKey()}|${this.getRequestedModel()}`;
+    private getModelCacheKey = (model: string): string => {
+        return `${this.getCatalogCacheKey()}|${model}`;
     };
 
     private async fetchOpenRouterCatalog(): Promise<OpenRouterModel[]> {
@@ -136,13 +149,13 @@ export class OpenRouterService extends AIService {
         });
     };
 
-    private async getOpenRouterModel(): Promise<OpenRouterModel | null> {
-        const model = this.getRequestedModel();
-        if (!model || model === 'openrouter/auto') {
+    private async getOpenRouterModel(model?: string): Promise<OpenRouterModel | null> {
+        const requestedModel = model || this.getRequestedModel();
+        if (!requestedModel || requestedModel === 'openrouter/auto') {
             return null;
         }
 
-        const cacheKey = this.getModelCacheKey();
+        const cacheKey = this.getModelCacheKey(requestedModel);
         const cachedModel = OpenRouterService.modelCache.get(cacheKey);
         if (cachedModel !== undefined) {
             return cachedModel;
@@ -150,7 +163,7 @@ export class OpenRouterService extends AIService {
 
         try {
             const catalog = await this.fetchOpenRouterCatalog();
-            const matchedModel = this.matchOpenRouterModel(model, catalog) || null;
+            const matchedModel = this.matchOpenRouterModel(requestedModel, catalog) || null;
             OpenRouterService.modelCache.set(cacheKey, matchedModel);
             return matchedModel;
         } catch {
@@ -158,30 +171,30 @@ export class OpenRouterService extends AIService {
         }
     }
 
-    private async supportsOpenRouterParameters(parameters: string[]): Promise<boolean> {
-        const model = await this.getOpenRouterModel();
-        if (!model) {
+    private async supportsOpenRouterParameters(parameters: string[], model?: string): Promise<boolean> {
+        const modelEntry = await this.getOpenRouterModel(model);
+        if (!modelEntry) {
             return false;
         }
 
-        return parameters.some(parameter => model.supported_parameters?.includes(parameter) ?? false);
+        return parameters.some(parameter => modelEntry.supported_parameters?.includes(parameter) ?? false);
     }
 
-    protected async isResponseFormatSupported(): Promise<boolean> {
-        return this.supportsOpenRouterParameters(['response_format']);
+    protected async isResponseFormatSupported(model?: string): Promise<boolean> {
+        return this.supportsOpenRouterParameters(['response_format'], model);
     }
 
-    protected async isReasoningSupported(): Promise<boolean> {
-        return this.supportsOpenRouterParameters(['reasoning', 'include_reasoning']);
+    protected async isReasoningSupported(model?: string): Promise<boolean> {
+        return this.supportsOpenRouterParameters(['reasoning', 'include_reasoning'], model);
     }
 
-    private getRequestPayloadExtras = async (): Promise<Record<string, unknown>> => {
+    private getRequestPayloadExtras = async (model?: string): Promise<Record<string, unknown>> => {
         const config = this.params.config as Record<string, unknown>;
         const extras: Record<string, unknown> = {};
         const responseFormat = this.hasRequestObject(config.responseFormat) ? config.responseFormat : { type: 'json_object' };
 
         // Only send structured-output hints when OpenRouter says the model supports them.
-        if (responseFormat && (await this.isResponseFormatSupported())) {
+        if (responseFormat && (await this.isResponseFormatSupported(model))) {
             extras.response_format = responseFormat;
         }
 
@@ -189,7 +202,7 @@ export class OpenRouterService extends AIService {
             extras.provider = config.provider;
         }
 
-        const reasoning = await this.getReasoningPayload();
+        const reasoning = await this.getReasoningPayload(model);
         if (reasoning) {
             extras.reasoning = reasoning;
         }
@@ -197,8 +210,8 @@ export class OpenRouterService extends AIService {
         return extras;
     };
 
-    private async getReasoningPayload(): Promise<Record<string, unknown> | undefined> {
-        if (!(await this.isReasoningSupported())) {
+    private async getReasoningPayload(model?: string): Promise<Record<string, unknown> | undefined> {
+        if (!(await this.isReasoningSupported(model))) {
             return undefined;
         }
 
@@ -226,12 +239,13 @@ export class OpenRouterService extends AIService {
     private buildChatCompletionPayload = async (
         systemPrompt: string,
         userPrompt: string,
-        stream: boolean
+        stream: boolean,
+        modelOverride?: string
     ): Promise<Record<string, unknown>> => {
         const maxTokens = this.params.config.maxTokens;
         const temperature = this.params.config.temperature;
-        const reasoningModel = isReasoningModel(this.params.config.model);
-        const model = this.getRequestedModel();
+        const model = modelOverride || this.getRequestedModel();
+        const reasoningModel = isReasoningModel(model);
 
         return {
             messages: [
@@ -240,7 +254,7 @@ export class OpenRouterService extends AIService {
             ],
             model,
             stream,
-            ...((await this.getRequestPayloadExtras()) || {}),
+            ...((await this.getRequestPayloadExtras(modelOverride)) || {}),
             ...(reasoningModel
                 ? {
                       max_completion_tokens: maxTokens,
@@ -286,7 +300,7 @@ export class OpenRouterService extends AIService {
     }
 
     generateCommitMessage$(): Observable<ReactiveListChoice> {
-        const isStream = this.params.config.stream || false;
+        const isStream = (this.params.config.stream || false) && !this.isFreeModelMode();
 
         if (isStream) {
             return this.generateStreamingCommitMessage$();
@@ -387,6 +401,18 @@ export class OpenRouterService extends AIService {
         logAIRequest(diff, requestType, serviceName, this.params.config.model, url, headers, logging);
         logAIPrompt(diff, requestType, serviceName, generatedSystemPrompt, userPrompt, logging);
 
+        if (this.isFreeModelMode()) {
+            const startTime = Date.now();
+            try {
+                const { messages, raw } = await this.generateFreeModelMessage(requestType, generatedSystemPrompt, userPrompt);
+                logAIComplete(diff, requestType, serviceName, Date.now() - startTime, raw, logging);
+                return messages;
+            } catch (error) {
+                logAIError(diff, requestType, serviceName, error, logging);
+                throw error;
+            }
+        }
+
         // OpenRouter adds extra request fields beyond the base OpenAI SDK typing.
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const payload: any = await this.buildChatCompletionPayload(generatedSystemPrompt, userPrompt, false);
@@ -414,5 +440,117 @@ export class OpenRouterService extends AIService {
             logAIError(diff, requestType, serviceName, error, logging);
             throw error;
         }
+    }
+
+    private isFreeModelMode = (): boolean => {
+        return this.getRequestedModel().trim().toLowerCase() === OpenRouterService.FREE_MODEL_KEYWORD;
+    };
+
+    // Keep only free models that support response_format; guardrail/classifier models never return commit JSON.
+    private getFreeJsonCapableModels = async (): Promise<OpenRouterModel[]> => {
+        const catalog = await this.fetchOpenRouterCatalog();
+
+        const candidates = catalog.filter(
+            model => !!model.id && model.id.endsWith(':free') && (model.supported_parameters?.includes('response_format') ?? false)
+        );
+        // Shuffle so a rate-limited head of the catalog does not fail every run
+        for (let i = candidates.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+        }
+        return candidates.slice(0, OpenRouterService.FREE_MODEL_RACE_LIMIT);
+    };
+
+    private applyWinningModel = (modelId: string): void => {
+        this.params.config.model = [modelId];
+        this.serviceName = this.buildServiceName();
+        this.errorPrefix = chalk.red.bold(`[OpenRouter${this.formatModelSuffix()}]`);
+    };
+
+    private async requestFreeModel(
+        modelId: string,
+        requestType: RequestType,
+        systemPrompt: string,
+        userPrompt: string,
+        signal: AbortSignal
+    ): Promise<{ messages: AIResponse[]; raw: string }> {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const payload: any = await this.buildChatCompletionPayload(systemPrompt, userPrompt, false, modelId);
+        logAIPayload(this.params.stagedDiff.diff, requestType, 'OpenRouter', payload, this.params.config.logging);
+        const chatCompletion = await this.openAI.chat.completions.create(payload, {
+            timeout: this.params.config.timeout,
+            signal,
+        });
+
+        const result = this.extractOpenRouterText(chatCompletion.choices?.[0]?.message);
+        if (!result.trim()) {
+            throw new Error('empty response');
+        }
+
+        const messages =
+            requestType === 'review'
+                ? this.parseCodeReview(result)
+                : this.parseMessage(result, this.params.config.type, this.params.config.generate);
+        return { messages, raw: result };
+    }
+
+    private logRace = (level: 'info' | 'warn', message: string): void => {
+        if (isLoggerInitialized()) {
+            logger[level](message);
+        }
+    };
+
+    private async generateFreeModelMessage(
+        requestType: RequestType,
+        systemPrompt: string,
+        userPrompt: string
+    ): Promise<{ messages: AIResponse[]; raw: string }> {
+        const candidates = await this.getFreeJsonCapableModels();
+        if (candidates.length === 0) {
+            const error: AIServiceError = new Error('No free OpenRouter models with JSON output support are currently available.');
+            error.name = 'FreeModelUnavailable';
+            throw error;
+        }
+
+        this.logRace('info', `OpenRouter: racing ${candidates.length} free models: ${candidates.map(c => c.id).join(', ')}`);
+
+        return new Promise((resolve, reject) => {
+            let settled = false;
+            const failures: string[] = [];
+            // Abort the losers once a winner resolves so they stop consuming free-tier quota
+            const controllers = candidates.map(() => new AbortController());
+
+            candidates.forEach((candidate, index) => {
+                const modelId = candidate.id as string;
+                const startTime = Date.now();
+
+                this.requestFreeModel(modelId, requestType, systemPrompt, userPrompt, controllers[index].signal)
+                    .then(result => {
+                        if (settled) {
+                            return;
+                        }
+                        settled = true;
+                        controllers.forEach((controller, i) => i !== index && controller.abort());
+                        this.logRace('info', `OpenRouter: free model ${modelId} won in ${Date.now() - startTime}ms`);
+                        this.applyWinningModel(modelId);
+                        resolve(result);
+                    })
+                    .catch(error => {
+                        if (settled) {
+                            return;
+                        }
+                        const message = error instanceof Error ? error.message : String(error);
+                        // Full reason goes to the log; the select list gets a short one per model
+                        failures.push(`${modelId}: ${message.length > 80 ? `${message.slice(0, 80)}...` : message}`);
+                        this.logRace('warn', `OpenRouter: free model ${modelId} failed: ${message}`);
+
+                        if (failures.length === candidates.length) {
+                            const raceError: AIServiceError = new Error(`All free OpenRouter models failed. ${failures.join('; ')}`);
+                            raceError.name = 'FreeModelRaceFailed';
+                            reject(raceError);
+                        }
+                    });
+            });
+        });
     }
 }

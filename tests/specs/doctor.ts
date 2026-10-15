@@ -222,5 +222,24 @@ export default testSuite(({ describe }) => {
                 'stepfun/step-3.5-flash:free: consider removing OPENROUTER.reasoning; 4096 ctx; supports: temperature, top_p, max_tokens',
             ]);
         });
+
+        test('summarize OpenRouter capabilities counts free race candidates case-insensitively', async () => {
+            const catalog = [
+                { id: 'a/json:free', supported_parameters: ['response_format'] },
+                { id: 'b/guard:free', supported_parameters: ['temperature'] },
+                { id: 'c/paid', supported_parameters: ['response_format'] },
+            ];
+
+            expect(summarizeOpenRouterCapabilities({ model: ['Free'] } as any, catalog)).toEqual([
+                'Free model race enabled (1 JSON-capable candidates)',
+            ]);
+            expect(summarizeOpenRouterCapabilities({ model: ['free'] } as any, catalog.slice(1))).toEqual([
+                'No free JSON-capable models in catalog',
+            ]);
+        });
+
+        test('summarize OpenRouter capabilities reports openrouter/auto routing', async () => {
+            expect(summarizeOpenRouterCapabilities({ model: ['openrouter/auto'] } as any, [])).toEqual(['Auto routing enabled']);
+        });
     });
 });
