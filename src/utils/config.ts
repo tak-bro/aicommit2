@@ -1239,6 +1239,10 @@ export const invalidateConfigCache = (): void => {
 // Each project file's dropped entries are reported once per process, not on every getConfig call
 const reportedProjectConfigs = new Set<string>();
 
+// Names come from the repository's file; escape sequences there could clear or hide this warning
+// eslint-disable-next-line no-control-regex -- matching control characters is the point
+const stripControlChars = (name: string) => name.replace(/[\x00-\x1f\x7f]/g, '');
+
 /**
  * The global file with the repository's `.aicommit2/config.ini` layered on top. Only getConfig
  * reads this; `config set/add/list/validate` keep working on the global file alone.
@@ -1254,7 +1258,7 @@ const readLayeredConfig = async (): Promise<{ config: RawConfig; projectPath?: s
         reportedProjectConfigs.add(project.path);
         console.error(
             chalk.yellow(
-                `aicommit2: ignored in project config ${project.path}: ${project.ignored.join(', ')} (secrets, endpoints, new providers and paths outside the repository are global-only)`
+                `aicommit2: ignored in project config ${project.path}: ${project.ignored.map(stripControlChars).join(', ')} (not allowed from a repository; see "Project Configuration" in the aicommit2 README)`
             )
         );
     }

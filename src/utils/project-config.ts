@@ -107,23 +107,41 @@ export const findProjectConfigPath = async (startDir: string = process.cwd()): P
     return null;
 };
 
+/** True when `target`, with symlinks followed, is a file strictly inside `root` */
+const isFileInside = async (root: string, target: string): Promise<boolean> => {
+    try {
+        const [realRoot, realPath] = await Promise.all([fs.realpath(root), fs.realpath(target)]);
+        const relative = path.relative(realRoot, realPath);
+        const isInside = relative !== '' && relative !== '..' && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative);
+        return isInside && (await isFile(realPath));
+    } catch {
+        return false;
+    }
+};
+
 /**
- * Resolve a prompt path from the project file against its directory. Returns null unless the real
- * path (symlinks followed) is an existing file inside the repository, so a cloned repository cannot
- * pull `~/.ssh/id_rsa` or `/etc/hosts` into the prompt sent to a provider.
+ * Resolve a prompt path from the project file against its directory. Returns the real path only when
+ * it is an existing file inside `.aicommit2/`, so a cloned repository cannot pull `~/.ssh/id_rsa`,
+ * `.git/config` or an untracked `.env` into the prompt sent to a provider. The real path is returned
+ * so a symlink swapped in before the prompt is read is not followed.
  */
 const confinePromptPath = async (value: unknown, ctx: FilterContext): Promise<string | null> => {
     if (typeof value !== 'string' || !value || path.isAbsolute(value)) {
         return null;
     }
-    try {
-        const [realRoot, realPath] = await Promise.all([fs.realpath(ctx.root), fs.realpath(path.resolve(ctx.configDir, value))]);
-        const relative = path.relative(realRoot, realPath);
-        const isInside = relative !== '' && relative !== '..' && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative);
-        return isInside ? path.resolve(ctx.configDir, value) : null;
-    } catch {
-        return null;
-    }
+    const resolved = path.resolve(ctx.configDir, value);
+    return (await isFileInside(ctx.configDir, resolved)) ? fs.realpath(resolved) : null;
+};
+
+/**
+ * A repository picks one model per provider. A list would fan out one billed request per model on
+ * the user's key, and a leading `-` would reach CLI providers' argv as an option.
+ */
+const singleModel = (value: unknown): string | null => {
+    const entries: unknown[] = Array.isArray(value) ? value : [value];
+    // Split every entry: the provider model parser splits on commas, so `model[]=a,b` is two models
+    const models = entries.flatMap(entry => (typeof entry === 'string' ? entry.split(',') : [''])).map(model => model.trim());
+    return models.length === 1 && models[0] !== '' && !models[0].startsWith('-') ? models[0] : null;
 };
 
 const hasGlobalModel = (global: RawConfig, provider: string) => {
@@ -142,6 +160,16 @@ const filterEntries = async (entries: Record<string, unknown>, ctx: FilterContex
 
         if (!PROJECT_SAFE_KEYS.has(key) || isSection(value) || isTopLevelModel || isReEnable || isModelOptIn) {
             ctx.ignored.push(name);
+            continue;
+        }
+
+        if (key === 'model') {
+            const model = singleModel(value);
+            if (!model) {
+                ctx.ignored.push(name);
+                continue;
+            }
+            result[key] = model;
             continue;
         }
 
@@ -199,6 +227,21 @@ export const readProjectConfig = async (
         return null;
     }
 
+    // A committed symlink must not load a file from outside the repository as the project layer, and
+    // `.aicommit2` must be a real directory: as a link to the root it would widen the prompt path jail
+    const configDir = path.dirname(found.configPath);
+    const isConfigDirLink = await fs.lstat(configDir).then(
+        stats => stats.isSymbolicLink(),
+        () => true
+    );
+    if (isConfigDirLink || !(await isFileInside(found.root, found.configPath))) {
+        return {
+            path: found.configPath,
+            config: {},
+            ignored: [`${PROJECT_CONFIG_RELATIVE_PATH} (symlinked or resolves outside the repository)`],
+        };
+    }
+
     let content: string;
     try {
         content = await fs.readFile(found.configPath, 'utf8');
@@ -207,7 +250,7 @@ export const readProjectConfig = async (
     }
     const ignored: string[] = [];
     const raw = expandDottedKeys(ini.parse(content), key => ignored.push(key)) as Record<string, unknown>;
-    const ctx: FilterContext = { root: found.root, configDir: path.dirname(found.configPath), global, builtinServices, ignored };
+    const ctx: FilterContext = { root: found.root, configDir, global, builtinServices, ignored };
     const config = await filterProjectConfig(raw, ctx);
 
     // A repository may only narrow the providers the user allows, never widen them

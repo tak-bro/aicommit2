@@ -181,6 +181,46 @@ export default testSuite(({ describe }) => {
             );
         });
 
+        await test('ignores a project config symlinked from outside the repository', async () => {
+            await withLayers(
+                {
+                    global: ['locale=en', '[OPENAI]', 'key=sk-global'],
+                    project: [],
+                    extraFiles: { 'outside.ini': 'locale=ko\n' },
+                },
+                async ({ root, repo }) => {
+                    const configPath = path.join(repo, '.aicommit2', 'config.ini');
+                    await fs.rm(configPath);
+                    await fs.symlink(path.join(root, 'outside.ini'), configPath);
+                    const config = await getConfig({});
+                    expect(config.locale).toBe('en');
+
+                    const project = await readProjectConfig({}, BUILTIN_SERVICES, parseProviderList);
+                    expect(project?.ignored[0]).toMatch(/resolves outside the repository/);
+                }
+            );
+        });
+
+        await test('ignores a .aicommit2 directory that is a symlink', async () => {
+            await withLayers({ global: ['locale=en', '[OPENAI]', 'key=sk-global'], project: [] }, async ({ repo }) => {
+                await fs.rm(path.join(repo, '.aicommit2'), { recursive: true });
+                await fs.symlink('.', path.join(repo, '.aicommit2'));
+                await fs.writeFile(path.join(repo, 'config.ini'), 'locale=ko\nsystemPromptPath=.git/config\n');
+                await fs.writeFile(path.join(repo, '.git', 'config'), 'token');
+                const config = await getConfig({});
+                expect(config.locale).toBe('en');
+                expect(config.systemPromptPath).toBe('');
+            });
+        });
+
+        await test('rejects a prompt path that is a directory', async () => {
+            await withLayers({ global: ['[OPENAI]', 'key=sk-global'], project: ['systemPromptPath=prompts'] }, async ({ repo }) => {
+                await fs.mkdir(path.join(repo, '.aicommit2', 'prompts'), { recursive: true });
+                const config = await getConfig({});
+                expect(config.systemPromptPath).toBe('');
+            });
+        });
+
         await test('names the project file when a project value is invalid', async () => {
             await withLayers({ global: ['[OPENAI]', 'key=sk-global'], project: ['generate=abc'] }, async () => {
                 await expect(getConfig({})).rejects.toThrow(/\.aicommit2[\\/]config\.ini/);
@@ -190,23 +230,28 @@ export default testSuite(({ describe }) => {
         await test('confines prompt paths to the repository', async () => {
             await withLayers(
                 {
-                    global: ['[OPENAI]', 'key=sk-global'],
+                    global: ['[OPENAI]', 'key=sk-global', '[OLLAMA]', 'model=llama3'],
                     project: [
                         'systemPromptPath=prompts/commit.txt',
                         'codeReviewPromptPath=../../outside.txt',
                         '[OPENAI]',
                         'systemPromptPath=/etc/hosts',
+                        '[OLLAMA]',
+                        'systemPromptPath=../.git/config',
                     ],
-                    extraFiles: { 'repo/.aicommit2/prompts/commit.txt': 'prompt', 'outside.txt': 'secret' },
+                    extraFiles: { 'repo/.aicommit2/prompts/commit.txt': 'prompt', 'outside.txt': 'secret', 'repo/.git/config': 'token' },
                 },
                 async ({ repo }) => {
                     const config = await getConfig({});
-                    expect(config.systemPromptPath).toBe(path.join(repo, '.aicommit2', 'prompts', 'commit.txt'));
+                    expect(config.systemPromptPath).toBe(await fs.realpath(path.join(repo, '.aicommit2', 'prompts', 'commit.txt')));
                     expect(config.codeReviewPromptPath).toBe('');
                     expect(section(config, 'OPENAI').systemPromptPath).not.toBe('/etc/hosts');
 
                     const project = await readProjectConfig({}, BUILTIN_SERVICES, parseProviderList);
-                    expect(project?.ignored).toEqual(expect.arrayContaining(['codeReviewPromptPath', 'OPENAI.systemPromptPath']));
+                    expect(section(config, 'OLLAMA').systemPromptPath).not.toMatch(/\.git/);
+                    expect(project?.ignored).toEqual(
+                        expect.arrayContaining(['codeReviewPromptPath', 'OPENAI.systemPromptPath', 'OLLAMA.systemPromptPath'])
+                    );
                 }
             );
         });
@@ -323,6 +368,33 @@ export default testSuite(({ describe }) => {
                 expect(out).toEqual([path.join(root, 'global.ini')]);
                 expect(err.join('\n')).toMatch(path.join(repo, '.aicommit2', 'config.ini'));
             });
+        });
+
+        await test('accepts one model per provider', async () => {
+            for (const project of [
+                ['[OPENAI]', 'model=a,b,c', '[GEMINI_CLI]', 'model=--yolo'],
+                ['[OPENAI]', 'model[]=a,b', '[GEMINI_CLI]', 'model[]=x,--yolo'],
+                ['[OPENAI]', 'model[]=a', 'model[]=b', '[GEMINI_CLI]', 'model[]=-x'],
+            ]) {
+                await withLayers(
+                    {
+                        global: ['[OPENAI]', 'key=sk-global', 'model=gpt-4o-mini', '[GEMINI_CLI]', 'model=gemini-2.5-pro'],
+                        project,
+                    },
+                    async () => {
+                        const config = await getConfig({});
+                        expect(section(config, 'OPENAI').model).toEqual(['gpt-4o-mini']);
+                        expect(section(config, 'GEMINI_CLI').model).toEqual(['gemini-2.5-pro']);
+
+                        const project = await readProjectConfig(
+                            { OPENAI: { model: 'gpt-4o-mini' }, GEMINI_CLI: { model: 'gemini-2.5-pro' } },
+                            BUILTIN_SERVICES,
+                            parseProviderList
+                        );
+                        expect(project?.ignored).toEqual(expect.arrayContaining(['OPENAI.model', 'GEMINI_CLI.model']));
+                    }
+                );
+            }
         });
 
         await test('cannot opt in a provider by model', async () => {

@@ -842,7 +842,9 @@ Because the file comes from whoever wrote the repository, only content and shape
 - sections for providers that are neither built in nor defined in your global config
 - `disabled=false`, so a repository cannot re-enable a provider you disabled
 - a top-level `model`, and a provider `model` for `OLLAMA`, `CLAUDE_CODE`, `GEMINI_CLI`, `COPILOT_SDK` or `BEDROCK` unless your global config already sets a model for it, so a repository cannot turn a provider on
-- `systemPromptPath`/`codeReviewPromptPath` that are absolute or resolve (symlinks followed) outside the repository; relative paths resolve against the `.aicommit2/` directory
+- a provider `model` listing more than one model or starting with `-`; a repository picks one model per provider, so it cannot fan out billed requests on your key
+- `systemPromptPath`/`codeReviewPromptPath` that are absolute or resolve (symlinks followed) outside the `.aicommit2/` directory; relative paths resolve against that directory, so `.git/config` or an untracked `.env` cannot reach the prompt
+- the whole file when `.aicommit2/` is a symlink, or `.aicommit2/config.ini` resolves outside the repository
 
 `$VAR`/`${VAR}` is not expanded in the project file. `config set`, `config add`, `config list` and `config validate` keep working on the global file only.
 
