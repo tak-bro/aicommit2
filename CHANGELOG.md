@@ -1,3 +1,10 @@
+# [2.13.0](https://github.com/tak-bro/aicommit2/compare/v2.12.1...v2.13.0) (2026-10-15)
+
+
+### Features
+
+* **openrouter:** add opt-in free model race ([#276](https://github.com/tak-bro/aicommit2/issues/276)) ([c30252c](https://github.com/tak-bro/aicommit2/commit/c30252cc8630b837219645ca107a3f0ca9662e72)), closes [#274](https://github.com/tak-bro/aicommit2/issues/274)
+
 ## [2.12.1](https://github.com/tak-bro/aicommit2/compare/v2.12.0...v2.12.1) (2026-10-11)
 
 
