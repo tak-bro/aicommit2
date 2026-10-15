@@ -35,6 +35,7 @@ Please check the documentation for each specific model to confirm which settings
 | `maxHunkLines`         | Max lines per hunk in compressed diff (0 = unlimited)               | 0            |
 | `maxDiffLines`         | Max total lines in compressed diff (0 = unlimited)                  | 0            |
 | `diffContext`           | Number of context lines in git diff (0-10)                          | 3            |
+| `providers`            | Comma-separated list of providers allowed to run (general setting)  | -            |
 
 > **Tip:** To set the General Settings for each model, use the following command.
 >
@@ -43,6 +44,8 @@ Please check the documentation for each specific model to confirm which settings
 > aicommit2 config set CODESTRAL.type="gitmoji"
 > aicommit2 config set GEMINI.includeBody=true
 > ```
+
+> **Project config:** a repository can set most of these settings in `.aicommit2/config.ini`, layered over the global config. Keys, endpoints and settings that could turn a provider on are ignored there. See [Project Configuration](../README.md#project-configuration).
 
 ## Detailed Settings
 
@@ -244,6 +247,19 @@ Nucleus sampling, where the model considers the results of the tokens with top_p
 ```bash
 aicommit2 config set topP=0.2
 ```
+
+### providers
+
+Default: none (every configured provider may run)
+
+General setting only. Restricts the providers aicommit2 runs to a comma-separated list; names are case-insensitive. Providers in the list still need their usual configuration to run.
+
+```bash
+aicommit2 config set providers="OLLAMA,CLAUDE_CODE"
+aicommit2 config set providers=   # clear the restriction
+```
+
+When a project `.aicommit2/config.ini` also sets `providers`, the two lists are intersected: a repository can narrow the set, never widen it.
 
 ### disabled
 

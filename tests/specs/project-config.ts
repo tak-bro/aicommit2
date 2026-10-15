@@ -4,7 +4,15 @@ import path from 'path';
 import { expect, testSuite } from 'manten';
 
 import { getAvailableAIs } from '../../src/commands/get-available-ais.js';
-import { BUILTIN_SERVICES, ValidConfig, getConfig, invalidateConfigCache, setConfigs } from '../../src/utils/config.js';
+import {
+    BUILTIN_SERVICES,
+    ValidConfig,
+    getConfig,
+    invalidateConfigCache,
+    parseProviderList,
+    printConfigPath,
+    setConfigs,
+} from '../../src/utils/config.js';
 import { readProjectConfig } from '../../src/utils/project-config.js';
 import { createFixture } from '../utils.js';
 
@@ -111,7 +119,7 @@ export default testSuite(({ describe }) => {
                     expect(section(config, 'OLLAMA').host).not.toBe('https://attacker.example');
                     expect(section(config, 'EVIL')).toBeUndefined();
 
-                    const project = await readProjectConfig({}, BUILTIN_SERVICES);
+                    const project = await readProjectConfig({}, BUILTIN_SERVICES, parseProviderList);
                     expect(project?.ignored).toEqual(
                         expect.arrayContaining([
                             'logFilePath',
@@ -148,7 +156,7 @@ export default testSuite(({ describe }) => {
                     expect(section(config, 'OPENAI').url).not.toBe('https://attacker.example');
                     expect(section(config, 'OPENAI').path).not.toBe('/steal');
 
-                    const project = await readProjectConfig({}, BUILTIN_SERVICES);
+                    const project = await readProjectConfig({}, BUILTIN_SERVICES, parseProviderList);
                     expect(project?.ignored).toEqual(
                         expect.arrayContaining(['__proto__.url', 'constructor.prototype.host', 'OPENAI.URL', 'OPENAI.__proto__.path'])
                     );
@@ -197,7 +205,7 @@ export default testSuite(({ describe }) => {
                     expect(config.codeReviewPromptPath).toBe('');
                     expect(section(config, 'OPENAI').systemPromptPath).not.toBe('/etc/hosts');
 
-                    const project = await readProjectConfig({}, BUILTIN_SERVICES);
+                    const project = await readProjectConfig({}, BUILTIN_SERVICES, parseProviderList);
                     expect(project?.ignored).toEqual(expect.arrayContaining(['codeReviewPromptPath', 'OPENAI.systemPromptPath']));
                 }
             );
@@ -228,6 +236,92 @@ export default testSuite(({ describe }) => {
                 const globalContent = await fs.readFile(path.join(root, 'global.ini'), 'utf8');
                 expect(globalContent).toMatch('generate=2');
                 expect(globalContent).not.toMatch('locale');
+            });
+        });
+
+        await test('providers narrows available AIs', async () => {
+            await withLayers(
+                {
+                    global: ['[OPENAI]', 'key=sk-global', '[OLLAMA]', 'model=llama3'],
+                    project: ['providers=ollama'],
+                },
+                async () => {
+                    expect(getAvailableAIs(await getConfig({}), 'commit')).toEqual(['OLLAMA']);
+                }
+            );
+
+            // The project list intersects the global one; it can never add a provider back
+            await withLayers(
+                {
+                    global: ['providers=OPENAI', '[OPENAI]', 'key=sk-global', '[OLLAMA]', 'model=llama3'],
+                    project: ['providers=OLLAMA'],
+                },
+                async () => {
+                    expect(getAvailableAIs(await getConfig({}), 'commit')).toEqual([]);
+                }
+            );
+
+            // Names are trimmed and case-insensitive
+            await withLayers(
+                {
+                    global: ['[OPENAI]', 'key=sk-global', '[OLLAMA]', 'model=llama3'],
+                    project: ['providers= ollama , Claude_Code '],
+                },
+                async () => {
+                    expect(getAvailableAIs(await getConfig({}), 'commit')).toEqual(['OLLAMA']);
+                }
+            );
+
+            // An empty or non-list project value is dropped; it never lifts the global list
+            for (const value of ['providers=', 'providers=,', 'providers=true']) {
+                await withLayers(
+                    {
+                        global: ['providers=OLLAMA', '[OPENAI]', 'key=sk-global', '[OLLAMA]', 'model=llama3'],
+                        project: [value],
+                    },
+                    async () => {
+                        expect(getAvailableAIs(await getConfig({}), 'commit')).toEqual(['OLLAMA']);
+                        const project = await readProjectConfig({ providers: 'OLLAMA' }, BUILTIN_SERVICES, parseProviderList);
+                        expect(project?.ignored).toContain('providers');
+                    }
+                );
+            }
+        });
+
+        await test('config set stores and clears providers', async () => {
+            await withLayers({ global: ['[OPENAI]', 'key=sk-global', '[OLLAMA]', 'model=llama3'], project: [] }, async () => {
+                await setConfigs([['providers', 'ollama,openai']]);
+                invalidateConfigCache();
+                expect((await getConfig({})).providers).toEqual(['OLLAMA', 'OPENAI']);
+
+                await setConfigs([['providers', '']]);
+                invalidateConfigCache();
+                expect((await getConfig({})).providers).toBeUndefined();
+            });
+        });
+
+        await test('rejects a non-list global providers value', async () => {
+            await withLayers({ global: ['providers=true', '[OPENAI]', 'key=sk-global'], project: [] }, async () => {
+                await expect(getConfig({})).rejects.toThrow(/Invalid config property providers/);
+            });
+        });
+
+        await test('config path names the project file on stderr', async () => {
+            await withLayers({ global: ['[OPENAI]', 'key=sk-global'], project: ['locale=ko'] }, async ({ root, repo }) => {
+                const out: string[] = [];
+                const err: string[] = [];
+                const originalLog = console.log;
+                const originalError = console.error;
+                console.log = (line: string) => out.push(line);
+                console.error = (line: string) => err.push(line);
+                try {
+                    await printConfigPath();
+                } finally {
+                    console.log = originalLog;
+                    console.error = originalError;
+                }
+                expect(out).toEqual([path.join(root, 'global.ini')]);
+                expect(err.join('\n')).toMatch(path.join(repo, '.aicommit2', 'config.ini'));
             });
         });
 

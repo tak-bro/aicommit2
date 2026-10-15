@@ -65,6 +65,8 @@ interface FilterContext {
     ignored: string[];
 }
 
+type ParseProviderList = (providers: unknown) => string[];
+
 const isSection = (value: unknown): value is Record<string, unknown> =>
     typeof value === 'object' && value !== null && !Array.isArray(value);
 
@@ -189,6 +191,7 @@ const filterProjectConfig = async (raw: Record<string, unknown>, ctx: FilterCont
 export const readProjectConfig = async (
     global: RawConfig,
     builtinServices: readonly string[],
+    parseProviders: ParseProviderList,
     startDir?: string
 ): Promise<ProjectConfig | null> => {
     const found = await findProjectConfigPath(startDir);
@@ -206,6 +209,22 @@ export const readProjectConfig = async (
     const raw = expandDottedKeys(ini.parse(content), key => ignored.push(key)) as Record<string, unknown>;
     const ctx: FilterContext = { root: found.root, configDir: path.dirname(found.configPath), global, builtinServices, ignored };
     const config = await filterProjectConfig(raw, ctx);
+
+    // A repository may only narrow the providers the user allows, never widen them
+    if (config.providers !== undefined) {
+        const value = config.providers;
+        const projectProviders = typeof value === 'string' || Array.isArray(value) ? parseProviders(value) : [];
+        if (projectProviders.length === 0) {
+            // An empty or non-list value would read as "no restriction" and lift the global list
+            ignored.push('providers');
+            delete config.providers;
+        } else if (global.providers === undefined || global.providers === '') {
+            config.providers = projectProviders;
+        } else {
+            const allowed = new Set(parseProviders(global.providers));
+            config.providers = projectProviders.filter(provider => allowed.has(provider));
+        }
+    }
 
     return { path: found.configPath, config, ignored: ctx.ignored };
 };

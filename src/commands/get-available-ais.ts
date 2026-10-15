@@ -55,63 +55,68 @@ const hasBedrockAccess = (value: RawConfig): boolean => {
 };
 
 export const getAvailableAIs = (config: ValidConfig, requestType: RequestType): ModelName[] => {
-    return Object.entries(config)
-        .map(([key, value]) => [key, value] as [ModelName, RawConfig])
-        .filter(([key, value]) => !value.disabled)
-        .filter(([key, value]) => BUILTIN_SERVICES.includes(key as BuiltinService) || value.compatible === true)
-        .filter(([key, value]) => {
-            switch (requestType) {
-                case 'commit':
-                    // CLAUDE_CODE opts in via a configured model; the CLI binary is checked at request time.
-                    if (key === 'OLLAMA' || key === 'CLAUDE_CODE' || key === 'GEMINI_CLI') {
-                        return !!value && hasConfiguredModels(value);
-                    }
-                    if (key === 'COPILOT_SDK') {
-                        return !!value && hasCopilotSdkAvailable(value);
-                    }
-                    if (key === 'HUGGINGFACE') {
-                        return !!value && !!value.cookie;
-                    }
-                    if (key === 'BEDROCK') {
-                        return hasConfiguredModels(value) && hasBedrockAccess(value);
-                    }
-                    return !!value.key && value.key.length > 0;
-                case 'review':
-                    const codeReview = config.codeReview || value.codeReview;
-                    if (key === 'OLLAMA' || key === 'CLAUDE_CODE' || key === 'GEMINI_CLI') {
-                        return !!value && hasConfiguredModels(value) && codeReview;
-                    }
-                    if (key === 'COPILOT_SDK') {
-                        return !!value && hasCopilotSdkAvailable(value) && codeReview;
-                    }
-                    if (key === 'HUGGINGFACE') {
-                        return !!value && !!value.cookie && codeReview;
-                    }
-                    if (key === 'BEDROCK') {
-                        return hasConfiguredModels(value) && hasBedrockAccess(value) && codeReview;
-                    }
-                    return !!value.key && value.key.length > 0 && codeReview;
-                case 'watch':
-                    const watchMode = config.watchMode || value.watchMode;
-                    if (key === 'OLLAMA' || key === 'CLAUDE_CODE' || key === 'GEMINI_CLI') {
-                        return !!value && hasConfiguredModels(value) && watchMode;
-                    }
-                    if (key === 'COPILOT_SDK') {
-                        return !!value && hasCopilotSdkAvailable(value) && watchMode;
-                    }
-                    if (key === 'HUGGINGFACE') {
-                        return !!value && !!value.cookie && watchMode;
-                    }
-                    if (key === 'BEDROCK') {
-                        return hasConfiguredModels(value) && hasBedrockAccess(value) && watchMode;
-                    }
-                    if (value.compatible) {
-                        return !!value.url && !!value.key && watchMode;
-                    }
-                    return !!value.key && value.key.length > 0 && watchMode;
-            }
-        })
-        .map(([key]) => key);
+    return (
+        Object.entries(config)
+            .map(([key, value]) => [key, value] as [ModelName, RawConfig])
+            // Provider sections only; general keys such as `providers` may be undefined
+            .filter(([key, value]) => typeof value === 'object' && value !== null && !Array.isArray(value))
+            .filter(([key, value]) => !value.disabled)
+            .filter(([key]) => !config.providers || config.providers.includes(key))
+            .filter(([key, value]) => BUILTIN_SERVICES.includes(key as BuiltinService) || value.compatible === true)
+            .filter(([key, value]) => {
+                switch (requestType) {
+                    case 'commit':
+                        // CLAUDE_CODE opts in via a configured model; the CLI binary is checked at request time.
+                        if (key === 'OLLAMA' || key === 'CLAUDE_CODE' || key === 'GEMINI_CLI') {
+                            return !!value && hasConfiguredModels(value);
+                        }
+                        if (key === 'COPILOT_SDK') {
+                            return !!value && hasCopilotSdkAvailable(value);
+                        }
+                        if (key === 'HUGGINGFACE') {
+                            return !!value && !!value.cookie;
+                        }
+                        if (key === 'BEDROCK') {
+                            return hasConfiguredModels(value) && hasBedrockAccess(value);
+                        }
+                        return !!value.key && value.key.length > 0;
+                    case 'review':
+                        const codeReview = config.codeReview || value.codeReview;
+                        if (key === 'OLLAMA' || key === 'CLAUDE_CODE' || key === 'GEMINI_CLI') {
+                            return !!value && hasConfiguredModels(value) && codeReview;
+                        }
+                        if (key === 'COPILOT_SDK') {
+                            return !!value && hasCopilotSdkAvailable(value) && codeReview;
+                        }
+                        if (key === 'HUGGINGFACE') {
+                            return !!value && !!value.cookie && codeReview;
+                        }
+                        if (key === 'BEDROCK') {
+                            return hasConfiguredModels(value) && hasBedrockAccess(value) && codeReview;
+                        }
+                        return !!value.key && value.key.length > 0 && codeReview;
+                    case 'watch':
+                        const watchMode = config.watchMode || value.watchMode;
+                        if (key === 'OLLAMA' || key === 'CLAUDE_CODE' || key === 'GEMINI_CLI') {
+                            return !!value && hasConfiguredModels(value) && watchMode;
+                        }
+                        if (key === 'COPILOT_SDK') {
+                            return !!value && hasCopilotSdkAvailable(value) && watchMode;
+                        }
+                        if (key === 'HUGGINGFACE') {
+                            return !!value && !!value.cookie && watchMode;
+                        }
+                        if (key === 'BEDROCK') {
+                            return hasConfiguredModels(value) && hasBedrockAccess(value) && watchMode;
+                        }
+                        if (value.compatible) {
+                            return !!value.url && !!value.key && watchMode;
+                        }
+                        return !!value.key && value.key.length > 0 && watchMode;
+                }
+            })
+            .map(([key]) => key)
+    );
 };
 
 export { getConfiguredModels, hasBedrockAccess, hasConfiguredModels, hasCopilotSdkAvailable };

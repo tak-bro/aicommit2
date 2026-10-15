@@ -9,7 +9,7 @@ import { DEFAULT_DIFF_COMPRESSION_CONFIG, DEFAULT_DIFF_CONTEXT, DiffCompressionM
 import { KnownError } from './error.js';
 import { fileExists } from './fs.js';
 import { expandDottedKeys } from './ini-keys.js';
-import { mergeProjectConfig, readProjectConfig } from './project-config.js';
+import { findProjectConfigPath, mergeProjectConfig, readProjectConfig } from './project-config.js';
 import { flattenDeep } from './utils.js';
 
 export const resolvePromptPath = (promptPath: string): string => {
@@ -191,6 +191,13 @@ const createJsonObjectParser =
             throw new KnownError(`Invalid ${name}: Must be valid JSON. Error: ${(error as Error).message}`);
         }
     };
+
+export const parseProviderList = (providers: unknown): string[] => {
+    const isList = typeof providers === 'string' || (Array.isArray(providers) && providers.every(item => typeof item === 'string'));
+    parseAssert('providers', isList, 'Must be a comma-separated list of provider names');
+    const list = typeof providers === 'string' ? providers.split(',') : (providers as string[]);
+    return list.map(provider => provider.trim().toUpperCase()).filter(provider => provider.length > 0);
+};
 
 const generalConfigParsers = {
     systemPrompt(systemPrompt?: string) {
@@ -391,6 +398,13 @@ const generalConfigParsers = {
         const parsed = Number(statsDays);
         parseAssert('statsDays', parsed > 0, 'Must be greater than 0');
         return parsed;
+    },
+    // Restrict active providers to this list; undefined = no restriction, [] = none (empty intersection of both layers)
+    providers: (providers?: unknown): string[] | undefined => {
+        if (providers === undefined || providers === '') {
+            return undefined;
+        }
+        return parseProviderList(providers);
     },
 } as const;
 
@@ -1231,7 +1245,7 @@ const reportedProjectConfigs = new Set<string>();
  */
 const readLayeredConfig = async (): Promise<{ config: RawConfig; projectPath?: string }> => {
     const global = await readConfigFile();
-    const project = await readProjectConfig(global, BUILTIN_SERVICES);
+    const project = await readProjectConfig(global, BUILTIN_SERVICES, parseProviderList);
     if (!project) {
         return { config: global };
     }
@@ -1333,7 +1347,13 @@ export const setConfigs = async (keyValues: [key: string, value: any][]) => {
             if (!parser) {
                 throw new KnownError(`Invalid config property: ${key}`);
             }
-            config[key] = parser(value);
+            const parsed = parser(value);
+            // An empty value (e.g. `providers=`) clears the key instead of storing undefined
+            if (parsed === undefined) {
+                delete config[key];
+            } else {
+                config[key] = parsed;
+            }
             continue;
         }
 
@@ -1467,6 +1487,11 @@ export const listConfigs = async () => {
 
 export const printConfigPath = async () => {
     console.log(await getConfigPath());
+    // stderr keeps `$(aicommit2 config path)` pointing at the writable global file
+    const project = await findProjectConfigPath();
+    if (project) {
+        console.error(`project config: ${project.configPath}`);
+    }
 };
 
 /**
