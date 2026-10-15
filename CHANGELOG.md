@@ -1,3 +1,10 @@
+# [2.14.0](https://github.com/tak-bro/aicommit2/compare/v2.13.0...v2.14.0) (2026-10-15)
+
+
+### Features
+
+* **config:** add repository project config layer ([#277](https://github.com/tak-bro/aicommit2/issues/277)) ([f5d148e](https://github.com/tak-bro/aicommit2/commit/f5d148ea3d3da7d4b97164e10a9c5dc4dbae6fb1)), closes [#265](https://github.com/tak-bro/aicommit2/issues/265)
+
 # [2.13.0](https://github.com/tak-bro/aicommit2/compare/v2.12.1...v2.13.0) (2026-10-15)
 
 
