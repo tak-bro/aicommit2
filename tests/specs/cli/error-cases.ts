@@ -21,6 +21,7 @@ export default testSuite(({ describe }) => {
             expect(exitCode).toBe(1);
             // Updated to match new error message format
             expect(stdout).toMatch('No staged changes found');
+            expect(stdout).toMatch('aicommit2 --all');
             await fixture.rm();
         });
     });

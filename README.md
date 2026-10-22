@@ -411,7 +411,7 @@ If the commit then fails (for example, a pre-commit hook rejects it), aicommit2 
 
 If stdin closes while any of these prompts waits for an answer (for example `aicommit2 < /dev/null`), aicommit2 prints `Input closed before the prompt was answered` and exits 1 without committing. Use `--auto-select` (`-s`) for runs that have no one to answer: `--confirm` skips only the final confirmation, not the message picker.
 
-- `--all` or `-a`: Automatically stage changes in tracked files for the commit (default: **false**)
+- `--all` or `-a`: Automatically stage changes in tracked files for the commit, like `git commit -a`. Untracked (new) files are not staged and are listed on stderr; `git add` them first (default: **false**)
 - `--confirm` or `-y`: Skip confirmation when committing after message generation (default: **false**)
 - `--auto-select` or `-s`: Automatically select the first successfully generated message (default: **false**)
   - Runs non-interactively: skips both the message picker and the commit confirmation, regardless of how many AI providers are configured
