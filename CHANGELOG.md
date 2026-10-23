@@ -1,3 +1,10 @@
+## [2.14.1](https://github.com/tak-bro/aicommit2/compare/v2.14.0...v2.14.1) (2026-10-23)
+
+
+### Bug Fixes
+
+* **cli:** name untracked files in the --all notice ([#279](https://github.com/tak-bro/aicommit2/issues/279)) ([9080d80](https://github.com/tak-bro/aicommit2/commit/9080d806b680de9d01f019903562db1f5ec28f04)), closes [#278](https://github.com/tak-bro/aicommit2/issues/278)
+
 # [2.14.0](https://github.com/tak-bro/aicommit2/compare/v2.13.0...v2.14.0) (2026-10-15)
 
 
