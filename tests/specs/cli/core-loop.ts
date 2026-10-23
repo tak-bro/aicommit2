@@ -1,4 +1,5 @@
 import fs from 'fs/promises';
+import path from 'path';
 
 import { expect, testSuite } from 'manten';
 
@@ -20,7 +21,7 @@ export default testSuite(({ describe }) => {
                 expect(status).toMatch('?? data2.json');
                 const { stdout: committed } = await git('show', ['--name-only', '--format=', 'HEAD']);
                 expect(committed.trim()).toBe('data.json');
-                expect(stderr).toMatch('untracked file(s) not staged');
+                expect(stderr).toMatch('untracked file');
             });
         });
 
@@ -34,9 +35,11 @@ export default testSuite(({ describe }) => {
                 await git('commit', ['-m', 'chore: initial']);
                 await fixture.writeFile('data.json', '{"a":2}');
 
-                const { exitCode } = await aicommit2(['--all', '--auto-select'], { ...options, cwd: `${fixture.path}/sub` });
+                const { stderr, exitCode } = await aicommit2(['--all', '--auto-select'], { ...options, cwd: `${fixture.path}/sub` });
 
                 expect(exitCode).toBe(0);
+                // cwd-relative like `git status`, so the path pastes straight into `git add`
+                expect(stderr).toMatch(/^ {2}\.\.\/data2\.json$/m);
                 const { stdout: committed } = await git('show', ['--name-only', '--format=', 'HEAD']);
                 expect(committed.trim()).toBe('data.json');
             });
@@ -53,6 +56,105 @@ export default testSuite(({ describe }) => {
 
                 expect(exitCode).toBe(0);
                 expect(stderr).not.toMatch('not staged');
+            });
+        });
+
+        // A bare count read as "-a dropped my files" (#278): name what was left out and how to add it
+        test('--all lists untracked file names with a staging hint', async () => {
+            await withMockProviders(true, async ({ aicommit2, options, git, fixture }) => {
+                await git('commit', ['-m', 'chore: initial']);
+                await fixture.writeFile('data.json', '{"a":2}');
+
+                const { stderr } = await aicommit2(['--all', '--auto-select'], options);
+
+                expect(stderr).toMatch(/^ {2}data2\.json$/m);
+                expect(stderr).toMatch('git add <path>');
+                expect(stderr).not.toMatch('git add -A');
+            });
+        });
+
+        describe('untracked notice shape', ({ test }) => {
+            // Hide the fixture's own untracked files so each test controls the full list
+            const ignoreFixtureNoise = '.aicommit2\ndata2.json\nLibrary/\n.config/\n';
+            const runWithUntracked = async (files: Record<string, string>) => {
+                let stderr = '';
+                await withMockProviders(true, async ({ aicommit2, options, git, fixture }) => {
+                    await fixture.writeFile('.gitignore', ignoreFixtureNoise);
+                    await git('add', ['.gitignore']);
+                    await git('commit', ['-m', 'chore: initial']);
+                    for (const [name, content] of Object.entries(files)) {
+                        await fs.mkdir(path.dirname(`${fixture.path}/${name}`), { recursive: true });
+                        await fixture.writeFile(name, content);
+                    }
+                    await fixture.writeFile('data.json', '{"a":2}');
+                    ({ stderr } = await aicommit2(['--all', '--auto-select'], options));
+                });
+                return stderr;
+            };
+            const numbered = (count: number) => Object.fromEntries(Array.from({ length: count }, (_, i) => [`u${i + 1}.txt`, 'x']));
+
+            test('caps the list at 5 names and counts the rest', async () => {
+                const stderr = await runWithUntracked(numbered(6));
+
+                expect(stderr).toMatch('6 untracked files not staged');
+                for (const name of ['u1.txt', 'u2.txt', 'u3.txt', 'u4.txt', 'u5.txt']) {
+                    expect(stderr).toMatch(`  ${name}\n`);
+                }
+                expect(stderr).not.toMatch('u6.txt');
+                expect(stderr).toMatch('… and 1 more');
+            });
+
+            test('prints every name with no remainder line at exactly 5', async () => {
+                const stderr = await runWithUntracked(numbered(5));
+
+                expect(stderr).toMatch('  u5.txt\n');
+                expect(stderr).not.toMatch('… and');
+            });
+
+            test('collapses a wholly untracked directory into one singular entry', async () => {
+                const stderr = await runWithUntracked({ 'newdir/a.txt': 'x', 'newdir/b.txt': 'x' });
+
+                expect(stderr).toMatch('1 untracked file not staged');
+                expect(stderr).toMatch(/^ {2}newdir\/$/m);
+                expect(stderr).not.toMatch('newdir/a.txt');
+            });
+
+            // git C-quotes control characters without -z, so a name cannot smuggle terminal escapes
+            test('prints a name with a control character git-quoted', async () => {
+                const stderr = await runWithUntracked({ 'tab\there.txt': 'x' });
+
+                expect(stderr).toMatch('  "tab\\there.txt"\n');
+                expect(stderr).not.toMatch('tab\there');
+            });
+        });
+
+        test('--all --output json keeps the untracked notice off stdout', async () => {
+            await withMockProviders(true, async ({ aicommit2, options, git, fixture }) => {
+                await git('commit', ['-m', 'chore: initial']);
+                await fixture.writeFile('data.json', '{"a":2}');
+
+                const { stdout, stderr, exitCode } = await aicommit2(['--all', '--output', 'json'], options);
+
+                expect(exitCode).toBe(0);
+                expect(stderr).toMatch('data2.json');
+                const lines = stdout.split('\n').filter(Boolean);
+                expect(lines.length).toBeGreaterThan(0);
+                for (const line of lines) {
+                    expect(() => JSON.parse(line)).not.toThrow();
+                }
+            });
+        });
+
+        test('--all with only untracked files does not suggest --all again', async () => {
+            await withMockProviders(true, async ({ aicommit2, options, git }) => {
+                await git('commit', ['-m', 'chore: initial']);
+
+                const { stdout, stderr, exitCode } = await aicommit2(['--all'], options);
+
+                expect(exitCode).toBe(1);
+                expect(stdout).toMatch('No staged changes found');
+                expect(stderr).toMatch('data2.json');
+                expect(`${stdout}${stderr}`).not.toMatch('aicommit2 --all');
             });
         });
         // Declining is not success: `aicommit2 && git push` must stop when nothing was committed

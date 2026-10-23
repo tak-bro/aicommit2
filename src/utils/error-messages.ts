@@ -164,13 +164,14 @@ export const ErrorMessages = {
     // ============================================
     // VCS Errors
     // ============================================
-    noStagedChanges: (vcs: string): string => {
+    // After `--all` already ran, suggesting it again is a dead end: what is left is untracked files
+    noStagedChanges: (vcs: string, stageAll = false): string => {
         const stageCommand = vcs.toLowerCase() === 'jujutsu' ? 'jj' : vcs.toLowerCase() === 'yadm' ? 'yadm add' : 'git add';
         return [
             `No staged changes found in ${theme.highlight(vcs)} repository.`,
             '',
             `${theme.label('→')} Stage: ${theme.command(`${stageCommand} <files>`)}`,
-            `${theme.label('→')} Or use: ${theme.command('aicommit2 --all')}`,
+            ...(stageAll ? [] : [`${theme.label('→')} Or use: ${theme.command('aicommit2 --all')}`]),
         ].join('\n');
     },
 
