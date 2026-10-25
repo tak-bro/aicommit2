@@ -116,7 +116,7 @@ export class OllamaService extends AIService {
         logAIRequest(diff, 'commit', serviceName, this.model, url, headers, logging);
         logAIPrompt(diff, 'commit', serviceName, generatedSystemPrompt, userPrompt, logging);
 
-        const { numCtx, temperature, topP, timeout, maxTokens } = this.params.config;
+        const { numCtx, think, temperature, topP, timeout, maxTokens } = this.params.config;
 
         const payload = {
             model: this.model,
@@ -125,6 +125,7 @@ export class OllamaService extends AIService {
                 { role: 'user', content: userPrompt },
             ],
             stream: true as const,
+            think,
             keep_alive: timeout,
             options: {
                 num_ctx: numCtx,
@@ -208,7 +209,7 @@ export class OllamaService extends AIService {
     }
 
     private async createChatCompletions(systemPrompt: string, userMessage: string, requestType: RequestType) {
-        const { numCtx, temperature, topP, timeout, maxTokens, logging } = this.params.config;
+        const { numCtx, think, temperature, topP, timeout, maxTokens, logging } = this.params.config;
         const diff = this.params.stagedDiff.diff;
         const serviceName = `Ollama_${this.model}`;
 
@@ -225,6 +226,7 @@ export class OllamaService extends AIService {
                 },
             ],
             stream: false as const,
+            think,
             keep_alive: timeout,
             options: {
                 num_ctx: numCtx,

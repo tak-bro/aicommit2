@@ -77,6 +77,43 @@ export default testSuite(({ describe }) => {
             await fixture.rm();
         });
 
+        await describe('OLLAMA.think', async ({ test }) => {
+            for (const value of ['false', 'true']) {
+                await test(`preserves explicit ${value}`, async () => {
+                    const { fixture, aicommit2 } = await createFixture();
+                    try {
+                        await aicommit2(['config', 'set', `OLLAMA.think=${value}`]);
+                        const { stdout } = await aicommit2(['config', 'get', 'OLLAMA.think']);
+                        expect(stdout).toMatch(`OLLAMA.think ${value}`);
+                    } finally {
+                        await fixture.rm();
+                    }
+                });
+            }
+
+            await test('restores the model default when deleted', async () => {
+                const { fixture, aicommit2 } = await createFixture();
+                try {
+                    await aicommit2(['config', 'set', 'OLLAMA.think=false']);
+                    await aicommit2(['config', 'del', 'OLLAMA.think']);
+                    const { stdout } = await aicommit2(['config', 'get', 'OLLAMA.think']);
+                    expect(stdout).toMatch('OLLAMA.think undefined');
+                } finally {
+                    await fixture.rm();
+                }
+            });
+
+            await test('rejects invalid values', async () => {
+                const { fixture, aicommit2 } = await createFixture();
+                try {
+                    const { stdout } = await aicommit2(['config', 'set', 'OLLAMA.think=invalid'], { reject: false });
+                    expect(stdout).toMatch('Invalid config property OLLAMA.think: Must be a boolean(true or false)');
+                } finally {
+                    await fixture.rm();
+                }
+            });
+        });
+
         await describe('timeout', ({ test }) => {
             test('setting invalid timeout config', async () => {
                 const { fixture, aicommit2 } = await createFixture();
