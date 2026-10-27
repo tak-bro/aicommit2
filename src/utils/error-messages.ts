@@ -166,14 +166,18 @@ export const ErrorMessages = {
     // ============================================
     // VCS Errors
     // ============================================
-    // After `-a` or `-A` already ran, suggesting `--all` again is a dead end
-    noStagedChanges: (vcs: string, stageMode: StageMode = 'none'): string => {
+    // After `-a` or `-A` already ran, suggesting `--all` again is a dead end. `-A` helps only when `-a`
+    // left untracked files out, which only the git path reports (`-A` refuses yadm and does nothing in jj).
+    // Known gap: `untrackedLeft` ignores `--exclude` and the config `exclude`, so if every untracked file is excluded, `-A` ends here too
+    // (rare; matching the excludes against untracked paths costs more than it saves)
+    noStagedChanges: (vcs: string, stageMode: StageMode = 'none', untrackedLeft = false): string => {
         const stageCommand = vcs.toLowerCase() === 'jujutsu' ? 'jj' : vcs.toLowerCase() === 'yadm' ? 'yadm add' : 'git add';
+        const flagHint = stageMode === 'none' ? 'aicommit2 --all' : stageMode === 'tracked' && untrackedLeft ? 'aicommit2 -A' : null;
         return [
             `No staged changes found in ${theme.highlight(vcs)} repository.`,
             '',
             `${theme.label('→')} Stage: ${theme.command(`${stageCommand} <files>`)}`,
-            ...(stageMode === 'none' ? [`${theme.label('→')} Or use: ${theme.command('aicommit2 --all')}`] : []),
+            ...(flagHint ? [`${theme.label('→')} Or use: ${theme.command(flagHint)}`] : []),
         ].join('\n');
     },
 

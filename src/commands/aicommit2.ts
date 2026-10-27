@@ -78,6 +78,8 @@ export default async (
         const initSpinner = isJsonMode ? null : consoleManager.displaySpinner('Detecting repository...');
 
         await assertGitRepo();
+        // Whether `-a` left new files out, so the no-staged error can point at `-A` only when it would help
+        let untrackedLeft = false;
         if (stageMode !== 'none') {
             if (initSpinner) {
                 initSpinner.text = 'Staging changes...';
@@ -93,7 +95,8 @@ export default async (
             } else if (vcsName === 'git') {
                 // NOTE: should be equivalent behavior to `git commit --all` (tracked files only)
                 // Independent: `--update` never touches untracked files
-                await Promise.all([execa('git', ['add', '--update']), warnUntrackedFiles(initSpinner)]);
+                const [, untrackedCount] = await Promise.all([execa('git', ['add', '--update']), warnUntrackedFiles(initSpinner)]);
+                untrackedLeft = untrackedCount > 0;
             } else if (vcsName === 'yadm') {
                 // Use '--update' for YADM to only stage already-tracked files
                 // This prevents accidentally staging thousands of files in the home directory
@@ -135,7 +138,7 @@ export default async (
 
         if (!staged) {
             const vcsName = await getVCSName();
-            throw new KnownError(ErrorMessages.noStagedChanges(vcsName, stageMode), {
+            throw new KnownError(ErrorMessages.noStagedChanges(vcsName, stageMode, untrackedLeft), {
                 code: ErrorCode.NO_STAGED_CHANGES,
             });
         }
@@ -319,7 +322,8 @@ const UNTRACKED_PREVIEW_LIMIT = 5;
 // `-a` no longer sweeps in new files, so name them instead of letting them silently miss the commit.
 // `--directory` lists the entries `git status` shows (a new folder is one `dir/` line), and without
 // `-z` git C-quotes C0 control characters (bytes >= 0x80 pass raw under `core.quotePath=false`).
-const warnUntrackedFiles = async (spinner: Ora | null) => {
+// Returns how many entries were left out.
+const warnUntrackedFiles = async (spinner: Ora | null): Promise<number> => {
     const { stdout } = await execa('git', [
         'ls-files',
         '--others',
@@ -331,7 +335,7 @@ const warnUntrackedFiles = async (spinner: Ora | null) => {
     ]);
     const paths = stdout.split('\n').filter(Boolean);
     if (paths.length === 0) {
-        return;
+        return 0;
     }
 
     const remaining = paths.length - UNTRACKED_PREVIEW_LIMIT;
@@ -339,11 +343,12 @@ const warnUntrackedFiles = async (spinner: Ora | null) => {
         `${paths.length} untracked file${paths.length > 1 ? 's' : ''} not staged (-a stages tracked files only, like git commit -a):`,
         ...paths.slice(0, UNTRACKED_PREVIEW_LIMIT).map(path => `  ${path}`),
         ...(remaining > 0 ? [`  … and ${remaining} more`] : []),
-        'To include them, git add <path> before running aicommit2.',
+        'To include them, git add <path> before running aicommit2, or run aicommit2 -A.',
     ];
     // Clear the spinner frame first so the notice gets its own lines; the next frame repaints
     spinner?.clear();
     process.stderr.write(`${lines.join('\n')}\n`);
+    return paths.length;
 };
 
 /**
