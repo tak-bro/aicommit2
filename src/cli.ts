@@ -42,7 +42,7 @@ cli(
             ...sharedMessageFlags,
             exclude: {
                 type: [String],
-                description: 'Files to exclude from AI analysis',
+                description: 'Files to exclude from AI analysis (they are still staged and committed)',
                 alias: 'x',
             },
             'include-generated': {
@@ -54,6 +54,12 @@ cli(
                 type: Boolean,
                 description: 'Automatically stage changes in tracked files for the commit',
                 alias: 'a',
+                default: false,
+            },
+            'add-all': {
+                type: Boolean,
+                description: 'Stage all changes, including untracked files, like git add -A (Git only)',
+                alias: 'A',
                 default: false,
             },
             confirm: {
@@ -203,7 +209,8 @@ cli(
             argv.flags.locale,
             argv.flags.generate,
             argv.flags.exclude,
-            argv.flags.all,
+            // `-A` is a superset of `-a`, so it wins when both are given
+            argv.flags['add-all'] ? 'all' : argv.flags.all ? 'tracked' : 'none',
             argv.flags.type,
             argv.flags.confirm,
             argv.flags.clipboard,

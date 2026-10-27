@@ -34,6 +34,7 @@ import {
     commitChanges as vcsCommitChanges,
 } from '../utils/vcs.js';
 
+import type { StageMode } from '../utils/vcs-adapters/index.js';
 import type { Ora } from 'ora';
 import type { Subscription } from 'rxjs';
 
@@ -48,7 +49,7 @@ export default async (
     locale: string | undefined,
     generate: number | undefined,
     excludeFiles: string[],
-    stageAll: boolean,
+    stageMode: StageMode,
     commitType: string | undefined,
     confirm: boolean,
     useClipboard: boolean,
@@ -77,12 +78,19 @@ export default async (
         const initSpinner = isJsonMode ? null : consoleManager.displaySpinner('Detecting repository...');
 
         await assertGitRepo();
-        if (stageAll) {
+        if (stageMode !== 'none') {
             if (initSpinner) {
                 initSpinner.text = 'Staging changes...';
             }
             const vcsName = await getVCSName();
-            if (vcsName === 'git') {
+            // yadm's work tree is $HOME: `add -A` would stage every file there, yadm's own repo included
+            if (stageMode === 'all' && vcsName === 'yadm') {
+                throw new KnownError(ErrorMessages.addAllUnsupported(vcsName));
+            }
+            if (vcsName === 'git' && stageMode === 'all') {
+                // Repo-wide without a pathspec, like `--update`; still honors .gitignore
+                await execa('git', ['add', '--all']);
+            } else if (vcsName === 'git') {
                 // NOTE: should be equivalent behavior to `git commit --all` (tracked files only)
                 // Independent: `--update` never touches untracked files
                 await Promise.all([execa('git', ['add', '--update']), warnUntrackedFiles(initSpinner)]);
@@ -127,7 +135,7 @@ export default async (
 
         if (!staged) {
             const vcsName = await getVCSName();
-            throw new KnownError(ErrorMessages.noStagedChanges(vcsName, stageAll), {
+            throw new KnownError(ErrorMessages.noStagedChanges(vcsName, stageMode), {
                 code: ErrorCode.NO_STAGED_CHANGES,
             });
         }

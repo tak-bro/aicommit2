@@ -1,5 +1,7 @@
 import chalk from 'chalk';
 
+import type { StageMode } from './vcs-adapters/index.js';
+
 /**
  * Color theme for error messages (matches CLI purple gradient theme)
  */
@@ -164,16 +166,24 @@ export const ErrorMessages = {
     // ============================================
     // VCS Errors
     // ============================================
-    // After `--all` already ran, suggesting it again is a dead end: what is left is untracked files
-    noStagedChanges: (vcs: string, stageAll = false): string => {
+    // After `-a` or `-A` already ran, suggesting `--all` again is a dead end
+    noStagedChanges: (vcs: string, stageMode: StageMode = 'none'): string => {
         const stageCommand = vcs.toLowerCase() === 'jujutsu' ? 'jj' : vcs.toLowerCase() === 'yadm' ? 'yadm add' : 'git add';
         return [
             `No staged changes found in ${theme.highlight(vcs)} repository.`,
             '',
             `${theme.label('→')} Stage: ${theme.command(`${stageCommand} <files>`)}`,
-            ...(stageAll ? [] : [`${theme.label('→')} Or use: ${theme.command('aicommit2 --all')}`]),
+            ...(stageMode === 'none' ? [`${theme.label('→')} Or use: ${theme.command('aicommit2 --all')}`] : []),
         ].join('\n');
     },
+
+    addAllUnsupported: (vcs: string): string =>
+        [
+            `--add-all is not supported in ${theme.highlight(vcs)}: its work tree is $HOME, so it would stage every file there.`,
+            '',
+            `${theme.label('→')} Tracked changes: ${theme.command('aicommit2 --all')}`,
+            `${theme.label('→')} New files: ${theme.command('yadm add <path>')} first`,
+        ].join('\n'),
 
     // `vcs` is the binary to commit with: yadm's repo lives outside $HOME's work tree, so `git commit -F` fails there
     commitFailedMessageSaved: (savePath: string, vcs: string): string => {

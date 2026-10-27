@@ -4,6 +4,7 @@ export default testSuite(({ describe }) => {
     describe('CLI', ({ runTestSuite }) => {
         runTestSuite(import('./error-cases.js'));
         runTestSuite(import('./core-loop.js'));
+        runTestSuite(import('./add-all.js'));
         runTestSuite(import('./commit-recovery.js'));
         runTestSuite(import('./confirm-loop.js'));
         runTestSuite(import('./auto-select.js'));

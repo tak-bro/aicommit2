@@ -5,7 +5,7 @@ import type { Renderers } from 'cleye';
  */
 const FLAG_GROUPS: Record<string, string[]> = {
     'Message Options': ['locale', 'generate', 'type', 'prompt', 'include-body'],
-    Behavior: ['all', 'confirm', 'auto-select', 'edit', 'clipboard', 'dry-run', 'output'],
+    Behavior: ['all', 'add-all', 'confirm', 'auto-select', 'edit', 'clipboard', 'dry-run', 'output'],
     'VCS Selection': ['git', 'yadm', 'jj', 'jj-auto-new'],
     'Hook Integration': ['hook-mode', 'pre-commit', 'watch-commit'],
     Formatting: ['disable-lowercase', 'exclude'],
