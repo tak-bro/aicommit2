@@ -753,6 +753,8 @@ const modelConfigParsers: Record<ModelName, Record<string, (value: any) => any>>
             parseAssert('OLLAMA.numCtx', parsed >= 2048, 'Must be greater than 2048');
             return parsed;
         },
+        think: (value?: string | boolean): boolean | undefined =>
+            value === undefined ? undefined : createBoolParser('OLLAMA.think')(value),
         systemPrompt: generalConfigParsers.systemPrompt,
         systemPromptPath: generalConfigParsers.systemPromptPath,
         codeReviewPromptPath: generalConfigParsers.codeReviewPromptPath,

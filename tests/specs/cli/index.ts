@@ -7,6 +7,7 @@ export default testSuite(({ describe }) => {
         runTestSuite(import('./commit-recovery.js'));
         runTestSuite(import('./confirm-loop.js'));
         runTestSuite(import('./auto-select.js'));
+        runTestSuite(import('./ollama.js'));
         runTestSuite(import('./commits.js'));
         runTestSuite(import('./rewrite.js'));
     });

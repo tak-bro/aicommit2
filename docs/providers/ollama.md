@@ -67,6 +67,7 @@ aicommit2 config set OLLAMA.model="codellama" \
 | `auth`      | Authentication type                                         | Bearer                   |
 | `key`       | Authentication key                                          | -                        |
 | `numCtx`    | The maximum number of tokens the model can process at once  | 2048                     |
+| `think`     | Enable or disable reasoning for models that support it      | Model default            |
 | `maxTokens`    | The maximum number of output tokens (maps to `num_predict`) | -1 (infinite generation) |
 
 ## Configuration
@@ -127,6 +128,23 @@ It is recommended to set it to 4096 or higher.
 
 ```sh
 aicommit2 config set OLLAMA.numCtx=4096
+```
+
+#### OLLAMA.think
+
+Default: unset (uses the model's default reasoning behavior).
+
+Set `false` to disable reasoning for faster commit generation, or `true` to enable it.
+This applies to both streaming and non-streaming requests and requires an Ollama version and model that support boolean thinking controls.
+
+```sh
+aicommit2 config set OLLAMA.think=false
+```
+
+To restore the model's default:
+
+```sh
+aicommit2 config del OLLAMA.think
 ```
 
 #### OLLAMA.maxTokens
