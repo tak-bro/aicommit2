@@ -1,3 +1,10 @@
+# [2.15.0](https://github.com/tak-bro/aicommit2/compare/v2.14.1...v2.15.0) (2026-10-28)
+
+
+### Features
+
+* **ollama:** support configurable thinking mode ([#280](https://github.com/tak-bro/aicommit2/issues/280)) ([9f7fcb3](https://github.com/tak-bro/aicommit2/commit/9f7fcb3df1acf7043cbeb7f66d85d0b1b8845fa8))
+
 ## [2.14.1](https://github.com/tak-bro/aicommit2/compare/v2.14.0...v2.14.1) (2026-10-23)
 
 
