@@ -1,3 +1,10 @@
+# [2.16.0](https://github.com/tak-bro/aicommit2/compare/v2.15.0...v2.16.0) (2026-10-28)
+
+
+### Features
+
+* **cli:** add -A/--add-all to stage untracked files too ([#281](https://github.com/tak-bro/aicommit2/issues/281)) ([3477edb](https://github.com/tak-bro/aicommit2/commit/3477edbd8ab2f6b3ca006420952f91dee4381b4b)), closes [#278](https://github.com/tak-bro/aicommit2/issues/278) [#278](https://github.com/tak-bro/aicommit2/issues/278) [#278](https://github.com/tak-bro/aicommit2/issues/278)
+
 # [2.15.0](https://github.com/tak-bro/aicommit2/compare/v2.14.1...v2.15.0) (2026-10-28)
 
 
