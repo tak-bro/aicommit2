@@ -1418,6 +1418,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/qistchan"><img src="https://avatars.githubusercontent.com/qistchan" width="100px;" alt=""/><br /><sub><b>@qistchan</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=qistchan" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/Cassius0924"><img src="https://avatars.githubusercontent.com/Cassius0924" width="100px;" alt=""/><br /><sub><b>@Cassius0924</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=Cassius0924" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/Xyhlon"><img src="https://avatars.githubusercontent.com/Xyhlon" width="100px;" alt=""/><br /><sub><b>@Xyhlon</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=Xyhlon" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/felipe-rodriguez-parra"><img src="https://avatars.githubusercontent.com/felipe-rodriguez-parra" width="100px;" alt=""/><br /><sub><b>@felipe-rodriguez-parra</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=felipe-rodriguez-parra" title="Code">💻</a></td>
   </tr>
 </table>
 <!-- markdownlint-restore -->
