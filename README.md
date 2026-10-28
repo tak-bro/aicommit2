@@ -411,7 +411,8 @@ If the commit then fails (for example, a pre-commit hook rejects it), aicommit2 
 
 If stdin closes while any of these prompts waits for an answer (for example `aicommit2 < /dev/null`), aicommit2 prints `Input closed before the prompt was answered` and exits 1 without committing. Use `--auto-select` (`-s`) for runs that have no one to answer: `--confirm` skips only the final confirmation, not the message picker.
 
-- `--all` or `-a`: Automatically stage changes in tracked files for the commit, like `git commit -a`. Untracked (new) files are not staged and are listed on stderr; `git add` them first (default: **false**)
+- `--all` or `-a`: Automatically stage changes in tracked files for the commit, like `git commit -a`. Untracked (new) files are not staged and are listed on stderr; `git add` them first or use `--add-all` (default: **false**)
+- `--add-all` or `-A`: Stage all changes, including untracked files, like `git add -A`. `.gitignore` still applies; files matched by `--exclude` are staged and committed too, only left out of the AI analysis. Staging happens before messages are generated, so the files stay staged even with `--dry-run` or when you cancel. Git only: YADM's work tree is `$HOME`, so it exits with an error there (default: **false**)
 - `--confirm` or `-y`: Skip confirmation when committing after message generation (default: **false**)
 - `--auto-select` or `-s`: Automatically select the first successfully generated message (default: **false**)
   - Runs non-interactively: skips both the message picker and the commit confirmation, regardless of how many AI providers are configured
@@ -437,7 +438,7 @@ If stdin closes while any of these prompts waits for an answer (for example `aic
 
 ##### Formatting & Debug
 
-- `--exclude` or `-x`: Files to exclude from AI analysis
+- `--exclude` or `-x`: Files to exclude from AI analysis. They are still staged and committed
 - `--include-generated`: Also send generated-file diffs (default: **false**; lockfiles always stay name-only). By default, lockfiles, `*.min.js`, `*.min.css`, `*.map`, `*.snap`, and files marked `linguist-generated` in `.gitattributes` are listed by name only, and shown as `(diff omitted)` in the staged file list
 - `--disable-lowercase`: Preserve original casing of commit messages (default: **false**)
 - `--retry`: Commit the message a failed commit saved (for example, after a pre-commit hook fails), without generating a new one. Unknown flags are passed to `git commit`, so `aicommit2 --retry --no-verify` works. It always commits, so it refuses `--dry-run` and `--clipboard`
@@ -1417,6 +1418,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/qistchan"><img src="https://avatars.githubusercontent.com/qistchan" width="100px;" alt=""/><br /><sub><b>@qistchan</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=qistchan" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/Cassius0924"><img src="https://avatars.githubusercontent.com/Cassius0924" width="100px;" alt=""/><br /><sub><b>@Cassius0924</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=Cassius0924" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/Xyhlon"><img src="https://avatars.githubusercontent.com/Xyhlon" width="100px;" alt=""/><br /><sub><b>@Xyhlon</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=Xyhlon" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/felipe-rodriguez-parra"><img src="https://avatars.githubusercontent.com/felipe-rodriguez-parra" width="100px;" alt=""/><br /><sub><b>@felipe-rodriguez-parra</b></sub></a><br /><a href="https://github.com/tak-bro/aicommit2/commits?author=felipe-rodriguez-parra" title="Code">💻</a></td>
   </tr>
 </table>
 <!-- markdownlint-restore -->

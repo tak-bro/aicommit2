@@ -13,6 +13,9 @@ export interface CommitOptions {
     autoNew?: boolean; // Jujutsu-specific: run `jj new` after `jj describe` (default: false)
 }
 
+// What `aicommit2` stages before reading the diff: `-a` = tracked changes (`git commit -a`), `-A` = every change (`git add -A`)
+export type StageMode = 'none' | 'tracked' | 'all';
+
 export interface DiffOptions {
     diffContext?: number; // git -U{n} context lines (default: 3)
     includeGenerated?: boolean; // Send generated-file diffs too (default: false)
